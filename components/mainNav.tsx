@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 
 import { cn } from '@/lib/utils'
 import { Badge } from './ui/badge'
-import { SunIcon, ZapIcon } from 'lucide-react'
+import { ZapIcon } from 'lucide-react'
 import { siteConfig } from '@/config/site'
 
 export function MainNav() {
