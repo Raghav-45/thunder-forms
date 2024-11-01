@@ -2,6 +2,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { Announcement } from '@/components/Announcement'
 
 export default function Page() {
   return (
@@ -9,17 +10,11 @@ export default function Page() {
       <div className="mx-auto grid grid-cols-12 gap-8 space-y-0 pt-28">
         <section className="space-y-4 col-span-6">
           <div className="space-y-2">
-            {/* <Announcement /> */}
+            <Announcement />
             <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
               Thunder Forms: Unleash the Power of Forms
-              {/* <br />
-              to create{' '}
-              <span className="bg-gradient-to-r from-yellow-400 to-pink-600 bg-clip-text text-transparent">
-                stunning sites
-              </span> */}
             </h1>
           </div>
-          {/* <p className="text-base text-gray-500 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl dark:text-gray-200"> */}
           <p className="text-base text-gray-200 max-w-2xl mt-4">
             Thunder Forms is a next-gen form builder that combines speed,
             flexibility, and powerful customization for all your data collection
@@ -34,7 +29,6 @@ export default function Page() {
               href="/pricing"
               className={cn(buttonVariants({ variant: 'outline' }))}
             >
-              {/* <Icons.gitHub className="mr-2 h-4 w-4" /> */}
               How it works
             </Link>
           </div>
