@@ -12,7 +12,7 @@ export function Announcement() {
     >
       <LayoutPanelTopIcon className="h-4 w-4" />{' '}
       <Separator className="mx-1 h-4" orientation="vertical" />{' '}
-      <span>Introducing New SaaS Template</span>
+      <span>Introducing New Feedback Template</span>
       <ArrowRightIcon className="ml-2 h-4 w-4 -translate-x-0.5 transition-transform group-hover:translate-x-0.5" />
     </Link>
   )

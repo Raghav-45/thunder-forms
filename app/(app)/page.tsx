@@ -3,17 +3,21 @@ import Link from 'next/link'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Announcement } from '@/components/Announcement'
+import { DemoReportAnIssue } from '@/components/report-an-issue'
 
 export default function Page() {
   return (
     <div className="container relative">
-      <div className="mx-auto grid grid-cols-12 gap-8 space-y-0 pt-28">
-        <section className="space-y-4 col-span-6">
+      <div className="mx-auto grid grid-cols-12 gap-8 space-y-0 pt-28 px-12">
+        <section className="space-y-4 col-span-6 mt-8">
           <div className="space-y-2">
             <Announcement />
             <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
-              Thunder Forms: Unleash the Power of Forms
+              Thunder Forms
             </h1>
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight">
+              Unleash the Power of Forms
+            </h2>
           </div>
           <p className="text-base text-gray-200 max-w-2xl mt-4">
             Thunder Forms is a next-gen form builder that combines speed,
@@ -33,8 +37,9 @@ export default function Page() {
             </Link>
           </div>
         </section>
-        <section className="col-span-6">
-          <div className="relative h-96 w-full overflow-hidden rounded-xl border border-black/20 bg-neutral-300 font-medium dark:border-white/5 dark:bg-neutral-800">
+        <section className="col-span-5 col-start-8">
+          <DemoReportAnIssue />
+          {/* <div className="relative h-96 w-full overflow-hidden rounded-xl border border-black/20 bg-neutral-300 font-medium dark:border-white/5 dark:bg-neutral-800">
             <div className="flex space-x-1.5 h-8 w-full flex-row border-b border-black/20 px-3 py-1 pt-2 dark:border-white/5">
               <div className="w-3 h-3 rounded-full bg-red-500"></div>
               <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
@@ -63,7 +68,7 @@ const CoolComponent = () => {
 export default CoolComponent;`}</code>
               </pre>
             </div>
-          </div>
+          </div> */}
         </section>
       </div>
 
