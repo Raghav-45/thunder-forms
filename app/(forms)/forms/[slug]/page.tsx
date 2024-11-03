@@ -21,7 +21,7 @@ export default async function Page({
     <div className="md:container space-y-6 p-10 pb-16">
       <div className="space-y-0.5 md:space-y-1">
         <h2 className="text-2xl md:text-5xl font-bold tracking-tight">
-          Report an issue
+          {slug}: Report an issue
         </h2>
         <p className="text-muted-foreground">
           What area are you having problems with?
