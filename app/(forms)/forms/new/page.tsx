@@ -50,7 +50,17 @@ async function createForm(data: FormElement[]) {
   return docRef.id
 }
 
-const DraggableElement = ({ type, label, icon: Icon, onDragStart }: any) => (
+const DraggableElement = ({
+  type,
+  label,
+  icon: Icon,
+  onDragStart,
+}: {
+  type: string
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  onDragStart: (e: React.DragEvent, type: string, label: string) => void
+}) => (
   <Button
     variant="outline"
     className="w-full justify-start mb-2"
@@ -169,7 +179,9 @@ export default function FormBuilder() {
   }
 
   useEffect(() => {
-    formElements.length > 0 && console.log('elements: ', formElements)
+    if (formElements.length > 0) {
+      console.log('elements: ', formElements)
+    }
   }, [formElements])
 
   const handlSubmit = () => {
