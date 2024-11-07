@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { db } from '@/config/firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore'
-import { FormElementPreview } from '../new/page'
+import { FormElementPreview } from '@/components/FormElementPreview'
 
 interface FormElement {
   id: string
