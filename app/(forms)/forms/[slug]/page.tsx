@@ -12,10 +12,16 @@ interface FormElement {
   label: string
 }
 
-export default function Page({ params }) {
+interface PageProps {
+  params: {
+    slug: string
+  }
+}
+
+export default function Page({ params }: PageProps) {
   const [formData, setFormData] = useState<FormElement[]>()
   const [loading, setLoading] = useState(true)
-  const slug = params.slug // directly access the slug
+  const { slug } = params
 
   useEffect(() => {
     const fetchData = async () => {
