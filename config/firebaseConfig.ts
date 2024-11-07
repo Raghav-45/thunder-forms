@@ -8,12 +8,12 @@ import { getStorage } from 'firebase/storage'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: 'AIzaSyBxdHCmE32xrVmnHxGn_wc-5hpWICqxwc0',
-  authDomain: 'online-store-fcbca.firebaseapp.com',
-  projectId: 'online-store-fcbca',
-  storageBucket: 'online-store-fcbca.appspot.com',
-  messagingSenderId: '1063287582876',
-  appId: '1:1063287582876:web:0e4739b66aaef169e27d59',
+  apiKey: 'AIzaSyBSM1iZDnYmuf-VcQiMAIeQu6aK97gHlZs',
+  authDomain: 'thunder-forms.firebaseapp.com',
+  projectId: 'thunder-forms',
+  storageBucket: 'thunder-forms.firebasestorage.app',
+  messagingSenderId: '223721005757',
+  appId: '1:223721005757:web:a218816b5848bbd61ecdd4',
 }
 
 // Initialize Firebase

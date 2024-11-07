@@ -1,8 +1,6 @@
-// app/form-builder/page.tsx
-
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,6 +15,8 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import {
   Pencil,
   Hash,
@@ -26,6 +26,8 @@ import {
   ChevronDown,
   FileText,
 } from 'lucide-react'
+import { addDoc, collection } from 'firebase/firestore'
+import { db } from '@/config/firebaseConfig'
 
 const FORM_ELEMENTS_LIBRARY = [
   { type: 'text', label: 'Text Input', icon: Pencil },
@@ -43,18 +45,24 @@ interface FormElement {
   label: string
 }
 
+async function createForm(data: FormElement[]) {
+  const docRef = await addDoc(collection(db, 'forms'), { data: data })
+  return docRef.id
+}
+
 const DraggableElement = ({ type, label, icon: Icon, onDragStart }: any) => (
-  <div
+  <Button
+    variant="outline"
+    className="w-full justify-start mb-2"
     draggable
     onDragStart={(e) => onDragStart(e, type, label)}
-    className="flex items-center gap-2 p-3 mb-2 bg-secondary rounded-lg cursor-grab active:cursor-grabbing hover:bg-secondary/80 transition-colors"
   >
-    <Icon className="w-5 h-5" />
+    <Icon className="w-4 h-4 mr-2" />
     <span>{label}</span>
-  </div>
+  </Button>
 )
 
-const FormElementPreview = ({
+export const FormElementPreview = ({
   type,
   label,
 }: {
@@ -63,56 +71,76 @@ const FormElementPreview = ({
 }) => {
   switch (type) {
     case 'text':
+      return (
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor={`${type}-${label}`}>Text</Label>
+          <Input type="text" id={`${type}-${label}`} placeholder="Text" />
+        </div>
+      )
     case 'email':
+      return (
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor={`${type}-${label}`}>Email</Label>
+          <Input type="email" id={`${type}-${label}`} placeholder="Email" />
+        </div>
+      )
     case 'number':
       return (
-        <div className="mb-4">
-          <Label>{label}</Label>
-          <Input type={type} placeholder={`Enter ${label.toLowerCase()}`} />
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor={`${type}-${label}`}>Number</Label>
+          <Input type="number" id={`${type}-${label}`} placeholder="Number" />
         </div>
       )
     case 'textarea':
       return (
-        <div className="mb-4">
-          <Label>{label}</Label>
-          <Textarea placeholder="Enter text" />
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor={`textarea-${label}`}>Textarea</Label>
+          <Textarea
+            id={`textarea-${label}`}
+            placeholder="Type your message here."
+          />
         </div>
       )
     case 'checkbox':
       return (
-        <div className="mb-4 flex items-center space-x-2">
-          <Checkbox />
-          <Label>{label}</Label>
+        <div className="flex items-center space-x-2">
+          <Checkbox id={`checkbox-${label}`} />
+          <label
+            htmlFor={`checkbox-${label}`}
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Accept terms and conditions
+          </label>
         </div>
       )
     case 'radio':
       return (
-        <div className="mb-4">
-          <Label>{label}</Label>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor={`${type}-${label}`}>Radio</Label>
           <RadioGroup defaultValue="option-one">
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="option-one" />
-              <Label>Option 1</Label>
+              <RadioGroupItem value="option-one" id="option-one" />
+              <Label htmlFor="option-one">Option One</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="option-two" />
-              <Label>Option 2</Label>
+              <RadioGroupItem value="option-two" id="option-two" />
+              <Label htmlFor="option-two">Option Two</Label>
             </div>
           </RadioGroup>
         </div>
       )
     case 'select':
       return (
-        <div className="mb-4">
-          <Label>{label}</Label>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor={`${type}-${label}`}>Theme</Label>
           <Select>
             <SelectTrigger>
               <SelectValue placeholder="Select an option" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="option1">Option 1</SelectItem>
-              <SelectItem value="option2">Option 2</SelectItem>
-              <SelectItem value="option3">Option 3</SelectItem>
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="system">System</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -140,16 +168,24 @@ export default function FormBuilder() {
     ])
   }
 
+  useEffect(() => {
+    formElements.length > 0 && console.log('elements: ', formElements)
+  }, [formElements])
+
+  const handlSubmit = () => {
+    createForm(formElements)
+  }
+
   return (
     <div className="flex h-screen bg-background text-foreground">
       <div
-        className="flex-1 p-8"
+        className="flex-1 p-8 overflow-auto"
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
       >
-        <h2 className="text-2xl font-bold mb-6">Form Preview</h2>
-        <Card className="min-h-[600px] border-2 border-dashed">
-          <CardContent className="p-6">
+        <h2 className="text-3xl font-bold mb-6">Form Preview</h2>
+        <Card className="min-h-[600px] border-2 border-dashed border-muted">
+          <CardContent className="p-6 space-y-4">
             {formElements.length > 0 ? (
               formElements.map((element) => (
                 <FormElementPreview
@@ -159,17 +195,18 @@ export default function FormBuilder() {
                 />
               ))
             ) : (
-              <div className="text-center text-muted-foreground mt-8">
-                Drag elements here to build your form
+              <div className="flex items-center justify-center h-full text-center text-muted-foreground">
+                <p>Drag elements here to build your form</p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
 
-      <Card className="w-64 border-l">
-        <CardContent className="p-4">
-          <h2 className="text-xl font-bold mb-4">Form Elements</h2>
+      <Card className="w-80 border-l rounded-none h-screen overflow-hidden">
+        <CardContent className="p-6">
+          <h2 className="text-2xl font-bold mb-4">Form Elements</h2>
+          <Separator className="my-4" />
           <ScrollArea className="h-[calc(100vh-8rem)]">
             {FORM_ELEMENTS_LIBRARY.map((element) => (
               <DraggableElement
@@ -180,6 +217,13 @@ export default function FormBuilder() {
                 onDragStart={handleDragStart}
               />
             ))}
+            <Button
+              className="w-full mt-8"
+              variant="secondary"
+              onClick={handlSubmit}
+            >
+              Save Changes
+            </Button>
           </ScrollArea>
         </CardContent>
       </Card>
