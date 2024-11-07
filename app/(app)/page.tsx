@@ -12,7 +12,7 @@ export default function Page() {
         <section className="space-y-4 col-span-6 mt-8">
           <div className="space-y-2">
             <Announcement />
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
+            <h1 className="text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-yellow-400 to-pink-600 bg-clip-text text-transparent">
               Thunder Forms
             </h1>
             <h2 className="text-xl md:text-2xl font-bold tracking-tight">
