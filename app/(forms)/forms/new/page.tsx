@@ -125,15 +125,7 @@ export default function FormBuilder() {
           </div>
           <div className="grid w-full items-center gap-1.5">
             <Label>Form Link</Label>
-            <Input
-              readOnly
-              value={`https://${
-                process.env.VERCEL_ENV === 'production' &&
-                process.env.VERCEL_URL
-                  ? process.env.VERCEL_URL
-                  : 'localhost:3000'
-              }/forms/new-form`}
-            />
+            <Input readOnly value={`https://localhost:3000/forms/new-form`} />
           </div>
         </CardContent>
       </Card>
