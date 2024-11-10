@@ -127,7 +127,9 @@ export default function FormBuilder() {
             <Label>Form Link</Label>
             <Input
               readOnly
-              value={`https://${window?.location?.host}/forms/${'new-form'}`}
+              value={`https://${
+                window && window?.location?.host
+              }/forms/${'new-form'}`}
             />
           </div>
         </CardContent>
