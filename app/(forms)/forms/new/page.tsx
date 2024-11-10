@@ -128,7 +128,9 @@ export default function FormBuilder() {
             <Input
               readOnly
               value={`https://${
-                window && window?.location?.host
+                process.env.VERCEL_ENV == 'production'
+                  ? process.env.VERCEL_URL
+                  : 'localhost:3000'
               }/forms/${'new-form'}`}
             />
           </div>
