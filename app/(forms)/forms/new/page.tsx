@@ -17,6 +17,9 @@ import {
 import { FormElementPreview } from '@/components/FormElementPreview'
 import { createForm } from '@/lib/dbUtils'
 import { toast } from 'sonner'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 
 const FORM_ELEMENTS_LIBRARY = [
   { type: 'text', label: 'Text Input', icon: Pencil },
@@ -53,6 +56,11 @@ const DraggableElement = ({
 export default function FormBuilder() {
   const [formElements, setFormElements] = useState<FieldType[]>([])
 
+  const [formName, setFormName] = useState('New form')
+  const [formDescription, setFormDescription] = useState(
+    'Lorem ipsum dolor sit amet'
+  )
+
   const handleDragStart = (e: React.DragEvent, type: string, label: string) => {
     e.dataTransfer.setData('elementType', type)
     e.dataTransfer.setData('elementLabel', label)
@@ -81,11 +89,52 @@ export default function FormBuilder() {
   }, [formElements])
 
   const handlSubmit = () => {
-    createForm('Test Form', 'des', formElements).then((e) => toast(e))
+    if (!formName) {
+      toast.error('Form name is required')
+      return
+    }
+    createForm(formName, formDescription, formElements).then(() =>
+      toast.success('Form saved successfully!')
+    )
   }
 
   return (
     <div className="flex h-screen bg-background text-foreground">
+      {/* Left Side bar with Form Details */}
+      <Card className="w-80 border-l rounded-none h-screen overflow-hidden">
+        <CardContent className="p-6 space-y-4">
+          <h2 className="text-2xl font-bold mb-4">Form Details</h2>
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="formName">Form Name</Label>
+            <Input
+              id="formName"
+              placeholder="Enter form name"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+            />
+          </div>
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="formDescription">Description</Label>
+            <Textarea
+              id="formDescription"
+              placeholder="Enter description"
+              className="max-h-24"
+              value={formDescription}
+              onChange={(e) => setFormDescription(e.target.value)}
+            />
+          </div>
+          <div className="grid w-full items-center gap-1.5">
+            <Label>Form Link</Label>
+            <Input
+              readOnly
+              value={`https://${window?.location?.host}/forms/${
+                formName || 'new-form'
+              }`}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       <div
         className="flex-1 p-8 overflow-auto"
         onDragOver={(e) => e.preventDefault()}
@@ -111,6 +160,7 @@ export default function FormBuilder() {
         </Card>
       </div>
 
+      {/* Right Side bar */}
       <Card className="w-80 border-l rounded-none h-screen overflow-hidden">
         <CardContent className="p-6">
           <h2 className="text-2xl font-bold mb-4">Form Elements</h2>
