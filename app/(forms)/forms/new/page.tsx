@@ -14,9 +14,9 @@ import {
   ChevronDown,
   FileText,
 } from 'lucide-react'
-import { addDoc, collection } from 'firebase/firestore'
-import { db } from '@/config/firebaseConfig'
 import { FormElementPreview } from '@/components/FormElementPreview'
+import { createForm } from '@/lib/dbUtils'
+import { toast } from 'sonner'
 
 const FORM_ELEMENTS_LIBRARY = [
   { type: 'text', label: 'Text Input', icon: Pencil },
@@ -27,17 +27,6 @@ const FORM_ELEMENTS_LIBRARY = [
   { type: 'select', label: 'Dropdown', icon: ChevronDown },
   { type: 'textarea', label: 'Text Area', icon: FileText },
 ]
-
-interface FormElement {
-  id: string
-  type: string
-  label: string
-}
-
-async function createForm(data: FormElement[]) {
-  const docRef = await addDoc(collection(db, 'forms'), { data: data })
-  return docRef.id
-}
 
 const DraggableElement = ({
   type,
@@ -62,7 +51,7 @@ const DraggableElement = ({
 )
 
 export default function FormBuilder() {
-  const [formElements, setFormElements] = useState<FormElement[]>([])
+  const [formElements, setFormElements] = useState<FieldType[]>([])
 
   const handleDragStart = (e: React.DragEvent, type: string, label: string) => {
     e.dataTransfer.setData('elementType', type)
@@ -75,7 +64,13 @@ export default function FormBuilder() {
     const label = e.dataTransfer.getData('elementLabel')
     setFormElements((prev) => [
       ...prev,
-      { id: `${type}-${Date.now()}`, type, label },
+      {
+        id: `${type}-${Date.now()}`,
+        type,
+        label,
+        order: prev.length, // Order based on current length for dynamic order assignment
+        placeholder: `Enter ${label.toLowerCase()}`, // Default placeholder
+      },
     ])
   }
 
@@ -86,7 +81,7 @@ export default function FormBuilder() {
   }, [formElements])
 
   const handlSubmit = () => {
-    createForm(formElements)
+    createForm('Test Form', 'des', formElements).then((e) => toast(e))
   }
 
   return (
