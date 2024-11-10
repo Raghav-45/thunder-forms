@@ -127,9 +127,7 @@ export default function FormBuilder() {
             <Label>Form Link</Label>
             <Input
               readOnly
-              value={`https://${window?.location?.host}/forms/${
-                formName || 'new-form'
-              }`}
+              value={`https://${window?.location?.host}/forms/${'new-form'}`}
             />
           </div>
         </CardContent>
@@ -163,7 +161,7 @@ export default function FormBuilder() {
       {/* Right Side bar */}
       <Card className="w-80 border-l rounded-none h-screen overflow-hidden">
         <CardContent className="p-6">
-          <h2 className="text-2xl font-bold mb-4">Form Elements</h2>
+          <h2 className="text-2xl font-bold mb-4">Elements</h2>
           <Separator className="my-4" />
           <ScrollArea className="h-[calc(100vh-8rem)]">
             {FORM_ELEMENTS_LIBRARY.map((element) => (
