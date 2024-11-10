@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
+import { motion, AnimatePresence, Reorder } from 'framer-motion'
 
 const FORM_ELEMENTS_LIBRARY = [
   { type: 'text', label: 'Text Input', icon: Pencil },
@@ -55,48 +56,39 @@ const DraggableElement = ({
   </Button>
 )
 
-const DraggableFormElement = ({
-  element,
-  index,
-  onDragStart,
-  onDragEnter,
-  onDragEnd,
-  isDragging,
-}: {
-  element: FieldType
-  index: number
-  onDragStart: (index: number) => void
-  onDragEnter: (index: number) => void
-  onDragEnd: () => void
-  isDragging: boolean
-}) => {
-  return (
-    <div
-      draggable
-      onDragStart={() => onDragStart(index)}
-      onDragEnter={() => onDragEnter(index)}
-      onDragEnd={onDragEnd}
-      onDragOver={(e) => e.preventDefault()}
-      className={cn(
-        'relative p-4 border rounded-md mb-4 cursor-move transition-colors',
-        isDragging ? 'opacity-50 border-dashed' : 'opacity-100',
-        'hover:border-primary'
-      )}
-    >
-      <div className="pr-6">
-        <FormElementPreview type={element.type} label={element.label} />
+const DraggableFormElement = motion(
+  React.forwardRef<
+    HTMLDivElement,
+    {
+      element: FieldType
+      value: FieldType
+      isDragging?: boolean
+    }
+  >(({ element, isDragging, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        {...props}
+        className={cn(
+          'relative p-4 border rounded-md mb-4 cursor-move transition-colors',
+          isDragging ? 'opacity-50 border-dashed z-50' : 'opacity-100',
+          'hover:border-primary bg-background'
+        )}
+      >
+        <div className="absolute left-2 top-1/2 -translate-y-1/2">
+          <GripVertical className="w-4 h-4 text-muted-foreground" />
+        </div>
+        <div className="pl-6">
+          <FormElementPreview type={element.type} label={element.label} />
+        </div>
       </div>
-      <div className="absolute right-2 top-1/2 -translate-y-1/2">
-        <GripVertical className="w-4 h-4 text-muted-foreground" />
-      </div>
-    </div>
-  )
-}
+    )
+  })
+)
+DraggableFormElement.displayName = 'DraggableFormElement'
 
 export default function FormBuilder() {
   const [formElements, setFormElements] = useState<FieldType[]>([])
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
-
   const [formName, setFormName] = useState('New form')
   const [formDescription, setFormDescription] = useState(
     'Lorem ipsum dolor sit amet'
@@ -126,34 +118,13 @@ export default function FormBuilder() {
     }
   }
 
-  const handleFormElementDragStart = (index: number) => {
-    setDraggedIndex(index)
-  }
-
-  const handleFormElementDragEnter = (index: number) => {
-    if (draggedIndex === null) return
-
-    setFormElements((prev) => {
-      const newElements = [...prev]
-      const draggedElement = newElements[draggedIndex]
-
-      // Remove the element from its original position
-      newElements.splice(draggedIndex, 1)
-      // Insert it at the new position
-      newElements.splice(index, 0, draggedElement)
-
-      // Update order property for all elements
-      return newElements.map((element, idx) => ({
+  const handleReorder = (reorderedElements: FieldType[]) => {
+    setFormElements(
+      reorderedElements.map((element, index) => ({
         ...element,
-        order: idx,
+        order: index,
       }))
-    })
-
-    setDraggedIndex(index)
-  }
-
-  const handleFormElementDragEnd = () => {
-    setDraggedIndex(null)
+    )
   }
 
   const handlSubmit = () => {
@@ -205,19 +176,38 @@ export default function FormBuilder() {
       >
         <h2 className="text-3xl font-bold mb-6">Form Preview</h2>
         <Card className="min-h-[600px] border-2 border-dashed border-muted">
-          <CardContent className="p-6 space-y-4">
+          <CardContent className="p-6">
             {formElements.length > 0 ? (
-              formElements.map((element, index) => (
-                <DraggableFormElement
-                  key={element.id}
-                  element={element}
-                  index={index}
-                  onDragStart={handleFormElementDragStart}
-                  onDragEnter={handleFormElementDragEnter}
-                  onDragEnd={handleFormElementDragEnd}
-                  isDragging={index === draggedIndex}
-                />
-              ))
+              <Reorder.Group
+                axis="y"
+                values={formElements}
+                onReorder={handleReorder}
+                className="space-y-4"
+              >
+                <AnimatePresence>
+                  {formElements.map((element) => (
+                    <Reorder.Item
+                      key={element.id}
+                      value={element}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      whileDrag={{
+                        scale: 1.02,
+                        boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
+                        cursor: 'grabbing',
+                      }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 300,
+                        damping: 30,
+                      }}
+                    >
+                      <DraggableFormElement element={element} value={element} />
+                    </Reorder.Item>
+                  ))}
+                </AnimatePresence>
+              </Reorder.Group>
             ) : (
               <div className="flex items-center justify-center h-full text-center text-muted-foreground">
                 <p>Drag elements here to build your form</p>
