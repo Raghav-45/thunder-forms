@@ -13,6 +13,7 @@ import {
   CircleDot,
   ChevronDown,
   FileText,
+  GripVertical,
 } from 'lucide-react'
 import { FormElementPreview } from '@/components/FormElementPreview'
 import { createForm } from '@/lib/dbUtils'
@@ -20,6 +21,7 @@ import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
 
 const FORM_ELEMENTS_LIBRARY = [
   { type: 'text', label: 'Text Input', icon: Pencil },
@@ -53,8 +55,47 @@ const DraggableElement = ({
   </Button>
 )
 
+const DraggableFormElement = ({
+  element,
+  index,
+  onDragStart,
+  onDragEnter,
+  onDragEnd,
+  isDragging,
+}: {
+  element: FieldType
+  index: number
+  onDragStart: (index: number) => void
+  onDragEnter: (index: number) => void
+  onDragEnd: () => void
+  isDragging: boolean
+}) => {
+  return (
+    <div
+      draggable
+      onDragStart={() => onDragStart(index)}
+      onDragEnter={() => onDragEnter(index)}
+      onDragEnd={onDragEnd}
+      onDragOver={(e) => e.preventDefault()}
+      className={cn(
+        'relative p-4 border rounded-md mb-4 cursor-move transition-colors',
+        isDragging ? 'opacity-50 border-dashed' : 'opacity-100',
+        'hover:border-primary'
+      )}
+    >
+      <div className="absolute left-2 top-1/2 -translate-y-1/2">
+        <GripVertical className="w-4 h-4 text-muted-foreground" />
+      </div>
+      <div className="pl-6">
+        <FormElementPreview type={element.type} label={element.label} />
+      </div>
+    </div>
+  )
+}
+
 export default function FormBuilder() {
   const [formElements, setFormElements] = useState<FieldType[]>([])
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
 
   const [formName, setFormName] = useState('New form')
   const [formDescription, setFormDescription] = useState(
@@ -70,23 +111,50 @@ export default function FormBuilder() {
     e.preventDefault()
     const type = e.dataTransfer.getData('elementType')
     const label = e.dataTransfer.getData('elementLabel')
-    setFormElements((prev) => [
-      ...prev,
-      {
-        id: `${type}-${Date.now()}`,
-        type,
-        label,
-        order: prev.length, // Order based on current length for dynamic order assignment
-        placeholder: `Enter ${label.toLowerCase()}`, // Default placeholder
-      },
-    ])
+
+    if (type && label) {
+      setFormElements((prev) => [
+        ...prev,
+        {
+          id: `${type}-${Date.now()}`,
+          type,
+          label,
+          order: prev.length,
+          placeholder: `Enter ${label.toLowerCase()}`,
+        },
+      ])
+    }
   }
 
-  useEffect(() => {
-    if (formElements.length > 0) {
-      console.log('elements: ', formElements)
-    }
-  }, [formElements])
+  const handleFormElementDragStart = (index: number) => {
+    setDraggedIndex(index)
+  }
+
+  const handleFormElementDragEnter = (index: number) => {
+    if (draggedIndex === null) return
+
+    setFormElements((prev) => {
+      const newElements = [...prev]
+      const draggedElement = newElements[draggedIndex]
+
+      // Remove the element from its original position
+      newElements.splice(draggedIndex, 1)
+      // Insert it at the new position
+      newElements.splice(index, 0, draggedElement)
+
+      // Update order property for all elements
+      return newElements.map((element, idx) => ({
+        ...element,
+        order: idx,
+      }))
+    })
+
+    setDraggedIndex(index)
+  }
+
+  const handleFormElementDragEnd = () => {
+    setDraggedIndex(null)
+  }
 
   const handlSubmit = () => {
     if (!formName) {
@@ -139,11 +207,15 @@ export default function FormBuilder() {
         <Card className="min-h-[600px] border-2 border-dashed border-muted">
           <CardContent className="p-6 space-y-4">
             {formElements.length > 0 ? (
-              formElements.map((element) => (
-                <FormElementPreview
+              formElements.map((element, index) => (
+                <DraggableFormElement
                   key={element.id}
-                  type={element.type}
-                  label={element.label}
+                  element={element}
+                  index={index}
+                  onDragStart={handleFormElementDragStart}
+                  onDragEnter={handleFormElementDragEnter}
+                  onDragEnd={handleFormElementDragEnd}
+                  isDragging={index === draggedIndex}
                 />
               ))
             ) : (
