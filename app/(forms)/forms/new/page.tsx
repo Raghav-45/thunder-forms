@@ -56,36 +56,36 @@ const DraggableElement = ({
   </Button>
 )
 
-const DraggableFormElement = motion(
-  React.forwardRef<
-    HTMLDivElement,
-    {
-      element: FieldType
-      value: FieldType
-      isDragging?: boolean
-    }
-  >(({ element, isDragging, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        {...props}
-        className={cn(
-          'relative p-4 border rounded-md mb-4 cursor-move transition-colors',
-          isDragging ? 'opacity-50 border-dashed z-50' : 'opacity-100',
-          'hover:border-primary bg-background'
-        )}
-      >
-        <div className="absolute left-2 top-1/2 -translate-y-1/2">
-          <GripVertical className="w-4 h-4 text-muted-foreground" />
-        </div>
-        <div className="pl-6">
-          <FormElementPreview type={element.type} label={element.label} />
-        </div>
+const DraggableFormElementBase = React.forwardRef<
+  HTMLDivElement,
+  {
+    element: FieldType
+    value: FieldType
+    isDragging?: boolean
+  }
+>(({ element, isDragging, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      {...props}
+      className={cn(
+        'relative p-4 border rounded-md mb-4 cursor-move transition-colors',
+        isDragging ? 'opacity-50 border-dashed z-50' : 'opacity-100',
+        'hover:border-primary bg-background'
+      )}
+    >
+      <div className="pr-6">
+        <FormElementPreview type={element.type} label={element.label} />
       </div>
-    )
-  })
-)
-DraggableFormElement.displayName = 'DraggableFormElement'
+      <div className="absolute right-2 top-1/2 -translate-y-1/2">
+        <GripVertical className="w-4 h-4 text-muted-foreground" />
+      </div>
+    </div>
+  )
+})
+
+DraggableFormElementBase.displayName = 'DraggableFormElement'
+const DraggableFormElement = motion(DraggableFormElementBase)
 
 export default function FormBuilder() {
   const [formElements, setFormElements] = useState<FieldType[]>([])
