@@ -22,28 +22,28 @@ export const FormElementPreview = ({
     case 'text':
       return (
         <div className="grid w-full items-center gap-1.5">
-          <Label htmlFor={`${type}-${label}`}>Text</Label>
+          {label && <Label htmlFor={`${type}-${label}`}>{label ?? ''}</Label>}
           <Input type="text" id={`${type}-${label}`} placeholder="Text" />
         </div>
       )
     case 'email':
       return (
         <div className="grid w-full items-center gap-1.5">
-          <Label htmlFor={`${type}-${label}`}>Email</Label>
+          {label && <Label htmlFor={`${type}-${label}`}>{label ?? ''}</Label>}
           <Input type="email" id={`${type}-${label}`} placeholder="Email" />
         </div>
       )
     case 'number':
       return (
         <div className="grid w-full items-center gap-1.5">
-          <Label htmlFor={`${type}-${label}`}>Number</Label>
+          {label && <Label htmlFor={`${type}-${label}`}>{label ?? ''}</Label>}
           <Input type="number" id={`${type}-${label}`} placeholder="Number" />
         </div>
       )
     case 'textarea':
       return (
         <div className="grid w-full items-center gap-1.5">
-          <Label htmlFor={`textarea-${label}`}>Textarea</Label>
+          {label && <Label htmlFor={`textarea-${label}`}>{label ?? ''}</Label>}
           <Textarea
             id={`textarea-${label}`}
             placeholder="Type your message here."
@@ -65,7 +65,7 @@ export const FormElementPreview = ({
     case 'radio':
       return (
         <div className="grid w-full items-center gap-1.5">
-          <Label htmlFor={`${type}-${label}`}>Radio</Label>
+          {label && <Label htmlFor={`${type}-${label}`}>{label ?? ''}</Label>}
           <RadioGroup defaultValue="option-one">
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="option-one" id="option-one" />
