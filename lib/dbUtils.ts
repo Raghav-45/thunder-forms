@@ -1,18 +1,11 @@
 import { db } from '@/config/firebaseConfig'
 import {
   addDoc,
-  //   arrayRemove,
-  //   arrayUnion,
   collection,
-  //   deleteDoc,
   doc,
   getDoc,
   getDocs,
-  //   query,
-  //   serverTimestamp,
-  //   setDoc,
-  //   updateDoc,
-  //   where,
+  updateDoc,
 } from 'firebase/firestore'
 
 const FORMS_COLLECTION = 'forms'
@@ -56,4 +49,23 @@ async function createForm(
   return docRef.id
 }
 
-export { getAllForms, getFormById, createForm }
+// Update a form by ID
+async function updateFormbyId(
+  id: string,
+  name: string,
+  description: string,
+  fields: FieldType[]
+) {
+  const formRef = doc(db, FORMS_COLLECTION, id)
+
+  // Update the form with the new name, description, and fields
+  await updateDoc(formRef, {
+    name: name,
+    description: description,
+    fields: fields,
+  })
+
+  return id // Return the ID of the updated form
+}
+
+export { getAllForms, getFormById, createForm, updateFormbyId }

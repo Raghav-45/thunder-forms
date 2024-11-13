@@ -17,7 +17,7 @@ import {
   X,
 } from 'lucide-react'
 import { FormElementPreview } from '@/components/FormElementPreview'
-import { createForm } from '@/lib/dbUtils'
+import { createForm, updateFormbyId } from '@/lib/dbUtils'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -96,10 +96,12 @@ const ElementEditor = ({
   element,
   onUpdate,
   onClose,
+  onDelete,
 }: {
   element: FieldType
   onUpdate: (id: string, updates: Partial<FieldType>) => void
   onClose: () => void
+  onDelete: (id: string) => void
 }) => {
   return (
     <div className="space-y-4">
@@ -129,6 +131,13 @@ const ElementEditor = ({
             }
           />
         </div>
+        <Button
+          variant="destructive"
+          onClick={() => onDelete(element.id)}
+          className="w-full"
+        >
+          Delete
+        </Button>
       </div>
     </div>
   )
@@ -143,6 +152,8 @@ export default function FormBuilder() {
   const [selectedElementId, setSelectedElementId] = useState<string | null>(
     null
   )
+
+  const [currentFormId, setCurrentFormId] = useState<string | null>(null)
 
   const handleDragStart = (e: React.DragEvent, type: string, label: string) => {
     e.dataTransfer.setData('elementType', type)
@@ -185,6 +196,17 @@ export default function FormBuilder() {
     )
   }
 
+  const handleElementDelete = (id: string) => {
+    setFormElements((prev) => prev.filter((element) => element.id !== id))
+    // setSelectedElementId(null)
+
+    if (formElements && formElements.length <= 1) {
+      setSelectedElementId(formElements[0].id)
+    } else {
+      setSelectedElementId(formElements[formElements.length - 2].id)
+    }
+  }
+
   const handleElementSelect = (id: string) => {
     setSelectedElementId(id)
   }
@@ -198,9 +220,15 @@ export default function FormBuilder() {
       toast.error('Form name is required')
       return
     }
-    createForm(formName, formDescription, formElements).then(() =>
+    if (!currentFormId) {
+      createForm(formName, formDescription, formElements).then((e) => {
+        setCurrentFormId(e)
+        toast.success('New Form created successfully!')
+      })
+    } else {
+      updateFormbyId(currentFormId, formName, formDescription, formElements)
       toast.success('Form saved successfully!')
-    )
+    }
   }
 
   return (
@@ -230,7 +258,12 @@ export default function FormBuilder() {
           </div>
           <div className="grid w-full items-center gap-1.5">
             <Label>Form Link</Label>
-            <Input readOnly value={`https://localhost:3000/forms/new-form`} />
+            <Input
+              readOnly
+              value={`https://localhost:3000/forms/${
+                currentFormId ?? 'new-form'
+              }`}
+            />
           </div>
         </CardContent>
       </Card>
@@ -296,6 +329,7 @@ export default function FormBuilder() {
               element={selectedElement}
               onUpdate={handleElementUpdate}
               onClose={() => setSelectedElementId(null)}
+              onDelete={handleElementDelete}
             />
           ) : (
             <>
