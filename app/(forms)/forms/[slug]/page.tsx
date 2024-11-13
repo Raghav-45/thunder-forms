@@ -35,7 +35,7 @@ interface PageProps {
 }
 
 export default function Page({ params }: PageProps) {
-  const [formData, setFormData] = useState<FieldType[]>()
+  const [formData, setFormData] = useState<FormType>()
   const [loading, setLoading] = useState(true)
   const { slug } = params
 
@@ -44,7 +44,7 @@ export default function Page({ params }: PageProps) {
       try {
         const docSnap = await getDoc(doc(db, 'forms', slug))
         if (docSnap.exists()) {
-          setFormData(docSnap.data().fields as FieldType[])
+          setFormData(docSnap.data() as FormType)
         } else {
           console.log('No such document!')
         }
@@ -63,16 +63,16 @@ export default function Page({ params }: PageProps) {
     <div className="md:container space-y-6 p-10 pb-16">
       <div className="space-y-0.5 md:space-y-1">
         <h2 className="text-2xl md:text-5xl font-bold tracking-tight">
-          Form Preview {slug}
+          {formData && formData.name}
         </h2>
         <p className="text-muted-foreground">
-          What area are you having problems with?
+          {formData?.description ?? 'What area are you having problems with?'}
         </p>
       </div>
       <div className="space-y-4">
         {formData &&
-          formData.length > 0 &&
-          formData.map((element) => (
+          formData?.fields.length > 0 &&
+          formData.fields.map((element) => (
             <FormElementPreview
               key={element.id}
               type={element.type}

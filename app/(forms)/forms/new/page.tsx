@@ -17,7 +17,7 @@ import {
   X,
 } from 'lucide-react'
 import { FormElementPreview } from '@/components/FormElementPreview'
-import { createForm } from '@/lib/dbUtils'
+import { createForm, updateFormbyId } from '@/lib/dbUtils'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -144,6 +144,8 @@ export default function FormBuilder() {
     null
   )
 
+  const [currentFormId, setCurrentFormId] = useState<string | null>(null)
+
   const handleDragStart = (e: React.DragEvent, type: string, label: string) => {
     e.dataTransfer.setData('elementType', type)
     e.dataTransfer.setData('elementLabel', label)
@@ -198,9 +200,15 @@ export default function FormBuilder() {
       toast.error('Form name is required')
       return
     }
-    createForm(formName, formDescription, formElements).then(() =>
+    if (!currentFormId) {
+      createForm(formName, formDescription, formElements).then((e) => {
+        setCurrentFormId(e)
+        toast.success('New Form created successfully!')
+      })
+    } else {
+      updateFormbyId(currentFormId, formName, formDescription, formElements)
       toast.success('Form saved successfully!')
-    )
+    }
   }
 
   return (
@@ -230,7 +238,12 @@ export default function FormBuilder() {
           </div>
           <div className="grid w-full items-center gap-1.5">
             <Label>Form Link</Label>
-            <Input readOnly value={`https://localhost:3000/forms/new-form`} />
+            <Input
+              readOnly
+              value={`https://localhost:3000/forms/${
+                currentFormId ?? 'new-form'
+              }`}
+            />
           </div>
         </CardContent>
       </Card>
