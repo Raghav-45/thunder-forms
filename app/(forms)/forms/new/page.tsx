@@ -96,10 +96,12 @@ const ElementEditor = ({
   element,
   onUpdate,
   onClose,
+  onDelete,
 }: {
   element: FieldType
   onUpdate: (id: string, updates: Partial<FieldType>) => void
   onClose: () => void
+  onDelete: (id: string) => void
 }) => {
   return (
     <div className="space-y-4">
@@ -129,6 +131,13 @@ const ElementEditor = ({
             }
           />
         </div>
+        <Button
+          variant="destructive"
+          onClick={() => onDelete(element.id)}
+          className="w-full"
+        >
+          Delete
+        </Button>
       </div>
     </div>
   )
@@ -185,6 +194,17 @@ export default function FormBuilder() {
         element.id === id ? { ...element, ...updates } : element
       )
     )
+  }
+
+  const handleElementDelete = (id: string) => {
+    setFormElements((prev) => prev.filter((element) => element.id !== id))
+    // setSelectedElementId(null)
+
+    if (formElements && formElements.length <= 1) {
+      setSelectedElementId(formElements[0].id)
+    } else {
+      setSelectedElementId(formElements[formElements.length - 2].id)
+    }
   }
 
   const handleElementSelect = (id: string) => {
@@ -309,6 +329,7 @@ export default function FormBuilder() {
               element={selectedElement}
               onUpdate={handleElementUpdate}
               onClose={() => setSelectedElementId(null)}
+              onDelete={handleElementDelete}
             />
           ) : (
             <>
