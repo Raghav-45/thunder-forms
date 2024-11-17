@@ -28,4 +28,4 @@ export type FormFieldType = {
   className?: string
 }
 
-export type FieldType = { name: string; isNew: boolean; index?: number }
+export type FieldType = { name: string; isAvaliable: boolean; index?: number }
