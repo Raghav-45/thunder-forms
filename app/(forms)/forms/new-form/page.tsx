@@ -1,12 +1,9 @@
 'use client'
 
-import { EditFieldDialog } from '@/components/edit-field-dialog'
 import { EditFieldForm } from '@/components/edit-field-form'
 import { FormFieldOrGroup } from '@/components/field-item'
 import { FieldSelector } from '@/components/field-selector'
 import { FormPreview } from '@/components/form-preview'
-import { FormPreview as FormPreviewwithEditing } from '@/components/form-editingView'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -176,17 +173,11 @@ export default function FormBuilder() {
           <CardContent className="p-6">
             {formFields.length > 0 ? (
               <div className="overflow-y-auto flex-1">
-                {whichTabIsOpen == 'preview' ? (
-                  <FormPreview
-                    formFields={formFields}
-                    onClickEdit={(field) => openEditingWindow(field)}
-                  />
-                ) : (
-                  <FormPreviewwithEditing
-                    formFields={formFields}
-                    onClickEdit={(field) => openEditingWindow(field)}
-                  />
-                )}
+                <FormPreview
+                  formFields={formFields}
+                  onClickEdit={(field) => openEditingWindow(field)}
+                  behaveAsPreview={whichTabIsOpen === 'preview'}
+                />
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-center text-muted-foreground">

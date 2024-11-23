@@ -21,6 +21,7 @@ export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 export type FormPreviewProps = {
   formFields: FormFieldOrGroup[]
   onClickEdit: (fields: FormFieldType) => void
+  behaveAsPreview: boolean
 }
 
 export const renderFormFields = (
@@ -72,6 +73,7 @@ export const renderFormFields = (
               <Button
                 variant="ghost"
                 size="icon"
+                type="button"
                 onClick={() => console.log('onClickEdit')}
               >
                 <LuPencil />
@@ -79,6 +81,7 @@ export const renderFormFields = (
               <Button
                 variant="ghost"
                 size="icon"
+                type="button"
                 // onClick={removeColumn}
               >
                 <LuTrash2 />
@@ -122,6 +125,7 @@ export const renderFormFields = (
             <Button
               variant="ghost"
               size="icon"
+              type="button"
               onClick={() => onClickEdit(fieldOrGroup)}
             >
               <LuPencil />
@@ -129,6 +133,7 @@ export const renderFormFields = (
             <Button
               variant="ghost"
               size="icon"
+              type="button"
               // onClick={removeColumn}
             >
               <LuTrash2 />
@@ -143,6 +148,7 @@ export const renderFormFields = (
 export const FormPreview: React.FC<FormPreviewProps> = ({
   formFields,
   onClickEdit,
+  behaveAsPreview = false, // TODO: will use this variable for handling the preview functionality with ease
 }) => {
   // Generate Zod schema dynamically based on form fields
   const formSchema = generateZodSchema(formFields)
@@ -180,7 +186,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
               className="space-y-2 w-full mx-auto"
             >
               {renderFormFields(formFields, onClickEdit, form)}
-              <Button type="submit">Submit</Button>
+              <Button>Submit</Button>
             </form>
           </Form>
         )}

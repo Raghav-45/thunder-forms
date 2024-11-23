@@ -160,66 +160,66 @@ export const RenderFormField = (field: FormFieldType, form: any) => {
           <FormMessage />
         </FormItem>
       )
-    // case 'Combobox':
-    //   return (
-    //     <FormItem className="flex flex-col">
-    //       <div>
-    //         <FormLabel>{field.label}</FormLabel> {field.required && '*'}
-    //       </div>{' '}
-    //       <Popover>
-    //         <PopoverTrigger asChild>
-    //           <FormControl>
-    //             <Button
-    //               variant="outline"
-    //               role="combobox"
-    //               className={cn(
-    //                 'w-full justify-between',
-    //                 !value && 'text-muted-foreground'
-    //               )}
-    //             >
-    //               {value
-    //                 ? languages.find((language) => language.value === value)
-    //                     ?.label
-    //                 : 'Select language'}
-    //               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-    //             </Button>
-    //           </FormControl>
-    //         </PopoverTrigger>
-    //         <PopoverContent className="w-[200px] p-0">
-    //           <Command>
-    //             <CommandInput placeholder="Search language..." />
-    //             <CommandList>
-    //               <CommandEmpty>No language found.</CommandEmpty>
-    //               <CommandGroup>
-    //                 {languages.map((language) => (
-    //                   <CommandItem
-    //                     value={language.label}
-    //                     key={language.value}
-    //                     onSelect={() => {
-    //                       setValue(language.value)
-    //                       form.setValue(field.name, language.value)
-    //                     }}
-    //                   >
-    //                     <Check
-    //                       className={cn(
-    //                         'mr-2 h-4 w-4',
-    //                         language.value === value
-    //                           ? 'opacity-100'
-    //                           : 'opacity-0'
-    //                       )}
-    //                     />
-    //                     {language.label}
-    //                   </CommandItem>
-    //                 ))}
-    //               </CommandGroup>
-    //             </CommandList>
-    //           </Command>
-    //         </PopoverContent>
-    //       </Popover>
-    //       <FormDescription>{field.description}</FormDescription>
-    //       <FormMessage />
-    //     </FormItem>
-    //   )
+    case 'Combobox':
+      return (
+        <FormItem className="flex flex-col">
+          <div>
+            <FormLabel>{field.label}</FormLabel> {field.required && '*'}
+          </div>{' '}
+          <Popover>
+            <PopoverTrigger asChild>
+              <FormControl>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className={cn(
+                    'w-full justify-between',
+                    !value && 'text-muted-foreground'
+                  )}
+                >
+                  {value
+                    ? languages.find((language) => language.value === value)
+                        ?.label
+                    : 'Select language'}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </FormControl>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0">
+              <Command>
+                <CommandInput placeholder="Search language..." />
+                <CommandList>
+                  <CommandEmpty>No language found.</CommandEmpty>
+                  <CommandGroup>
+                    {languages.map((language) => (
+                      <CommandItem
+                        value={language.label}
+                        key={language.value}
+                        onSelect={() => {
+                          setValue(language.value)
+                          form.setValue(field.name, language.value)
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            'mr-2 h-4 w-4',
+                            language.value === value
+                              ? 'opacity-100'
+                              : 'opacity-0'
+                          )}
+                        />
+                        {language.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          <FormDescription>{field.description}</FormDescription>
+          <FormMessage />
+        </FormItem>
+      )
     // case 'Date Picker':
     //   return (
     //     <FormItem className="flex flex-col">
