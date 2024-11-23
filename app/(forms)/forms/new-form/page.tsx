@@ -4,7 +4,8 @@ import { EditFieldForm } from '@/components/edit-field-form'
 import { FormFieldOrGroup } from '@/components/field-item'
 import { FieldSelector } from '@/components/field-selector'
 import { FormPreview } from '@/components/form-preview'
-import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -19,9 +20,17 @@ import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { defaultFieldConfig } from '@/constants'
 import { FormFieldType } from '@/types/types'
+import { SaveIcon } from 'lucide-react'
 import { useState } from 'react'
 
 export default function FormBuilder() {
+  const [formId, setFormId] = useState<string | null>(null)
+  const [formName, setFormName] = useState('New form')
+  const [formDescription, setFormDescription] = useState(
+    'Lorem ipsum dolor sit amet'
+  )
+  // BASIC FORM DETAILS
+
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
   const [selectedField, setSelectedField] = useState<FormFieldType | null>(null)
   const [isEditingWindowOpen, setIsEditingWindowOpen] = useState(false)
@@ -127,28 +136,33 @@ export default function FormBuilder() {
     <div className="flex h-screen bg-background text-foreground">
       {/* Left Side bar with Form Details */}
       <Card className="w-80 border-l rounded-none h-screen overflow-hidden">
-        <CardContent className="p-6 space-y-4">
-          <h2 className="text-2xl font-bold mb-4">Form Details</h2>
+        <CardContent className="p-4 pt-6 space-y-4">
+          <div className="flex flex-row justify-between mb-8">
+            <h2 className="text-2xl font-bold">Form Settings</h2>
+            <Button size="sm" variant="secondary">
+              <SaveIcon /> Save Form
+            </Button>
+          </div>
           <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="formName">Form Name</Label>
+            <Label htmlFor="formName">Form Title</Label>
             <Input
               id="formName"
               placeholder="Enter form name"
-              //   value={formName}
-              //   onChange={(e) => setFormName(e.target.value)}
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
             />
           </div>
           <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="formDescription">Description</Label>
+            <Label htmlFor="formDescription">Form Description</Label>
             <Textarea
               id="formDescription"
               placeholder="Enter description"
               className="max-h-24"
-              //   value={formDescription}
-              //   onChange={(e) => setFormDescription(e.target.value)}
+              value={formDescription}
+              onChange={(e) => setFormDescription(e.target.value)}
             />
           </div>
-          <div className="grid w-full items-center gap-1.5">
+          {/* <div className="grid w-full items-center gap-1.5">
             <Label>Form Link</Label>
             <Input
               readOnly
@@ -156,7 +170,7 @@ export default function FormBuilder() {
               //     currentFormId ?? 'new-form'
               //   }`}
             />
-          </div>
+          </div> */}
         </CardContent>
       </Card>
 
@@ -202,8 +216,11 @@ export default function FormBuilder() {
 
       {/* Right Side bar */}
       <Card className="w-80 border-l rounded-none h-screen overflow-hidden">
-        <CardContent className="p-6">
-          <h2 className="text-2xl font-bold mb-4">Elements</h2>
+        <CardContent className="p-4 pt-6">
+          <h2 className="text-2xl font-bold">Available Fields</h2>
+          <CardDescription>
+            Select fields from the list to add to your form
+          </CardDescription>
           <Separator className="my-4" />
           <ScrollArea className="h-[calc(100vh-8rem)]">
             <div className="flex flex-row">
