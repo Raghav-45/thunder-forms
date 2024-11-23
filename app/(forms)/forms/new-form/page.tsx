@@ -1,10 +1,11 @@
 'use client'
 
 import { EditFieldDialog } from '@/components/edit-field-dialog'
+import { EditFieldForm } from '@/components/edit-field-form'
 import { FormFieldOrGroup } from '@/components/field-item'
 import { FieldSelector } from '@/components/field-selector'
-import { FormFieldList } from '@/components/form-field-list'
 import { FormPreview } from '@/components/form-preview'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,20 +13,19 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { defaultFieldConfig } from '@/constants'
-import { useMediaQuery } from '@/hooks/use-media-query'
 import { FormFieldType } from '@/types/types'
 import { useState } from 'react'
 
 export default function FormBuilder() {
-  const isDesktop = useMediaQuery('(min-width: 768px)')
-
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
   const [selectedField, setSelectedField] = useState<FormFieldType | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const addFormField = (variant: string, index: number) => {
+    // Generate a unique field name using a random number
     const newFieldName = `name_${Math.random().toString().slice(-10)}`
 
+    // Retrieve default configuration (label, description, placeholder) for the selected field variant
     const { label, description, placeholder } = defaultFieldConfig[variant] || {
       label: '',
       description: '',
@@ -33,21 +33,22 @@ export default function FormBuilder() {
     }
 
     const newField: FormFieldType = {
-      checked: true,
-      description: description || '',
-      disabled: false,
-      label: label || newFieldName,
-      name: newFieldName,
-      onChange: () => {},
-      onSelect: () => {},
-      placeholder: placeholder || 'Placeholder',
-      required: true,
-      rowIndex: index,
-      setValue: () => {},
-      type: '',
-      value: '',
-      variant,
+      checked: true, // Field is initially checked
+      description: description || '', // Use default or fallback to an empty string
+      disabled: false, // Field is enabled by default
+      label: label || newFieldName, // Use label from config or fallback to generated field name
+      name: newFieldName, // Unique field name
+      onChange: () => {}, // Placeholder for the onChange handler
+      onSelect: () => {}, // Placeholder for the onSelect handler
+      placeholder: placeholder || 'Placeholder', // Default placeholder if not provided
+      required: true, // Field is required by default
+      rowIndex: index, // Index to track field's position
+      setValue: () => {}, // Placeholder for the setValue handler
+      type: '', // Type of the field (left empty for now)
+      value: '', // Default value (empty)
+      variant, // Field type/variant (e.g., text, checkbox, etc.)
     }
+    // Appending the new field to the existing formFields
     setFormFields([...formFields, newField])
   }
 
@@ -102,16 +103,6 @@ export default function FormBuilder() {
     setIsDialogOpen(false)
   }
 
-  const FieldSelectorWithSeparator = ({
-    addFormField,
-  }: {
-    addFormField: (variant: string, index?: number) => void
-  }) => (
-    <div className="flex flex-row">
-      <FieldSelector addFormField={addFormField} />
-    </div>
-  )
-
   return (
     <div className="flex h-screen bg-background text-foreground">
       {/* Left Side bar with Form Details */}
@@ -159,14 +150,10 @@ export default function FormBuilder() {
           <CardContent className="p-6">
             {formFields.length > 0 ? (
               <div className="overflow-y-auto flex-1">
-                {/* <FormFieldList
+                <FormPreview
                   formFields={formFields}
-                  setFormFields={setFormFields}
-                  updateFormField={updateFormField}
-                  openEditDialog={openEditDialog}
-                /> */}
-
-                <FormPreview formFields={formFields} />
+                  // onClickEdit={(e) => setSelectedField(formFields[0])}
+                />
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-center text-muted-foreground">
@@ -180,21 +167,26 @@ export default function FormBuilder() {
       {/* Right Side bar */}
       <Card className="w-80 border-l rounded-none h-screen overflow-hidden">
         <CardContent className="p-6">
+          <EditFieldForm field={selectedField} />
+
+          <Button
+            onClick={() =>
+              formFields.length > 0 && setSelectedField(formFields[0])
+            }
+          >
+            test
+          </Button>
+
           <h2 className="text-2xl font-bold mb-4">Elements</h2>
           <Separator className="my-4" />
           <ScrollArea className="h-[calc(100vh-8rem)]">
-            <FieldSelectorWithSeparator
-              addFormField={(variant: string, index: number = 0) =>
-                addFormField(variant, index)
-              }
-            />
-            {/* <Button
-              className="w-full mt-8"
-              variant="secondary"
-              //   onClick={handlSubmit}
-            >
-              Save Changes
-            </Button> */}
+            <div className="flex flex-row">
+              <FieldSelector
+                addFormField={(variant: string, index: number = 0) =>
+                  addFormField(variant, index)
+                }
+              />
+            </div>
           </ScrollArea>
         </CardContent>
       </Card>

@@ -20,14 +20,10 @@ export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
 export type FormPreviewProps = {
   formFields: FormFieldOrGroup[]
-  openEditDialog: (field: FormFieldType) => void
+  onClickEdit: (field: FormFieldType) => void
 }
 
-const renderFormFields = (
-  fields: FormFieldOrGroup[],
-  openEditDialog: (field: FormFieldType) => void,
-  form: any
-) => {
+export const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
   return fields.map((fieldOrGroup, index) => {
     if (Array.isArray(fieldOrGroup)) {
       // Calculate column span based on number of fields in the group
@@ -72,7 +68,7 @@ const renderFormFields = (
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => openEditDialog(field)}
+                onClick={() => console.log(field)}
               >
                 <LuPencil />
               </Button>
@@ -122,7 +118,7 @@ const renderFormFields = (
             <Button
               variant="ghost"
               size="icon"
-              // onClick={() => openEditDialog(field)}
+              onClick={() => console.log(fields)}
             >
               <LuPencil />
             </Button>
@@ -140,20 +136,21 @@ const renderFormFields = (
   })
 }
 
-export const FormPreview: React.FC<FormPreviewProps> = ({
-  formFields,
-  openEditDialog,
-}) => {
+export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
+  // Generate Zod schema dynamically based on form fields
   const formSchema = generateZodSchema(formFields)
 
+  // Generate default values for form initialization
   const defaultVals = generateDefaultValues(formFields)
 
+  // Initialize React Hook Form with dynamic schema and default values
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultVals,
   })
 
-  function onSubmit(data: any) {
+  // Submit handler function
+  function onSubmit(data: z.infer<typeof formSchema>) {
     try {
       toast(
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
@@ -169,20 +166,16 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
   return (
     <div className="w-full h-full col-span-1 rounded-xl flex justify-center">
       <div className="space-y-4 h-full w-full md:max-h-[70vh] overflow-auto">
-        {formFields.length > 0 ? (
+        {formFields.length > 0 && (
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-2 py-5 w-full mx-auto"
+              className="space-y-2 w-full mx-auto"
             >
-              {renderFormFields(formFields, openEditDialog, form)}
+              {renderFormFields(formFields, form)}
               <Button type="submit">Submit</Button>
             </form>
           </Form>
-        ) : (
-          <div className="h-[50vh] flex justify-center items-center">
-            <p>No form element selected yet.</p>
-          </div>
         )}
       </div>
     </div>
