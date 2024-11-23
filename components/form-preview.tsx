@@ -21,12 +21,14 @@ export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 export type FormPreviewProps = {
   formFields: FormFieldOrGroup[]
   onClickEdit: (fields: FormFieldType) => void
+  onClickRemove: (fields: FormFieldType) => void
   behaveAsPreview: boolean
 }
 
 export const renderFormFields = (
   fields: FormFieldOrGroup[],
   onClickEdit: (fields: FormFieldType) => void,
+  onClickRemove: (fields: FormFieldType) => void,
   form: any
 ) => {
   return fields.map((fieldOrGroup, index) => {
@@ -108,7 +110,7 @@ export const renderFormFields = (
             control={form.control}
             name={fieldOrGroup.name}
             render={({ field: formField }) => (
-              <FormItem className="col-span-12 w-full pr-20">
+              <FormItem className="col-span-12 w-full pr-28">
                 <FormControl>
                   {React.cloneElement(
                     RenderFormField(fieldOrGroup, form) as React.ReactElement,
@@ -121,7 +123,7 @@ export const renderFormFields = (
             )}
           />
 
-          <div className="absolute right-2 top-1/2 -translate-y-1/2">
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 space-x-2 mr-4">
             <Button
               variant="ghost"
               size="icon"
@@ -131,10 +133,10 @@ export const renderFormFields = (
               <LuPencil />
             </Button>
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
               type="button"
-              // onClick={removeColumn}
+              onClick={() => onClickRemove(fieldOrGroup)}
             >
               <LuTrash2 />
             </Button>
@@ -148,6 +150,7 @@ export const renderFormFields = (
 export const FormPreview: React.FC<FormPreviewProps> = ({
   formFields,
   onClickEdit,
+  onClickRemove,
   behaveAsPreview = false, // TODO: will use this variable for handling the preview functionality with ease
 }) => {
   // Generate Zod schema dynamically based on form fields
@@ -165,11 +168,13 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
   // Submit handler function
   function onSubmit(data: z.infer<typeof formSchema>) {
     try {
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+      toast.custom(() => (
+        <pre className="w-[340px] rounded-lg bg-neutral-800 px-4 py-2">
+          <code className="text-white font-mono text-xs">
+            {JSON.stringify(data, null, 2)}
+          </code>
         </pre>
-      )
+      ))
     } catch (error) {
       console.error('Form submission error', error)
       toast.error('Failed to submit the form. Please try again.')
@@ -185,7 +190,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-2 w-full mx-auto"
             >
-              {renderFormFields(formFields, onClickEdit, form)}
+              {renderFormFields(formFields, onClickEdit, onClickRemove, form)}
               <Button>Submit</Button>
             </form>
           </Form>

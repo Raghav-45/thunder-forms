@@ -112,6 +112,18 @@ export default function FormBuilder() {
   //   setIsDialogOpen(false)
   // }
 
+  const removeFormField = (fieldToRemove: FormFieldType) => {
+    setFormFields((prevFields) =>
+      prevFields.filter((field) => {
+        if (Array.isArray(field)) {
+          return field.every((subField) => subField.name !== fieldToRemove.name)
+        } else {
+          return field.name !== fieldToRemove.name
+        }
+      })
+    )
+  }
+
   return (
     <div className="flex h-screen bg-background text-foreground">
       {/* Left Side bar with Form Details */}
@@ -176,6 +188,7 @@ export default function FormBuilder() {
                 <FormPreview
                   formFields={formFields}
                   onClickEdit={(field) => openEditingWindow(field)}
+                  onClickRemove={(field) => removeFormField(field)}
                   behaveAsPreview={whichTabIsOpen === 'preview'}
                 />
               </div>
