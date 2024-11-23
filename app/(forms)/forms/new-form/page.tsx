@@ -19,9 +19,11 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { defaultFieldConfig } from '@/constants'
+import { createForm, updateFormbyId } from '@/lib/dbUtils'
 import { FormFieldType } from '@/types/types'
 import { SaveIcon } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 export default function FormBuilder() {
   const [formId, setFormId] = useState<string | null>(null)
@@ -132,6 +134,24 @@ export default function FormBuilder() {
     )
   }
 
+  const handleSaveForm = () => {
+    console.log(formFields)
+
+    if (!formName) {
+      toast.error('Form name is required')
+      return
+    }
+    if (!formId) {
+      createForm(formName, formDescription, formFields).then((e) => {
+        setFormId(e)
+        toast.success('New Form created successfully!')
+      })
+    } else {
+      updateFormbyId(formId, formName, formDescription, formFields)
+      toast.success('Form saved successfully!')
+    }
+  }
+
   return (
     <div className="flex h-screen bg-background text-foreground">
       {/* Left Side bar with Form Details */}
@@ -139,7 +159,7 @@ export default function FormBuilder() {
         <CardContent className="p-4 pt-6 space-y-4">
           <div className="flex flex-row justify-between mb-8">
             <h2 className="text-2xl font-bold">Form Settings</h2>
-            <Button size="sm" variant="secondary">
+            <Button size="sm" variant="secondary" onClick={handleSaveForm}>
               <SaveIcon /> Save Form
             </Button>
           </div>
@@ -162,15 +182,13 @@ export default function FormBuilder() {
               onChange={(e) => setFormDescription(e.target.value)}
             />
           </div>
-          {/* <div className="grid w-full items-center gap-1.5">
+          <div className="grid w-full items-center gap-1.5">
             <Label>Form Link</Label>
             <Input
+              value={`https://localhost:3000/forms/${formId ?? 'new-form'}`}
               readOnly
-              //   value={`https://localhost:3000/forms/${
-              //     currentFormId ?? 'new-form'
-              //   }`}
             />
-          </div> */}
+          </div>
         </CardContent>
       </Card>
 
