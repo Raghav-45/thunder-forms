@@ -153,6 +153,7 @@ export default function FormBuilder() {
                 <FormPreview
                   formFields={formFields}
                   // onClickEdit={(e) => setSelectedField(formFields[0])}
+                  onClickEdit={(field) => setSelectedField(field)}
                 />
               </div>
             ) : (
@@ -166,29 +167,31 @@ export default function FormBuilder() {
 
       {/* Right Side bar */}
       <Card className="w-80 border-l rounded-none h-screen overflow-hidden">
-        <CardContent className="p-6">
-          <EditFieldForm field={selectedField} />
-
-          <Button
-            onClick={() =>
-              formFields.length > 0 && setSelectedField(formFields[0])
-            }
-          >
-            test
-          </Button>
-
-          <h2 className="text-2xl font-bold mb-4">Elements</h2>
-          <Separator className="my-4" />
-          <ScrollArea className="h-[calc(100vh-8rem)]">
-            <div className="flex flex-row">
-              <FieldSelector
-                addFormField={(variant: string, index: number = 0) =>
-                  addFormField(variant, index)
-                }
-              />
-            </div>
-          </ScrollArea>
-        </CardContent>
+        {selectedField !== null ? (
+          <EditFieldForm
+            field={selectedField}
+            onDismiss={() => {
+              setSelectedField(null)
+            }}
+            onEditingField={(editedField) => {
+              handleSaveField(editedField)
+            }}
+          />
+        ) : (
+          <CardContent className="p-6">
+            <h2 className="text-2xl font-bold mb-4">Elements</h2>
+            <Separator className="my-4" />
+            <ScrollArea className="h-[calc(100vh-8rem)]">
+              <div className="flex flex-row">
+                <FieldSelector
+                  addFormField={(variant: string, index: number = 0) =>
+                    addFormField(variant, index)
+                  }
+                />
+              </div>
+            </ScrollArea>
+          </CardContent>
+        )}
       </Card>
       <EditFieldDialog
         isOpen={isDialogOpen}

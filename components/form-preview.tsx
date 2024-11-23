@@ -20,10 +20,14 @@ export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
 export type FormPreviewProps = {
   formFields: FormFieldOrGroup[]
-  onClickEdit: (field: FormFieldType) => void
+  onClickEdit: (fields: FormFieldType) => void
 }
 
-export const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
+export const renderFormFields = (
+  fields: FormFieldOrGroup[],
+  onClickEdit: (fields: FormFieldType) => void,
+  form: any
+) => {
   return fields.map((fieldOrGroup, index) => {
     if (Array.isArray(fieldOrGroup)) {
       // Calculate column span based on number of fields in the group
@@ -68,7 +72,7 @@ export const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => console.log(field)}
+                onClick={() => console.log('onClickEdit')}
               >
                 <LuPencil />
               </Button>
@@ -118,7 +122,7 @@ export const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => console.log(fields)}
+              onClick={() => onClickEdit(fieldOrGroup)}
             >
               <LuPencil />
             </Button>
@@ -136,7 +140,10 @@ export const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
   })
 }
 
-export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
+export const FormPreview: React.FC<FormPreviewProps> = ({
+  formFields,
+  onClickEdit,
+}) => {
   // Generate Zod schema dynamically based on form fields
   const formSchema = generateZodSchema(formFields)
 
@@ -172,7 +179,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-2 w-full mx-auto"
             >
-              {renderFormFields(formFields, form)}
+              {renderFormFields(formFields, onClickEdit, form)}
               <Button type="submit">Submit</Button>
             </form>
           </Form>
