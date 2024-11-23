@@ -61,6 +61,7 @@ import {
   ChevronsUpDown,
   // Paperclip,
 } from 'lucide-react'
+import { Label } from './ui/label'
 // import { TagsInput } from '@/components/ui/tags-input'
 // import {
 //   MultiSelector,
@@ -116,9 +117,9 @@ const languages = [
 //   )
 // }
 
-export const RenderFormField = (field: FormFieldType, form: any) => {
-  const [checked, setChecked] = useState<boolean>(field.checked)
-  const [value, setValue] = useState<typeof field.value>(field.value)
+export const RenderFormFieldEditingView = (field: FormFieldType) => {
+  // const [checked, setChecked] = useState<boolean>(field.checked)
+  // const [value, setValue] = useState<typeof field.value>(field.value)
   // const [selectedValues, setSelectedValues] = useState<string[]>(['React'])
   // const [tagsValue, setTagsValue] = useState<string[]>([])
   // const [files, setFiles] = useState<File[] | null>(null) // Initialize to null or use [] for an empty array
@@ -138,27 +139,31 @@ export const RenderFormField = (field: FormFieldType, form: any) => {
   switch (field.variant) {
     case 'Checkbox':
       return (
-        <FormItem
+        <div
           className={cn(
             'flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4',
             field.className
           )}
         >
-          <FormControl>
-            <Checkbox
-              checked={checked} // Ensure this is handled as boolean
-              onCheckedChange={() => {
-                setChecked(!checked)
-              }}
-              disabled={field.disabled}
-            />
-          </FormControl>
+          <Checkbox
+            // checked={checked} // Ensure this is handled as boolean
+            // onCheckedChange={() => {
+            //   setChecked(!checked)
+            // }}
+            disabled={field.disabled}
+          />
           <div className="space-y-1 leading-none">
-            <FormLabel>{field.label}</FormLabel> {field.required && '*'}
-            <FormDescription>{field.description}</FormDescription>
+            {/* <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              {`${field.label} ${field.required && '*'}`}
+            </label> */}
+            <Label>{field.label}</Label> {field.required && '*'}
+            {field.description && (
+              <p className="text-[0.8rem] text-muted-foreground">
+                {field.description}
+              </p>
+            )}
           </div>
-          <FormMessage />
-        </FormItem>
+        </div>
       )
     // case 'Combobox':
     //   return (
@@ -195,10 +200,10 @@ export const RenderFormField = (field: FormFieldType, form: any) => {
     //                   <CommandItem
     //                     value={language.label}
     //                     key={language.value}
-    //                     onSelect={() => {
-    //                       setValue(language.value)
-    //                       form.setValue(field.name, language.value)
-    //                     }}
+    //                     // onSelect={() => {
+    //                     //   setValue(language.value)
+    //                     //   form.setValue(field.name, language.value)
+    //                     // }}
     //                   >
     //                     <Check
     //                       className={cn(
@@ -322,18 +327,19 @@ export const RenderFormField = (field: FormFieldType, form: any) => {
     //   )
     case 'Input':
       return (
-        <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && '*'}
-          <FormControl>
-            <Input
-              placeholder={field.placeholder}
-              disabled={field.disabled}
-              type={field?.type}
-            />
-          </FormControl>
-          <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
-        </FormItem>
+        <div className="space-y-2">
+          <Label>{field.label}</Label> {field.required && '*'}
+          <Input
+            placeholder={field.placeholder}
+            disabled={field.disabled}
+            type={field?.type}
+          />
+          {field.description && (
+            <p className="text-[0.8rem] text-muted-foreground">
+              {field.description}
+            </p>
+          )}
+        </div>
       )
     // case 'Input OTP':
     //   return (
@@ -412,23 +418,24 @@ export const RenderFormField = (field: FormFieldType, form: any) => {
     //   )
     case 'Select':
       return (
-        <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && '*'}
+        <div className="space-y-2">
+          <Label>{field.label}</Label> {field.required && '*'}
           <Select onValueChange={field.onChange} defaultValue="m@example.com">
-            <FormControl>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a verified email to display" />
-              </SelectTrigger>
-            </FormControl>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a verified email to display" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="m@example.com">m@example.com</SelectItem>
               <SelectItem value="m@google.com">m@google.com</SelectItem>
               <SelectItem value="m@support.com">m@support.com</SelectItem>
             </SelectContent>
+            {field.description && (
+              <p className="text-[0.8rem] text-muted-foreground">
+                {field.description}
+              </p>
+            )}
           </Select>
-          <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
-        </FormItem>
+        </div>
       )
     // case 'Slider':
     //   const min = field.min || 0

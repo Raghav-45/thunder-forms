@@ -5,11 +5,19 @@ import { EditFieldForm } from '@/components/edit-field-form'
 import { FormFieldOrGroup } from '@/components/field-item'
 import { FieldSelector } from '@/components/field-selector'
 import { FormPreview } from '@/components/form-preview'
+import { FormPreview as FormPreviewwithEditing } from '@/components/form-editingView'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { defaultFieldConfig } from '@/constants'
@@ -19,7 +27,11 @@ import { useState } from 'react'
 export default function FormBuilder() {
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
   const [selectedField, setSelectedField] = useState<FormFieldType | null>(null)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isEditingWindowOpen, setIsEditingWindowOpen] = useState(false)
+
+  const [whichTabIsOpen, setWhichTabIsOpen] = useState<'editing' | 'preview'>(
+    'editing'
+  )
 
   const addFormField = (variant: string, index: number) => {
     // Generate a unique field name using a random number
@@ -88,20 +100,20 @@ export default function FormBuilder() {
     setFormFields(updatedFields)
   }
 
-  const openEditDialog = (field: FormFieldType) => {
+  const openEditingWindow = (field: FormFieldType) => {
     setSelectedField(field)
-    setIsDialogOpen(true)
+    setIsEditingWindowOpen(true)
   }
 
-  const handleSaveField = (updatedField: FormFieldType) => {
-    if (selectedField) {
-      const path = findFieldPath(formFields, selectedField.name)
-      if (path) {
-        updateFormField(path, updatedField)
-      }
-    }
-    setIsDialogOpen(false)
-  }
+  // const handleSaveField = (updatedField: FormFieldType) => {
+  //   if (selectedField) {
+  //     const path = findFieldPath(formFields, selectedField.name)
+  //     if (path) {
+  //       updateFormField(path, updatedField)
+  //     }
+  //   }
+  //   setIsDialogOpen(false)
+  // }
 
   return (
     <div className="flex h-screen bg-background text-foreground">
@@ -145,16 +157,36 @@ export default function FormBuilder() {
         onDragOver={(e) => e.preventDefault()}
         // onDrop={handleDrop}
       >
-        <h2 className="text-3xl font-bold mb-6">Form Preview</h2>
+        <div className="flex flex-row justify-between">
+          <h2 className="text-3xl font-bold mb-6">Form Preview</h2>
+          <Select
+            onValueChange={(e) => setWhichTabIsOpen(e as 'editing' | 'preview')}
+            defaultValue={whichTabIsOpen}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Editing" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="preview">Preview</SelectItem>
+              <SelectItem value="editing">Editing</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <Card className="min-h-[600px] border-2 border-dashed border-muted">
           <CardContent className="p-6">
             {formFields.length > 0 ? (
               <div className="overflow-y-auto flex-1">
-                <FormPreview
-                  formFields={formFields}
-                  // onClickEdit={(e) => setSelectedField(formFields[0])}
-                  onClickEdit={(field) => setSelectedField(field)}
-                />
+                {whichTabIsOpen == 'preview' ? (
+                  <FormPreview
+                    formFields={formFields}
+                    onClickEdit={(field) => openEditingWindow(field)}
+                  />
+                ) : (
+                  <FormPreviewwithEditing
+                    formFields={formFields}
+                    onClickEdit={(field) => openEditingWindow(field)}
+                  />
+                )}
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-center text-muted-foreground">
@@ -167,37 +199,33 @@ export default function FormBuilder() {
 
       {/* Right Side bar */}
       <Card className="w-80 border-l rounded-none h-screen overflow-hidden">
-        {selectedField !== null ? (
-          <EditFieldForm
-            field={selectedField}
-            onDismiss={() => {
-              setSelectedField(null)
-            }}
-            onEditingField={(editedField) => {
-              handleSaveField(editedField)
-            }}
-          />
-        ) : (
-          <CardContent className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Elements</h2>
-            <Separator className="my-4" />
-            <ScrollArea className="h-[calc(100vh-8rem)]">
-              <div className="flex flex-row">
-                <FieldSelector
-                  addFormField={(variant: string, index: number = 0) =>
-                    addFormField(variant, index)
-                  }
-                />
-              </div>
-            </ScrollArea>
-          </CardContent>
-        )}
+        <CardContent className="p-6">
+          <h2 className="text-2xl font-bold mb-4">Elements</h2>
+          <Separator className="my-4" />
+          <ScrollArea className="h-[calc(100vh-8rem)]">
+            <div className="flex flex-row">
+              <FieldSelector
+                addFormField={(variant: string, index: number = 0) =>
+                  addFormField(variant, index)
+                }
+              />
+            </div>
+          </ScrollArea>
+        </CardContent>
       </Card>
-      <EditFieldDialog
+      {/* <EditFieldDialog
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         field={selectedField}
         onSave={handleSaveField}
+      /> */}
+      <EditFieldForm
+        isOpen={isEditingWindowOpen}
+        onClose={() => setIsEditingWindowOpen(false)}
+        field={selectedField}
+        onEditingField={(editedField) => {
+          // handleSaveField(editedField)
+        }}
       />
     </div>
   )
