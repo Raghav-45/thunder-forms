@@ -61,41 +61,41 @@ export default function FormBuilder() {
     setFormFields([...formFields, newField])
   }
 
-  const findFieldPath = (
-    fields: FormFieldOrGroup[],
-    name: string
-  ): number[] | null => {
-    const search = (
-      currentFields: FormFieldOrGroup[],
-      currentPath: number[]
-    ): number[] | null => {
-      for (let i = 0; i < currentFields.length; i++) {
-        const field = currentFields[i]
-        if (Array.isArray(field)) {
-          const result = search(field, [...currentPath, i])
-          if (result) return result
-        } else if (field.name === name) {
-          return [...currentPath, i]
-        }
-      }
-      return null
-    }
-    return search(fields, [])
-  }
+  // const findFieldPath = (
+  //   fields: FormFieldOrGroup[],
+  //   name: string
+  // ): number[] | null => {
+  //   const search = (
+  //     currentFields: FormFieldOrGroup[],
+  //     currentPath: number[]
+  //   ): number[] | null => {
+  //     for (let i = 0; i < currentFields.length; i++) {
+  //       const field = currentFields[i]
+  //       if (Array.isArray(field)) {
+  //         const result = search(field, [...currentPath, i])
+  //         if (result) return result
+  //       } else if (field.name === name) {
+  //         return [...currentPath, i]
+  //       }
+  //     }
+  //     return null
+  //   }
+  //   return search(fields, [])
+  // }
 
-  const updateFormField = (path: number[], updates: Partial<FormFieldType>) => {
-    const updatedFields = JSON.parse(JSON.stringify(formFields)) // Deep clone
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let current: any = updatedFields
-    for (let i = 0; i < path.length - 1; i++) {
-      current = current[path[i]]
-    }
-    current[path[path.length - 1]] = {
-      ...current[path[path.length - 1]],
-      ...updates,
-    }
-    setFormFields(updatedFields)
-  }
+  // const updateFormField = (path: number[], updates: Partial<FormFieldType>) => {
+  //   const updatedFields = JSON.parse(JSON.stringify(formFields)) // Deep clone
+  //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //   let current: any = updatedFields
+  //   for (let i = 0; i < path.length - 1; i++) {
+  //     current = current[path[i]]
+  //   }
+  //   current[path[path.length - 1]] = {
+  //     ...current[path[path.length - 1]],
+  //     ...updates,
+  //   }
+  //   setFormFields(updatedFields)
+  // }
 
   const openEditingWindow = (field: FormFieldType) => {
     setSelectedField(field)

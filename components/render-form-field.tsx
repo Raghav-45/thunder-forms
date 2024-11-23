@@ -61,6 +61,7 @@ import {
   ChevronsUpDown,
   // Paperclip,
 } from 'lucide-react'
+import { UseFormReturn } from 'react-hook-form'
 // import { TagsInput } from '@/components/ui/tags-input'
 // import {
 //   MultiSelector,
@@ -116,7 +117,7 @@ const languages = [
 //   )
 // }
 
-export const RenderFormField = (field: FormFieldType, form: any) => {
+export const RenderFormField = (field: FormFieldType, form: UseFormReturn) => {
   const [checked, setChecked] = useState<boolean>(field.checked)
   const [value, setValue] = useState<typeof field.value>(field.value)
   // const [selectedValues, setSelectedValues] = useState<string[]>(['React'])

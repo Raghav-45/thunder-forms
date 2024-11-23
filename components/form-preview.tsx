@@ -1,6 +1,6 @@
 import React from 'react'
 import { z } from 'zod'
-import { useForm } from 'react-hook-form'
+import { useForm, UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 
@@ -29,7 +29,7 @@ export const renderFormFields = (
   fields: FormFieldOrGroup[],
   onClickEdit: (fields: FormFieldType) => void,
   onClickRemove: (fields: FormFieldType) => void,
-  form: any
+  form: UseFormReturn
 ) => {
   return fields.map((fieldOrGroup, index) => {
     if (Array.isArray(fieldOrGroup)) {
@@ -47,7 +47,7 @@ export const renderFormFields = (
 
       return (
         <div key={index} className="grid grid-cols-12 gap-4">
-          {fieldOrGroup.map((field, subIndex) => (
+          {fieldOrGroup.map((field) => (
             // Add Wrapper here
             <div className="flex items-center w-full" key={field.name}>
               <div className="w-full text-sm">{field.variant}</div>
@@ -151,7 +151,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
   formFields,
   onClickEdit,
   onClickRemove,
-  behaveAsPreview = false, // TODO: will use this variable for handling the preview functionality with ease
+  // behaveAsPreview = false, // TODO: will use this variable for handling the preview functionality with ease
 }) => {
   // Generate Zod schema dynamically based on form fields
   const formSchema = generateZodSchema(formFields)

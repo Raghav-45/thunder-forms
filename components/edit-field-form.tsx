@@ -6,20 +6,9 @@ import {
   SheetClose,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from '@/components/ui/sheet'
-
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogHeader,
-//   DialogTitle,
-//   DialogFooter,
-// } from '@/components/ui/dialog'
-// import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -30,19 +19,16 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
-} from '@/components/ui/select' // Import Select components
-import { CardContent } from './ui/card'
+} from '@/components/ui/select'
 import { Separator } from './ui/separator'
 import { ScrollArea } from './ui/scroll-area'
-import { InfoIcon, XIcon } from 'lucide-react'
-import { Button } from './ui/button'
 import { Cross2Icon } from '@radix-ui/react-icons'
 
 type EditFieldFormProps = {
   isOpen: boolean
   onClose: () => void
   field: FormFieldType | null
-  onEditingField: (editedField) => void
+  onEditingField: (editedField: FormFieldType | null) => void
   // onSave: (updatedField: FormFieldType) => void
 }
 
@@ -63,13 +49,6 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
   useEffect(() => {
     onEditingField(editedField)
   }, [editedField])
-
-  // const handleSave = () => {
-  //   if (editedField) {
-  //     onSave(editedField)
-  //     // onClose()
-  //   }
-  // }
 
   if (!editedField) return null
 
