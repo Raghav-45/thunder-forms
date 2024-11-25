@@ -26,6 +26,7 @@ export type FormFieldType = {
   locale?: keyof typeof Locales
   hour12?: boolean
   className?: string
+  order: number
 }
 
 export type FieldType = { name: string; isAvaliable: boolean; index?: number }
