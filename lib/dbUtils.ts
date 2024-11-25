@@ -23,8 +23,12 @@ const FORMS_COLLECTION = 'forms'
 
 // Function to clean up form fields before storing them in Firestore
 function cleanedFormFields(formFields: FormFieldOrGroup[]) {
-  return formFields.map(({ onChange, onSelect, setValue, ...cleanedField }) => {
-    // Default values for any potentially missing properties
+  return formFields.map((field) => {
+    // Destructure and exclude properties dynamically // TODO: Temp Fix
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+    const { onChange, onSelect, setValue, ...cleanedField } =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      field as unknown as any
     return {
       ...cleanedField,
     } as FormFieldOrGroup
