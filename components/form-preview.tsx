@@ -27,19 +27,17 @@ export type FormPreviewProps = {
   behaveAsPreview: boolean
 }
 
-interface DraggableElementProps {
-  field: FormFieldType
-  form: UseFormReturn
-  onClickEdit: (field: FormFieldType) => void
-  onClickRemove: (field: FormFieldType) => void
-}
-
 const DraggableElement = ({
   field,
   form,
   onClickEdit,
   onClickRemove,
-}: DraggableElementProps) => {
+}: {
+  field: FormFieldType
+  form: UseFormReturn
+  onClickEdit: (field: FormFieldType) => void
+  onClickRemove: (field: FormFieldType) => void
+}) => {
   const [isDragging, setIsDragging] = React.useState(false)
 
   return (
