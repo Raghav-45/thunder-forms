@@ -2,8 +2,6 @@ import React from 'react'
 
 import { fieldTypes } from '@/constants'
 import { Button } from '@/components/ui/button'
-// import If from '@/components/ui/if'
-// import Link from 'next/link'
 import { GripVerticalIcon } from 'lucide-react'
 
 type FieldSelectorProps = {
@@ -15,11 +13,13 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
 }) => {
   return (
     <div className="flex md:flex-col items-start flex-wrap md:flex-nowrap gap-y-2 overflow-y-auto w-full">
-      {/* {fieldTypes.map((variant) => ( */}
-      {[...fieldTypes]
+      {fieldTypes
         .sort((a, b) => Number(b.isAvaliable) - Number(a.isAvaliable))
         .map((variant) => (
-          <div className="flex items-center w-full" key={variant.name}>
+          <div
+            className="flex items-center w-full"
+            key={`${variant.name}-${variant.index ?? 0}`}
+          >
             <Button
               key={variant.name}
               variant="outline"
@@ -38,11 +38,6 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
             </Button>
           </div>
         ))}
-      {/* <Link href="https://shadcnform.featurebase.app/" target="_blank">
-        <Button className="rounded-full" size="sm">
-          Request
-        </Button>
-      </Link> */}
     </div>
   )
 }
