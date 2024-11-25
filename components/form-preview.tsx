@@ -68,11 +68,10 @@ const DraggableElement = ({
     >
       <div
         className={cn(
-          'flex flex-row relative p-4 border rounded-md mb-4 transition-colors',
+          'flex flex-row relative p-4 border rounded-md mb-4 transition-colors hover:border-primary',
           isDragging
-            ? 'border-primary border-dashed bg-background/50'
-            : 'bg-background',
-          'hover:border-primary'
+            ? 'border-primary border-dashed bg-background/85'
+            : 'bg-background'
         )}
       >
         <FormField
