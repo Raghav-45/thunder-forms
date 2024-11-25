@@ -27,145 +27,92 @@ export type FormPreviewProps = {
   behaveAsPreview: boolean
 }
 
-export const renderFormFields = (
-  fields: FormFieldOrGroup[],
-  onClickEdit: (fields: FormFieldType) => void,
-  onClickRemove: (fields: FormFieldType) => void,
+interface DraggableElementProps {
+  field: FormFieldType
   form: UseFormReturn
-) => {
-  return fields.map((fieldOrGroup, index) => {
-    if (Array.isArray(fieldOrGroup)) {
-      // Calculate column span based on number of fields in the group
-      const getColSpan = (totalFields: number) => {
-        switch (totalFields) {
-          case 2:
-            return 6 // Two columns
-          case 3:
-            return 4 // Three columns
-          default:
-            return 12 // Single column or fallback
-        }
-      }
+  onClickEdit: (field: FormFieldType) => void
+  onClickRemove: (field: FormFieldType) => void
+}
 
-      return (
-        <div key={index} className="grid grid-cols-12 gap-4">
-          {fieldOrGroup.map((field) => (
-            // Add Wrapper here
-            <div className="flex items-center w-full" key={field.name}>
-              <div className="w-full text-sm">{field.variant}</div>
+const DraggableElement = ({
+  field,
+  form,
+  onClickEdit,
+  onClickRemove,
+}: DraggableElementProps) => {
+  const [isDragging, setIsDragging] = React.useState(false)
 
-              <FormField
-                key={field.name}
-                control={form.control}
-                name={field.name}
-                render={({ field: formField }) => (
-                  <FormItem
-                    className={`col-span-${getColSpan(fieldOrGroup.length)}`}
-                  >
-                    <FormControl>
-                      {React.cloneElement(
-                        RenderFormField(field, form) as React.ReactElement,
-                        {
-                          ...formField,
-                        }
-                      )}
-                    </FormControl>
-                  </FormItem>
+  return (
+    <Reorder.Item
+      key={field.name}
+      value={field}
+      whileDrag={{
+        scale: 1.02,
+        boxShadow: '0 5px 15px rgba(0,0,0,0.25)',
+        cursor: 'grabbing',
+        zIndex: 50,
+      }}
+      onDragStart={() => setIsDragging(true)}
+      onDragEnd={() => setIsDragging(false)}
+      transition={{
+        type: 'spring',
+        stiffness: 300,
+        damping: 30,
+      }}
+      style={{
+        position: 'relative',
+        touchAction: 'none',
+        cursor: 'grab',
+      }}
+      className="relative"
+    >
+      <div
+        className={cn(
+          'flex flex-row relative p-4 border rounded-md mb-4 transition-colors',
+          isDragging
+            ? 'border-primary border-dashed bg-background/50'
+            : 'bg-background',
+          'hover:border-primary'
+        )}
+      >
+        <FormField
+          control={form.control}
+          name={field.name}
+          render={({ field: formField }) => (
+            <FormItem className="col-span-12 w-full pr-28">
+              <FormControl>
+                {React.cloneElement(
+                  RenderFormField(field, form) as React.ReactElement,
+                  {
+                    ...formField,
+                  }
                 )}
-              />
+              </FormControl>
+            </FormItem>
+          )}
+        />
 
-              <Button
-                variant="ghost"
-                size="icon"
-                type="button"
-                onClick={() => console.log('onClickEdit')}
-              >
-                <LuPencil />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                type="button"
-                // onClick={removeColumn}
-              >
-                <LuTrash2 />
-              </Button>
-            </div>
-          ))}
-        </div>
-      )
-    } else {
-      return (
-        // Add Wrapper here
-        <Reorder.Item
-          key={fieldOrGroup.name}
-          value={fieldOrGroup}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          whileDrag={{
-            scale: 1.02,
-            boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
-            cursor: 'grabbing',
-          }}
-          transition={{
-            type: 'spring',
-            stiffness: 300,
-            damping: 30,
-          }}
-          style={{ cursor: 'grab' }}
-        >
-          <div
-            //   className="flex items-center w-full p-4 border rounded-md"
-            className={cn(
-              'flex flex-row relative p-4 border rounded-md mb-4  transition-colors',
-              // isDragging ? 'opacity-50 border-dashed z-50' : 'opacity-100',
-              'hover:border-primary',
-              'bg-background'
-            )}
-            key={index}
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 space-x-2 mr-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            type="button"
+            onClick={() => onClickEdit(field)}
           >
-            <FormField
-              key={index}
-              control={form.control}
-              name={fieldOrGroup.name}
-              render={({ field: formField }) => (
-                <FormItem className="col-span-12 w-full pr-28">
-                  <FormControl>
-                    {React.cloneElement(
-                      RenderFormField(fieldOrGroup, form) as React.ReactElement,
-                      {
-                        ...formField,
-                      }
-                    )}
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 space-x-2 mr-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                type="button"
-                onClick={() => onClickEdit(fieldOrGroup)}
-              >
-                <LuPencil />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                type="button"
-                onClick={() => onClickRemove(fieldOrGroup)}
-              >
-                <LuTrash2 />
-              </Button>
-            </div>
-          </div>
-        </Reorder.Item>
-      )
-    }
-  })
+            <LuPencil />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            type="button"
+            onClick={() => onClickRemove(field)}
+          >
+            <LuTrash2 />
+          </Button>
+        </div>
+      </div>
+    </Reorder.Item>
+  )
 }
 
 export const FormPreview: React.FC<FormPreviewProps> = ({
@@ -173,21 +120,15 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
   onClickEdit,
   onClickRemove,
   onReorder,
-  // behaveAsPreview = false, // TODO: will use this variable for handling the preview functionality with ease
 }) => {
-  // Generate Zod schema dynamically based on form fields
   const formSchema = generateZodSchema(formFields)
-
-  // Generate default values for form initialization
   const defaultVals = generateDefaultValues(formFields)
 
-  // Initialize React Hook Form with dynamic schema and default values
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultVals,
   })
 
-  // Submit handler function
   function onSubmit(data: z.infer<typeof formSchema>) {
     try {
       toast.custom(() => (
@@ -205,7 +146,6 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
 
   return (
     <div className="w-full h-full col-span-1 rounded-xl flex justify-center">
-      {/* <div className="space-y-4 h-full w-full md:max-h-[70vh] overflow-auto"> */}
       {formFields.length > 0 && (
         <Form {...form}>
           <form
@@ -218,15 +158,23 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
               onReorder={onReorder}
               className="space-y-4"
             >
-              <AnimatePresence>
-                {renderFormFields(formFields, onClickEdit, onClickRemove, form)}
-              </AnimatePresence>
+              {formFields.map(
+                (fieldOrGroup) =>
+                  !Array.isArray(fieldOrGroup) && (
+                    <DraggableElement
+                      key={fieldOrGroup.name}
+                      field={fieldOrGroup}
+                      form={form}
+                      onClickEdit={onClickEdit}
+                      onClickRemove={onClickRemove}
+                    />
+                  )
+              )}
             </Reorder.Group>
             <Button>Submit</Button>
           </form>
         </Form>
       )}
-      {/* </div> */}
     </div>
   )
 }
