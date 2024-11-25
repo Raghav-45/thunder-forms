@@ -30,3 +30,5 @@ export type FormFieldType = {
 }
 
 export type FieldType = { name: string; isAvaliable: boolean; index?: number }
+
+export type FormFieldOrGroup = FormFieldType | FormFieldType[]

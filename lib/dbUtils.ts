@@ -1,4 +1,4 @@
-import { FormFieldOrGroup } from '@/components/field-item'
+import { FormFieldOrGroup } from '@/types/types'
 import { db } from '@/config/firebaseConfig'
 import {
   addDoc,
