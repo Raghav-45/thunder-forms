@@ -48,6 +48,7 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
 
   useEffect(() => {
     onEditingField(editedField)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editedField])
 
   if (!editedField) return null
