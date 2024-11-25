@@ -67,9 +67,19 @@ export default function FormBuilder() {
       type: '', // Type of the field (left empty for now)
       value: '', // Default value (empty)
       variant, // Field type/variant (e.g., text, checkbox, etc.)
+      order: formFields.length,
     }
     // Appending the new field to the existing formFields
     setFormFields([...formFields, newField])
+  }
+
+  const handleReorder = (reorderedElements: FormFieldOrGroup[]) => {
+    setFormFields(
+      reorderedElements.map((element, index) => ({
+        ...element,
+        order: index,
+      }))
+    )
   }
 
   const findFieldPath = (
@@ -215,11 +225,12 @@ export default function FormBuilder() {
         <Card className="min-h-[600px] border-2 border-dashed border-muted">
           <CardContent className="p-6">
             {formFields.length > 0 ? (
-              <div className="overflow-y-auto flex-1">
+              <div>
                 <FormPreview
                   formFields={formFields}
-                  onClickEdit={(field) => openEditingWindow(field)}
-                  onClickRemove={(field) => removeFormField(field)}
+                  onClickEdit={openEditingWindow}
+                  onClickRemove={removeFormField}
+                  onReorder={handleReorder}
                   behaveAsPreview={whichTabIsOpen === 'preview'}
                 />
               </div>

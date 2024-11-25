@@ -15,6 +15,7 @@ import {
 } from '@/components/generate-code-parts'
 import { LuPencil, LuTrash2 } from 'react-icons/lu'
 import { cn } from '@/lib/utils'
+import { AnimatePresence, Reorder } from 'framer-motion'
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
@@ -22,6 +23,7 @@ export type FormPreviewProps = {
   formFields: FormFieldOrGroup[]
   onClickEdit: (fields: FormFieldType) => void
   onClickRemove: (fields: FormFieldType) => void
+  onReorder: (reorderedElements: FormFieldOrGroup[]) => void
   behaveAsPreview: boolean
 }
 
@@ -95,53 +97,72 @@ export const renderFormFields = (
     } else {
       return (
         // Add Wrapper here
-        <div
-          //   className="flex items-center w-full p-4 border rounded-md"
-          className={cn(
-            'flex flex-row relative p-4 border rounded-md mb-4 cursor-move transition-colors',
-            // isDragging ? 'opacity-50 border-dashed z-50' : 'opacity-100',
-            'hover:border-primary',
-            'bg-background'
-          )}
-          key={index}
+        <Reorder.Item
+          key={fieldOrGroup.name}
+          value={fieldOrGroup}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          whileDrag={{
+            scale: 1.02,
+            boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
+            cursor: 'grabbing',
+          }}
+          transition={{
+            type: 'spring',
+            stiffness: 300,
+            damping: 30,
+          }}
+          style={{ cursor: 'grab' }}
         >
-          <FormField
-            key={index}
-            control={form.control}
-            name={fieldOrGroup.name}
-            render={({ field: formField }) => (
-              <FormItem className="col-span-12 w-full pr-28">
-                <FormControl>
-                  {React.cloneElement(
-                    RenderFormField(fieldOrGroup, form) as React.ReactElement,
-                    {
-                      ...formField,
-                    }
-                  )}
-                </FormControl>
-              </FormItem>
+          <div
+            //   className="flex items-center w-full p-4 border rounded-md"
+            className={cn(
+              'flex flex-row relative p-4 border rounded-md mb-4  transition-colors',
+              // isDragging ? 'opacity-50 border-dashed z-50' : 'opacity-100',
+              'hover:border-primary',
+              'bg-background'
             )}
-          />
+            key={index}
+          >
+            <FormField
+              key={index}
+              control={form.control}
+              name={fieldOrGroup.name}
+              render={({ field: formField }) => (
+                <FormItem className="col-span-12 w-full pr-28">
+                  <FormControl>
+                    {React.cloneElement(
+                      RenderFormField(fieldOrGroup, form) as React.ReactElement,
+                      {
+                        ...formField,
+                      }
+                    )}
+                  </FormControl>
+                </FormItem>
+              )}
+            />
 
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 space-x-2 mr-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              type="button"
-              onClick={() => onClickEdit(fieldOrGroup)}
-            >
-              <LuPencil />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              type="button"
-              onClick={() => onClickRemove(fieldOrGroup)}
-            >
-              <LuTrash2 />
-            </Button>
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 space-x-2 mr-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                onClick={() => onClickEdit(fieldOrGroup)}
+              >
+                <LuPencil />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                type="button"
+                onClick={() => onClickRemove(fieldOrGroup)}
+              >
+                <LuTrash2 />
+              </Button>
+            </div>
           </div>
-        </div>
+        </Reorder.Item>
       )
     }
   })
@@ -151,6 +172,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
   formFields,
   onClickEdit,
   onClickRemove,
+  onReorder,
   // behaveAsPreview = false, // TODO: will use this variable for handling the preview functionality with ease
 }) => {
   // Generate Zod schema dynamically based on form fields
@@ -183,19 +205,28 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
 
   return (
     <div className="w-full h-full col-span-1 rounded-xl flex justify-center">
-      <div className="space-y-4 h-full w-full md:max-h-[70vh] overflow-auto">
-        {formFields.length > 0 && (
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-2 w-full mx-auto"
+      {/* <div className="space-y-4 h-full w-full md:max-h-[70vh] overflow-auto"> */}
+      {formFields.length > 0 && (
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-2 w-full mx-auto"
+          >
+            <Reorder.Group
+              axis="y"
+              values={formFields}
+              onReorder={onReorder}
+              className="space-y-4"
             >
-              {renderFormFields(formFields, onClickEdit, onClickRemove, form)}
-              <Button>Submit</Button>
-            </form>
-          </Form>
-        )}
-      </div>
+              <AnimatePresence>
+                {renderFormFields(formFields, onClickEdit, onClickRemove, form)}
+              </AnimatePresence>
+            </Reorder.Group>
+            <Button>Submit</Button>
+          </form>
+        </Form>
+      )}
+      {/* </div> */}
     </div>
   )
 }
