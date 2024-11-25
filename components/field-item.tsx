@@ -81,6 +81,7 @@ export const FieldItem = ({
       type: '',
       value: '',
       variant,
+      order: formFields.length,
     }
 
     setFormFields((prevFields) => {

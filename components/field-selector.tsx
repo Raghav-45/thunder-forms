@@ -17,7 +17,7 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
     <div className="flex md:flex-col items-start flex-wrap md:flex-nowrap gap-y-2 overflow-y-auto w-full">
       {/* {fieldTypes.map((variant) => ( */}
       {[...fieldTypes]
-        .sort((a, b) => b.isAvaliable - a.isAvaliable)
+        .sort((a, b) => Number(b.isAvaliable) - Number(a.isAvaliable))
         .map((variant) => (
           <div className="flex items-center w-full" key={variant.name}>
             <Button
