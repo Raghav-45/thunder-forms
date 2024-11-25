@@ -15,7 +15,7 @@ import {
 } from '@/components/generate-code-parts'
 import { LuPencil, LuTrash2 } from 'react-icons/lu'
 import { cn } from '@/lib/utils'
-import { AnimatePresence, Reorder } from 'framer-motion'
+import { Reorder } from 'framer-motion'
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
