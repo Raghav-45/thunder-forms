@@ -50,7 +50,7 @@ const DraggableElement = ({
     } else if (selectedField === null) {
       const timeout = setTimeout(() => {
         setIsElementLifting(false)
-      }, 500) // delay in milliseconds
+      }, 200) // delay in milliseconds
 
       return () => clearTimeout(timeout) // Cleanup timeout
     }
@@ -86,6 +86,8 @@ const DraggableElement = ({
           isDragging
             ? 'border-primary border-dashed bg-background/85'
             : 'bg-background',
+          selectedField?.name === field.name &&
+            'border border-primary/15 border-dashed',
           isElementLifting && 'z-[51]' // Apply z-index conditionally
         )}
       >
