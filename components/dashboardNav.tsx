@@ -2,7 +2,7 @@
 
 import React, { FC } from 'react'
 import Link from 'next/link'
-import { CheckCircle, FilePlus, FileText, Home } from 'lucide-react'
+import { CheckCircle, FileText, Home } from 'lucide-react'
 import {
   Tooltip,
   TooltipContent,
