@@ -138,12 +138,12 @@ export default function DashboardLayout({
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
-              <BreadcrumbItem>
+              {/* <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <Link href="/dashboard/orders">Orders</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator />
+              <BreadcrumbSeparator /> */}
               <BreadcrumbItem>
                 <BreadcrumbPage>Recent Orders</BreadcrumbPage>
               </BreadcrumbItem>

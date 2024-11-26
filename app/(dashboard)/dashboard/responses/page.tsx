@@ -43,7 +43,7 @@ const fakeOrder = {
   productName: 'Green T-Shirt',
   price: 329,
   orderDate: currentDate,
-  status: 'Fulfilled',
+  status: 'Filled',
   shippingAddress: {
     fullName: 'John Doe',
     addressLine1: '1234 Main St',
@@ -68,20 +68,20 @@ export default function Responses() {
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
           <Card className="sm:col-span-2" x-chunk="dashboard-05-chunk-0">
             <CardHeader className="pb-3">
-              <CardTitle>Your Orders</CardTitle>
+              <CardTitle>Form Responses</CardTitle>
               <CardDescription className="text-balance max-w-lg leading-relaxed">
-                Introducing Our Dynamic Orders Dashboard for Seamless Management
-                and Insightful Analysis.
+                Introducing Our Dashboard for Seamless Management and Insightful
+                Analysis of Form Responses.
               </CardDescription>
             </CardHeader>
             <CardFooter>
-              <Button>Create New Order</Button>
+              <Button>Create a new form</Button>
             </CardFooter>
           </Card>
           <Card x-chunk="dashboard-05-chunk-1">
             <CardHeader className="pb-2">
               <CardDescription>This Week</CardDescription>
-              <CardTitle className="text-4xl">$1,329</CardTitle>
+              <CardTitle className="text-4xl">1,329</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground">
@@ -95,7 +95,7 @@ export default function Responses() {
           <Card x-chunk="dashboard-05-chunk-2">
             <CardHeader className="pb-2">
               <CardDescription>This Month</CardDescription>
-              <CardTitle className="text-4xl">$5,329</CardTitle>
+              <CardTitle className="text-4xl">5,329</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground">
@@ -319,12 +319,6 @@ export default function Responses() {
                   </span>
                   <span>₹{selectedOrder?.price}</span>
                 </li>
-                {/* <li className="flex items-center justify-between">
-                  <span className="text-muted-foreground">
-                    Aqua Filters x <span>1</span>
-                  </span>
-                  <span>$49.00</span>
-                </li> */}
               </ul>
               <Separator className="my-2" />
               <ul className="grid gap-3">
