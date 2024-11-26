@@ -27,6 +27,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { getAllForms } from '@/lib/dbUtils'
 
 interface Product {
   name: string
@@ -89,6 +90,7 @@ const allForms: Product[] = [
 ]
 
 export default async function Forms() {
+  const formsss = await getAllForms()
   return (
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
       <Tabs defaultValue="all">
@@ -120,9 +122,9 @@ export default async function Forms() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="hidden w-[100px] sm:table-cell">
+                    {/* <TableHead className="hidden w-[100px] sm:table-cell">
                       <span className="sr-only">Image</span>
-                    </TableHead>
+                    </TableHead> */}
                     <TableHead>Name</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="hidden md:table-cell">
@@ -137,56 +139,61 @@ export default async function Forms() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {allForms.map((product, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="hidden sm:table-cell">
-                        <Image
-                          alt={`${product.name} image`}
-                          className="aspect-square rounded-md object-cover"
-                          height="64"
-                          src={product.imageSrc!}
-                          width="64"
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {product.name}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">Active</Badge>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {0}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {product.date}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              aria-haspopup="true"
-                              size="icon"
-                              variant="ghost"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Toggle menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>Edit</DropdownMenuItem>
-                            <DropdownMenuItem>Delete</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {/* {formsss && formsss.map((form, index) => (
+                    form.
+                  ))} */}
+                  {formsss &&
+                    formsss.map((form, index) => (
+                      <TableRow key={index}>
+                        {/* <TableCell className="hidden sm:table-cell">
+                          <Image
+                            alt={`${form.title} image`}
+                            className="aspect-square rounded-md object-cover"
+                            height="64"
+                            src={'form.imageSrc!'}
+                            width="64"
+                          />
+                        </TableCell> */}
+                        <TableCell className="font-medium">
+                          {form.title}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">Active</Badge>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {0}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {form.description}
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                aria-haspopup="true"
+                                size="icon"
+                                variant="ghost"
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Toggle menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem>Edit</DropdownMenuItem>
+                              <DropdownMenuItem>Delete</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               </Table>
             </CardContent>
             <CardFooter>
               <div className="text-xs text-muted-foreground">
-                Showing <strong>1-10</strong> of <strong>32</strong> forms
+                Showing <strong>1-{formsss?.length ?? 10}</strong> of{' '}
+                <strong>{formsss?.length ?? 10}</strong> forms
               </div>
             </CardFooter>
           </Card>
