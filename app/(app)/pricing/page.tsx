@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
 const plans = [
   {
     id: 'basic',
-    name: 'Basic',
+    name: 'Powerful',
     description: 'Ideal for individuals and small projects',
     monthlyPrice: 499,
     annualPrice: 4990,
@@ -36,7 +36,7 @@ const plans = [
   },
   {
     id: 'pro',
-    name: 'Pro',
+    name: 'Alpha',
     description: 'Best for businesses and professionals',
     monthlyPrice: 999,
     annualPrice: 9990,
@@ -53,7 +53,7 @@ const plans = [
   },
   {
     id: 'premium',
-    name: 'Premium',
+    name: 'Sigma',
     description: 'All-in-one for enterprises',
     monthlyPrice: 1999,
     annualPrice: 19990,
@@ -77,7 +77,7 @@ export default function PricingPage() {
       <div className="container">
         <div className="flex flex-col items-center text-center">
           <h3 className="mb-3 max-w-3xl text-2xl font-semibold md:mb-4 md:text-4xl lg:mb-6">
-            Choose Your Thunder Form Plans
+            Choose Your ⚡ Thunder Forms
           </h3>
           <p className="mb-8 max-w-3xl text-muted-foreground lg:text-lg">
             Scalable plans designed to grow with your needs.
@@ -119,11 +119,11 @@ export default function PricingPage() {
                 key={plan.id}
                 className={cn(
                   'flex w-80 flex-col justify-between text-left',
-                  plan.name === 'Pro' &&
+                  plan.id === 'pro' &&
                     'bg-gradient-to-bl from-[#33333360] via-[#44444440] to-[#111111] relative border-yellow-200/30 border'
                 )}
               >
-                {plan.name === 'Pro' && (
+                {plan.id === 'pro' && (
                   <div className="absolute justify-center -top-[1px] w-full flex">
                     <Badge
                       variant="outline"
