@@ -230,6 +230,7 @@ export default function FormBuilder() {
                   onClickEdit={openEditingWindow}
                   onClickRemove={removeFormField}
                   onReorder={handleReorder}
+                  selectedField={isEditingWindowOpen ? selectedField : null}
                   behaveAsPreview={whichTabIsOpen === 'preview'}
                 />
               </div>

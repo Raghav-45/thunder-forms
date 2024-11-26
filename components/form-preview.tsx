@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { z } from 'zod'
 import { useForm, UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -24,6 +24,7 @@ export type FormPreviewProps = {
   onClickEdit: (fields: FormFieldType) => void
   onClickRemove: (fields: FormFieldType) => void
   onReorder: (reorderedElements: FormFieldOrGroup[]) => void
+  selectedField: FormFieldType | null
   behaveAsPreview: boolean
 }
 
@@ -32,13 +33,28 @@ const DraggableElement = ({
   form,
   onClickEdit,
   onClickRemove,
+  selectedField,
 }: {
   field: FormFieldType
   form: UseFormReturn
   onClickEdit: (field: FormFieldType) => void
   onClickRemove: (field: FormFieldType) => void
+  selectedField: FormFieldType | null
 }) => {
-  const [isDragging, setIsDragging] = React.useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [isElementLifting, setIsElementLifting] = useState(false)
+
+  useEffect(() => {
+    if (selectedField?.name === field.name) {
+      setIsElementLifting(true)
+    } else if (selectedField === null) {
+      const timeout = setTimeout(() => {
+        setIsElementLifting(false)
+      }, 500) // delay in milliseconds
+
+      return () => clearTimeout(timeout) // Cleanup timeout
+    }
+  }, [selectedField, field.name])
 
   return (
     <Reorder.Item
@@ -48,7 +64,7 @@ const DraggableElement = ({
         scale: 1.02,
         boxShadow: '0 5px 15px rgba(0,0,0,0.25)',
         cursor: 'grabbing',
-        zIndex: 50,
+        zIndex: 10,
       }}
       onDragStart={() => setIsDragging(true)}
       onDragEnd={() => setIsDragging(false)}
@@ -69,7 +85,8 @@ const DraggableElement = ({
           'flex flex-row relative p-4 border rounded-md mb-4 transition-colors hover:border-primary',
           isDragging
             ? 'border-primary border-dashed bg-background/85'
-            : 'bg-background'
+            : 'bg-background',
+          isElementLifting && 'z-[51]' // Apply z-index conditionally
         )}
       >
         <FormField
@@ -117,6 +134,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
   onClickEdit,
   onClickRemove,
   onReorder,
+  selectedField,
 }) => {
   const formSchema = generateZodSchema(formFields)
   const defaultVals = generateDefaultValues(formFields)
@@ -164,6 +182,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
                       form={form}
                       onClickEdit={onClickEdit}
                       onClickRemove={onClickRemove}
+                      selectedField={selectedField}
                     />
                   )
               )}
