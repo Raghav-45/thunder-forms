@@ -1,190 +1,95 @@
-'use client'
-
-import { ArrowRight, CircleCheck } from 'lucide-react'
-import { useState } from 'react'
-
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { Switch } from '@/components/ui/switch'
+import { TrendingUpIcon } from 'lucide-react'
+import { Announcement } from '@/components/Announcement'
+import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
+import Link from 'next/link'
 
-const plans = [
+const posts = [
   {
-    id: 'basic',
-    name: 'Powerful',
-    description: 'Ideal for individuals and small projects',
-    monthlyPrice: 499,
-    annualPrice: 4990,
-    features: [
-      { text: 'Create up to 10 forms', included: true },
-      { text: '500 submissions per month', included: true },
-      { text: 'Basic analytics', included: true },
-      { text: 'Standard templates', included: true },
-      { text: 'Custom branding', included: false },
-      { text: 'Integration with APIs', included: false },
-      { text: 'Advanced analytics', included: false },
-      { text: 'Priority support', included: false },
-    ],
+    id: 'template-1',
+    title: 'Feedback Form Template',
+    summary:
+      'This template is designed to help you easily collect user feedback. Whether you’re gathering survey responses or customer reviews, this form can be fully customized with your own questions.',
+    label: 'Customizable Questions',
+    author: 'Thunder Forms Team',
+    href: '#template-1',
+    image:
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDXLuGqSfz6wXt0CQAYY6acmUhNB-66IVyLg&s',
+    isNew: true,
   },
   {
-    id: 'pro',
-    name: 'Alpha',
-    description: 'Best for businesses and professionals',
-    monthlyPrice: 999,
-    annualPrice: 9990,
-    features: [
-      { text: 'Create unlimited forms', included: true },
-      { text: '10,000 submissions per month', included: true },
-      { text: 'Advanced analytics', included: true },
-      { text: 'Custom branding', included: true },
-      { text: 'Integration with APIs', included: true },
-      { text: 'Zapier integration', included: true },
-      { text: 'Custom domains', included: false },
-      { text: '24/7 priority support', included: false },
-    ],
+    id: 'template-2',
+    title: 'Event Registration Form',
+    summary:
+      'Organize events more effectively with this multi-step registration form. It allows users to select events, submit personal information, and add special requests, making it the perfect.',
+    label: 'Multi-step Form',
+    author: 'Thunder Forms Team',
+    href: '#template-2',
+    image: 'https://www.shadcnblocks.com/images/block/placeholder-dark-1.svg',
+    isNew: false,
   },
   {
-    id: 'premium',
-    name: 'Sigma',
-    description: 'All-in-one for enterprises',
-    monthlyPrice: 1999,
-    annualPrice: 19990,
-    features: [
-      { text: 'All Pro features', included: true },
-      { text: 'Unlimited submissions', included: true },
-      { text: 'Custom domains', included: true },
-      { text: 'Team collaboration tools', included: true },
-      { text: 'Enhanced data security', included: true },
-      { text: 'Dedicated account manager', included: true },
-      { text: 'Priority feature requests', included: true },
-      { text: '24/7 premium support', included: true },
-    ],
+    id: 'template-3',
+    title: 'Contact Us Form',
+    summary:
+      'Simplify communication with this user-friendly contact form template. Whether you’re providing customer support or just collecting inquiries, this form makes it easy for visitors to get in touch.',
+    label: 'Easy to Use',
+    author: 'Thunder Forms Team',
+    href: '#template-3',
+    image: 'https://www.shadcnblocks.com/images/block/placeholder-dark-1.svg',
+    isNew: false,
   },
 ]
 
-export default function PricingPage() {
-  const [isYearly, setIsYearly] = useState(false)
+export default function TemplatesPage() {
   return (
     <section className="py-32">
       <div className="container">
-        <div className="flex flex-col items-center text-center">
-          <h3 className="mb-3 max-w-3xl text-2xl font-semibold md:mb-4 md:text-4xl lg:mb-6">
-            Thunder Form ⚡ Templates
-          </h3>
-          <p className="mb-8 max-w-3xl text-muted-foreground lg:text-lg">
-            Scalable plans designed to grow with your needs.
+        <div className="mb-14">
+          <Announcement text="New Feedback Template" />
+          <h1 className="mb-3 mt-1 text-balance text-3xl font-semibold md:text-4xl">
+            Choose a Template ⚡
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Select a template and start creating your form instantly.
           </p>
         </div>
         <div className="w-full">
-          <div className="flex justify-center flex-col items-stretch gap-6 md:flex-row mb-12">
-            <div className="flex items-center gap-3 text-lg">
-              Monthly
-              {/* <Switch
-            onCheckedChange={() => setIsYearly(!isYearly)}
-            checked={isYearly}
-            className="bg-red-500"
-          /> */}
-              <Switch
-                onCheckedChange={() => setIsYearly(!isYearly)}
-                checked={isYearly}
-                className="bg-gradient-to-br from-[#ffd700] to-[#ffa500] data-[state=checked]:bg-gradient-to-br 
-             data-[state=checked]:from-[#ffa500] data-[state=checked]:to-[#ff8c00] border-2 
-             border-[#d4af37] rounded-full relative"
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+            {posts.map((post) => (
+              <Link
+                key={post.id}
+                id={post.id}
+                href={post.href}
+                className="flex flex-col text-clip rounded-xl border border-border transition-all overflow-hidden"
               >
-                <div
-                  className="absolute left-0 top-0 h-5 w-5 rounded-full bg-black translate-x-0
-               transition-transform duration-200 data-[state=checked]:translate-x-6"
-                />
-              </Switch>
-              Annual
-              <Badge
-                variant="outline"
-                className="rounded-full bg-gradient-to-br from-[#ffd700] to-[#ffa500] text-black font-semibold mt-0.5"
-              >
-                Save 20%
-              </Badge>
-            </div>
-          </div>
-          <div className="flex justify-center flex-col items-stretch gap-6 md:flex-row">
-            {plans.map((plan) => (
-              <Card
-                key={plan.id}
-                className={cn(
-                  'flex w-80 flex-col justify-between text-left',
-                  plan.id === 'pro' &&
-                    'bg-gradient-to-bl from-[#33333360] via-[#44444440] to-[#111111] relative border-yellow-200/30 border'
-                )}
-              >
-                {plan.id === 'pro' && (
-                  <div className="absolute justify-center -top-[1px] w-full flex">
-                    <Badge
-                      variant="outline"
-                      className="w-auto -translate-y-1/2 rounded-full bg-gradient-to-br from-[#ffd700] to-[#ffa500] text-black font-semibold text-md mt-0.5"
-                    >
-                      Save 20%
-                    </Badge>
-                  </div>
-                )}
-                <CardHeader>
-                  <CardTitle className="text-2xl font-bold">
-                    {plan.name}
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    {plan.description}
-                  </p>
-                  <span className="text-4xl font-bold">
-                    ₹
-                    {isYearly
-                      ? Math.floor(plan.annualPrice / 12)
-                      : plan.monthlyPrice}
-                  </span>
-                  <p className="text-muted-foreground">
-                    Billed ₹
-                    {isYearly
-                      ? Math.floor(plan.annualPrice / 12)
-                      : plan.monthlyPrice}{' '}
-                    {isYearly ? 'annually' : 'monthly'}
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <Separator className="mb-6" />
-                  <ul className="space-y-4">
-                    {plan.features.map((feature, index) => (
-                      <li
-                        key={index}
-                        className={`flex items-center gap-2 ${
-                          feature.included ? '' : 'text-muted-foreground'
-                        }`}
+                <div className="relative">
+                  <Image
+                    src={post.image}
+                    alt={post.title}
+                    className="aspect-video size-full object-cover object-center"
+                    height={90}
+                    width={160}
+                  />
+                  <div className="absolute top-0 right-0 px-2 py-1 z-100 flex justify-between text-xs">
+                    {post.isNew && (
+                      <Badge
+                        variant={'destructive'}
+                        className="text-white rounded-full bg-red-500 hover:bg-red-500/70"
                       >
-                        {feature.included ? (
-                          <CircleCheck className="size-4" />
-                        ) : (
-                          <CircleCheck className="size-4 opacity-50" />
-                        )}
-                        <span>{feature.text}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter className="mt-auto">
-                  <Button className="w-full rounded-xl bg-gradient-to-br from-[#ffd700] to-[#ffa500] font-bold">
-                    Get Started
-                    <ArrowRight className="ml-2 size-4" />
-                  </Button>
-                </CardFooter>
-              </Card>
+                        <TrendingUpIcon className="size-4 mr-1" /> New
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                <div className="px-3 py-8 md:px-8 md:py-8 lg:px-6 lg:py-4">
+                  <h3 className="mb-2 text-lg font-semibold md:mb-3 md:text-xl lg:mb-4">
+                    {post.title}
+                  </h3>
+                  <p className="mb-4 text-muted-foreground">{post.summary}</p>
+                </div>
+              </Link>
             ))}
-          </div>
-          <div className="flex justify-center flex-col items-stretch gap-6 md:flex-row mt-8 text-sm">
-            🔒 30-day money-back guarantee • No questions asked
           </div>
         </div>
       </div>
