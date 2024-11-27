@@ -21,10 +21,10 @@ export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
 export type FormPreviewProps = {
   formFields: FormFieldOrGroup[]
-  onClickEdit: (fields: FormFieldType) => void
-  onClickRemove: (fields: FormFieldType) => void
-  onReorder: (reorderedElements: FormFieldOrGroup[]) => void
-  selectedField: FormFieldType | null
+  onClickEdit?: (fields: FormFieldType) => void
+  onClickRemove?: (fields: FormFieldType) => void
+  onReorder?: (reorderedElements: FormFieldOrGroup[]) => void
+  selectedField?: FormFieldType | null
   behaveAsPreview: boolean
 }
 
@@ -34,12 +34,14 @@ const DraggableElement = ({
   onClickEdit,
   onClickRemove,
   selectedField,
+  behaveAsPreview = false,
 }: {
   field: FormFieldType
   form: UseFormReturn
   onClickEdit: (field: FormFieldType) => void
   onClickRemove: (field: FormFieldType) => void
   selectedField: FormFieldType | null
+  behaveAsPreview: boolean
 }) => {
   const [isDragging, setIsDragging] = useState(false)
   const [isElementLifting, setIsElementLifting] = useState(false)
@@ -56,7 +58,7 @@ const DraggableElement = ({
     }
   }, [selectedField, field.name])
 
-  return (
+  return !behaveAsPreview ? (
     <Reorder.Item
       key={field.name}
       value={field}
@@ -127,6 +129,31 @@ const DraggableElement = ({
         </div>
       </div>
     </Reorder.Item>
+  ) : (
+    <p>
+      <div
+        className={cn(
+          'flex flex-row relative rounded-md mb-4 transition-colors hover:border-primary bg-background'
+        )}
+      >
+        <FormField
+          control={form.control}
+          name={field.name}
+          render={({ field: formField }) => (
+            <FormItem className="col-span-12 w-full">
+              <FormControl>
+                {React.cloneElement(
+                  RenderFormField(field, form) as React.ReactElement,
+                  {
+                    ...formField,
+                  }
+                )}
+              </FormControl>
+            </FormItem>
+          )}
+        />
+      </div>
+    </p>
   )
 }
 
@@ -136,6 +163,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
   onClickRemove,
   onReorder,
   selectedField,
+  behaveAsPreview,
 }) => {
   const formSchema = generateZodSchema(formFields)
   const defaultVals = generateDefaultValues(formFields)
@@ -168,26 +196,44 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-2 w-full mx-auto"
           >
-            <Reorder.Group
-              axis="y"
-              values={formFields}
-              onReorder={onReorder}
-              className="space-y-4"
-            >
-              {formFields.map(
+            {!behaveAsPreview ? (
+              <Reorder.Group
+                axis="y"
+                values={formFields}
+                onReorder={onReorder!}
+                className="space-y-4"
+              >
+                {formFields.map(
+                  (fieldOrGroup) =>
+                    !Array.isArray(fieldOrGroup) && (
+                      <DraggableElement
+                        key={fieldOrGroup.name}
+                        field={fieldOrGroup}
+                        form={form}
+                        onClickEdit={onClickEdit!}
+                        onClickRemove={onClickRemove!}
+                        selectedField={selectedField!}
+                        behaveAsPreview={behaveAsPreview}
+                      />
+                    )
+                )}
+              </Reorder.Group>
+            ) : (
+              formFields.map(
                 (fieldOrGroup) =>
                   !Array.isArray(fieldOrGroup) && (
                     <DraggableElement
                       key={fieldOrGroup.name}
                       field={fieldOrGroup}
                       form={form}
-                      onClickEdit={onClickEdit}
-                      onClickRemove={onClickRemove}
-                      selectedField={selectedField}
+                      onClickEdit={onClickEdit!}
+                      onClickRemove={onClickRemove!}
+                      selectedField={selectedField!}
+                      behaveAsPreview={behaveAsPreview}
                     />
                   )
-              )}
-            </Reorder.Group>
+              )
+            )}
             <Button>Submit</Button>
           </form>
         </Form>
