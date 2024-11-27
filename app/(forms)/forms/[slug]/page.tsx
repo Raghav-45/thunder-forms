@@ -18,14 +18,21 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { defaultFieldConfig } from '@/constants'
-import { createForm, updateFormbyId } from '@/lib/dbUtils'
+import { createForm, getFormById, updateFormbyId } from '@/lib/dbUtils'
 import { FormFieldType, FormFieldOrGroup } from '@/types/types'
 import { SaveIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 export default function FormBuilder() {
-  const [formId, setFormId] = useState<string | null>(null)
+  const { slug } = useParams()
+  const router = useRouter()
+
+  // BASIC FORM DETAILS
+  const [formId, setFormId] = useState<string | null>(
+    typeof slug == 'string' ? slug : null
+  )
   const [formName, setFormName] = useState('New form')
   const [formDescription, setFormDescription] = useState(
     'Lorem ipsum dolor sit amet'
@@ -39,6 +46,18 @@ export default function FormBuilder() {
   const [whichTabIsOpen, setWhichTabIsOpen] = useState<'editing' | 'preview'>(
     'editing'
   )
+
+  useEffect(() => {
+    if (formFields.length == 0 && formId && formId !== 'new-form') {
+      getFormById(formId).then((formData) => {
+        if (formData?.fields) {
+          setFormFields(formData?.fields)
+        } else {
+          alert('sads')
+        }
+      })
+    }
+  }, [formId, formFields])
 
   const addFormField = (variant: string, index: number) => {
     // Generate a unique field name using a random number
@@ -150,14 +169,15 @@ export default function FormBuilder() {
       toast.error('Form name is required')
       return
     }
-    if (!formId) {
+    if (formId == null || formId == 'new-form') {
       createForm(formName, formDescription, formFields).then((e) => {
         setFormId(e)
-        toast.success('New Form created successfully!')
+        // router.replace(e)
+        toast.success(`New Form created successfully! ${formId}`)
       })
     } else {
       updateFormbyId(formId, formName, formDescription, formFields)
-      toast.success('Form saved successfully!')
+      toast.success('Form updated successfully!')
     }
   }
 
