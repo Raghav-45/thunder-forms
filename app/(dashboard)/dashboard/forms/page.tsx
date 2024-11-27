@@ -58,13 +58,10 @@ export default async function Forms() {
               <CardDescription>Seamlessly manage your forms.</CardDescription>
             </CardHeader>
             <CardContent>
-              {formsss.length > 0 ? (
+              {formsss && formsss?.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      {/* <TableHead className="hidden w-[100px] sm:table-cell">
-                      <span className="sr-only">Image</span>
-                    </TableHead> */}
                       <TableHead>Name</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="hidden md:table-cell">
@@ -79,54 +76,41 @@ export default async function Forms() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {/* {formsss && formsss.map((form, index) => (
-                    form.
-                  ))} */}
-                    {formsss &&
-                      formsss.map((form, index) => (
-                        <TableRow key={index}>
-                          {/* <TableCell className="hidden sm:table-cell">
-                          <Image
-                            alt={`${form.title} image`}
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src={'form.imageSrc!'}
-                            width="64"
-                          />
-                        </TableCell> */}
-                          <TableCell className="font-medium">
-                            {form.title}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">Active</Badge>
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            {0}
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            {form.description}
-                          </TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  aria-haspopup="true"
-                                  size="icon"
-                                  variant="ghost"
-                                >
-                                  <MoreHorizontal className="h-4 w-4" />
-                                  <span className="sr-only">Toggle menu</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem>Edit</DropdownMenuItem>
-                                <DropdownMenuItem>Delete</DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                    {formsss.map((form, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">
+                          {form.title}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">Active</Badge>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {0}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {form.description}
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                aria-haspopup="true"
+                                size="icon"
+                                variant="ghost"
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Toggle menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem>Edit</DropdownMenuItem>
+                              <DropdownMenuItem>Delete</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               ) : (
@@ -156,7 +140,7 @@ function NoDataComponent() {
         <h2 className="text-2xl font-bold tracking-tight">
           No Forms Available
         </h2>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           It looks like you haven&apos;t created any forms yet.
           <br />
           Start by clicking the{' '}
