@@ -1,5 +1,4 @@
-import Image from 'next/image'
-import { MoreHorizontal, PlusCircle } from 'lucide-react'
+import { InboxIcon, MoreHorizontal, PlusCircle } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,66 +27,6 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getAllForms } from '@/lib/dbUtils'
-
-interface Product {
-  name: string
-  status: 'Draft' | 'Active'
-  price: string
-  stock: number
-  date: string
-  imageSrc: string
-}
-
-const allForms: Product[] = [
-  {
-    name: 'Laser Lemonade Machine',
-    status: 'Draft',
-    price: '499',
-    stock: 25,
-    date: '07-12-2023',
-    imageSrc: 'https://avatars.githubusercontent.com/u/77260113?v=4',
-  },
-  {
-    name: 'Hypernova Headphones',
-    status: 'Active',
-    price: '129',
-    stock: 100,
-    date: '10-18-2023',
-    imageSrc: 'https://avatars.githubusercontent.com/u/77260113?v=4',
-  },
-  {
-    name: 'AeroGlow Desk Lamp',
-    status: 'Active',
-    price: '39',
-    stock: 50,
-    date: '11-29-2023',
-    imageSrc: 'https://avatars.githubusercontent.com/u/77260113?v=4',
-  },
-  {
-    name: 'TechTonic Energy Drink',
-    status: 'Draft',
-    price: '2',
-    stock: 0,
-    date: '12-25-2023',
-    imageSrc: 'https://avatars.githubusercontent.com/u/77260113?v=4',
-  },
-  {
-    name: 'Gamer Gear Pro Controller',
-    status: 'Active',
-    price: '59',
-    stock: 75,
-    date: '01-01-2024',
-    imageSrc: 'https://avatars.githubusercontent.com/u/77260113?v=4',
-  },
-  {
-    name: 'Luminous VR Headset',
-    status: 'Active',
-    price: '199',
-    stock: 30,
-    date: '02-14-2024',
-    imageSrc: 'https://avatars.githubusercontent.com/u/77260113?v=4',
-  },
-]
 
 export default async function Forms() {
   const formsss = await getAllForms()
@@ -119,33 +58,34 @@ export default async function Forms() {
               <CardDescription>Seamlessly manage your forms.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {/* <TableHead className="hidden w-[100px] sm:table-cell">
+              {formsss.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      {/* <TableHead className="hidden w-[100px] sm:table-cell">
                       <span className="sr-only">Image</span>
                     </TableHead> */}
-                    <TableHead>Name</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="hidden md:table-cell">
-                      Total Responses
-                    </TableHead>
-                    <TableHead className="hidden md:table-cell">
-                      Created at
-                    </TableHead>
-                    <TableHead>
-                      <span className="sr-only">Actions</span>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {/* {formsss && formsss.map((form, index) => (
+                      <TableHead>Name</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        Total Responses
+                      </TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        Created at
+                      </TableHead>
+                      <TableHead>
+                        <span className="sr-only">Actions</span>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {/* {formsss && formsss.map((form, index) => (
                     form.
                   ))} */}
-                  {formsss &&
-                    formsss.map((form, index) => (
-                      <TableRow key={index}>
-                        {/* <TableCell className="hidden sm:table-cell">
+                    {formsss &&
+                      formsss.map((form, index) => (
+                        <TableRow key={index}>
+                          {/* <TableCell className="hidden sm:table-cell">
                           <Image
                             alt={`${form.title} image`}
                             className="aspect-square rounded-md object-cover"
@@ -154,41 +94,44 @@ export default async function Forms() {
                             width="64"
                           />
                         </TableCell> */}
-                        <TableCell className="font-medium">
-                          {form.title}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Active</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          {0}
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          {form.description}
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
+                          <TableCell className="font-medium">
+                            {form.title}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">Active</Badge>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {0}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {form.description}
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  aria-haspopup="true"
+                                  size="icon"
+                                  variant="ghost"
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Toggle menu</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem>Edit</DropdownMenuItem>
+                                <DropdownMenuItem>Delete</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <NoDataComponent />
+              )}
             </CardContent>
             <CardFooter>
               <div className="text-xs text-muted-foreground">
@@ -200,5 +143,29 @@ export default async function Forms() {
         </TabsContent>
       </Tabs>
     </main>
+  )
+}
+
+function NoDataComponent() {
+  return (
+    <div className="flex flex-col w-full items-center justify-center h-[50vh] gap-6">
+      <div className="flex items-center justify-center w-20 h-20 rounded-full bg-neutral-800">
+        <InboxIcon className="w-10 h-10 text-neutral-400" />
+      </div>
+      <div className="space-y-2 text-center">
+        <h2 className="text-2xl font-bold tracking-tight">
+          No Forms Available
+        </h2>
+        <p className="text-muted-foreground">
+          It looks like you haven&apos;t created any forms yet.
+          <br />
+          Start by clicking the{' '}
+          <span className="text-primary font-semibold">
+            &quot;New Form&quot;
+          </span>{' '}
+          button above.
+        </p>
+      </div>
+    </div>
   )
 }
