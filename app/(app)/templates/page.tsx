@@ -46,7 +46,12 @@ export default function TemplatesPage() {
     <section className="py-32">
       <div className="container">
         <div className="mb-14">
-          <Announcement text="New Feedback Template" href="#template-1" />
+          <Announcement
+            text="✨ New Feedback Template"
+            href="#template-1"
+            withoutIcon
+          />
+
           <h1 className="mb-3 mt-1 text-balance text-3xl font-semibold md:text-4xl">
             Choose a Template ⚡
           </h1>
