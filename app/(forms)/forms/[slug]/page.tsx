@@ -21,13 +21,12 @@ import { defaultFieldConfig } from '@/constants'
 import { createForm, getFormById, updateFormbyId } from '@/lib/dbUtils'
 import { FormFieldType, FormFieldOrGroup } from '@/types/types'
 import { SaveIcon } from 'lucide-react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 export default function FormBuilder() {
   const { slug } = useParams()
-  const router = useRouter()
 
   // BASIC FORM DETAILS
   const [formId, setFormId] = useState<string | null>(
