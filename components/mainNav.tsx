@@ -35,7 +35,7 @@ export function MainNav() {
         <Link
           href="/templates"
           className={cn(
-            'transition-colors hover:text-foreground/80',
+            'transition-colors hover:text-foreground/80 flex',
             pathname?.startsWith('/templates')
               ? 'text-foreground'
               : 'text-foreground/60'
@@ -45,11 +45,16 @@ export function MainNav() {
           {!pathname?.startsWith('/templates') && (
             <Badge
               variant="outline"
-              className="ml-1 border-emerald-400 px-1.5 py-0 text-emerald-400"
+              className="ml-1 bg-blue-500 px-1.5 py-0.5 text-blue-100 align-middle text-xs leading-none"
             >
               new
             </Badge>
           )}
+          {/* {!pathname?.startsWith('/templates') && (
+            <span className="ml-2 rounded-md bg-[#FFBD7A] px-1.5 font-semibold text-xs leading-none text-black">
+              new
+            </span>
+          )} */}
         </Link>
         <Link
           href="/pricing"
