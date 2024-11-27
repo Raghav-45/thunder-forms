@@ -17,7 +17,7 @@ const navLinks = [
   { href: '/dashboard/forms', label: 'My Forms', icon: FileText }, // To view and manage created forms
   { href: '/dashboard/responses', label: 'Responses', icon: CheckCircle }, // To view form submissions
   // { href: '/dashboard/templates', label: 'Templates', icon: FilePlus }, // For pre-made form templates
-  //   { href: '#', label: 'Analytics', icon: LineChart },
+  // { href: '#', label: 'Analytics', icon: LineChart },
 ]
 
 const DashboardNav: FC<DashboardNavProps> = ({}) => {
