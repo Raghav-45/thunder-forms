@@ -32,10 +32,8 @@ export default function FormBuilder() {
   const [formId, setFormId] = useState<string | null>(
     typeof slug == 'string' ? slug : null
   )
-  const [formName, setFormName] = useState('New form')
-  const [formDescription, setFormDescription] = useState(
-    'Lorem ipsum dolor sit amet'
-  )
+  const [formName, setFormName] = useState('')
+  const [formDescription, setFormDescription] = useState('')
   // BASIC FORM DETAILS
 
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
@@ -47,6 +45,7 @@ export default function FormBuilder() {
   )
 
   useEffect(() => {
+    // If a valid `formId` is present and it's not 'new-form', fetch the existing form's data
     if (formId && formId !== 'new-form') {
       getFormById(formId)
         .then((formData) => {
@@ -65,10 +64,10 @@ export default function FormBuilder() {
           toast.error('Error loading form data')
         })
     } else {
-      // Reset the state for a new form
-      setFormFields([])
-      setFormName('New form')
-      setFormDescription('Lorem ipsum dolor sit amet')
+      // Reset the form state for a new form
+      setFormFields([]) // Clear the form fields
+      setFormName('New form') // Reset the form name to 'New form'
+      setFormDescription('Lorem ipsum dolor sit amet') // Reset the form description to placeholder text
     }
   }, [formId]) // Only depends on formId
 
