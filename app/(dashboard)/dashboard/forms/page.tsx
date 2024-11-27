@@ -46,7 +46,7 @@ export default async function Forms() {
           </TabsList>
           <div className="ml-auto flex items-center gap-2">
             <Link
-              href="/forms/new-form"
+              href="/dashboard/forms/new-form"
               className={cn(
                 buttonVariants({ variant: 'default', size: 'sm' }),
                 'h-7 gap-1'
