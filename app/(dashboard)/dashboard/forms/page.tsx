@@ -1,7 +1,7 @@
 import { InboxIcon, MoreHorizontal, PlusCircle } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -27,6 +27,8 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getAllForms } from '@/lib/dbUtils'
+import Link from 'next/link'
+import { cn } from '@/lib/utils'
 
 export default async function Forms() {
   const formsss = await getAllForms()
@@ -43,12 +45,18 @@ export default async function Forms() {
             </TabsTrigger>
           </TabsList>
           <div className="ml-auto flex items-center gap-2">
-            <Button size="sm" className="h-7 gap-1">
+            <Link
+              href="/forms/new-form"
+              className={cn(
+                buttonVariants({ variant: 'default', size: 'sm' }),
+                'h-7 gap-1'
+              )}
+            >
               <PlusCircle className="h-3.5 w-3.5" />
               <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                 New Form
               </span>
-            </Button>
+            </Link>
           </div>
         </div>
         <TabsContent value="all">
