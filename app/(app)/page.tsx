@@ -10,7 +10,7 @@ import WhyUsSection from '@/components/why-us-section'
 export default function Page() {
   return (
     <div className="container relative">
-      <div className="mx-auto grid grid-cols-12 gap-8 space-y-0 pt-28 px-12">
+      <div className="mx-auto grid grid-cols-12 gap-8 space-y-0 py-28 px-8">
         <section className="space-y-4 col-span-6 mt-8">
           <div className="space-y-2">
             <Announcement />
