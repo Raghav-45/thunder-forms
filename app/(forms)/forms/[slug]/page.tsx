@@ -48,16 +48,30 @@ export default function FormBuilder() {
   )
 
   useEffect(() => {
-    if (formFields.length == 0 && formId && formId !== 'new-form') {
-      getFormById(formId).then((formData) => {
-        if (formData?.fields) {
-          setFormFields(formData?.fields)
-        } else {
-          alert('sads')
-        }
-      })
+    if (formId && formId !== 'new-form') {
+      getFormById(formId)
+        .then((formData) => {
+          if (formData?.fields) {
+            setFormFields(formData.fields)
+            setFormName(formData.title || 'New form')
+            setFormDescription(
+              formData.description || 'Lorem ipsum dolor sit amet'
+            )
+          } else {
+            toast.error('Failed to load form data')
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching form data:', error)
+          toast.error('Error loading form data')
+        })
+    } else {
+      // Reset the state for a new form
+      setFormFields([])
+      setFormName('New form')
+      setFormDescription('Lorem ipsum dolor sit amet')
     }
-  }, [formId, formFields])
+  }, [formId]) // Only depends on formId
 
   const addFormField = (variant: string, index: number) => {
     // Generate a unique field name using a random number
@@ -162,21 +176,27 @@ export default function FormBuilder() {
     )
   }
 
-  const handleSaveForm = () => {
+  const handleSaveForm = async () => {
     console.log(formFields)
 
     if (!formName) {
       toast.error('Form name is required')
       return
     }
-    if (formId == null || formId == 'new-form') {
-      createForm(formName, formDescription, formFields).then((e) => {
-        setFormId(e)
-        // router.replace(e)
-        toast.success(`New Form created successfully! ${formId}`)
-      })
+
+    if (formId == null || formId === 'new-form') {
+      // Create a new form
+      const newFormId = await createForm(formName, formDescription, formFields)
+      setFormId(newFormId)
+
+      // Update the URL without refreshing the page
+      const newUrl = `/forms/${newFormId}`
+      window.history.replaceState(null, '', newUrl)
+
+      toast.success('New Form created successfully!')
     } else {
-      updateFormbyId(formId, formName, formDescription, formFields)
+      // Update the existing form
+      await updateFormbyId(formId, formName, formDescription, formFields)
       toast.success('Form updated successfully!')
     }
   }
