@@ -18,18 +18,22 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { defaultFieldConfig } from '@/constants'
-import { createForm, updateFormbyId } from '@/lib/dbUtils'
+import { createForm, getFormById, updateFormbyId } from '@/lib/dbUtils'
 import { FormFieldType, FormFieldOrGroup } from '@/types/types'
 import { SaveIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 export default function FormBuilder() {
-  const [formId, setFormId] = useState<string | null>(null)
-  const [formName, setFormName] = useState('New form')
-  const [formDescription, setFormDescription] = useState(
-    'Lorem ipsum dolor sit amet'
+  const { slug } = useParams()
+
+  // BASIC FORM DETAILS
+  const [formId, setFormId] = useState<string | null>(
+    typeof slug == 'string' ? slug : null
   )
+  const [formName, setFormName] = useState('')
+  const [formDescription, setFormDescription] = useState('')
   // BASIC FORM DETAILS
 
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
@@ -39,6 +43,33 @@ export default function FormBuilder() {
   const [whichTabIsOpen, setWhichTabIsOpen] = useState<'editing' | 'preview'>(
     'editing'
   )
+
+  useEffect(() => {
+    // If a valid `formId` is present and it's not 'new-form', fetch the existing form's data
+    if (formId && formId !== 'new-form') {
+      getFormById(formId)
+        .then((formData) => {
+          if (formData?.fields) {
+            setFormFields(formData.fields)
+            setFormName(formData.title || 'New form')
+            setFormDescription(
+              formData.description || 'Lorem ipsum dolor sit amet'
+            )
+          } else {
+            toast.error('Failed to load form data')
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching form data:', error)
+          toast.error('Error loading form data')
+        })
+    } else {
+      // Reset the form state for a new form
+      setFormFields([]) // Clear the form fields
+      setFormName('New form') // Reset the form name to 'New form'
+      setFormDescription('Lorem ipsum dolor sit amet') // Reset the form description to placeholder text
+    }
+  }, [formId]) // Only depends on formId
 
   const addFormField = (variant: string, index: number) => {
     // Generate a unique field name using a random number
@@ -143,21 +174,28 @@ export default function FormBuilder() {
     )
   }
 
-  const handleSaveForm = () => {
+  const handleSaveForm = async () => {
     console.log(formFields)
 
     if (!formName) {
       toast.error('Form name is required')
       return
     }
-    if (!formId) {
-      createForm(formName, formDescription, formFields).then((e) => {
-        setFormId(e)
-        toast.success('New Form created successfully!')
-      })
+
+    if (formId == null || formId === 'new-form') {
+      // Create a new form
+      const newFormId = await createForm(formName, formDescription, formFields)
+      setFormId(newFormId)
+
+      // Update the URL without refreshing the page
+      const newUrl = `/forms/${newFormId}`
+      window.history.replaceState(null, '', newUrl)
+
+      toast.success('New Form created successfully!')
     } else {
-      updateFormbyId(formId, formName, formDescription, formFields)
-      toast.success('Form saved successfully!')
+      // Update the existing form
+      await updateFormbyId(formId, formName, formDescription, formFields)
+      toast.success('Form updated successfully!')
     }
   }
 
@@ -194,7 +232,11 @@ export default function FormBuilder() {
           <div className="grid w-full items-center gap-1.5">
             <Label>Form Link</Label>
             <Input
-              value={`https://localhost:3000/forms/${formId ?? 'new-form'}`}
+              value={`https://${
+                process.env.VERCEL_URL ??
+                process.env.NEXT_PUBLIC_VERCEL_URL ??
+                'localhost:3000'
+              }/forms/${formId ?? 'new-form'}`}
               readOnly
             />
           </div>
