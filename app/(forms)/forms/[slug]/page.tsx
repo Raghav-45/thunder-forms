@@ -232,7 +232,7 @@ export default function FormBuilder() {
           <div className="grid w-full items-center gap-1.5">
             <Label>Form Link</Label>
             <Input
-              value={`https://${process.env.VERCEL_URL}/forms/${
+              value={`https://${process.env.NEXT_PUBLIC_VERCEL_URL}/forms/${
                 formId ?? 'new-form'
               }`}
               readOnly
