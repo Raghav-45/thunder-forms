@@ -54,8 +54,11 @@ export default async function Forms() {
         <TabsContent value="all">
           <Card x-chunk="dashboard-06-chunk-0">
             <CardHeader>
-              <CardTitle>Your forms</CardTitle>
-              <CardDescription>Seamlessly manage your forms.</CardDescription>
+              <CardTitle>Manage Your Forms</CardTitle>
+              <CardDescription>
+                Effortlessly create, organize, and track your forms in one
+                place.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {formsss && formsss?.length > 0 ? (
@@ -133,21 +136,24 @@ export default async function Forms() {
 function NoDataComponent() {
   return (
     <div className="flex flex-col w-full items-center justify-center h-[50vh] gap-6">
-      <div className="flex items-center justify-center w-20 h-20 rounded-full bg-neutral-800">
-        <InboxIcon className="w-10 h-10 text-neutral-400" />
+      <div className="flex items-center justify-center w-20 h-20 rounded-full bg-muted">
+        <InboxIcon className="w-10 h-10 text-muted-foreground" />
       </div>
-      <div className="space-y-2 text-center">
+      <div className="space-y-3 text-center">
         <h2 className="text-2xl font-bold tracking-tight">
-          No Forms Available
+          You haven&apos;t created any forms yet
         </h2>
         <p className="text-muted-foreground text-sm">
-          It looks like you haven&apos;t created any forms yet.
+          Welcome to Thunder Forms, Ready to create your first form?
           <br />
-          Start by clicking the{' '}
+          Click the{' '}
           <span className="text-primary font-semibold">
             &quot;New Form&quot;
           </span>{' '}
-          button above.
+          button above and get started in seconds.
+        </p>
+        <p className="text-muted-foreground text-xs italic">
+          Your journey to seamless form creation begins here.
         </p>
       </div>
     </div>
