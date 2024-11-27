@@ -22,15 +22,15 @@ export function MainNav() {
       </Link>
       <nav className="ml-6 flex items-center gap-4 text-sm lg:gap-6">
         <Link
-          href="/examples"
+          href="/forms/new-form"
           className={cn(
             'transition-colors hover:text-foreground/80',
-            pathname?.startsWith('/examples')
+            pathname?.startsWith('/forms/new-form')
               ? 'text-foreground'
               : 'text-foreground/60'
           )}
         >
-          Examples
+          Build a form
         </Link>
         <Link
           href="/templates"

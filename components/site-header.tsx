@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { MainNav } from '@/components/mainNav'
 import { buttonVariants } from './ui/button'
-import { GithubIcon } from 'lucide-react'
+import { GithubIcon, TerminalIcon } from 'lucide-react'
 import { siteConfig } from '@/config/site'
 
 export function SiteHeader() {
@@ -16,6 +16,19 @@ export function SiteHeader() {
             <CommandMenu />
           </div> */}
           <nav className="flex items-center">
+            <Link
+              href="/dashboard"
+              className={cn(
+                buttonVariants({
+                  variant: 'secondary',
+                  size: 'sm',
+                }),
+                'mr-1'
+              )}
+            >
+              <TerminalIcon className="h-4 w-4" />
+              Go to dashboard
+            </Link>
             <Link
               href={siteConfig.links.github}
               target="_blank"

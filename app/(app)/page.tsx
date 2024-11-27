@@ -4,6 +4,8 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Announcement } from '@/components/Announcement'
 import { DemoReportAnIssue } from '@/components/report-an-issue'
+import Testimonials from '@/components/testimonials'
+import WhyUsSection from '@/components/why-us-section'
 
 export default function Page() {
   return (
@@ -26,7 +28,7 @@ export default function Page() {
             with ease.
           </p>
           <div className="flex w-full space-x-4 pt-2">
-            <Link href="/docs" className={cn(buttonVariants())}>
+            <Link href="/forms/new-form" className={cn(buttonVariants())}>
               Get started
             </Link>
             <Link
@@ -39,38 +41,11 @@ export default function Page() {
         </section>
         <section className="col-span-5 col-start-8">
           <DemoReportAnIssue />
-          {/* <div className="relative h-96 w-full overflow-hidden rounded-xl border border-black/20 bg-neutral-300 font-medium dark:border-white/5 dark:bg-neutral-800">
-            <div className="flex space-x-1.5 h-8 w-full flex-row border-b border-black/20 px-3 py-1 pt-2 dark:border-white/5">
-              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-            </div>
-            <div className="px-4 pt-3 text-sm text-black dark:text-white">
-              <pre>
-                <code>{`import React from 'react';
-
-const CoolComponent = () => {
-  return (
-    <div className="p-4 bg-gradient-to-r from-purple-400 to-pink-500 text-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-2">
-        Welcome to our awesome site!
-      </h2>
-      <p className="mb-4">
-        Built with cutting-edge components.
-      </p>
-      <button className="bg-white text-purple-600 px-4 py-2 rounded hover:bg-purple-100 transition-colors">
-        Get Started
-      </button>
-    </div>
-  );
-};
-
-export default CoolComponent;`}</code>
-              </pre>
-            </div>
-          </div> */}
         </section>
       </div>
+
+      <WhyUsSection />
+      <Testimonials />
 
       <section className="pt-40">
         <div className="flex flex-col gap-y-2">

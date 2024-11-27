@@ -1,3 +1,4 @@
+import { FormFieldOrGroup } from '@/types/types'
 import { db } from '@/config/firebaseConfig'
 import {
   addDoc,
@@ -8,7 +9,31 @@ import {
   updateDoc,
 } from 'firebase/firestore'
 
+export interface FormType {
+  title: string
+  description: string
+  fields: FormFieldOrGroup[]
+}
+
+declare interface FormTypeWithId extends FormType {
+  id: string
+}
+
 const FORMS_COLLECTION = 'forms'
+
+// Function to clean up form fields before storing them in Firestore
+function cleanedFormFields(formFields: FormFieldOrGroup[]) {
+  return formFields.map((field) => {
+    // Destructure and exclude properties dynamically // TODO: Temp Fix
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+    const { onChange, onSelect, setValue, ...cleanedField } =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      field as unknown as any
+    return {
+      ...cleanedField,
+    } as FormFieldOrGroup
+  })
+}
 
 // Fetch all forms from Firestore
 async function getAllForms() {
@@ -16,7 +41,6 @@ async function getAllForms() {
   const q = collection(db, FORMS_COLLECTION)
   const querySnapshot = await getDocs(q)
   querySnapshot.forEach((doc) => {
-    // console.log(data)
     data.push({ id: doc.id, ...doc.data() } as FormTypeWithId)
   })
   return data
@@ -27,7 +51,6 @@ async function getFormById(id: string) {
   const q = doc(db, FORMS_COLLECTION, id)
   const docSnap = await getDoc(q)
   if (docSnap.exists()) {
-    // console.log('Document data:', docSnap.data())
     return { id: docSnap.id, ...docSnap.data() } as FormTypeWithId
   } else {
     return null
@@ -36,15 +59,20 @@ async function getFormById(id: string) {
 
 // Create a new form in Firestore
 async function createForm(
-  name: string,
+  title: string,
   description: string,
-  fields: FieldType[]
+  fields: FormFieldOrGroup[]
 ) {
+  // Clean the fields
+  const cleanedFields = cleanedFormFields(fields)
+
   const newForm: FormType = {
-    name,
+    title,
     description,
-    fields,
+    fields: cleanedFields, // Use cleaned fields without functions
   }
+
+  // Add the new form to Firestore
   const docRef = await addDoc(collection(db, FORMS_COLLECTION), newForm)
   return docRef.id
 }
@@ -52,17 +80,19 @@ async function createForm(
 // Update a form by ID
 async function updateFormbyId(
   id: string,
-  name: string,
+  title: string,
   description: string,
-  fields: FieldType[]
+  fields: FormFieldOrGroup[]
 ) {
   const formRef = doc(db, FORMS_COLLECTION, id)
 
-  // Update the form with the new name, description, and fields
+  // Clean the fields
+  const cleanedFields = cleanedFormFields(fields)
+
   await updateDoc(formRef, {
-    name: name,
+    title: title,
     description: description,
-    fields: fields,
+    fields: cleanedFields, // Use cleaned fields without functions
   })
 
   return id // Return the ID of the updated form
