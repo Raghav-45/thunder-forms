@@ -43,7 +43,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useState } from 'react'
 import {
   Pagination,
   PaginationContent,
@@ -76,8 +75,6 @@ const fakeResponse = {
 }
 
 export default function Responses() {
-  const [selectedResponse, setSelectedResponse] =
-    useState<typeof fakeResponse>(fakeResponse)
   const responses = [
     {
       submissionId: 'TF123456',
@@ -279,7 +276,7 @@ export default function Responses() {
           <CardHeader className="flex flex-row items-start bg-muted/50">
             <div className="grid gap-0.5">
               <CardTitle className="group flex items-center gap-2 text-lg">
-                Thunder Form {selectedResponse?.submissionId ?? 'Oe31b70H'}
+                Thunder Form {fakeResponse?.submissionId ?? 'Oe31b70H'}
                 <Button
                   size="icon"
                   variant="outline"
@@ -291,8 +288,8 @@ export default function Responses() {
               </CardTitle>
               <CardDescription>
                 Date:{' '}
-                {selectedResponse
-                  ? format(selectedResponse?.SubmittedOn, 'PPP')
+                {fakeResponse
+                  ? format(fakeResponse?.SubmittedOn, 'PPP')
                   : 'November 23, 2023'}
               </CardDescription>
             </div>
@@ -320,14 +317,14 @@ export default function Responses() {
           <CardContent className="p-4 text-sm">
             <pre className="rounded-lg bg-neutral-800/60 px-4 py-2 whitespace-pre-wrap">
               <code className="text-white font-mono text-xs">
-                {JSON.stringify(selectedResponse, null, 4)}
+                {JSON.stringify(fakeResponse, null, 4)}
               </code>
             </pre>
           </CardContent>
           <CardFooter className="flex flex-row items-center border-t bg-muted/50 px-6 py-3">
             <div className="text-xs text-muted-foreground">
               Updated on{' '}
-              {selectedResponse && format(selectedResponse?.SubmittedOn, 'PPP')}
+              {fakeResponse && format(fakeResponse?.SubmittedOn, 'PPP')}
             </div>
             <div className="ml-auto mr-0 w-auto flex gap-x-4">
               <Button variant="destructive" size="sm" className="h-6 text-xs">
