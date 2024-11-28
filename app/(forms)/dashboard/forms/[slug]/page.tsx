@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
+import { siteConfig } from '@/config/site'
 import { defaultFieldConfig } from '@/constants'
 import { createForm, getFormById, updateFormbyId } from '@/lib/dbUtils'
 import { FormFieldType, FormFieldOrGroup } from '@/types/types'
@@ -274,9 +275,9 @@ export default function FormBuilder() {
             {formId !== 'new-form' && (
               <CopyButton
                 value={`https://${
-                  process.env.VERCEL_URL ??
-                  process.env.NEXT_PUBLIC_VERCEL_URL ??
-                  'localhost:3000'
+                  process.env.VERCEL_ENV == 'production'
+                    ? siteConfig.url
+                    : 'localhost:3000'
                 }/forms/${formId ?? 'new-form'}`}
               />
             )}
