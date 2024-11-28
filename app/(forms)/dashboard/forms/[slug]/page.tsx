@@ -278,7 +278,7 @@ export default function FormBuilder() {
                   process.env.VERCEL_ENV == 'production'
                     ? siteConfig.url
                     : 'localhost:3000'
-                }/forms/${formId ?? 'new-form'}`}
+                }/forms/${formId}`}
               />
             )}
             <Select
