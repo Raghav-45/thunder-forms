@@ -1,4 +1,6 @@
-import { InboxIcon, MoreHorizontal, PlusCircle } from 'lucide-react'
+'use client'
+
+import { InboxIcon, MoreHorizontalIcon, PlusCircle } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -11,13 +13,6 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
   Table,
   TableBody,
   TableCell,
@@ -26,12 +21,45 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { getAllForms } from '@/lib/dbUtils'
+import { deleteFormById, FormTypeWithId, getAllForms } from '@/lib/dbUtils'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { useEffect, useState } from 'react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
-export default async function Forms() {
-  const formsss = await getAllForms()
+export default function Forms() {
+  const [forms, setForms] = useState<FormTypeWithId[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchForms() {
+      try {
+        if (forms.length == 0) {
+          setIsLoading(true)
+          const data = await getAllForms()
+          setForms(data)
+        }
+      } catch (error) {
+        console.error('Error fetching forms:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchForms()
+  }, [forms])
+
+  async function handleDeleteForm(formId: string) {
+    const id = await deleteFormById(formId)
+    setForms((prevForms) => prevForms.filter((form) => form.id !== id))
+  }
+
   return (
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
       <Tabs defaultValue="all">
@@ -69,7 +97,9 @@ export default async function Forms() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {formsss && formsss?.length > 0 ? (
+              {isLoading ? (
+                <p>loading...</p>
+              ) : forms && forms.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -87,7 +117,7 @@ export default async function Forms() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {formsss.map((form, index) => (
+                    {forms.map((form, index) => (
                       <TableRow key={index}>
                         <TableCell className="font-medium">
                           {form.title}
@@ -109,14 +139,20 @@ export default async function Forms() {
                                 size="icon"
                                 variant="ghost"
                               >
-                                <MoreHorizontal className="h-4 w-4" />
+                                <MoreHorizontalIcon className="h-4 w-4" />
                                 <span className="sr-only">Toggle menu</span>
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
+                              <Link href={`/dashboard/forms/${form.id}`}>
+                                <DropdownMenuItem>Edit</DropdownMenuItem>
+                              </Link>
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteForm(form.id)}
+                              >
+                                Delete
+                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -130,8 +166,8 @@ export default async function Forms() {
             </CardContent>
             <CardFooter>
               <div className="text-xs text-muted-foreground">
-                Showing <strong>1-{formsss?.length ?? 10}</strong> of{' '}
-                <strong>{formsss?.length ?? 10}</strong> forms
+                Showing <strong>1-{forms?.length ?? 10}</strong> of{' '}
+                <strong>{forms?.length ?? 10}</strong> forms
               </div>
             </CardFooter>
           </Card>

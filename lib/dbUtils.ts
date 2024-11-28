@@ -3,6 +3,7 @@ import { db } from '@/config/firebaseConfig'
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -15,7 +16,7 @@ export interface FormType {
   fields: FormFieldOrGroup[]
 }
 
-declare interface FormTypeWithId extends FormType {
+export interface FormTypeWithId extends FormType {
   id: string
 }
 
@@ -98,4 +99,14 @@ async function updateFormbyId(
   return id // Return the ID of the updated form
 }
 
-export { getAllForms, getFormById, createForm, updateFormbyId }
+// Delete a form by ID
+async function deleteFormById(id: string) {
+  const formRef = doc(db, FORMS_COLLECTION, id)
+
+  // Delete the form document
+  await deleteDoc(formRef)
+
+  return id // Return the ID of the deleted form
+}
+
+export { getAllForms, getFormById, createForm, updateFormbyId, deleteFormById }
