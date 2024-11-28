@@ -16,6 +16,7 @@ import {
 import { LuPencil, LuTrash2 } from 'react-icons/lu'
 import { cn } from '@/lib/utils'
 import { Reorder } from 'framer-motion'
+import { createResponse } from '@/lib/dbUtils'
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
@@ -26,6 +27,7 @@ export type FormPreviewProps = {
   onReorder?: (reorderedElements: FormFieldOrGroup[]) => void
   selectedField?: FormFieldType | null
   behaveAsPreview: boolean
+  formId?: string
 }
 
 const DraggableElement = ({
@@ -164,6 +166,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
   onReorder,
   selectedField,
   behaveAsPreview,
+  formId,
 }) => {
   const formSchema = generateZodSchema(formFields)
   const defaultVals = generateDefaultValues(formFields)
@@ -173,18 +176,27 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
     defaultValues: defaultVals,
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    try {
-      toast.custom(() => (
-        <pre className="w-[340px] rounded-lg bg-neutral-800 px-4 py-2">
-          <code className="text-white font-mono text-xs">
-            {JSON.stringify(data, null, 2)}
-          </code>
-        </pre>
-      ))
-    } catch (error) {
-      console.error('Form submission error', error)
-      toast.error('Failed to submit the form. Please try again.')
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    // try {
+    //   toast.custom(() => (
+    //     <pre className="w-[340px] rounded-lg bg-neutral-800 px-4 py-2">
+    //       <code className="text-white font-mono text-xs">
+    //         {JSON.stringify(data, null, 2)}
+    //       </code>
+    //     </pre>
+    //   ))
+    // } catch (error) {
+    //   console.error('Form submission error', error)
+    //   toast.error('Failed to submit the form. Please try again.')
+    // }
+    if (behaveAsPreview) {
+      try {
+        await createResponse(formId!, data)
+        toast.success('Form submitted successfully!')
+      } catch (error) {
+        console.error('Form submission error', error)
+        toast.error('Failed to submit the form. Please try again.')
+      }
     }
   }
 

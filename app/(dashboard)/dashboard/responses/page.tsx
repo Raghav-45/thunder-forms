@@ -12,7 +12,7 @@ import {
   MoreVertical,
 } from 'lucide-react'
 
-import { format, formatDistanceToNow, parse } from 'date-fns'
+import { format } from 'date-fns'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -48,6 +48,10 @@ import {
   PaginationContent,
   PaginationItem,
 } from '@/components/ui/pagination'
+import { useEffect, useState } from 'react'
+import { FormResponseTypeWithId, getResponsesByFormId } from '@/lib/dbUtils'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 const fakeResponse = {
   submissionId: 'TF123456',
@@ -75,46 +79,25 @@ const fakeResponse = {
 }
 
 export default function Responses() {
-  const responses = [
-    {
-      submissionId: 'TF123456',
-      formName: 'Event Registration',
-      status: 'Completed',
-      SubmittedOn: '2024-11-26 10:15 AM',
-    },
-    {
-      submissionId: 'TF123457',
-      formName: 'Feedback Form',
-      status: 'Pending',
-      SubmittedOn: '2024-11-25 02:30 PM',
-    },
-    {
-      submissionId: 'TF123458',
-      formName: 'Contact Form',
-      status: 'Completed',
-      SubmittedOn: '2024-11-24 06:45 PM',
-    },
-    {
-      submissionId: 'TF123459',
-      formName: 'Survey Form',
-      status: 'In Progress',
-      SubmittedOn: '2024-11-23 09:10 AM',
-    },
-    {
-      submissionId: 'TF123460',
-      formName: 'Job Application',
-      status: 'Completed',
-      SubmittedOn: '2024-11-22 11:20 AM',
-    },
-  ]
+  const [responses, setResponses] = useState<FormResponseTypeWithId[]>()
+  const [selectedResponse, setSelectedResponse] =
+    useState<FormResponseTypeWithId>()
 
-  function formatDate(dateString: string) {
-    // Parse the date string into a Date object
-    const date = parse(dateString, 'yyyy-MM-dd hh:mm a', new Date())
-
-    // Calculate the distance from now and return it as a relative time string
-    return formatDistanceToNow(date, { addSuffix: true })
-  }
+  useEffect(() => {
+    getResponsesByFormId('2bFG4MkZjcnwBUBSohw7')
+      .then((responseData) => {
+        if (responseData) {
+          setResponses(responseData)
+          setSelectedResponse(responseData[0])
+        } else {
+          toast.error('Failed to load form data')
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching form data:', error)
+        toast.error('Error loading form data')
+      })
+  }, []) // Only depends on slug
 
   return (
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
@@ -135,7 +118,9 @@ export default function Responses() {
           <Card x-chunk="dashboard-05-chunk-1">
             <CardHeader className="pb-2">
               <CardDescription>This Week</CardDescription>
-              <CardTitle className="text-4xl">1,329</CardTitle>
+              <CardTitle className="text-4xl">
+                {responses?.length ?? '1,329'}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground">
@@ -149,7 +134,9 @@ export default function Responses() {
           <Card x-chunk="dashboard-05-chunk-2">
             <CardHeader className="pb-2">
               <CardDescription>This Month</CardDescription>
-              <CardTitle className="text-4xl">5,329</CardTitle>
+              <CardTitle className="text-4xl">
+                {responses?.length ?? '5,329'}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground">
@@ -219,47 +206,58 @@ export default function Responses() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {responses.map((response, index) => (
-                        <TableRow key={index}>
-                          <TableCell className="font-medium">
-                            {response.submissionId || 'N/A'}
-                          </TableCell>
-                          <TableCell>{response.formName || 'N/A'}</TableCell>
-                          <TableCell className="truncate max-w-[200px]">
-                            <Badge className="text-xs" variant="outline">
-                              {response.status || 'N/A'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {(response?.SubmittedOn &&
-                              formatDate(response.SubmittedOn)) ||
-                              'Unknown'}
-                          </TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  aria-haspopup="true"
-                                  size="icon"
-                                  variant="ghost"
-                                >
-                                  <MoreHorizontalIcon className="h-4 w-4" />
-                                  <span className="sr-only">Toggle menu</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem>
-                                  View Details
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  Delete Response
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {responses &&
+                        responses.map((response, index) => (
+                          <TableRow
+                            key={index}
+                            className={cn(
+                              'cursor-pointer',
+                              selectedResponse?.id == response.id
+                                ? 'bg-muted/50'
+                                : ''
+                            )}
+                            onClick={() => setSelectedResponse(response)}
+                          >
+                            <TableCell className="font-medium">
+                              {response.id || 'N/A'}
+                            </TableCell>
+                            <TableCell>{response.id || 'N/A'}</TableCell>
+                            <TableCell className="truncate max-w-[200px]">
+                              <Badge className="text-xs" variant="outline">
+                                completed
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {/* {(response?.submittedAt &&
+                                formatDate(response.submittedAt)) ||
+                                'Unknown'} */}
+                              {response?.submittedAt}
+                            </TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    aria-haspopup="true"
+                                    size="icon"
+                                    variant="ghost"
+                                  >
+                                    <MoreHorizontalIcon className="h-4 w-4" />
+                                    <span className="sr-only">Toggle menu</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuItem>
+                                    View Details
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem>
+                                    Delete Response
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))}
                     </TableBody>
                   </Table>
                 ) : (
@@ -317,7 +315,7 @@ export default function Responses() {
           <CardContent className="p-4 text-sm">
             <pre className="rounded-lg bg-neutral-800/60 px-4 py-2 whitespace-pre-wrap">
               <code className="text-white font-mono text-xs">
-                {JSON.stringify(fakeResponse, null, 4)}
+                {JSON.stringify(selectedResponse ?? fakeResponse, null, 4)}
               </code>
             </pre>
           </CardContent>

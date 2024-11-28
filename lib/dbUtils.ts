@@ -7,7 +7,9 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   updateDoc,
+  where,
 } from 'firebase/firestore'
 
 export interface FormType {
@@ -21,6 +23,7 @@ export interface FormTypeWithId extends FormType {
 }
 
 const FORMS_COLLECTION = 'forms'
+const RESPONSES_COLLECTION = 'responses'
 
 // Function to clean up form fields before storing them in Firestore
 function cleanedFormFields(formFields: FormFieldOrGroup[]) {
@@ -109,4 +112,54 @@ async function deleteFormById(id: string) {
   return id // Return the ID of the deleted form
 }
 
-export { getAllForms, getFormById, createForm, updateFormbyId, deleteFormById }
+// Response Utils
+
+export interface FormResponseType {
+  parentFormId: string
+  submittedAt: string
+  data: Record<string, string | number | boolean> // Adjust type as needed for form field values
+}
+
+export interface FormResponseTypeWithId extends FormResponseType {
+  id: string
+}
+
+// Create a new form in Firestore
+async function createResponse(
+  parentFormId: string,
+  data: Record<string, string | number | boolean>
+) {
+  // Prepare the response object
+  const newResponse: FormResponseType = {
+    parentFormId,
+    submittedAt: new Date().toISOString(), // Record the submission timestamp
+    data, // Store the submitted data
+  }
+
+  // Add the new response to Firestore
+  const docRef = await addDoc(collection(db, RESPONSES_COLLECTION), newResponse)
+  return docRef.id // Return the ID of the new response document
+}
+
+async function getResponsesByFormId(id: string) {
+  const data: FormResponseTypeWithId[] = []
+  const q = query(
+    collection(db, RESPONSES_COLLECTION),
+    where('parentFormId', '==', id)
+  )
+  const querySnapshot = await getDocs(q)
+  querySnapshot.forEach((doc) => {
+    data.push({ id: doc.id, ...doc.data() } as FormResponseTypeWithId)
+  })
+  return data
+}
+
+export {
+  getAllForms,
+  getFormById,
+  createForm,
+  updateFormbyId,
+  deleteFormById,
+  createResponse,
+  getResponsesByFormId,
+}
