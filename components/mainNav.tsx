@@ -22,7 +22,7 @@ export function MainNav() {
       </Link>
       <nav className="ml-6 flex items-center gap-4 text-sm lg:gap-6">
         <Link
-          href="/forms/new-form"
+          href="/dashboard/forms/new-form"
           className={cn(
             'transition-colors hover:text-foreground/80',
             pathname?.startsWith('/forms/new-form')
