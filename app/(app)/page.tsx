@@ -47,7 +47,7 @@ export default function Page() {
       <WhyUsSection />
       <Testimonials />
 
-      <section className="pt-40">
+      {/* <section className="pt-40">
         <div className="flex flex-col gap-y-2">
           <div className="flex flex-row items-center">
             <h1 className="text-4xl">As simple as</h1>
@@ -60,7 +60,7 @@ export default function Page() {
             </span>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   )
 }
