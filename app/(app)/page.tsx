@@ -28,7 +28,10 @@ export default function Page() {
             with ease.
           </p>
           <div className="flex w-full space-x-4 pt-2">
-            <Link href="/forms/new-form" className={cn(buttonVariants())}>
+            <Link
+              href="/dashboard/forms/new-form"
+              className={cn(buttonVariants())}
+            >
               Get started
             </Link>
             <Link
