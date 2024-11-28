@@ -5,6 +5,7 @@ import { getFormById } from '@/lib/dbUtils'
 import { toast } from 'sonner'
 import { FormFieldOrGroup } from '@/types/types'
 import { FormPreview } from '@/components/form-preview'
+import SkeletonPage from '../skeleton/page'
 
 interface PageProps {
   params: {
@@ -43,7 +44,7 @@ export default function Page({ params }: PageProps) {
       })
   }, [slug]) // Only depends on slug
 
-  if (loading) return <p>Loading...</p>
+  if (loading) return <SkeletonPage />
   return (
     <div className="md:container space-y-6 p-4 pt-16 md:p-10 pb-16">
       <div className="space-y-0.5 md:space-y-1">
