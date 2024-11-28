@@ -32,10 +32,22 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 export default function Forms() {
   const [forms, setForms] = useState<FormTypeWithId[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [deleteFormId, setDeleteFormId] = useState<string>('')
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
+    useState<boolean>(false)
 
   useEffect(() => {
     async function fetchForms() {
@@ -55,8 +67,8 @@ export default function Forms() {
     fetchForms()
   }, [forms])
 
-  async function handleDeleteForm(formId: string) {
-    const id = await deleteFormById(formId)
+  const handleDeleteForm = async () => {
+    const id = await deleteFormById(deleteFormId)
     setForms((prevForms) => prevForms.filter((form) => form.id !== id))
   }
 
@@ -149,7 +161,10 @@ export default function Forms() {
                                 <DropdownMenuItem>Edit</DropdownMenuItem>
                               </Link>
                               <DropdownMenuItem
-                                onClick={() => handleDeleteForm(form.id)}
+                                onClick={() => {
+                                  setDeleteFormId(form.id)
+                                  setIsDeleteConfirmationOpen(true)
+                                }}
                               >
                                 Delete
                               </DropdownMenuItem>
@@ -158,6 +173,39 @@ export default function Forms() {
                         </TableCell>
                       </TableRow>
                     ))}
+
+                    <Dialog
+                      open={isDeleteConfirmationOpen}
+                      onOpenChange={setIsDeleteConfirmationOpen}
+                    >
+                      <DialogContent isClosable={false}>
+                        <DialogHeader>
+                          <DialogTitle>Are you absolutely sure?</DialogTitle>
+                          <DialogDescription>
+                            This action cannot be undone. This will permanently
+                            delete your form and remove your data from our
+                            servers.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            <Button type="button" variant="outline">
+                              Close
+                            </Button>
+                          </DialogClose>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() => {
+                              handleDeleteForm()
+                              setIsDeleteConfirmationOpen(false)
+                            }}
+                          >
+                            Continue
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </TableBody>
                 </Table>
               ) : (
