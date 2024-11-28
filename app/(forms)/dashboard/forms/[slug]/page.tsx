@@ -1,5 +1,6 @@
 'use client'
 
+import { CopyButton } from '@/components/copy-button'
 import { EditFieldForm } from '@/components/edit-field-form'
 import { FieldSelector } from '@/components/field-selector'
 import { FormPreview } from '@/components/form-preview'
@@ -222,9 +223,10 @@ export default function FormBuilder() {
       <Card className="w-80 border-0 border-r-2 rounded-none h-screen overflow-hidden">
         <CardContent className="p-4 pt-6 space-y-4">
           <div className="flex flex-row justify-between mb-8">
-            <h2 className="text-2xl font-bold">Form Settings</h2>
+            <h2 className="text-2xl font-bold">Settings</h2>
+
             <Button size="sm" variant="secondary" onClick={handleSaveForm}>
-              <SaveIcon /> Save Form
+              <SaveIcon /> Save
             </Button>
           </div>
           <div className="grid w-full items-center gap-1.5">
@@ -246,7 +248,7 @@ export default function FormBuilder() {
               onChange={(e) => setFormDescription(e.target.value)}
             />
           </div>
-          <div className="grid w-full items-center gap-1.5">
+          {/* <div className="grid w-full items-center gap-1.5">
             <Label>Form Link</Label>
             <Input
               value={`https://${
@@ -256,7 +258,7 @@ export default function FormBuilder() {
               }/forms/${formId ?? 'new-form'}`}
               readOnly
             />
-          </div>
+          </div> */}
         </CardContent>
       </Card>
 
@@ -267,18 +269,32 @@ export default function FormBuilder() {
       >
         <div className="flex flex-row justify-between">
           <h2 className="text-3xl font-bold mb-6">Form Preview</h2>
-          <Select
-            onValueChange={(e) => setWhichTabIsOpen(e as 'editing' | 'preview')}
-            defaultValue={whichTabIsOpen}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Editing" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="preview">Preview</SelectItem>
-              <SelectItem value="editing">Editing</SelectItem>
-            </SelectContent>
-          </Select>
+
+          <div className="flex flex-row gap-x-2">
+            {formId !== 'new-form' && (
+              <CopyButton
+                value={`https://${
+                  process.env.VERCEL_URL ??
+                  process.env.NEXT_PUBLIC_VERCEL_URL ??
+                  'localhost:3000'
+                }/forms/${formId ?? 'new-form'}`}
+              />
+            )}
+            <Select
+              onValueChange={(e) =>
+                setWhichTabIsOpen(e as 'editing' | 'preview')
+              }
+              defaultValue={whichTabIsOpen}
+            >
+              <SelectTrigger className="w-[180px] h-8">
+                <SelectValue placeholder="Editing" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="preview">Preview</SelectItem>
+                <SelectItem value="editing">Editing</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <Card className="min-h-[600px] border-2 border-dashed border-muted">
           <CardContent className="p-6">
