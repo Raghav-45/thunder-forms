@@ -202,7 +202,7 @@ export default function FormBuilder() {
   return (
     <div className="flex h-screen bg-background text-foreground">
       {/* Left Side bar with Form Details */}
-      <Card className="w-80 border-l rounded-none h-screen overflow-hidden">
+      <Card className="w-80 border-0 border-r-2 rounded-none h-screen overflow-hidden">
         <CardContent className="p-4 pt-6 space-y-4">
           <div className="flex flex-row justify-between mb-8">
             <h2 className="text-2xl font-bold">Form Settings</h2>
@@ -286,7 +286,7 @@ export default function FormBuilder() {
       </div>
 
       {/* Right Side bar */}
-      <Card className="w-80 border-l rounded-none h-screen overflow-hidden">
+      <Card className="w-80 border-0 border-l-2 rounded-none h-screen overflow-hidden">
         <CardContent className="p-4 pt-6">
           <h2 className="text-2xl font-bold">Available Fields</h2>
           <CardDescription>
