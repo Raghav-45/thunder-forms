@@ -71,6 +71,23 @@ export default function FormBuilder() {
     }
   }, [formId]) // Only depends on formId
 
+  const handleDragStart = (
+    e: React.DragEvent,
+    variant: string,
+    index: number
+  ) => {
+    e.dataTransfer.setData('elementVariant', variant)
+    e.dataTransfer.setData('elementIndex', index.toString())
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    const variant = e.dataTransfer.getData('elementVariant')
+    const index = parseInt(e.dataTransfer.getData('elementIndex'), 10)
+
+    addFormField(variant, index)
+  }
+
   const addFormField = (variant: string, index: number) => {
     // Generate a unique field name using a random number
     const newFieldName = `name_${Math.random().toString().slice(-10)}`
@@ -246,7 +263,7 @@ export default function FormBuilder() {
       <div
         className="flex-1 p-8 overflow-auto"
         onDragOver={(e) => e.preventDefault()}
-        // onDrop={handleDrop}
+        onDrop={handleDrop}
       >
         <div className="flex flex-row justify-between">
           <h2 className="text-3xl font-bold mb-6">Form Preview</h2>
@@ -296,8 +313,11 @@ export default function FormBuilder() {
           <ScrollArea className="h-[calc(100vh-8rem)]">
             <div className="flex flex-row">
               <FieldSelector
-                addFormField={(variant: string, index: number = 0) =>
-                  addFormField(variant, index)
+                // addFormField={(variant: string, index: number = 0) =>
+                //   addFormField(variant, index)
+                // }
+                onDragStart={(e, variant: string, index: number = 0) =>
+                  handleDragStart(e, variant, index)
                 }
               />
             </div>
