@@ -5,12 +5,12 @@ import { Button } from '@/components/ui/button'
 import { GripVerticalIcon } from 'lucide-react'
 
 type FieldSelectorProps = {
-  // addFormField: (variant: string, index?: number) => void
+  addFormField: (variant: string, index?: number) => void
   onDragStart: (e: React.DragEvent, variant: string, index?: number) => void
 }
 
 export const FieldSelector: React.FC<FieldSelectorProps> = ({
-  // addFormField,
+  addFormField,
   onDragStart,
 }) => {
   return (
@@ -25,7 +25,7 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
             <Button
               key={variant.name}
               variant="outline"
-              // onClick={() => addFormField(variant.name, variant.index)}
+              onClick={() => addFormField(variant.name, variant.index)}
               onDragStart={(e) => onDragStart(e, variant.name, variant.index)}
               className="rounded-xl w-full"
               size="sm"

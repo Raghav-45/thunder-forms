@@ -313,9 +313,9 @@ export default function FormBuilder() {
           <ScrollArea className="h-[calc(100vh-8rem)]">
             <div className="flex flex-row">
               <FieldSelector
-                // addFormField={(variant: string, index: number = 0) =>
-                //   addFormField(variant, index)
-                // }
+                addFormField={(variant: string, index: number = 0) =>
+                  addFormField(variant, index)
+                }
                 onDragStart={(e, variant: string, index: number = 0) =>
                   handleDragStart(e, variant, index)
                 }
