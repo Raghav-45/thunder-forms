@@ -5,7 +5,7 @@ export const siteConfig = {
   description:
     'With Thunder Forms, you’re ready to create, customize, and capture insights in a snap.',
   links: {
-    // twitter: 'https://twitter.com/shadcn',
+    twitter: 'https://twitter.com/adityaxraghav',
     github: 'https://github.com/raghav-45',
   },
   keywords: [
