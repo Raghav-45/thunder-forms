@@ -273,13 +273,7 @@ export default function FormBuilder() {
 
           <div className="flex flex-row gap-x-2">
             {formId !== 'new-form' && (
-              <CopyButton
-                value={`https://${
-                  process.env.VERCEL_ENV == 'production'
-                    ? siteConfig.url
-                    : 'localhost:3000'
-                }/forms/${formId}`}
-              />
+              <CopyButton value={`${siteConfig.url}/forms/${formId}`} />
             )}
             <Select
               onValueChange={(e) =>
