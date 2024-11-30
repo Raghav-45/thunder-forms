@@ -117,7 +117,9 @@ export default function Forms() {
                       <TableHead className="hidden md:table-cell">
                         Created at
                       </TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>
+                        <span className="sr-only">Actions</span>
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
