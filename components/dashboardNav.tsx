@@ -9,6 +9,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { usePathname } from 'next/navigation'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 
 interface DashboardNavProps {}
 
@@ -51,4 +59,37 @@ const DashboardNav: FC<DashboardNavProps> = ({}) => {
   )
 }
 
+const DashboardBreadcrumb = ({}) => {
+  const pathname = usePathname()
+  const pathSegments = pathname.split('/').filter(Boolean)
+
+  return (
+    <Breadcrumb className="hidden md:flex">
+      <BreadcrumbList>
+        {pathSegments.map((segment, index) => {
+          const href = `/${pathSegments.slice(0, index + 1).join('/')}`
+          const isLast = index === pathSegments.length - 1
+          const label = segment.charAt(0).toUpperCase() + segment.slice(1)
+
+          return (
+            <BreadcrumbItem key={href}>
+              {!isLast ? (
+                <>
+                  <BreadcrumbLink asChild>
+                    <Link href={href}>{label}</Link>
+                  </BreadcrumbLink>
+                  <BreadcrumbSeparator />
+                </>
+              ) : (
+                <BreadcrumbPage>{label}</BreadcrumbPage>
+              )}
+            </BreadcrumbItem>
+          )
+        })}
+      </BreadcrumbList>
+    </Breadcrumb>
+  )
+}
+
 export default DashboardNav
+export { DashboardBreadcrumb }
