@@ -52,6 +52,7 @@ import { useEffect, useState } from 'react'
 import { FormResponseTypeWithId, getResponsesByFormId } from '@/lib/dbUtils'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { useParams } from 'next/navigation'
 
 const fakeResponse = {
   submissionId: 'TF123456',
@@ -79,12 +80,16 @@ const fakeResponse = {
 }
 
 export default function Responses() {
+  const { formId } = useParams()
+
   const [responses, setResponses] = useState<FormResponseTypeWithId[]>()
   const [selectedResponse, setSelectedResponse] =
     useState<FormResponseTypeWithId>()
 
   useEffect(() => {
-    getResponsesByFormId('2bFG4MkZjcnwBUBSohw7')
+    getResponsesByFormId(
+      typeof formId == 'string' ? formId : '2bFG4MkZjcnwBUBSohw7'
+    )
       .then((responseData) => {
         if (responseData) {
           setResponses(responseData)
