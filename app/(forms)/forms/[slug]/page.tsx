@@ -56,7 +56,11 @@ export default function Page({ params }: PageProps) {
       <div className="space-y-4">
         {formFields && formFields?.length > 0 && (
           <div>
-            <FormPreview formFields={formFields} behaveAsPreview={true} />
+            <FormPreview
+              formFields={formFields}
+              behaveAsPreview={true}
+              formId={slug}
+            />
           </div>
         )}
       </div>

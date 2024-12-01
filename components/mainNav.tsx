@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation'
 
 import { cn } from '@/lib/utils'
 import { Badge } from './ui/badge'
-import { ZapIcon } from 'lucide-react'
 import { siteConfig } from '@/config/site'
 
 export function MainNav() {
@@ -15,10 +14,8 @@ export function MainNav() {
   return (
     <div className="mr-4 hidden md:flex">
       <Link href="/" className="mr-6 flex items-center space-x-2">
-        <ZapIcon className="h-6 w-6" />
-        <span className="hidden font-bold sm:inline-block">
-          {siteConfig.name}
-        </span>
+        <div className="text-2xl">⚡</div>
+        <span className="font-semibold text-lg">{siteConfig.name}</span>
       </Link>
       <nav className="ml-6 flex items-center gap-4 text-sm lg:gap-6">
         <Link

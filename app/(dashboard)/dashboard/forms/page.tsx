@@ -1,6 +1,6 @@
 'use client'
 
-import { InboxIcon, MoreHorizontalIcon, PlusCircle } from 'lucide-react'
+import { Edit2Icon, InboxIcon, PlusCircle } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -26,13 +26,6 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
   Dialog,
   DialogClose,
   DialogContent,
@@ -41,6 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { LuTrash2 } from 'react-icons/lu'
 
 export default function Forms() {
   const [forms, setForms] = useState<FormTypeWithId[]>([])
@@ -141,35 +135,64 @@ export default function Forms() {
                           {0}
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
-                          {form.description}
+                          November 26th, 2024
                         </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                        <TableCell className="hidden md:table-cell">
+                          <div className="flex flex-row space-x-2 items-center justify-end">
+                            <Link href={`/dashboard/forms/${form.id}`}>
                               <Button
-                                aria-haspopup="true"
                                 size="icon"
                                 variant="ghost"
+                                className="size-8"
                               >
-                                <MoreHorizontalIcon className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
+                                <Edit2Icon />
                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <Link href={`/dashboard/forms/${form.id}`}>
-                                <DropdownMenuItem>Edit</DropdownMenuItem>
-                              </Link>
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setDeleteFormId(form.id)
-                                  setIsDeleteConfirmationOpen(true)
-                                }}
-                              >
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                            </Link>
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              className="size-8"
+                              onClick={() => {
+                                setDeleteFormId(form.id)
+                                setIsDeleteConfirmationOpen(true)
+                              }}
+                            >
+                              <LuTrash2 />
+                            </Button>
+                            <Link href={`/dashboard/responses/${form.id}`}>
+                              <Button size="sm" variant="secondary">
+                                View Responses
+                              </Button>
+                            </Link>
+
+                            {/* <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  aria-haspopup="true"
+                                  size="icon"
+                                  variant="ghost"
+                                  className="size-8"
+                                >
+                                  <MoreHorizontalIcon className="h-4 w-4" />
+                                  <span className="sr-only">Toggle menu</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <Link href={`/dashboard/forms/${form.id}`}>
+                                  <DropdownMenuItem>Edit</DropdownMenuItem>
+                                </Link>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setDeleteFormId(form.id)
+                                    setIsDeleteConfirmationOpen(true)
+                                  }}
+                                >
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu> */}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
