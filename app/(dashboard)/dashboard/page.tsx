@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import {
   Activity,
@@ -25,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useGenerationStore } from '@/components/GenerationStore'
 
 const transactions = [
   {
@@ -108,6 +111,9 @@ const recentActivity = [
 ]
 
 export default function Dashboard() {
+  const { userForms, fetchForms } = useGenerationStore()
+  fetchForms()
+
   return (
     // <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
@@ -126,11 +132,15 @@ export default function Dashboard() {
         </Card>
         <Card x-chunk="dashboard-01-chunk-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Subscriptions</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Forms Created
+            </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+2350</div>
+            <div className="text-2xl font-bold">
+              {userForms?.length || 'N/A'}
+            </div>
             <p className="text-xs text-muted-foreground">
               +180.1% from last month
             </p>

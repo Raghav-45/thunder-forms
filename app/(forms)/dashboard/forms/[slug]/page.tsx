@@ -4,6 +4,7 @@ import { CopyButton } from '@/components/copy-button'
 import { EditFieldForm } from '@/components/edit-field-form'
 import { FieldSelector } from '@/components/field-selector'
 import { FormPreview } from '@/components/form-preview'
+import { useGenerationStore } from '@/components/GenerationStore'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -29,6 +30,7 @@ import { toast } from 'sonner'
 
 export default function FormBuilder() {
   const { slug } = useParams()
+  const { addForm, updateForm } = useGenerationStore()
 
   // BASIC FORM DETAILS
   const [formId, setFormId] = useState<string | null>(
@@ -205,6 +207,12 @@ export default function FormBuilder() {
       // Create a new form
       const newFormId = await createForm(formName, formDescription, formFields)
       setFormId(newFormId)
+      addForm({
+        id: newFormId,
+        title: formName,
+        description: formDescription,
+        fields: formFields,
+      })
 
       // Update the URL without refreshing the page
       const newUrl = `/dashboard/forms/${newFormId}`
@@ -214,6 +222,12 @@ export default function FormBuilder() {
     } else {
       // Update the existing form
       await updateFormbyId(formId, formName, formDescription, formFields)
+      updateForm(formId, {
+        title: formName,
+        description: formDescription,
+        fields: formFields,
+        id: formId,
+      })
       toast.success('Form updated successfully!')
     }
   }

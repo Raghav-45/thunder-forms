@@ -40,7 +40,6 @@ import { useGenerationStore } from '@/components/GenerationStore'
 export default function Forms() {
   const { userForms, setUserForms } = useGenerationStore()
 
-  const [isLoading, setIsLoading] = useState(true)
   const [deleteFormId, setDeleteFormId] = useState<string | null>(null)
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState<boolean>(false)
@@ -48,14 +47,11 @@ export default function Forms() {
   useEffect(() => {
     const fetchForms = async () => {
       if (!userForms) {
-        setIsLoading(true)
         try {
           const data = await getAllForms()
           setUserForms(data)
         } catch (error) {
           console.error('Error fetching forms:', error)
-        } finally {
-          setIsLoading(false)
         }
       }
     }
@@ -112,7 +108,7 @@ export default function Forms() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
+              {!userForms ? (
                 <p>loading...</p>
               ) : userForms && userForms.length > 0 ? (
                 <Table>
