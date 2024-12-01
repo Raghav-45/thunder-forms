@@ -53,6 +53,7 @@ import { FormResponseTypeWithId, getResponsesByFormId } from '@/lib/dbUtils'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useParams } from 'next/navigation'
+import Link from 'next/link'
 
 const fakeResponse = {
   submissionId: 'TF123456',
@@ -202,7 +203,6 @@ export default function Responses() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Submission ID</TableHead>
-                        <TableHead>Form Name</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Submitted On</TableHead>
                         <TableHead>
@@ -226,7 +226,6 @@ export default function Responses() {
                             <TableCell className="font-medium">
                               {response.id || 'N/A'}
                             </TableCell>
-                            <TableCell>{response.id || 'N/A'}</TableCell>
                             <TableCell className="truncate max-w-[200px]">
                               <Badge className="text-xs" variant="outline">
                                 completed
@@ -311,7 +310,13 @@ export default function Responses() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Go to form</DropdownMenuItem>
+                  {selectedResponse && (
+                    <Link
+                      href={`/dashboard/forms/${selectedResponse?.parentFormId}`}
+                    >
+                      <DropdownMenuItem>Edit form</DropdownMenuItem>
+                    </Link>
+                  )}
                   <DropdownMenuItem>Copy JSON</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
