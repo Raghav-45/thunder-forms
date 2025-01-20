@@ -21,7 +21,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { deleteFormById, FormTypeWithId, getAllForms } from '@/lib/dbUtils'
+import { deleteFormById, getAllForms } from '@/lib/dbUtils'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
@@ -35,35 +35,40 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { LuTrash2 } from 'react-icons/lu'
+import { useGenerationStore } from '@/components/GenerationStore'
 
 export default function Forms() {
-  const [forms, setForms] = useState<FormTypeWithId[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [deleteFormId, setDeleteFormId] = useState<string>('')
+  const { userForms, setUserForms } = useGenerationStore()
+
+  const [deleteFormId, setDeleteFormId] = useState<string | null>(null)
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState<boolean>(false)
 
   useEffect(() => {
-    async function fetchForms() {
-      try {
-        if (forms.length == 0) {
-          setIsLoading(true)
+    const fetchForms = async () => {
+      if (!userForms) {
+        try {
           const data = await getAllForms()
-          setForms(data)
+          setUserForms(data)
+        } catch (error) {
+          console.error('Error fetching forms:', error)
         }
-      } catch (error) {
-        console.error('Error fetching forms:', error)
-      } finally {
-        setIsLoading(false)
       }
     }
-
     fetchForms()
-  }, [forms])
+  }, [userForms, setUserForms])
 
   const handleDeleteForm = async () => {
-    const id = await deleteFormById(deleteFormId)
-    setForms((prevForms) => prevForms.filter((form) => form.id !== id))
+    if (!deleteFormId || !userForms) {
+      return
+    }
+
+    try {
+      const id = await deleteFormById(deleteFormId)
+      setUserForms(userForms.filter((form) => form.id !== id))
+    } catch (error) {
+      console.error('Error deleting form:', error)
+    }
   }
 
   return (
@@ -103,9 +108,9 @@ export default function Forms() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
+              {!userForms ? (
                 <p>loading...</p>
-              ) : forms && forms.length > 0 ? (
+              ) : userForms && userForms.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -123,7 +128,7 @@ export default function Forms() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {forms.map((form, index) => (
+                    {userForms.map((form, index) => (
                       <TableRow key={index}>
                         <TableCell className="font-medium">
                           {form.title}
@@ -237,8 +242,8 @@ export default function Forms() {
             </CardContent>
             <CardFooter>
               <div className="text-xs text-muted-foreground">
-                Showing <strong>1-{forms?.length ?? 10}</strong> of{' '}
-                <strong>{forms?.length ?? 10}</strong> forms
+                Showing <strong>1-{userForms?.length ?? 10}</strong> of{' '}
+                <strong>{userForms?.length ?? 10}</strong> forms
               </div>
             </CardFooter>
           </Card>

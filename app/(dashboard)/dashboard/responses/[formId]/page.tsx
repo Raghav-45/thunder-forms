@@ -53,6 +53,8 @@ import { FormResponseTypeWithId, getResponsesByFormId } from '@/lib/dbUtils'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useParams } from 'next/navigation'
+import Link from 'next/link'
+import { useGenerationStore } from '@/components/GenerationStore'
 
 const fakeResponse = {
   submissionId: 'TF123456',
@@ -82,6 +84,8 @@ const fakeResponse = {
 export default function Responses() {
   const { formId } = useParams()
 
+  const { userForms } = useGenerationStore()
+
   const [responses, setResponses] = useState<FormResponseTypeWithId[]>()
   const [selectedResponse, setSelectedResponse] =
     useState<FormResponseTypeWithId>()
@@ -108,16 +112,31 @@ export default function Responses() {
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
       <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-          <Card className="sm:col-span-2" x-chunk="dashboard-05-chunk-0">
+          <Card
+            className="sm:col-span-2 relative"
+            x-chunk="dashboard-05-chunk-0"
+          >
             <CardHeader className="pb-3">
-              <CardTitle>Form Responses</CardTitle>
+              <CardTitle>
+                {userForms?.filter(
+                  (form) =>
+                    (typeof formId == 'string'
+                      ? formId
+                      : '2bFG4MkZjcnwBUBSohw7') === form.id
+                )[0]?.title ?? 'Form Responses'}
+              </CardTitle>
               <CardDescription className="text-balance max-w-lg leading-relaxed">
-                Introducing Our Dashboard for Seamless Management and Insightful
-                Analysis of Form Responses.
+                {userForms?.filter(
+                  (form) =>
+                    (typeof formId == 'string'
+                      ? formId
+                      : '2bFG4MkZjcnwBUBSohw7') === form.id
+                )[0]?.description ??
+                  'Introducing Our Dashboard for Seamless Management and Insightful Analysis of Form Responses.'}
               </CardDescription>
             </CardHeader>
-            <CardFooter>
-              <Button>Create a new form</Button>
+            <CardFooter className="absolute bottom-0">
+              <Button>view Form</Button>
             </CardFooter>
           </Card>
           <Card x-chunk="dashboard-05-chunk-1">
@@ -202,7 +221,6 @@ export default function Responses() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Submission ID</TableHead>
-                        <TableHead>Form Name</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Submitted On</TableHead>
                         <TableHead>
@@ -226,7 +244,6 @@ export default function Responses() {
                             <TableCell className="font-medium">
                               {response.id || 'N/A'}
                             </TableCell>
-                            <TableCell>{response.id || 'N/A'}</TableCell>
                             <TableCell className="truncate max-w-[200px]">
                               <Badge className="text-xs" variant="outline">
                                 completed
@@ -311,7 +328,13 @@ export default function Responses() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Go to form</DropdownMenuItem>
+                  {selectedResponse && (
+                    <Link
+                      href={`/dashboard/forms/${selectedResponse?.parentFormId}`}
+                    >
+                      <DropdownMenuItem>Edit form</DropdownMenuItem>
+                    </Link>
+                  )}
                   <DropdownMenuItem>Copy JSON</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
