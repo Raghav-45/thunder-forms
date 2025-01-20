@@ -45,17 +45,19 @@ export default function Forms() {
     useState<boolean>(false)
 
   useEffect(() => {
-    const fetchForms = async () => {
+    const fetchFormsData = async () => {
       if (!userForms) {
         try {
-          const data = await getAllForms()
+          const response = await fetch('http://localhost:3000/api/forms/userId')
+          const data = await response.json()
           setUserForms(data)
         } catch (error) {
           console.error('Error fetching forms:', error)
         }
       }
     }
-    fetchForms()
+
+    fetchFormsData()
   }, [userForms, setUserForms])
 
   const handleDeleteForm = async () => {
@@ -64,7 +66,11 @@ export default function Forms() {
     }
 
     try {
-      const id = await deleteFormById(deleteFormId)
+      const response = await fetch(`/api/form/${deleteFormId}/delete`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) throw new Error('Failed to delete form')
+      const id = deleteFormId
       setUserForms(userForms.filter((form) => form.id !== id))
     } catch (error) {
       console.error('Error deleting form:', error)

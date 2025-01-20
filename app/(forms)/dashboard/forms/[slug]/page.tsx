@@ -51,9 +51,27 @@ export default function FormBuilder() {
   useEffect(() => {
     // If a valid `formId` is present and it's not 'new-form', fetch the existing form's data
     if (formId && formId !== 'new-form') {
-      getFormById(formId)
+      // getFormById(formId)
+      //   .then((formData) => {
+      //     if (formData?.fields) {
+      //       setFormFields(formData.fields)
+      //       setFormName(formData.title || 'New form')
+      //       setFormDescription(
+      //         formData.description || 'Lorem ipsum dolor sit amet'
+      //       )
+      //     } else {
+      //       toast.error('Failed to load form data')
+      //     }
+      //   })
+      //   .catch((error) => {
+      //     console.error('Error fetching form data:', error)
+      //     toast.error('Error loading form data')
+      //   })
+
+      fetch(`/api/form/${formId}`)
+        .then((response) => response.json())
         .then((formData) => {
-          if (formData?.fields) {
+          if (formData) {
             setFormFields(formData.fields)
             setFormName(formData.title || 'New form')
             setFormDescription(
@@ -196,7 +214,7 @@ export default function FormBuilder() {
   }
 
   const handleSaveForm = async () => {
-    console.log(formFields)
+    console.log('Form Fields: ', formFields)
 
     if (!formName) {
       toast.error('Form name is required')
@@ -205,7 +223,21 @@ export default function FormBuilder() {
 
     if (formId == null || formId === 'new-form') {
       // Create a new form
-      const newFormId = await createForm(formName, formDescription, formFields)
+      // const newFormId = await createForm(formName, formDescription, formFields)
+      const response = await fetch('/api/form', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          formName: formName,
+          formDescription: formDescription,
+          formFields: formFields,
+        }),
+      })
+      const body = await response.json()
+      const newFormId = body.id
+
       setFormId(newFormId)
       addForm({
         id: newFormId,
@@ -221,7 +253,20 @@ export default function FormBuilder() {
       toast.success('New Form created successfully!')
     } else {
       // Update the existing form
-      await updateFormbyId(formId, formName, formDescription, formFields)
+      // await updateFormbyId(formId, formName, formDescription, formFields)
+
+      await fetch(`/api/form/${formId}/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: formName,
+          description: formDescription,
+          fields: formFields,
+        }),
+      })
+
       updateForm(formId, {
         title: formName,
         description: formDescription,
