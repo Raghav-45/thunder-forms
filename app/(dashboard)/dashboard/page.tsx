@@ -28,6 +28,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useGenerationStore } from '@/components/GenerationStore'
+import Loading from './loading'
 
 const transactions = [
   {
@@ -113,6 +114,10 @@ const recentActivity = [
 export default function Dashboard() {
   const { userForms, fetchForms } = useGenerationStore()
   fetchForms()
+
+  if (!userForms) {
+    return <Loading />
+  }
 
   return (
     // <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
