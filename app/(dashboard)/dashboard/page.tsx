@@ -114,11 +114,11 @@ const recentActivity = [
 
 export default function Dashboard() {
   const { userForms, setUserForms } = useGenerationStore()
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(!userForms)
 
   useEffect(() => {
     const fetchFormsData = async () => {
-      if (!userForms) {
+      if (isLoading) {
         try {
           const response = await fetch('/api/forms')
           const data = await response.json()
@@ -132,7 +132,7 @@ export default function Dashboard() {
     }
 
     fetchFormsData()
-  }, [userForms, setUserForms])
+  }, [isLoading, setUserForms])
 
   if (isLoading) {
     return <Loading />
