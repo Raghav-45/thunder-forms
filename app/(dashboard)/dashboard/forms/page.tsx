@@ -35,9 +35,11 @@ import {
 } from '@/components/ui/dialog'
 import { LuTrash2 } from 'react-icons/lu'
 import { useGenerationStore } from '@/components/GenerationStore'
+import { format } from 'date-fns'
 
 export default function Forms() {
   const { userForms, setUserForms } = useGenerationStore()
+  const [isLoading, setIsLoading] = useState(!userForms)
 
   const [deleteFormId, setDeleteFormId] = useState<string | null>(null)
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
@@ -45,19 +47,21 @@ export default function Forms() {
 
   useEffect(() => {
     const fetchFormsData = async () => {
-      if (!userForms) {
+      if (isLoading) {
         try {
           const response = await fetch('/api/forms')
           const data = await response.json()
           setUserForms(data)
         } catch (error) {
           console.error('Error fetching forms:', error)
+        } finally {
+          setIsLoading(false)
         }
       }
     }
 
     fetchFormsData()
-  }, [userForms, setUserForms])
+  }, [isLoading, setUserForms])
 
   const handleDeleteForm = async () => {
     if (!deleteFormId || !userForms) {
@@ -145,7 +149,7 @@ export default function Forms() {
                           {0}
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
-                          November 26th, 2024
+                          {format(form.createdAt, 'PPP')}
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           <div className="flex flex-row space-x-2 items-center justify-end">

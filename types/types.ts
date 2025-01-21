@@ -1,5 +1,8 @@
 import * as Locales from 'date-fns/locale'
 
+import { forms as FormType } from '@prisma/client'
+import { response as ResponseType } from '@prisma/client'
+
 // Define the FormField type
 export type FormFieldType = {
   type: string
@@ -13,10 +16,10 @@ export type FormFieldType = {
   setValue: (value: string | boolean) => void
   checked: boolean
   onChange: (
-    value: string | string[] | boolean | Date | number | number[],
+    value: string | string[] | boolean | Date | number | number[]
   ) => void
   onSelect: (
-    value: string | string[] | boolean | Date | number | number[],
+    value: string | string[] | boolean | Date | number | number[]
   ) => void
   rowIndex: number
   required?: boolean
@@ -32,3 +35,5 @@ export type FormFieldType = {
 export type FieldType = { name: string; isAvaliable: boolean; index?: number }
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
+
+export type { FormType, ResponseType }

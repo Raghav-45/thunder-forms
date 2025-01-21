@@ -1,19 +1,19 @@
 import { create } from 'zustand'
 
-import { forms as FormsType } from '@prisma/client'
+import { forms as FormType } from '@prisma/client'
 // import { response as ResponseType } from '@prisma/client'
 
 interface generationState {
-  userForms: FormsType[] | null
-  setUserForms: (forms: FormsType[] | null) => void
-  addForm: (formToAdd: FormsType) => void
-  updateForm: (id: string, updatedForm: FormsType) => void
+  userForms: FormType[] | null
+  setUserForms: (forms: FormType[] | null) => void
+  addForm: (formToAdd: FormType) => void
+  updateForm: (id: string, updatedForm: FormType) => void
 }
 
 export const useGenerationStore = create<generationState>()((set, get) => ({
   userForms: null,
-  setUserForms: (forms: FormsType[] | null) => set({ userForms: forms }),
-  addForm: (formToAdd: FormsType) => {
+  setUserForms: (forms: FormType[] | null) => set({ userForms: forms }),
+  addForm: (formToAdd: FormType) => {
     const { userForms, setUserForms } = get()
 
     if (userForms) {
@@ -24,7 +24,7 @@ export const useGenerationStore = create<generationState>()((set, get) => ({
       setUserForms([formToAdd])
     }
   },
-  updateForm: (id: string, updatedForm: FormsType) => {
+  updateForm: (id: string, updatedForm: FormType) => {
     const { userForms, setUserForms } = get()
 
     if (userForms) {

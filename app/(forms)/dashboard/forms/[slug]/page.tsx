@@ -21,7 +21,7 @@ import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { siteConfig } from '@/config/site'
 import { defaultFieldConfig } from '@/constants'
-import { FormFieldType, FormFieldOrGroup } from '@/types/types'
+import { FormFieldType, FormFieldOrGroup, FormType } from '@/types/types'
 import { SaveIcon } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -205,7 +205,6 @@ export default function FormBuilder() {
 
     if (formId == null || formId === 'new-form') {
       // Create a new form
-      // const newFormId = await createForm(formName, formDescription, formFields)
       const response = await fetch('/api/forms/new', {
         method: 'POST',
         headers: {
@@ -217,15 +216,16 @@ export default function FormBuilder() {
           formFields: formFields,
         }),
       })
-      const body = await response.json()
+      const body = (await response.json()) as FormType
       const newFormId = body.id
 
       setFormId(newFormId)
       addForm({
         id: newFormId,
-        title: formName,
-        description: formDescription,
-        fields: formFields,
+        title: body.title,
+        description: body.description,
+        fields: JSON.parse(JSON.stringify(formFields)),
+        createdAt: body.createdAt,
       })
 
       // Update the URL without refreshing the page
@@ -235,9 +235,7 @@ export default function FormBuilder() {
       toast.success('New Form created successfully!')
     } else {
       // Update the existing form
-      // await updateFormbyId(formId, formName, formDescription, formFields)
-
-      await fetch(`/api/forms/${formId}/update`, {
+      const response = await fetch(`/api/forms/${formId}/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -248,13 +246,9 @@ export default function FormBuilder() {
           fields: formFields,
         }),
       })
+      const updatedForm = (await response.json()) as FormType
 
-      updateForm(formId, {
-        title: formName,
-        description: formDescription,
-        fields: formFields,
-        id: formId,
-      })
+      updateForm(formId, updatedForm)
       toast.success('Form updated successfully!')
     }
   }
