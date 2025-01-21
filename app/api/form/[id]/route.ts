@@ -3,8 +3,8 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-export async function GET({ params }: { params: { id: string } }) {
-  const id = params.id
+export async function GET({ params }: { params: Promise<{ id: string }> }) {
+  const id = (await params).id
   // Fetch form logic here - replace with your actual database call
   const form = await prisma.forms.findUnique({
     where: { id },

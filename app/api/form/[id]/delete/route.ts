@@ -3,11 +3,8 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-  const id = params.id
+export async function DELETE({ params }: { params: Promise<{ id: string }> }) {
+  const id = (await params).id
 
   const deletedForm = await prisma.forms.delete({
     where: { id },
