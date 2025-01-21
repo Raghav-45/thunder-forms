@@ -35,7 +35,6 @@ import {
 } from '@/components/ui/dialog'
 import { LuTrash2 } from 'react-icons/lu'
 import { useGenerationStore } from '@/components/GenerationStore'
-import { siteConfig } from '@/config/site'
 
 export default function Forms() {
   const { userForms, setUserForms } = useGenerationStore()

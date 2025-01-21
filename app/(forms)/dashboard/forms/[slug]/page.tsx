@@ -50,23 +50,6 @@ export default function FormBuilder() {
   useEffect(() => {
     // If a valid `formId` is present and it's not 'new-form', fetch the existing form's data
     if (formId && formId !== 'new-form') {
-      // getFormById(formId)
-      //   .then((formData) => {
-      //     if (formData?.fields) {
-      //       setFormFields(formData.fields)
-      //       setFormName(formData.title || 'New form')
-      //       setFormDescription(
-      //         formData.description || 'Lorem ipsum dolor sit amet'
-      //       )
-      //     } else {
-      //       toast.error('Failed to load form data')
-      //     }
-      //   })
-      //   .catch((error) => {
-      //     console.error('Error fetching form data:', error)
-      //     toast.error('Error loading form data')
-      //   })
-
       fetch(`/api/forms/${formId}`)
         .then((response) => response.json())
         .then((formData) => {
