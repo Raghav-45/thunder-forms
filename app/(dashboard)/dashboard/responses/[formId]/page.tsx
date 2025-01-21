@@ -55,6 +55,16 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useGenerationStore } from '@/components/GenerationStore'
 import { ResponseType } from '@/types/types'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 
 const fakeResponse = {
   submissionId: 'TF123456',
@@ -92,6 +102,9 @@ export default function Responses() {
   const [selectedResponse, setSelectedResponse] = useState<ResponseType>()
   const [selectedResponseIndex, setSelectedResponseIndex] = useState<number>(0)
 
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
+    useState<boolean>(false)
+
   useEffect(() => {
     fetch(`/api/forms/${formId}/responses`)
       .then((response) => {
@@ -113,6 +126,26 @@ export default function Responses() {
         toast.error('Error loading form data')
       })
   }, [formId]) // Only depends on slug
+
+  const handleDeleteResponse = async (id: string) => {
+    if (!id || !responses) {
+      return
+    }
+
+    try {
+      const response = await fetch(
+        `/api/forms/${formId}/responses/${id}/delete`,
+        {
+          method: 'DELETE',
+        }
+      )
+      if (!response.ok) throw new Error('Failed to delete response')
+      setResponses(responses!.filter((response) => response.id !== id))
+      setIsDeleteConfirmationOpen(false)
+    } catch (error) {
+      console.error('Error deleting response:', error)
+    }
+  }
 
   return (
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
@@ -365,9 +398,48 @@ export default function Responses() {
                 format(selectedResponse?.createdAt, 'PPP')}
             </div>
             <div className="ml-auto mr-0 w-auto flex gap-x-4">
-              <Button variant="destructive" size="sm" className="h-6 text-xs">
-                Delete response
-              </Button>
+              {selectedResponse && (
+                <Dialog
+                  open={isDeleteConfirmationOpen}
+                  onOpenChange={setIsDeleteConfirmationOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="h-6 text-xs"
+                    >
+                      Delete response
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent isClosable={false}>
+                    <DialogHeader>
+                      <DialogTitle>Are you absolutely sure?</DialogTitle>
+                      <DialogDescription>
+                        This action cannot be undone. This will permanently
+                        delete your form and remove your data from our servers.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button type="button" variant="outline">
+                          Close
+                        </Button>
+                      </DialogClose>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={() => {
+                          handleDeleteResponse(selectedResponse?.id)
+                        }}
+                      >
+                        Continue
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+
               <Pagination className="ml-auto mr-0 w-auto">
                 <PaginationContent>
                   <PaginationItem>
