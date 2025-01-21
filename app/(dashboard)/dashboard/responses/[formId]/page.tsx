@@ -49,12 +49,12 @@ import {
   PaginationItem,
 } from '@/components/ui/pagination'
 import { useEffect, useState } from 'react'
-import { FormResponseTypeWithId, getResponsesByFormId } from '@/lib/dbUtils'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useGenerationStore } from '@/components/GenerationStore'
+import { ResponseType } from '@/types/types'
 
 const fakeResponse = {
   submissionId: 'TF123456',
@@ -86,18 +86,21 @@ export default function Responses() {
 
   const { userForms } = useGenerationStore()
 
-  const [responses, setResponses] = useState<FormResponseTypeWithId[]>()
-  const [selectedResponse, setSelectedResponse] =
-    useState<FormResponseTypeWithId>()
+  const [responses, setResponses] = useState<ResponseType[]>()
+  const [selectedResponse, setSelectedResponse] = useState<ResponseType>()
 
   useEffect(() => {
-    getResponsesByFormId(
-      typeof formId == 'string' ? formId : '2bFG4MkZjcnwBUBSohw7'
-    )
+    fetch(`/api/forms/${formId}/responses`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok')
+        }
+        return response.json()
+      })
       .then((responseData) => {
-        if (responseData) {
-          setResponses(responseData)
-          setSelectedResponse(responseData[0])
+        if (responseData.responses) {
+          setResponses(responseData.responses)
+          setSelectedResponse(responseData.responses[0])
         } else {
           toast.error('Failed to load form data')
         }
@@ -253,7 +256,7 @@ export default function Responses() {
                               {/* {(response?.submittedAt &&
                                 formatDate(response.submittedAt)) ||
                                 'Unknown'} */}
-                              {response?.submittedAt}
+                              {response?.createdAt}
                             </TableCell>
                             <TableCell>
                               <DropdownMenu>
@@ -330,7 +333,7 @@ export default function Responses() {
                 <DropdownMenuContent align="end">
                   {selectedResponse && (
                     <Link
-                      href={`/dashboard/forms/${selectedResponse?.parentFormId}`}
+                      href={`/dashboard/forms/${selectedResponse?.formsId}`}
                     >
                       <DropdownMenuItem>Edit form</DropdownMenuItem>
                     </Link>

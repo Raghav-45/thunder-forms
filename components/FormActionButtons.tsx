@@ -11,15 +11,30 @@ import {
 import { MoreHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { deleteFormById, FormTypeWithId } from '@/lib/dbUtils'
+import { useGenerationStore } from './GenerationStore'
+import { FormType } from '@/types/types'
 
 interface FormActionButtonsProps {
-  form: FormTypeWithId
+  form: FormType
 }
 
 const FormActionButtons: FC<FormActionButtonsProps> = ({ form }) => {
-  async function handleDeleteForm(formId: string) {
-    await deleteFormById(formId)
+  const { userForms, setUserForms } = useGenerationStore()
+
+  async function handleDeleteForm(id: string) {
+    if (!id || !userForms) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/forms/${id}/delete`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) throw new Error('Failed to delete form')
+      setUserForms(userForms.filter((form) => form.id !== id))
+    } catch (error) {
+      console.error('Error deleting form:', error)
+    }
   }
   return (
     <DropdownMenu>
