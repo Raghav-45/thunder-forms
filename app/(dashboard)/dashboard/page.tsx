@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/table'
 import { useGenerationStore } from '@/components/GenerationStore'
 import Loading from './loading'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { siteConfig } from '@/config/site'
 
 const transactions = [
@@ -115,6 +115,7 @@ const recentActivity = [
 
 export default function Dashboard() {
   const { userForms, setUserForms } = useGenerationStore()
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchFormsData = async () => {
@@ -125,6 +126,8 @@ export default function Dashboard() {
           setUserForms(data)
         } catch (error) {
           console.error('Error fetching forms:', error)
+        } finally {
+          setIsLoading(false)
         }
       }
     }
@@ -132,7 +135,7 @@ export default function Dashboard() {
     fetchFormsData()
   }, [userForms, setUserForms])
 
-  if (!userForms) {
+  if (isLoading) {
     return <Loading />
   }
 
