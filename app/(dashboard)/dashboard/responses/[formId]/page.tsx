@@ -395,7 +395,7 @@ export default function Responses() {
             <div className="text-xs text-muted-foreground">
               Submitted on{' '}
               {selectedResponse?.createdAt &&
-                format(selectedResponse?.createdAt, 'PPP')}
+                format(selectedResponse.createdAt, 'PPP')}
             </div>
             <div className="ml-auto mr-0 w-auto flex gap-x-4">
               {selectedResponse && (
