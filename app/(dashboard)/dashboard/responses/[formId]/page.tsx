@@ -12,7 +12,7 @@ import {
   MoreVertical,
 } from 'lucide-react'
 
-import { format } from 'date-fns'
+import { format, formatDistance } from 'date-fns'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -80,6 +80,8 @@ const fakeResponse = {
     },
   },
 }
+
+const currentDate = new Date()
 
 export default function Responses() {
   const { formId } = useParams()
@@ -225,7 +227,7 @@ export default function Responses() {
                       <TableRow>
                         <TableHead>Submission ID</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Submitted On</TableHead>
+                        <TableHead>Submitted</TableHead>
                         <TableHead>
                           <span className="sr-only">Actions</span>
                         </TableHead>
@@ -256,7 +258,9 @@ export default function Responses() {
                               {/* {(response?.submittedAt &&
                                 formatDate(response.submittedAt)) ||
                                 'Unknown'} */}
-                              {response?.createdAt}
+                              {formatDistance(response.createdAt, currentDate, {
+                                addSuffix: true,
+                              })}
                             </TableCell>
                             <TableCell>
                               <DropdownMenu>
@@ -352,8 +356,9 @@ export default function Responses() {
           </CardContent>
           <CardFooter className="flex flex-row items-center border-t bg-muted/50 px-6 py-3">
             <div className="text-xs text-muted-foreground">
-              Updated on{' '}
-              {fakeResponse && format(fakeResponse?.SubmittedOn, 'PPP')}
+              Submitted on{' '}
+              {selectedResponse?.createdAt &&
+                format(selectedResponse?.createdAt, 'PPP')}
             </div>
             <div className="ml-auto mr-0 w-auto flex gap-x-4">
               <Button variant="destructive" size="sm" className="h-6 text-xs">
@@ -364,13 +369,13 @@ export default function Responses() {
                   <PaginationItem>
                     <Button size="icon" variant="outline" className="h-6 w-6">
                       <ChevronLeftIcon className="h-3.5 w-3.5" />
-                      <span className="sr-only">Previous Order</span>
+                      <span className="sr-only">Previous</span>
                     </Button>
                   </PaginationItem>
                   <PaginationItem>
                     <Button size="icon" variant="outline" className="h-6 w-6">
                       <ChevronRightIcon className="h-3.5 w-3.5" />
-                      <span className="sr-only">Next Order</span>
+                      <span className="sr-only">Next</span>
                     </Button>
                   </PaginationItem>
                 </PaginationContent>
