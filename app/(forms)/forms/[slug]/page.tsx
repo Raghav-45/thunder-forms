@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { FormFieldOrGroup } from '@/types/types'
 import { FormPreview } from '@/components/form-preview'
 import SkeletonPage from '../skeleton/page'
+import { siteConfig } from '@/config/site'
 
 interface PageProps {
   params: {
@@ -24,7 +25,7 @@ export default function Page({ params }: PageProps) {
   const { slug } = params
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/form/${slug}`)
+    fetch(`${siteConfig.url}/api/form/${slug}`)
       .then((response) => response.json())
       .then((data) => {
         if (data?.fields) {

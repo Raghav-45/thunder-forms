@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/dialog'
 import { LuTrash2 } from 'react-icons/lu'
 import { useGenerationStore } from '@/components/GenerationStore'
+import { siteConfig } from '@/config/site'
 
 export default function Forms() {
   const { userForms, setUserForms } = useGenerationStore()
@@ -47,7 +48,7 @@ export default function Forms() {
     const fetchFormsData = async () => {
       if (!userForms) {
         try {
-          const response = await fetch('http://localhost:3000/api/forms/userId')
+          const response = await fetch(`${siteConfig.url}/api/forms/userId`)
           const data = await response.json()
           setUserForms(data)
         } catch (error) {

@@ -30,6 +30,7 @@ import {
 import { useGenerationStore } from '@/components/GenerationStore'
 import Loading from './loading'
 import { useEffect } from 'react'
+import { siteConfig } from '@/config/site'
 
 const transactions = [
   {
@@ -119,7 +120,7 @@ export default function Dashboard() {
     const fetchFormsData = async () => {
       if (!userForms) {
         try {
-          const response = await fetch('http://localhost:3000/api/forms/userId')
+          const response = await fetch(`${siteConfig.url}/api/forms/userId`)
           const data = await response.json()
           setUserForms(data)
         } catch (error) {
