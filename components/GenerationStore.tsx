@@ -1,19 +1,19 @@
 import { create } from 'zustand'
-import { FormTypeWithId, getAllForms } from '@/lib/dbUtils'
+
+import { forms as FormsType } from '@prisma/client'
+// import { response as ResponseType } from '@prisma/client'
 
 interface generationState {
-  userForms: FormTypeWithId[] | null
-  setUserForms: (forms: FormTypeWithId[] | null) => void
-  addForm: (formToAdd: FormTypeWithId) => void
-  updateForm: (id: string, updatedForm: FormTypeWithId) => void
-  fetchForms: () => Promise<void>
-  refetchForms: () => Promise<void>
+  userForms: FormsType[] | null
+  setUserForms: (forms: FormsType[] | null) => void
+  addForm: (formToAdd: FormsType) => void
+  updateForm: (id: string, updatedForm: FormsType) => void
 }
 
 export const useGenerationStore = create<generationState>()((set, get) => ({
   userForms: null,
-  setUserForms: (forms: FormTypeWithId[] | null) => set({ userForms: forms }),
-  addForm: (formToAdd: FormTypeWithId) => {
+  setUserForms: (forms: FormsType[] | null) => set({ userForms: forms }),
+  addForm: (formToAdd: FormsType) => {
     const { userForms, setUserForms } = get()
 
     if (userForms) {
@@ -24,7 +24,7 @@ export const useGenerationStore = create<generationState>()((set, get) => ({
       setUserForms([formToAdd])
     }
   },
-  updateForm: (id: string, updatedForm: FormTypeWithId) => {
+  updateForm: (id: string, updatedForm: FormsType) => {
     const { userForms, setUserForms } = get()
 
     if (userForms) {
@@ -32,21 +32,6 @@ export const useGenerationStore = create<generationState>()((set, get) => ({
         form.id === id ? { ...form, ...updatedForm } : form
       )
       setUserForms(updatedForms)
-    }
-  },
-
-  fetchForms: async () => {
-    const { userForms } = get()
-    if (!userForms) {
-      await get().refetchForms()
-    }
-  },
-  refetchForms: async () => {
-    try {
-      const data = await getAllForms()
-      set({ userForms: data })
-    } catch (error) {
-      console.error('Error fetching forms:', error)
     }
   },
 }))
