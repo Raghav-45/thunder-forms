@@ -48,7 +48,7 @@ export default function Forms() {
     const fetchFormsData = async () => {
       if (!userForms) {
         try {
-          const response = await fetch(`${siteConfig.url}/api/forms/userId`)
+          const response = await fetch('/api/forms')
           const data = await response.json()
           setUserForms(data)
         } catch (error) {
@@ -66,7 +66,7 @@ export default function Forms() {
     }
 
     try {
-      const response = await fetch(`/api/form/${deleteFormId}/delete`, {
+      const response = await fetch(`/api/forms/${deleteFormId}/delete`, {
         method: 'DELETE',
       })
       if (!response.ok) throw new Error('Failed to delete form')

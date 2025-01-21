@@ -25,7 +25,7 @@ export default function Page({ params }: PageProps) {
   const { slug } = params
 
   useEffect(() => {
-    fetch(`${siteConfig.url}/api/form/${slug}`)
+    fetch(`/api/forms/${slug}`)
       .then((response) => response.json())
       .then((data) => {
         if (data?.fields) {

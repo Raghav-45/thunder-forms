@@ -67,7 +67,7 @@ export default function FormBuilder() {
       //     toast.error('Error loading form data')
       //   })
 
-      fetch(`/api/form/${formId}`)
+      fetch(`/api/forms/${formId}`)
         .then((response) => response.json())
         .then((formData) => {
           if (formData) {
@@ -223,7 +223,7 @@ export default function FormBuilder() {
     if (formId == null || formId === 'new-form') {
       // Create a new form
       // const newFormId = await createForm(formName, formDescription, formFields)
-      const response = await fetch('/api/form', {
+      const response = await fetch('/api/forms/new', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -254,7 +254,7 @@ export default function FormBuilder() {
       // Update the existing form
       // await updateFormbyId(formId, formName, formDescription, formFields)
 
-      await fetch(`/api/form/${formId}/update`, {
+      await fetch(`/api/forms/${formId}/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
