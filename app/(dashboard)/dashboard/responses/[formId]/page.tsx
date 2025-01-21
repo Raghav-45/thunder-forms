@@ -90,6 +90,7 @@ export default function Responses() {
 
   const [responses, setResponses] = useState<ResponseType[]>()
   const [selectedResponse, setSelectedResponse] = useState<ResponseType>()
+  const [selectedResponseIndex, setSelectedResponseIndex] = useState<number>(0)
 
   useEffect(() => {
     fetch(`/api/forms/${formId}/responses`)
@@ -244,7 +245,10 @@ export default function Responses() {
                                 ? 'bg-muted/50'
                                 : ''
                             )}
-                            onClick={() => setSelectedResponse(response)}
+                            onClick={() => {
+                              setSelectedResponse(response)
+                              setSelectedResponseIndex(index)
+                            }}
                           >
                             <TableCell className="font-medium">
                               {response.id || 'N/A'}
@@ -367,13 +371,43 @@ export default function Responses() {
               <Pagination className="ml-auto mr-0 w-auto">
                 <PaginationContent>
                   <PaginationItem>
-                    <Button size="icon" variant="outline" className="h-6 w-6">
+                    <Button
+                      onClick={() => {
+                        if (selectedResponseIndex > 0 && responses) {
+                          const newIndex = selectedResponseIndex - 1
+                          setSelectedResponseIndex(newIndex)
+                          setSelectedResponse(responses[newIndex])
+                        }
+                      }}
+                      size="icon"
+                      variant="outline"
+                      className="h-6 w-6"
+                      disabled={!responses || selectedResponseIndex <= 0}
+                    >
                       <ChevronLeftIcon className="h-3.5 w-3.5" />
                       <span className="sr-only">Previous</span>
                     </Button>
                   </PaginationItem>
                   <PaginationItem>
-                    <Button size="icon" variant="outline" className="h-6 w-6">
+                    <Button
+                      onClick={() => {
+                        if (
+                          responses &&
+                          selectedResponseIndex < responses.length - 1
+                        ) {
+                          const newIndex = selectedResponseIndex + 1
+                          setSelectedResponseIndex(newIndex)
+                          setSelectedResponse(responses[newIndex])
+                        }
+                      }}
+                      size="icon"
+                      variant="outline"
+                      className="h-6 w-6"
+                      disabled={
+                        !responses ||
+                        selectedResponseIndex >= (responses?.length ?? 0) - 1
+                      }
+                    >
                       <ChevronRightIcon className="h-3.5 w-3.5" />
                       <span className="sr-only">Next</span>
                     </Button>
