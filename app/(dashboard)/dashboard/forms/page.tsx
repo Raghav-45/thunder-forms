@@ -21,7 +21,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { deleteFormById, getAllForms } from '@/lib/dbUtils'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'

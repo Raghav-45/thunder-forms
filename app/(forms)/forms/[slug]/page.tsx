@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getFormById } from '@/lib/dbUtils'
 import { toast } from 'sonner'
 import { FormFieldOrGroup } from '@/types/types'
 import { FormPreview } from '@/components/form-preview'
@@ -25,23 +24,6 @@ export default function Page({ params }: PageProps) {
   const { slug } = params
 
   useEffect(() => {
-    // getFormById(slug)
-    //   .then((formData) => {
-    //     if (formData?.fields) {
-    //       setFormFields(formData.fields)
-    //       setFormName(formData.title || 'New form')
-    //       setFormDescription(
-    //         formData.description || 'Lorem ipsum dolor sit amet'
-    //       )
-    //       setLoading(false)
-    //     } else {
-    //       toast.error('Failed to load form data')
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     console.error('Error fetching form data:', error)
-    //     toast.error('Error loading form data')
-    //   })
     fetch(`http://localhost:3000/api/form/${slug}`)
       .then((response) => response.json())
       .then((data) => {
