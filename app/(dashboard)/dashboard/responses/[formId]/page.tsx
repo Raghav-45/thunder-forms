@@ -96,8 +96,6 @@ const currentDate = new Date()
 export default function Responses() {
   const { formId } = useParams()
 
-  const { userForms } = useGenerationStore()
-
   const [responses, setResponses] = useState<ResponseType[]>()
   const [selectedResponse, setSelectedResponse] = useState<ResponseType>()
   const [selectedResponseIndex, setSelectedResponseIndex] = useState<number>(0)
