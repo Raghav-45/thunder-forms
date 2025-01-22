@@ -6,6 +6,7 @@ import {
   ArrowUpRight,
   CreditCard,
   DollarSign,
+  InboxIcon,
   PlusCircle,
   Users,
 } from 'lucide-react'
@@ -31,7 +32,6 @@ import { useGenerationStore } from '@/components/GenerationStore'
 import Loading from './loading'
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { NoDataComponent } from './forms/page'
 import { cn } from '@/lib/utils'
 
 const recentActivity = [
@@ -261,5 +261,32 @@ export default function Dashboard() {
         </Card>
       </div>
     </main>
+  )
+}
+
+function NoDataComponent() {
+  return (
+    <div className="flex flex-col w-full items-center justify-center h-[50vh] gap-6">
+      <div className="flex items-center justify-center w-20 h-20 rounded-full bg-muted">
+        <InboxIcon className="w-10 h-10 text-muted-foreground" />
+      </div>
+      <div className="space-y-3 text-center">
+        <h2 className="text-2xl font-bold tracking-tight">
+          You haven&apos;t created any forms yet
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Welcome to Thunder Forms, Ready to create your first form?
+          <br />
+          Click the{' '}
+          <span className="text-primary font-semibold">
+            &quot;New Form&quot;
+          </span>{' '}
+          button above and get started in seconds.
+        </p>
+        <p className="text-muted-foreground text-xs italic">
+          Your journey to seamless form creation begins here.
+        </p>
+      </div>
+    </div>
   )
 }
