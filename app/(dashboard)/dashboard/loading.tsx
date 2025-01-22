@@ -31,7 +31,7 @@ export default function Loading() {
     }
   }, [])
 
-  if (pathname == '/dashboard') {
+  if (pathname == '/dashboard' || pathname.startsWith('/dashboard/responses')) {
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">
         <div className="text-3xl mb-6 font-semibold animate-pulse inline-flex align-center text-center">
