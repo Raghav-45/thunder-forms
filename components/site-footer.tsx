@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
+import { Icons } from './Icons'
 
 export function SiteFooter() {
   return (
@@ -27,7 +28,7 @@ export function SiteFooter() {
       <div className=" grid grid-cols-12 items-center">
         <div className="flex flex-col gap-5 col-span-7">
           <div className="flex items-center space-x-1">
-            <div className="text-2xl">⚡</div>
+            <Icons.ThunderFormsLogo className="h-7 w-7" />
             <span className="font-semibold text-lg">Thunder Forms</span>
           </div>
           <p className="text-muted-foreground text-base leading-relaxed">
@@ -82,7 +83,11 @@ export function SiteFooter() {
             @aditya
           </Link>
         </div>
-        <p className="text-xs text-muted-foreground">© 2024 ⚡Thunder Forms</p>
+        <p className="text-xs text-muted-foreground inline-flex align-bottom">
+          © 2024
+          <Icons.ThunderFormsLogo className="h-4 w-4 mx-1" />
+          Thunder Forms
+        </p>
       </div>
     </footer>
   )

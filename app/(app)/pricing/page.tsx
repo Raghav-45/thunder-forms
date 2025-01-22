@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { Icons } from '@/components/Icons'
 
 const plans = [
   {
@@ -76,8 +77,10 @@ export default function PricingPage() {
     <section className="py-32">
       <div className="container">
         <div className="flex flex-col items-center text-center">
-          <h3 className="mb-3 max-w-3xl text-2xl font-semibold md:mb-4 md:text-4xl lg:mb-6">
-            Choose Your ⚡ Thunder Forms
+          <h3 className="flex mb-3 max-w-3xl text-2xl font-semibold md:mb-4 md:text-4xl lg:mb-6 items-center">
+            Choose Your
+            <Icons.ThunderFormsLogo className="h-auto w-10 mx-3" />
+            Thunder Forms
           </h3>
           <p className="mb-8 max-w-3xl text-muted-foreground lg:text-lg">
             Scalable plans designed to grow with your needs.

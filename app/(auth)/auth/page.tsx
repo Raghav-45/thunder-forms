@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import { UserAuthForm } from '@/components/user-auth-form'
+import { Icons } from '@/components/Icons'
 
 export const metadata: Metadata = {
   title: 'Thunder Forms - Authentication',
@@ -44,8 +45,9 @@ export default function AuthenticationPage() {
           </Link>
           <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
             <div className="absolute inset-0 bg-zinc-900" />
-            <div className="relative z-20 flex items-center text-2xl font-medium">
-              ⚡ Thunder Forms
+            <div className="relative z-20 flex items-center text-2xl font-medium align-center text-center">
+              <Icons.ThunderFormsLogo className="h-auto w-8 mr-2" />
+              Thunder Forms
             </div>
             <div className="relative z-20 mt-auto">
               <blockquote className="space-y-2">

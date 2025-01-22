@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Progress } from '@/components/ui/progress'
 import { usePathname } from 'next/navigation'
+import { Icons } from '@/components/Icons'
 
 export default function Loading() {
   const pathname = usePathname()
@@ -33,8 +34,9 @@ export default function Loading() {
   if (pathname == '/dashboard') {
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">
-        <div className="text-3xl mb-6 font-semibold animate-pulse">
-          ⚡ Thunder Forms
+        <div className="text-3xl mb-6 font-semibold animate-pulse inline-flex align-center text-center">
+          <Icons.ThunderFormsLogo className="h-auto w-8 mr-2" />
+          Thunder Forms
         </div>
 
         {showProgress && (
