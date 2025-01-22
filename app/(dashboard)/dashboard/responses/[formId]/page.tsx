@@ -156,22 +156,10 @@ export default function Responses() {
             x-chunk="dashboard-05-chunk-0"
           >
             <CardHeader className="pb-3">
-              <CardTitle>
-                {userForms?.filter(
-                  (form) =>
-                    (typeof formId == 'string'
-                      ? formId
-                      : '2bFG4MkZjcnwBUBSohw7') === form.id
-                )[0]?.title ?? 'Form Responses'}
-              </CardTitle>
+              <CardTitle>Form Responses</CardTitle>
               <CardDescription className="text-balance max-w-lg leading-relaxed">
-                {userForms?.filter(
-                  (form) =>
-                    (typeof formId == 'string'
-                      ? formId
-                      : '2bFG4MkZjcnwBUBSohw7') === form.id
-                )[0]?.description ??
-                  'Introducing Our Dashboard for Seamless Management and Insightful Analysis of Form Responses.'}
+                Introducing Our Dashboard for Seamless Management and Insightful
+                Analysis of Form Responses.
               </CardDescription>
             </CardHeader>
             <CardFooter className="absolute bottom-0">
@@ -292,9 +280,6 @@ export default function Responses() {
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              {/* {(response?.submittedAt &&
-                                formatDate(response.submittedAt)) ||
-                                'Unknown'} */}
                               {formatDistance(response.createdAt, currentDate, {
                                 addSuffix: true,
                               })}
