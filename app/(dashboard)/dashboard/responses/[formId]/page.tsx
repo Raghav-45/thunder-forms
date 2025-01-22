@@ -175,7 +175,7 @@ export default function Responses() {
               </CardDescription>
             </CardHeader>
             <CardFooter className="absolute bottom-0">
-              <Button>view Form</Button>
+              <Button>View form</Button>
             </CardFooter>
           </Card>
           <Card x-chunk="dashboard-05-chunk-1">
@@ -393,9 +393,11 @@ export default function Responses() {
           </CardContent>
           <CardFooter className="flex flex-row items-center border-t bg-muted/50 px-6 py-3">
             <div className="text-xs text-muted-foreground">
-              Submitted on{' '}
               {selectedResponse?.createdAt &&
-                format(selectedResponse.createdAt, 'PPP')}
+                `Submitted on ${format(
+                  selectedResponse.createdAt,
+                  'PPP'
+                )} @ ${format(selectedResponse.createdAt, 'p')}`}
             </div>
             <div className="ml-auto mr-0 w-auto flex gap-x-4">
               {selectedResponse && (
