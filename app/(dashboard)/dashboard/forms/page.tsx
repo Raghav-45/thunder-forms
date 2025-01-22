@@ -262,7 +262,7 @@ export default function Forms() {
   )
 }
 
-export function NoDataComponent() {
+function NoDataComponent() {
   return (
     <div className="flex flex-col w-full items-center justify-center h-[50vh] gap-6">
       <div className="flex items-center justify-center w-20 h-20 rounded-full bg-muted">
