@@ -139,7 +139,7 @@ export default function Forms() {
                   <TableBody>
                     {userForms.map((form, index) => (
                       <TableRow key={index}>
-                        <TableCell className="font-medium text-xs">
+                        <TableCell className="font-medium">
                           {form.title}
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
