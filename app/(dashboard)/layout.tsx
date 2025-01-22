@@ -9,7 +9,6 @@ import {
   PanelLeft,
   Search,
   Settings,
-  ZapIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {

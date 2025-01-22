@@ -6,12 +6,13 @@ import {
   ArrowUpRight,
   CreditCard,
   DollarSign,
+  PlusCircle,
   Users,
 } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -30,6 +31,9 @@ import {
 import { useGenerationStore } from '@/components/GenerationStore'
 import Loading from './loading'
 import { useEffect, useState } from 'react'
+import { format } from 'date-fns'
+import { NoDataComponent } from './forms/page'
+import { cn } from '@/lib/utils'
 
 const transactions = [
   {
@@ -201,58 +205,80 @@ export default function Dashboard() {
         <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4">
           <CardHeader className="flex flex-row items-center">
             <div className="grid gap-2">
-              <CardTitle>Transactions</CardTitle>
-              <CardDescription>
-                Recent transactions from your store.
-              </CardDescription>
+              <CardTitle>Forms</CardTitle>
+              <CardDescription>All your forms in one place.</CardDescription>
             </div>
             <Button asChild size="sm" className="ml-auto gap-1">
-              <Link href="#">
-                View All
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
+              {userForms && userForms.length > 0 ? (
+                <Link href="/dashboard/forms">
+                  View All
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              ) : (
+                <Link
+                  href="/dashboard/forms/new-form"
+                  className={cn(
+                    buttonVariants({ variant: 'default', size: 'sm' }),
+                    'h-7 gap-1'
+                  )}
+                >
+                  <PlusCircle className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    New Form
+                  </span>
+                </Link>
+              )}
             </Button>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead className="hidden xl:table-column">Type</TableHead>
-                  <TableHead className="hidden xl:table-column">
-                    Status
-                  </TableHead>
-                  <TableHead className="hidden xl:table-column">Date</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transactions.map((transaction, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <div className="font-medium">{transaction.customer}</div>
-                      <div className="hidden text-sm text-muted-foreground md:inline">
-                        {transaction.email}
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden xl:table-column">
-                      {transaction.type}
-                    </TableCell>
-                    <TableCell className="hidden xl:table-column">
-                      <Badge className="text-xs" variant="outline">
-                        {transaction.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell lg:hidden xl:table-column">
-                      {transaction.date}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      ${transaction.amount.toFixed(2)}
-                    </TableCell>
+            {!userForms ? (
+              <p>loading...</p>
+            ) : userForms && userForms.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    {/* <TableHead className="hidden xl:table-column">Type</TableHead>
+                    <TableHead className="hidden xl:table-column">
+                      Status
+                    </TableHead>
+                    <TableHead className="hidden xl:table-column">Date</TableHead> */}
+                    <TableHead className="text-right w-[150px]">
+                      Created on
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {userForms &&
+                    userForms.map((form, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <div className="font-medium">{form.title}</div>
+                          <div className="text-sm line-clamp-1 text-muted-foreground">
+                            {form.description}
+                          </div>
+                        </TableCell>
+                        {/* <TableCell className="hidden xl:table-column">
+                        {transaction.type}
+                      </TableCell>
+                      <TableCell className="hidden xl:table-column">
+                        <Badge className="text-xs" variant="outline">
+                          {transaction.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell lg:hidden xl:table-column">
+                        {transaction.date}
+                      </TableCell> */}
+                        <TableCell className="text-right">
+                          {format(form.createdAt, 'PPP')}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <NoDataComponent />
+            )}
           </CardContent>
         </Card>
         <Card x-chunk="dashboard-01-chunk-5">

@@ -129,7 +129,7 @@ export default function Forms() {
                         Total Responses
                       </TableHead>
                       <TableHead className="hidden md:table-cell">
-                        Created at
+                        Created on
                       </TableHead>
                       <TableHead>
                         <span className="sr-only">Actions</span>
@@ -262,7 +262,7 @@ export default function Forms() {
   )
 }
 
-function NoDataComponent() {
+export function NoDataComponent() {
   return (
     <div className="flex flex-col w-full items-center justify-center h-[50vh] gap-6">
       <div className="flex items-center justify-center w-20 h-20 rounded-full bg-muted">
