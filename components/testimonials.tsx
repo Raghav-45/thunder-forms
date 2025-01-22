@@ -13,7 +13,10 @@ const TestimonialsSection = () => {
           </p>
           <div className="flex items-center gap-2 md:gap-4">
             <Avatar className="size-12 md:size-16">
-              <AvatarImage src="https://www.shadcnblocks.com/images/block/avatar-2.webp" />
+              <AvatarImage
+                alt="Avatar image"
+                src="https://www.shadcnblocks.com/images/block/avatar-2.webp"
+              />
               <AvatarFallback>Aditya</AvatarFallback>
             </Avatar>
             <div className="text-left">
