@@ -5,25 +5,19 @@ import { EditFieldForm } from '@/components/edit-field-form'
 import { FieldSelector } from '@/components/field-selector'
 import { FormPreview } from '@/components/form-preview'
 import { useGenerationStore } from '@/components/GenerationStore'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardDescription } from '@/components/ui/card'
+import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { siteConfig } from '@/config/site'
 import { defaultFieldConfig } from '@/constants'
-import { createForm, getFormById, updateFormbyId } from '@/lib/dbUtils'
-import { FormFieldType, FormFieldOrGroup } from '@/types/types'
-import { SaveIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { FormFieldType, FormFieldOrGroup, FormType } from '@/types/types'
+import { PlusIcon, SaveIcon } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -43,17 +37,16 @@ export default function FormBuilder() {
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
   const [selectedField, setSelectedField] = useState<FormFieldType | null>(null)
   const [isEditingWindowOpen, setIsEditingWindowOpen] = useState(false)
-
-  const [whichTabIsOpen, setWhichTabIsOpen] = useState<'editing' | 'preview'>(
-    'editing'
-  )
+  const [isElementAddingWindowOpen, setIsElementAddingWindowOpen] =
+    useState(false)
 
   useEffect(() => {
     // If a valid `formId` is present and it's not 'new-form', fetch the existing form's data
     if (formId && formId !== 'new-form') {
-      getFormById(formId)
+      fetch(`/api/forms/${formId}`)
+        .then((response) => response.json())
         .then((formData) => {
-          if (formData?.fields) {
+          if (formData) {
             setFormFields(formData.fields)
             setFormName(formData.title || 'New form')
             setFormDescription(
@@ -196,7 +189,7 @@ export default function FormBuilder() {
   }
 
   const handleSaveForm = async () => {
-    console.log(formFields)
+    console.log('Form Fields: ', formFields)
 
     if (!formName) {
       toast.error('Form name is required')
@@ -205,13 +198,27 @@ export default function FormBuilder() {
 
     if (formId == null || formId === 'new-form') {
       // Create a new form
-      const newFormId = await createForm(formName, formDescription, formFields)
+      const response = await fetch('/api/forms/new', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          formName: formName,
+          formDescription: formDescription,
+          formFields: formFields,
+        }),
+      })
+      const body = (await response.json()) as FormType
+      const newFormId = body.id
+
       setFormId(newFormId)
       addForm({
         id: newFormId,
-        title: formName,
-        description: formDescription,
-        fields: formFields,
+        title: body.title,
+        description: body.description,
+        fields: JSON.parse(JSON.stringify(formFields)),
+        createdAt: body.createdAt,
       })
 
       // Update the URL without refreshing the page
@@ -221,13 +228,20 @@ export default function FormBuilder() {
       toast.success('New Form created successfully!')
     } else {
       // Update the existing form
-      await updateFormbyId(formId, formName, formDescription, formFields)
-      updateForm(formId, {
-        title: formName,
-        description: formDescription,
-        fields: formFields,
-        id: formId,
+      const response = await fetch(`/api/forms/${formId}/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: formName,
+          description: formDescription,
+          fields: formFields,
+        }),
       })
+      const updatedForm = (await response.json()) as FormType
+
+      updateForm(formId, updatedForm)
       toast.success('Form updated successfully!')
     }
   }
@@ -235,7 +249,7 @@ export default function FormBuilder() {
   return (
     <div className="flex h-screen bg-background text-foreground">
       {/* Left Side bar with Form Details */}
-      <Card className="w-80 border-0 border-r-2 rounded-none h-screen overflow-hidden">
+      <Card className="hidden md:block w-80 border-0 border-r-2 rounded-none h-screen overflow-hidden">
         <CardContent className="p-4 pt-6 space-y-4">
           <div className="flex flex-row justify-between mb-8">
             <h2 className="text-2xl font-bold">Settings</h2>
@@ -278,7 +292,7 @@ export default function FormBuilder() {
       </Card>
 
       <div
-        className="flex-1 p-8 overflow-auto"
+        className="flex-1 p-4 pt-6 md:p-8 overflow-auto"
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
       >
@@ -289,7 +303,7 @@ export default function FormBuilder() {
             {formId !== 'new-form' && (
               <CopyButton value={`${siteConfig.url}/forms/${formId}`} />
             )}
-            <Select
+            {/* <Select
               onValueChange={(e) =>
                 setWhichTabIsOpen(e as 'editing' | 'preview')
               }
@@ -302,11 +316,11 @@ export default function FormBuilder() {
                 <SelectItem value="preview">Preview</SelectItem>
                 <SelectItem value="editing">Editing</SelectItem>
               </SelectContent>
-            </Select>
+            </Select> */}
           </div>
         </div>
-        <Card className="min-h-[600px] border-2 border-dashed border-muted">
-          <CardContent className="p-6">
+        <Card className="min-h-[600px] border-2 border-dashed !p-0 border-muted">
+          <CardContent className="p-3 md:p-6">
             {formFields.length > 0 ? (
               <div>
                 <FormPreview
@@ -315,7 +329,7 @@ export default function FormBuilder() {
                   onClickRemove={removeFormField}
                   onReorder={handleReorder}
                   selectedField={isEditingWindowOpen ? selectedField : null}
-                  behaveAsPreview={whichTabIsOpen === 'preview'}
+                  behaveAsPreview={false}
                 />
               </div>
             ) : (
@@ -327,8 +341,59 @@ export default function FormBuilder() {
         </Card>
       </div>
 
+      <Drawer
+        open={isElementAddingWindowOpen}
+        onOpenChange={(isOpen) => setIsElementAddingWindowOpen(isOpen)}
+      >
+        <DrawerTrigger asChild>
+          <div
+            className={cn(
+              buttonVariants({
+                variant: 'ghost',
+              }),
+              'size-14 justify-center px-0 rounded-full border fixed z-100 bottom-8 right-8 cursor-pointer bg-black'
+            )}
+          >
+            <PlusIcon className="!size-8" />
+            <span className="sr-only">Add Field</span>
+          </div>
+        </DrawerTrigger>
+        <DrawerContent className="p-4 pt-0">
+          <div className="pt-6">
+            <h2 className="text-2xl font-bold">Available Fields</h2>
+            <CardDescription>
+              Select fields from the list to add to your form
+            </CardDescription>
+            <Separator className="my-4" />
+            <div className="flex flex-row">
+              <FieldSelector
+                addFormField={(variant: string, index: number = 0) => {
+                  setIsElementAddingWindowOpen(false)
+                  addFormField(variant, index)
+                }}
+                onDragStart={(e, variant: string, index: number = 0) =>
+                  handleDragStart(e, variant, index)
+                }
+              />
+            </div>
+            {/* <DrawerHeader>
+              <DrawerTitle>Are you absolutely sure?</DrawerTitle>
+              <DrawerDescription>This action cannot be undone.</DrawerDescription>
+            </DrawerHeader> */}
+            <div className="flex flex-row pt-4 space-x-2">
+              <Button className="w-full" variant="outline">
+                Settings
+              </Button>
+              {/* <Button className="w-full" variant="outline">
+                Cancel
+              </Button> */}
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
       {/* Right Side bar */}
-      <Card className="w-80 border-0 border-l-2 rounded-none h-screen overflow-hidden">
+      <Card className="hidden md:block w-80 border-0 border-l-2 rounded-none h-screen overflow-hidden">
         <CardContent className="p-4 pt-6">
           <h2 className="text-2xl font-bold">Available Fields</h2>
           <CardDescription>

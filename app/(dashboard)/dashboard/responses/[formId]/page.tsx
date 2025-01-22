@@ -12,7 +12,7 @@ import {
   MoreVertical,
 } from 'lucide-react'
 
-import { format } from 'date-fns'
+import { format, formatDistance } from 'date-fns'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -49,12 +49,22 @@ import {
   PaginationItem,
 } from '@/components/ui/pagination'
 import { useEffect, useState } from 'react'
-import { FormResponseTypeWithId, getResponsesByFormId } from '@/lib/dbUtils'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { useGenerationStore } from '@/components/GenerationStore'
+import { ResponseType } from '@/types/types'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import Loading from '../../loading'
 
 const fakeResponse = {
   submissionId: 'TF123456',
@@ -81,23 +91,33 @@ const fakeResponse = {
   },
 }
 
+const currentDate = new Date()
+
 export default function Responses() {
   const { formId } = useParams()
 
-  const { userForms } = useGenerationStore()
+  const [responses, setResponses] = useState<ResponseType[]>()
+  const [selectedResponse, setSelectedResponse] = useState<ResponseType>()
+  const [selectedResponseIndex, setSelectedResponseIndex] = useState<number>(0)
 
-  const [responses, setResponses] = useState<FormResponseTypeWithId[]>()
-  const [selectedResponse, setSelectedResponse] =
-    useState<FormResponseTypeWithId>()
+  const [isLoading, setIsLoading] = useState(true)
+
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
+    useState<boolean>(false)
 
   useEffect(() => {
-    getResponsesByFormId(
-      typeof formId == 'string' ? formId : '2bFG4MkZjcnwBUBSohw7'
-    )
+    fetch(`/api/forms/${formId}/responses`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok')
+        }
+        return response.json()
+      })
       .then((responseData) => {
-        if (responseData) {
-          setResponses(responseData)
-          setSelectedResponse(responseData[0])
+        if (responseData.responses) {
+          setResponses(responseData.responses)
+          setSelectedResponse(responseData.responses[0])
+          setIsLoading(false)
         } else {
           toast.error('Failed to load form data')
         }
@@ -108,6 +128,30 @@ export default function Responses() {
       })
   }, [formId]) // Only depends on slug
 
+  const handleDeleteResponse = async (id: string) => {
+    if (!id || !responses) {
+      return
+    }
+
+    try {
+      const response = await fetch(
+        `/api/forms/${formId}/responses/${id}/delete`,
+        {
+          method: 'DELETE',
+        }
+      )
+      if (!response.ok) throw new Error('Failed to delete response')
+      setResponses(responses!.filter((response) => response.id !== id))
+      setIsDeleteConfirmationOpen(false)
+    } catch (error) {
+      console.error('Error deleting response:', error)
+    }
+  }
+
+  if (isLoading) {
+    return <Loading />
+  }
+
   return (
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
       <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
@@ -117,26 +161,14 @@ export default function Responses() {
             x-chunk="dashboard-05-chunk-0"
           >
             <CardHeader className="pb-3">
-              <CardTitle>
-                {userForms?.filter(
-                  (form) =>
-                    (typeof formId == 'string'
-                      ? formId
-                      : '2bFG4MkZjcnwBUBSohw7') === form.id
-                )[0]?.title ?? 'Form Responses'}
-              </CardTitle>
+              <CardTitle>Form Responses</CardTitle>
               <CardDescription className="text-balance max-w-lg leading-relaxed">
-                {userForms?.filter(
-                  (form) =>
-                    (typeof formId == 'string'
-                      ? formId
-                      : '2bFG4MkZjcnwBUBSohw7') === form.id
-                )[0]?.description ??
-                  'Introducing Our Dashboard for Seamless Management and Insightful Analysis of Form Responses.'}
+                Introducing Our Dashboard for Seamless Management and Insightful
+                Analysis of Form Responses.
               </CardDescription>
             </CardHeader>
             <CardFooter className="absolute bottom-0">
-              <Button>view Form</Button>
+              <Button>View form</Button>
             </CardFooter>
           </Card>
           <Card x-chunk="dashboard-05-chunk-1">
@@ -221,8 +253,12 @@ export default function Responses() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Submission ID</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Submitted On</TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Status
+                        </TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Submitted
+                        </TableHead>
                         <TableHead>
                           <span className="sr-only">Actions</span>
                         </TableHead>
@@ -239,21 +275,23 @@ export default function Responses() {
                                 ? 'bg-muted/50'
                                 : ''
                             )}
-                            onClick={() => setSelectedResponse(response)}
+                            onClick={() => {
+                              setSelectedResponse(response)
+                              setSelectedResponseIndex(index)
+                            }}
                           >
                             <TableCell className="font-medium">
                               {response.id || 'N/A'}
                             </TableCell>
-                            <TableCell className="truncate max-w-[200px]">
+                            <TableCell className="truncate max-w-[200px] hidden md:table-cell">
                               <Badge className="text-xs" variant="outline">
                                 completed
                               </Badge>
                             </TableCell>
-                            <TableCell>
-                              {/* {(response?.submittedAt &&
-                                formatDate(response.submittedAt)) ||
-                                'Unknown'} */}
-                              {response?.submittedAt}
+                            <TableCell className="hidden md:table-cell">
+                              {formatDistance(response.createdAt, currentDate, {
+                                addSuffix: true,
+                              })}
                             </TableCell>
                             <TableCell>
                               <DropdownMenu>
@@ -330,7 +368,7 @@ export default function Responses() {
                 <DropdownMenuContent align="end">
                   {selectedResponse && (
                     <Link
-                      href={`/dashboard/forms/${selectedResponse?.parentFormId}`}
+                      href={`/dashboard/forms/${selectedResponse?.formsId}`}
                     >
                       <DropdownMenuItem>Edit form</DropdownMenuItem>
                     </Link>
@@ -349,25 +387,97 @@ export default function Responses() {
           </CardContent>
           <CardFooter className="flex flex-row items-center border-t bg-muted/50 px-6 py-3">
             <div className="text-xs text-muted-foreground">
-              Updated on{' '}
-              {fakeResponse && format(fakeResponse?.SubmittedOn, 'PPP')}
+              {selectedResponse?.createdAt &&
+                `Submitted on ${format(
+                  selectedResponse.createdAt,
+                  'PPP'
+                )} @ ${format(selectedResponse.createdAt, 'p')}`}
             </div>
             <div className="ml-auto mr-0 w-auto flex gap-x-4">
-              <Button variant="destructive" size="sm" className="h-6 text-xs">
-                Delete response
-              </Button>
+              {selectedResponse && (
+                <Dialog
+                  open={isDeleteConfirmationOpen}
+                  onOpenChange={setIsDeleteConfirmationOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="h-6 text-xs"
+                    >
+                      Delete response
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent isClosable={false}>
+                    <DialogHeader>
+                      <DialogTitle>Are you absolutely sure?</DialogTitle>
+                      <DialogDescription>
+                        This action cannot be undone. This will permanently
+                        delete your form and remove your data from our servers.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button type="button" variant="outline">
+                          Close
+                        </Button>
+                      </DialogClose>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={() => {
+                          handleDeleteResponse(selectedResponse?.id)
+                        }}
+                      >
+                        Continue
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+
               <Pagination className="ml-auto mr-0 w-auto">
                 <PaginationContent>
                   <PaginationItem>
-                    <Button size="icon" variant="outline" className="h-6 w-6">
+                    <Button
+                      onClick={() => {
+                        if (selectedResponseIndex > 0 && responses) {
+                          const newIndex = selectedResponseIndex - 1
+                          setSelectedResponseIndex(newIndex)
+                          setSelectedResponse(responses[newIndex])
+                        }
+                      }}
+                      size="icon"
+                      variant="outline"
+                      className="h-6 w-6"
+                      disabled={!responses || selectedResponseIndex <= 0}
+                    >
                       <ChevronLeftIcon className="h-3.5 w-3.5" />
-                      <span className="sr-only">Previous Order</span>
+                      <span className="sr-only">Previous</span>
                     </Button>
                   </PaginationItem>
                   <PaginationItem>
-                    <Button size="icon" variant="outline" className="h-6 w-6">
+                    <Button
+                      onClick={() => {
+                        if (
+                          responses &&
+                          selectedResponseIndex < responses.length - 1
+                        ) {
+                          const newIndex = selectedResponseIndex + 1
+                          setSelectedResponseIndex(newIndex)
+                          setSelectedResponse(responses[newIndex])
+                        }
+                      }}
+                      size="icon"
+                      variant="outline"
+                      className="h-6 w-6"
+                      disabled={
+                        !responses ||
+                        selectedResponseIndex >= (responses?.length ?? 0) - 1
+                      }
+                    >
                       <ChevronRightIcon className="h-3.5 w-3.5" />
-                      <span className="sr-only">Next Order</span>
+                      <span className="sr-only">Next</span>
                     </Button>
                   </PaginationItem>
                 </PaginationContent>

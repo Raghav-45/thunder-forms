@@ -21,7 +21,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { deleteFormById, getAllForms } from '@/lib/dbUtils'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
@@ -36,27 +35,33 @@ import {
 } from '@/components/ui/dialog'
 import { LuTrash2 } from 'react-icons/lu'
 import { useGenerationStore } from '@/components/GenerationStore'
+import { format } from 'date-fns'
 
 export default function Forms() {
   const { userForms, setUserForms } = useGenerationStore()
+  const [isLoading, setIsLoading] = useState(!userForms)
 
   const [deleteFormId, setDeleteFormId] = useState<string | null>(null)
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState<boolean>(false)
 
   useEffect(() => {
-    const fetchForms = async () => {
-      if (!userForms) {
+    const fetchFormsData = async () => {
+      if (isLoading) {
         try {
-          const data = await getAllForms()
+          const response = await fetch('/api/forms')
+          const data = await response.json()
           setUserForms(data)
         } catch (error) {
           console.error('Error fetching forms:', error)
+        } finally {
+          setIsLoading(false)
         }
       }
     }
-    fetchForms()
-  }, [userForms, setUserForms])
+
+    fetchFormsData()
+  }, [isLoading, setUserForms])
 
   const handleDeleteForm = async () => {
     if (!deleteFormId || !userForms) {
@@ -64,7 +69,11 @@ export default function Forms() {
     }
 
     try {
-      const id = await deleteFormById(deleteFormId)
+      const response = await fetch(`/api/forms/${deleteFormId}/delete`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) throw new Error('Failed to delete form')
+      const id = deleteFormId
       setUserForms(userForms.filter((form) => form.id !== id))
     } catch (error) {
       console.error('Error deleting form:', error)
@@ -120,7 +129,7 @@ export default function Forms() {
                         Total Responses
                       </TableHead>
                       <TableHead className="hidden md:table-cell">
-                        Created at
+                        Created on
                       </TableHead>
                       <TableHead>
                         <span className="sr-only">Actions</span>
@@ -133,16 +142,16 @@ export default function Forms() {
                         <TableCell className="font-medium">
                           {form.title}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           <Badge variant="outline">Active</Badge>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           {0}
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
-                          November 26th, 2024
+                          {format(form.createdAt, 'PPP')}
                         </TableCell>
-                        <TableCell className="hidden md:table-cell">
+                        <TableCell>
                           <div className="flex flex-row space-x-2 items-center justify-end">
                             <Link href={`/dashboard/forms/${form.id}`}>
                               <Button

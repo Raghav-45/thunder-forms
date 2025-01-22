@@ -6,12 +6,13 @@ import {
   ArrowUpRight,
   CreditCard,
   DollarSign,
+  InboxIcon,
+  PlusCircle,
   Users,
 } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -29,49 +30,9 @@ import {
 } from '@/components/ui/table'
 import { useGenerationStore } from '@/components/GenerationStore'
 import Loading from './loading'
-
-const transactions = [
-  {
-    customer: 'Liam Johnson',
-    email: 'liam@example.com',
-    type: 'Sale',
-    status: 'Approved',
-    date: '2023-06-23',
-    amount: 250.0,
-  },
-  {
-    customer: 'Olivia Smith',
-    email: 'olivia@example.com',
-    type: 'Refund',
-    status: 'Declined',
-    date: '2023-06-24',
-    amount: 150.0,
-  },
-  {
-    customer: 'Noah Williams',
-    email: 'noah@example.com',
-    type: 'Subscription',
-    status: 'Approved',
-    date: '2023-06-25',
-    amount: 350.0,
-  },
-  {
-    customer: 'Emma Brown',
-    email: 'emma@example.com',
-    type: 'Sale',
-    status: 'Approved',
-    date: '2023-06-26',
-    amount: 450.0,
-  },
-  {
-    customer: 'Liam Johnson',
-    email: 'liam@example.com',
-    type: 'Sale',
-    status: 'Approved',
-    date: '2023-06-27',
-    amount: 550.0,
-  },
-]
+import { useEffect, useState } from 'react'
+import { format } from 'date-fns'
+import { cn } from '@/lib/utils'
 
 const recentActivity = [
   {
@@ -112,24 +73,42 @@ const recentActivity = [
 ]
 
 export default function Dashboard() {
-  const { userForms, fetchForms } = useGenerationStore()
-  fetchForms()
+  const { userForms, setUserForms } = useGenerationStore()
+  const [isLoading, setIsLoading] = useState(!userForms)
 
-  if (!userForms) {
+  useEffect(() => {
+    const fetchFormsData = async () => {
+      if (isLoading) {
+        try {
+          const response = await fetch('/api/forms')
+          const data = await response.json()
+          setUserForms(data)
+        } catch (error) {
+          console.error('Error fetching forms:', error)
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    fetchFormsData()
+  }, [isLoading, setUserForms])
+
+  if (isLoading) {
     return <Loading />
   }
 
   return (
     // <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
         <Card x-chunk="dashboard-01-chunk-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$45,231.89</div>
+            <div className="text-2xl font-bold">$4,523.89</div>
             <p className="text-xs text-muted-foreground">
               +20.1% from last month
             </p>
@@ -137,9 +116,7 @@ export default function Dashboard() {
         </Card>
         <Card x-chunk="dashboard-01-chunk-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Forms Created
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Total Forms</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -182,58 +159,80 @@ export default function Dashboard() {
         <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4">
           <CardHeader className="flex flex-row items-center">
             <div className="grid gap-2">
-              <CardTitle>Transactions</CardTitle>
-              <CardDescription>
-                Recent transactions from your store.
-              </CardDescription>
+              <CardTitle>Forms</CardTitle>
+              <CardDescription>All your forms in one place.</CardDescription>
             </div>
             <Button asChild size="sm" className="ml-auto gap-1">
-              <Link href="#">
-                View All
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
+              {userForms && userForms.length > 0 ? (
+                <Link href="/dashboard/forms">
+                  View All
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              ) : (
+                <Link
+                  href="/dashboard/forms/new-form"
+                  className={cn(
+                    buttonVariants({ variant: 'default', size: 'sm' }),
+                    'h-7 gap-1'
+                  )}
+                >
+                  <PlusCircle className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    New Form
+                  </span>
+                </Link>
+              )}
             </Button>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead className="hidden xl:table-column">Type</TableHead>
-                  <TableHead className="hidden xl:table-column">
-                    Status
-                  </TableHead>
-                  <TableHead className="hidden xl:table-column">Date</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transactions.map((transaction, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <div className="font-medium">{transaction.customer}</div>
-                      <div className="hidden text-sm text-muted-foreground md:inline">
-                        {transaction.email}
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden xl:table-column">
-                      {transaction.type}
-                    </TableCell>
-                    <TableCell className="hidden xl:table-column">
-                      <Badge className="text-xs" variant="outline">
-                        {transaction.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell lg:hidden xl:table-column">
-                      {transaction.date}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      ${transaction.amount.toFixed(2)}
-                    </TableCell>
+            {!userForms ? (
+              <p>loading...</p>
+            ) : userForms && userForms.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    {/* <TableHead className="hidden xl:table-column">Type</TableHead>
+                    <TableHead className="hidden xl:table-column">
+                      Status
+                    </TableHead>
+                    <TableHead className="hidden xl:table-column">Date</TableHead> */}
+                    <TableHead className="text-right w-[150px]">
+                      Created on
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {userForms &&
+                    userForms.map((form, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <div className="font-medium">{form.title}</div>
+                          <div className="text-sm line-clamp-1 text-muted-foreground">
+                            {form.description}
+                          </div>
+                        </TableCell>
+                        {/* <TableCell className="hidden xl:table-column">
+                        {transaction.type}
+                      </TableCell>
+                      <TableCell className="hidden xl:table-column">
+                        <Badge className="text-xs" variant="outline">
+                          {transaction.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell lg:hidden xl:table-column">
+                        {transaction.date}
+                      </TableCell> */}
+                        <TableCell className="text-right">
+                          {format(form.createdAt, 'PPP')}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <NoDataComponent />
+            )}
           </CardContent>
         </Card>
         <Card x-chunk="dashboard-01-chunk-5">
@@ -260,5 +259,32 @@ export default function Dashboard() {
         </Card>
       </div>
     </main>
+  )
+}
+
+function NoDataComponent() {
+  return (
+    <div className="flex flex-col w-full items-center justify-center h-[50vh] gap-6">
+      <div className="flex items-center justify-center w-20 h-20 rounded-full bg-muted">
+        <InboxIcon className="w-10 h-10 text-muted-foreground" />
+      </div>
+      <div className="space-y-3 text-center">
+        <h2 className="text-2xl font-bold tracking-tight">
+          You haven&apos;t created any forms yet
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Welcome to Thunder Forms, Ready to create your first form?
+          <br />
+          Click the{' '}
+          <span className="text-primary font-semibold">
+            &quot;New Form&quot;
+          </span>{' '}
+          button above and get started in seconds.
+        </p>
+        <p className="text-muted-foreground text-xs italic">
+          Your journey to seamless form creation begins here.
+        </p>
+      </div>
+    </div>
   )
 }

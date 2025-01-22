@@ -16,7 +16,6 @@ import {
 import { LuPencil, LuTrash2 } from 'react-icons/lu'
 import { cn } from '@/lib/utils'
 import { Reorder } from 'framer-motion'
-import { createResponse } from '@/lib/dbUtils'
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
@@ -191,7 +190,16 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
     // }
     if (behaveAsPreview) {
       try {
-        await createResponse(formId!, data)
+        // await createResponse(formId!, data)
+
+        await fetch(`/api/forms/${formId}/responses/new`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        })
+
         toast.success('Form submitted successfully!')
       } catch (error) {
         console.error('Form submission error', error)

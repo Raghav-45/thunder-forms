@@ -3,6 +3,7 @@ import { Announcement } from '@/components/Announcement'
 import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
+import { Icons } from '@/components/Icons'
 
 const posts = [
   {
@@ -52,8 +53,9 @@ export default function TemplatesPage() {
             withoutIcon
           />
 
-          <h1 className="mb-3 mt-1 text-balance text-3xl font-semibold md:text-4xl">
-            Choose a Template ⚡
+          <h1 className="flex mb-3 mt-1 text-balance text-3xl font-semibold md:text-4xl">
+            Choose a Template{' '}
+            <Icons.ThunderFormsLogo className="h-auto w-10 mx-3" />
           </h1>
           <p className="text-lg text-muted-foreground">
             Select a template and start creating your form instantly.

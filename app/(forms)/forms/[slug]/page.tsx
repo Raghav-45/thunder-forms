@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getFormById } from '@/lib/dbUtils'
 import { toast } from 'sonner'
 import { FormFieldOrGroup } from '@/types/types'
 import { FormPreview } from '@/components/form-preview'
@@ -25,22 +24,19 @@ export default function Page({ params }: PageProps) {
   const { slug } = params
 
   useEffect(() => {
-    getFormById(slug)
-      .then((formData) => {
-        if (formData?.fields) {
-          setFormFields(formData.fields)
-          setFormName(formData.title || 'New form')
-          setFormDescription(
-            formData.description || 'Lorem ipsum dolor sit amet'
-          )
-          setLoading(false)
-        } else {
-          toast.error('Failed to load form data')
+    fetch(`/api/forms/${slug}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data?.fields) {
+          setFormFields(data.fields)
+          setFormName(data.title || 'New form')
+          setFormDescription(data.description || 'Lorem ipsum dolor sit amet')
         }
+        setLoading(false)
       })
       .catch((error) => {
-        console.error('Error fetching form data:', error)
-        toast.error('Error loading form data')
+        console.error('Error fetching form data from API:', error)
+        toast.error('Error loading form data from API')
       })
   }, [slug]) // Only depends on slug
 
