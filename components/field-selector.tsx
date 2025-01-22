@@ -14,7 +14,7 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
   onDragStart,
 }) => {
   return (
-    <div className="flex md:flex-col items-start flex-wrap md:flex-nowrap gap-y-2 overflow-y-auto w-full">
+    <div className="grid grid-cols-2 gap-2 md:flex md:flex-col items-start flex-wrap md:flex-nowrap gap-y-2 overflow-y-auto w-full">
       {fieldTypes
         .sort((a, b) => Number(b.isAvaliable) - Number(a.isAvaliable))
         .map((variant) => (
@@ -34,11 +34,18 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
             >
               {variant.name}
               {!variant.isAvaliable && (
-                <div className="ml-1 text-[9px] font-bold px-1 bg-blue-400 text-black rounded-full">
+                <div className="hidden md:block ml-1 text-[9px] font-bold px-1 bg-blue-400 text-black rounded-full">
                   coming soon
                 </div>
               )}
-              <GripVerticalIcon className="ml-auto size-4" />
+              <div className="ml-auto flex flex-row">
+                {!variant.isAvaliable && (
+                  <div className="block md:hidden mx-1 right-0 text-[9px] font-bold px-1 bg-blue-400 text-black rounded-full">
+                    soon
+                  </div>
+                )}
+                <GripVerticalIcon className="size-4" />
+              </div>
             </Button>
           </div>
         ))}
