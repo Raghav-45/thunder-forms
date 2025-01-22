@@ -139,10 +139,10 @@ export default function Forms() {
                   <TableBody>
                     {userForms.map((form, index) => (
                       <TableRow key={index}>
-                        <TableCell className="font-medium">
+                        <TableCell className="font-medium text-xs">
                           {form.title}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           <Badge variant="outline">Active</Badge>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
@@ -151,7 +151,7 @@ export default function Forms() {
                         <TableCell className="hidden md:table-cell">
                           {format(form.createdAt, 'PPP')}
                         </TableCell>
-                        <TableCell className="hidden md:table-cell">
+                        <TableCell>
                           <div className="flex flex-row space-x-2 items-center justify-end">
                             <Link href={`/dashboard/forms/${form.id}`}>
                               <Button

@@ -253,8 +253,12 @@ export default function Responses() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Submission ID</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Submitted</TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Status
+                        </TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Submitted
+                        </TableHead>
                         <TableHead>
                           <span className="sr-only">Actions</span>
                         </TableHead>
@@ -279,12 +283,12 @@ export default function Responses() {
                             <TableCell className="font-medium">
                               {response.id || 'N/A'}
                             </TableCell>
-                            <TableCell className="truncate max-w-[200px]">
+                            <TableCell className="truncate max-w-[200px] hidden md:table-cell">
                               <Badge className="text-xs" variant="outline">
                                 completed
                               </Badge>
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="hidden md:table-cell">
                               {formatDistance(response.createdAt, currentDate, {
                                 addSuffix: true,
                               })}
