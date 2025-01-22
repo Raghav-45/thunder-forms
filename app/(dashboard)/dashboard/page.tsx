@@ -11,7 +11,6 @@ import {
 } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
 import {
   Card,
@@ -34,49 +33,6 @@ import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { NoDataComponent } from './forms/page'
 import { cn } from '@/lib/utils'
-
-const transactions = [
-  {
-    customer: 'Liam Johnson',
-    email: 'liam@example.com',
-    type: 'Sale',
-    status: 'Approved',
-    date: '2023-06-23',
-    amount: 250.0,
-  },
-  {
-    customer: 'Olivia Smith',
-    email: 'olivia@example.com',
-    type: 'Refund',
-    status: 'Declined',
-    date: '2023-06-24',
-    amount: 150.0,
-  },
-  {
-    customer: 'Noah Williams',
-    email: 'noah@example.com',
-    type: 'Subscription',
-    status: 'Approved',
-    date: '2023-06-25',
-    amount: 350.0,
-  },
-  {
-    customer: 'Emma Brown',
-    email: 'emma@example.com',
-    type: 'Sale',
-    status: 'Approved',
-    date: '2023-06-26',
-    amount: 450.0,
-  },
-  {
-    customer: 'Liam Johnson',
-    email: 'liam@example.com',
-    type: 'Sale',
-    status: 'Approved',
-    date: '2023-06-27',
-    amount: 550.0,
-  },
-]
 
 const recentActivity = [
   {
