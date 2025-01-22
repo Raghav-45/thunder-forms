@@ -53,7 +53,6 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { useGenerationStore } from '@/components/GenerationStore'
 import { ResponseType } from '@/types/types'
 import {
   Dialog,
@@ -65,6 +64,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import Loading from '../../loading'
 
 const fakeResponse = {
   submissionId: 'TF123456',
@@ -100,6 +100,8 @@ export default function Responses() {
   const [selectedResponse, setSelectedResponse] = useState<ResponseType>()
   const [selectedResponseIndex, setSelectedResponseIndex] = useState<number>(0)
 
+  const [isLoading, setIsLoading] = useState(true)
+
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState<boolean>(false)
 
@@ -115,6 +117,7 @@ export default function Responses() {
         if (responseData.responses) {
           setResponses(responseData.responses)
           setSelectedResponse(responseData.responses[0])
+          setIsLoading(false)
         } else {
           toast.error('Failed to load form data')
         }
@@ -143,6 +146,10 @@ export default function Responses() {
     } catch (error) {
       console.error('Error deleting response:', error)
     }
+  }
+
+  if (isLoading) {
+    return <Loading />
   }
 
   return (
