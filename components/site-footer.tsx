@@ -28,7 +28,7 @@ export function SiteFooter() {
       <div className=" grid grid-cols-12 items-center">
         <div className="flex flex-col gap-5 col-span-7">
           <div className="flex items-center space-x-1">
-            <Icons.ThunderFormsLogo className="h-7 w-7" />
+            <Icons.ThunderFormsLogo className="h-7 w-7 mr-1" />
             <span className="font-semibold text-lg">Thunder Forms</span>
           </div>
           <p className="text-muted-foreground text-base leading-relaxed">
