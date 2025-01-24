@@ -80,7 +80,13 @@ export default function Dashboard() {
     const fetchFormsData = async () => {
       if (isLoading) {
         try {
-          const response = await fetch('/api/forms')
+          // Use cache: 'no-store' to ensure fresh data on each request
+          const response = await fetch('/api/forms', {
+            cache: 'no-store',
+            next: {
+              revalidate: 0, // Disable caching completely
+            },
+          })
           const data = await response.json()
           setUserForms(data)
         } catch (error) {
