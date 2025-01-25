@@ -1,10 +1,6 @@
-'use client'
-
 import Image from 'next/image'
 import Link from 'next/link'
 import {
-  FileText,
-  Home,
   LineChart,
   PanelLeft,
   Search,
@@ -27,23 +23,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { DashboardBreadcrumb } from '@/components/dashboardNav'
-import { usePathname } from 'next/navigation'
-
-const navLinks = [
-  { href: '/dashboard', label: 'Dashboard', icon: Home },
-  { href: '/dashboard/forms', label: 'My Forms', icon: FileText }, // To view and manage created forms
-  // { href: '/dashboard/responses', label: 'Responses', icon: CheckCircle }, // To view form submissions
-  // { href: '/dashboard/templates', label: 'Templates', icon: FilePlus }, // For pre-made form templates
-  // { href: '#', label: 'Analytics', icon: LineChart },
-]
+import DashboardNav, { DashboardBreadcrumb } from '@/components/dashboardNav'
 
 export default function DashboardLayout({
   children, // will be a page or nested layout
 }: {
   children: React.ReactNode
 }) {
-  const pathname = usePathname()
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -56,31 +42,7 @@ export default function DashboardLayout({
               height={2}
               className="flex h-10 w-10 border-[2px] hover:border transition-all hover:scale-110 cursor-pointer rounded-full md:h-8 md:w-8"
             />
-            {/* <DashboardNav /> */}
-
-            {navLinks.map((link) => {
-              const Icon = link.icon
-              const isActive = pathname === link.href
-
-              return (
-                <Tooltip key={link.href}>
-                  <TooltipTrigger asChild>
-                    <Link
-                      href={link.href}
-                      className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
-                        isActive
-                          ? 'bg-accent text-accent-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      <Icon className="h-5 w-5" />
-                      <span className="sr-only">{link.label}</span>
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">{link.label}</TooltipContent>
-                </Tooltip>
-              )
-            })}
+            <DashboardNav />
           </nav>
           <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-4">
             <Tooltip>
@@ -117,27 +79,7 @@ export default function DashboardLayout({
                   height={2}
                   className="flex h-10 w-10 border shrink-0 transition-all hover:scale-110 rounded-full md:h-8 md:w-8"
                 />
-
-                {navLinks.map((link) => {
-                  const Icon = link.icon
-                  const isActive = pathname === link.href
-
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      // className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                      className={`flex items-center gap-4 px-2.5 ${
-                        isActive
-                          ? 'text-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      <Icon className="h-5 w-5" />
-                      {link.label}
-                    </Link>
-                  )
-                })}
+                <DashboardNav />
                 <Link
                   href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
