@@ -46,7 +46,7 @@ const FormActionButtons: FC<FormActionButtonsProps> = ({ form }) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <Link href={`/dashboard/forms/${form.id}`}>
+        <Link href={`/dashboard/builder/${form.id}`}>
           <DropdownMenuItem>Edit</DropdownMenuItem>
         </Link>
         <DropdownMenuItem onClick={() => handleDeleteForm(form.id)}>

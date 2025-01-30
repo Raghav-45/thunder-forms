@@ -175,7 +175,7 @@ export default function Dashboard() {
                 </Link>
               ) : (
                 <Link
-                  href="/dashboard/forms/new-form"
+                  href="/dashboard/builder/new-form"
                   className={cn(
                     buttonVariants({ variant: 'default', size: 'sm' }),
                     'h-7 gap-1'

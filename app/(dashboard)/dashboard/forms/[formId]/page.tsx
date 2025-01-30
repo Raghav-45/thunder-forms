@@ -368,7 +368,7 @@ export default function Responses() {
                 <DropdownMenuContent align="end">
                   {selectedResponse && (
                     <Link
-                      href={`/dashboard/forms/${selectedResponse?.formsId}`}
+                      href={`/dashboard/builder/${selectedResponse?.formsId}`}
                     >
                       <DropdownMenuItem>Edit form</DropdownMenuItem>
                     </Link>

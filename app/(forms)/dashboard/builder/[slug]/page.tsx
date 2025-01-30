@@ -222,7 +222,7 @@ export default function FormBuilder() {
       })
 
       // Update the URL without refreshing the page
-      const newUrl = `/dashboard/forms/${newFormId}`
+      const newUrl = `/dashboard/builder/${newFormId}`
       window.history.replaceState(null, '', newUrl)
 
       toast.success('New Form created successfully!')
