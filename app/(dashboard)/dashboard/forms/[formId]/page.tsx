@@ -53,7 +53,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { FormType, ResponseType } from '@/types/types'
+import { ResponseType } from '@/types/types'
 import {
   Dialog,
   DialogClose,
@@ -65,7 +65,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import Loading from '../../loading'
-import { useGenerationStore } from '@/components/GenerationStore'
 
 const fakeResponse = {
   submissionId: 'TF123456',
@@ -94,40 +93,17 @@ const fakeResponse = {
 
 const currentDate = new Date()
 
-export default function Forms() {
+export default function Responses() {
   const { formId } = useParams()
-
-  const { userForms, setUserForms } = useGenerationStore()
-  const [isLoading, setIsLoading] = useState(!userForms)
 
   const [responses, setResponses] = useState<ResponseType[]>()
   const [selectedResponse, setSelectedResponse] = useState<ResponseType>()
   const [selectedResponseIndex, setSelectedResponseIndex] = useState<number>(0)
 
-  // const [isLoading, setIsLoading] = useState(true)
-  const [currentForm, setCurrentForm] = useState<FormType>()
+  const [isLoading, setIsLoading] = useState(true)
 
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState<boolean>(false)
-
-  useEffect(() => {
-    const fetchFormsData = async () => {
-      if (isLoading) {
-        try {
-          const response = await fetch('/api/forms')
-          const data: FormType[] = await response.json()
-          setUserForms(data)
-          setCurrentForm(data.filter((form) => form.id == formId)[0])
-        } catch (error) {
-          console.error('Error fetching forms:', error)
-        } finally {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    fetchFormsData()
-  }, [isLoading, setUserForms])
 
   useEffect(() => {
     fetch(`/api/forms/${formId}/responses`)
@@ -185,9 +161,10 @@ export default function Forms() {
             x-chunk="dashboard-05-chunk-0"
           >
             <CardHeader className="pb-3">
-              <CardTitle>{currentForm?.title}</CardTitle>
+              <CardTitle>Form Responses</CardTitle>
               <CardDescription className="text-balance max-w-lg leading-relaxed">
-                {currentForm?.description}
+                Introducing Our Dashboard for Seamless Management and Insightful
+                Analysis of Form Responses.
               </CardDescription>
             </CardHeader>
             <CardFooter className="absolute bottom-0">
