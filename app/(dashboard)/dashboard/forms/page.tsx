@@ -94,7 +94,7 @@ export default function Forms() {
           </TabsList>
           <div className="ml-auto flex items-center gap-2">
             <Link
-              href="/dashboard/forms/new-form"
+              href="/dashboard/builder/new-form"
               className={cn(
                 buttonVariants({ variant: 'default', size: 'sm' }),
                 'h-7 gap-1'
@@ -139,8 +139,11 @@ export default function Forms() {
                   <TableBody>
                     {userForms.map((form, index) => (
                       <TableRow key={index}>
-                        <TableCell className="font-medium">
-                          {form.title}
+                        <TableCell className="max-w-xs">
+                          <div className="font-medium">{form.title}</div>
+                          <div className="text-sm line-clamp-1 text-muted-foreground">
+                            {form.description}
+                          </div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           <Badge variant="outline">Active</Badge>
@@ -153,7 +156,7 @@ export default function Forms() {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-row space-x-2 items-center justify-end">
-                            <Link href={`/dashboard/forms/${form.id}`}>
+                            <Link href={`/dashboard/builder/${form.id}`}>
                               <Button
                                 size="icon"
                                 variant="ghost"
@@ -173,39 +176,11 @@ export default function Forms() {
                             >
                               <LuTrash2 />
                             </Button>
-                            <Link href={`/dashboard/responses/${form.id}`}>
+                            <Link href={`/dashboard/forms/${form.id}`}>
                               <Button size="sm" variant="secondary">
-                                View Responses
+                                View Insights
                               </Button>
                             </Link>
-
-                            {/* <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  aria-haspopup="true"
-                                  size="icon"
-                                  variant="ghost"
-                                  className="size-8"
-                                >
-                                  <MoreHorizontalIcon className="h-4 w-4" />
-                                  <span className="sr-only">Toggle menu</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <Link href={`/dashboard/forms/${form.id}`}>
-                                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                                </Link>
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setDeleteFormId(form.id)
-                                    setIsDeleteConfirmationOpen(true)
-                                  }}
-                                >
-                                  Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu> */}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -251,8 +226,8 @@ export default function Forms() {
             </CardContent>
             <CardFooter>
               <div className="text-xs text-muted-foreground">
-                Showing <strong>1-{userForms?.length ?? 10}</strong> of{' '}
-                <strong>{userForms?.length ?? 10}</strong> forms
+                Showing <strong>1-{userForms?.length ?? 0}</strong> of{' '}
+                <strong>{userForms?.length ?? 0}</strong> forms
               </div>
             </CardFooter>
           </Card>

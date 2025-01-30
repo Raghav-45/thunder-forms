@@ -29,7 +29,7 @@ export default function Page() {
           </p>
           <div className="flex w-full space-x-4 pt-2">
             <Link
-              href="/dashboard/forms/new-form"
+              href="/dashboard/builder/new-form"
               className={cn(buttonVariants())}
             >
               Get started

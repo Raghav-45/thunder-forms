@@ -1,9 +1,11 @@
 'use client'
 
 import {
+  ArrowUpRightIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   Copy,
+  Edit2Icon,
   File,
   FileEditIcon,
   InboxIcon,
@@ -12,7 +14,19 @@ import {
   MoreVertical,
 } from 'lucide-react'
 
-import { format, formatDistance } from 'date-fns'
+import {
+  endOfMonth,
+  endOfWeek,
+  format,
+  formatDistance,
+  isThisMonth,
+  isThisWeek,
+  isWithinInterval,
+  startOfMonth,
+  startOfWeek,
+  subMonths,
+  subWeeks,
+} from 'date-fns'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -48,7 +62,7 @@ import {
   PaginationContent,
   PaginationItem,
 } from '@/components/ui/pagination'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useParams } from 'next/navigation'
@@ -104,6 +118,63 @@ export default function Responses() {
 
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState<boolean>(false)
+
+  // Calculate statistics for different time periods
+  const stats = useMemo(() => {
+    if (!responses?.length)
+      return {
+        week: { current: 0, previous: 0, change: 0 },
+        month: { current: 0, previous: 0, change: 0 },
+      }
+
+    // Week calculations
+    const startOfCurrentWeek = startOfWeek(currentDate)
+    const startOfPreviousWeek = subWeeks(startOfCurrentWeek, 1)
+    const endOfPreviousWeek = endOfWeek(startOfPreviousWeek)
+
+    // Month calculations
+    const startOfCurrentMonth = startOfMonth(currentDate)
+    const startOfPreviousMonth = subMonths(startOfCurrentMonth, 1)
+    const endOfPreviousMonth = endOfMonth(startOfPreviousMonth)
+
+    const calculateStats = (
+      currentFilter: (date: Date) => boolean,
+      previousInterval: { start: Date; end: Date }
+    ) => {
+      const currentCount = responses.filter((response) =>
+        currentFilter(new Date(response.createdAt))
+      ).length
+
+      const previousCount = responses.filter((response) => {
+        const date = new Date(response.createdAt)
+        return isWithinInterval(date, previousInterval)
+      }).length
+
+      const percentageChange =
+        previousCount === 0
+          ? currentCount === 0
+            ? 0
+            : 100
+          : ((currentCount - previousCount) / previousCount) * 100
+
+      return {
+        current: currentCount,
+        previous: previousCount,
+        change: Math.round(percentageChange),
+      }
+    }
+
+    return {
+      week: calculateStats((date) => isThisWeek(date), {
+        start: startOfPreviousWeek,
+        end: endOfPreviousWeek,
+      }),
+      month: calculateStats((date) => isThisMonth(date), {
+        start: startOfPreviousMonth,
+        end: endOfPreviousMonth,
+      }),
+    }
+  }, [responses])
 
   useEffect(() => {
     fetch(`/api/forms/${formId}/responses`)
@@ -161,46 +232,78 @@ export default function Responses() {
             x-chunk="dashboard-05-chunk-0"
           >
             <CardHeader className="pb-3">
-              <CardTitle>Form Responses</CardTitle>
+              <CardTitle>Form Insights</CardTitle>
               <CardDescription className="text-balance max-w-lg leading-relaxed">
                 Introducing Our Dashboard for Seamless Management and Insightful
-                Analysis of Form Responses.
+                Analysis of Form.
               </CardDescription>
             </CardHeader>
-            <CardFooter className="absolute bottom-0">
-              <Button>View form</Button>
+            <CardFooter className="absolute bottom-0 right-0 gap-x-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                className="ml-auto gap-1"
+                asChild
+              >
+                <Link
+                  href={`/forms/${selectedResponse?.formsId}`}
+                  target="_blank"
+                >
+                  View form
+                  <ArrowUpRightIcon className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="h-8 ml-auto gap-2"
+                asChild
+              >
+                <Link href={`/forms/${selectedResponse?.formsId}`}>
+                  <Edit2Icon className="h-4 w-4" />
+                  Edit form
+                </Link>
+              </Button>
             </CardFooter>
           </Card>
-          <Card x-chunk="dashboard-05-chunk-1">
+
+          {/* This Week Stats */}
+          <Card>
             <CardHeader className="pb-2">
               <CardDescription>This Week</CardDescription>
-              <CardTitle className="text-4xl">
-                {responses?.length ?? '1,329'}
-              </CardTitle>
+              <CardTitle className="text-4xl">{stats.week.current}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground">
-                +25% from last week
+                {stats.week.change >= 0 ? '+' : ''}
+                {stats.week.change}% from last week
               </div>
             </CardContent>
             <CardFooter>
-              <Progress value={25} aria-label="25% increase" />
+              <Progress
+                value={Math.abs(stats.week.change)}
+                aria-label={`${stats.week.change}% change`}
+              />
             </CardFooter>
           </Card>
-          <Card x-chunk="dashboard-05-chunk-2">
+
+          {/* This Month Stats */}
+          <Card>
             <CardHeader className="pb-2">
               <CardDescription>This Month</CardDescription>
-              <CardTitle className="text-4xl">
-                {responses?.length ?? '5,329'}
-              </CardTitle>
+              <CardTitle className="text-4xl">{stats.month.current}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground">
-                +10% from last month
+                {stats.month.change >= 0 ? '+' : ''}
+                {stats.month.change}% from last month
               </div>
             </CardContent>
             <CardFooter>
-              <Progress value={12} aria-label="12% increase" />
+              <Progress
+                value={Math.abs(stats.month.change)}
+                aria-label={`${stats.month.change}% change`}
+              />
             </CardFooter>
           </Card>
         </div>
@@ -244,7 +347,7 @@ export default function Responses() {
               <CardHeader className="px-7">
                 <CardTitle>Form Submissions</CardTitle>
                 <CardDescription>
-                  Recent Entries from Your Forms.
+                  Recent Entries from Your Form.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -293,7 +396,7 @@ export default function Responses() {
                                 addSuffix: true,
                               })}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className='text-right'>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button
@@ -333,22 +436,19 @@ export default function Responses() {
         <Card className="overflow-hidden" x-chunk="dashboard-05-chunk-4">
           <CardHeader className="flex flex-row items-start bg-muted/50">
             <div className="grid gap-0.5">
-              <CardTitle className="group flex items-center gap-2 text-lg">
-                Thunder Form {fakeResponse?.submissionId ?? 'Oe31b70H'}
+              <CardTitle className="flex items-center gap-2 text-lg">
+                Thunder Forms
+              </CardTitle>
+              <CardDescription className="group flex items-center gap-2">
+                {selectedResponse?.id}
                 <Button
                   size="icon"
                   variant="outline"
-                  className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                  className="size-5 opacity-0 transition-opacity group-hover:opacity-100"
                 >
-                  <Copy className="size-3" />
+                  <Copy className="!size-3" />
                   <span className="sr-only">Copy Response ID</span>
                 </Button>
-              </CardTitle>
-              <CardDescription>
-                Date:{' '}
-                {fakeResponse
-                  ? format(fakeResponse?.SubmittedOn, 'PPP')
-                  : 'November 23, 2023'}
               </CardDescription>
             </div>
             <div className="ml-auto flex items-center gap-1">
@@ -368,7 +468,7 @@ export default function Responses() {
                 <DropdownMenuContent align="end">
                   {selectedResponse && (
                     <Link
-                      href={`/dashboard/forms/${selectedResponse?.formsId}`}
+                      href={`/dashboard/builder/${selectedResponse?.formsId}`}
                     >
                       <DropdownMenuItem>Edit form</DropdownMenuItem>
                     </Link>
