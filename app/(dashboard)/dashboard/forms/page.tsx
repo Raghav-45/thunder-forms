@@ -139,8 +139,11 @@ export default function Forms() {
                   <TableBody>
                     {userForms.map((form, index) => (
                       <TableRow key={index}>
-                        <TableCell className="font-medium">
-                          {form.title}
+                        <TableCell className="max-w-xs">
+                          <div className="font-medium">{form.title}</div>
+                          <div className="text-sm line-clamp-1 text-muted-foreground">
+                            {form.description}
+                          </div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           <Badge variant="outline">Active</Badge>
@@ -223,8 +226,8 @@ export default function Forms() {
             </CardContent>
             <CardFooter>
               <div className="text-xs text-muted-foreground">
-                Showing <strong>1-{userForms?.length ?? 10}</strong> of{' '}
-                <strong>{userForms?.length ?? 10}</strong> forms
+                Showing <strong>1-{userForms?.length ?? 0}</strong> of{' '}
+                <strong>{userForms?.length ?? 0}</strong> forms
               </div>
             </CardFooter>
           </Card>
