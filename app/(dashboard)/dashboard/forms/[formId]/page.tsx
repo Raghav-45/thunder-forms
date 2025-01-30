@@ -1,9 +1,11 @@
 'use client'
 
 import {
+  ArrowUpRightIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   Copy,
+  Edit2Icon,
   File,
   FileEditIcon,
   InboxIcon,
@@ -13,10 +15,15 @@ import {
 } from 'lucide-react'
 
 import {
+  endOfMonth,
+  endOfWeek,
   format,
   formatDistance,
   isThisMonth,
   isThisWeek,
+  isWithinInterval,
+  startOfMonth,
+  startOfWeek,
   subMonths,
   subWeeks,
 } from 'date-fns'
@@ -120,21 +127,34 @@ export default function Responses() {
         month: { current: 0, previous: 0, change: 0 },
       }
 
+    // Week calculations
+    const startOfCurrentWeek = startOfWeek(currentDate)
+    const startOfPreviousWeek = subWeeks(startOfCurrentWeek, 1)
+    const endOfPreviousWeek = endOfWeek(startOfPreviousWeek)
+
+    // Month calculations
+    const startOfCurrentMonth = startOfMonth(currentDate)
+    const startOfPreviousMonth = subMonths(startOfCurrentMonth, 1)
+    const endOfPreviousMonth = endOfMonth(startOfPreviousMonth)
+
     const calculateStats = (
       currentFilter: (date: Date) => boolean,
-      previousFilter: (date: Date) => boolean
+      previousInterval: { start: Date; end: Date }
     ) => {
       const currentCount = responses.filter((response) =>
         currentFilter(new Date(response.createdAt))
       ).length
 
-      const previousCount = responses.filter((response) =>
-        previousFilter(new Date(response.createdAt))
-      ).length
+      const previousCount = responses.filter((response) => {
+        const date = new Date(response.createdAt)
+        return isWithinInterval(date, previousInterval)
+      }).length
 
       const percentageChange =
         previousCount === 0
-          ? 100
+          ? currentCount === 0
+            ? 0
+            : 100
           : ((currentCount - previousCount) / previousCount) * 100
 
       return {
@@ -145,10 +165,14 @@ export default function Responses() {
     }
 
     return {
-      week: calculateStats(isThisWeek, (date) => isThisWeek(subWeeks(date, 1))),
-      month: calculateStats(isThisMonth, (date) =>
-        isThisMonth(subMonths(date, 1))
-      ),
+      week: calculateStats((date) => isThisWeek(date), {
+        start: startOfPreviousWeek,
+        end: endOfPreviousWeek,
+      }),
+      month: calculateStats((date) => isThisMonth(date), {
+        start: startOfPreviousMonth,
+        end: endOfPreviousMonth,
+      }),
     }
   }, [responses])
 
@@ -214,8 +238,32 @@ export default function Responses() {
                 Analysis of Form.
               </CardDescription>
             </CardHeader>
-            <CardFooter className="absolute bottom-0">
-              <Button>View form</Button>
+            <CardFooter className="absolute bottom-0 right-0 gap-x-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                className="ml-auto gap-1"
+                asChild
+              >
+                <Link
+                  href={`/forms/${selectedResponse?.formsId}`}
+                  target="_blank"
+                >
+                  View form
+                  <ArrowUpRightIcon className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="h-8 ml-auto gap-2"
+                asChild
+              >
+                <Link href={`/forms/${selectedResponse?.formsId}`}>
+                  <Edit2Icon className="h-4 w-4" />
+                  Edit form
+                </Link>
+              </Button>
             </CardFooter>
           </Card>
 
@@ -299,7 +347,7 @@ export default function Responses() {
               <CardHeader className="px-7">
                 <CardTitle>Form Submissions</CardTitle>
                 <CardDescription>
-                  Recent Entries from Your Forms.
+                  Recent Entries from Your Form.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -348,7 +396,7 @@ export default function Responses() {
                                 addSuffix: true,
                               })}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className='text-right'>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button
@@ -388,22 +436,19 @@ export default function Responses() {
         <Card className="overflow-hidden" x-chunk="dashboard-05-chunk-4">
           <CardHeader className="flex flex-row items-start bg-muted/50">
             <div className="grid gap-0.5">
-              <CardTitle className="group flex items-center gap-2 text-lg">
-                Thunder Form {fakeResponse?.submissionId ?? 'Oe31b70H'}
+              <CardTitle className="flex items-center gap-2 text-lg">
+                Thunder Forms
+              </CardTitle>
+              <CardDescription className="group flex items-center gap-2">
+                {selectedResponse?.id}
                 <Button
                   size="icon"
                   variant="outline"
-                  className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                  className="size-5 opacity-0 transition-opacity group-hover:opacity-100"
                 >
-                  <Copy className="size-3" />
+                  <Copy className="!size-3" />
                   <span className="sr-only">Copy Response ID</span>
                 </Button>
-              </CardTitle>
-              <CardDescription>
-                Date:{' '}
-                {fakeResponse
-                  ? format(fakeResponse?.SubmittedOn, 'PPP')
-                  : 'November 23, 2023'}
               </CardDescription>
             </div>
             <div className="ml-auto flex items-center gap-1">
