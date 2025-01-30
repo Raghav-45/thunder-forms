@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { Icons } from '@/components/Icons'
+import { Button } from '@/components/ui/button'
 
 const posts = [
   {
@@ -94,6 +95,9 @@ export default function TemplatesPage() {
                     {post.title}
                   </h3>
                   <p className="mb-4 text-muted-foreground">{post.summary}</p>
+                  <Button variant="secondary" className="w-full mb-1">
+                    Use this template
+                  </Button>
                 </div>
               </Link>
             ))}
