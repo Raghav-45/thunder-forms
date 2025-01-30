@@ -12,7 +12,14 @@ import {
   MoreVertical,
 } from 'lucide-react'
 
-import { format, formatDistance } from 'date-fns'
+import {
+  format,
+  formatDistance,
+  isThisMonth,
+  isThisWeek,
+  subMonths,
+  subWeeks,
+} from 'date-fns'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -48,7 +55,7 @@ import {
   PaginationContent,
   PaginationItem,
 } from '@/components/ui/pagination'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useParams } from 'next/navigation'
@@ -104,6 +111,46 @@ export default function Responses() {
 
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState<boolean>(false)
+
+  // Calculate statistics for different time periods
+  const stats = useMemo(() => {
+    if (!responses?.length)
+      return {
+        week: { current: 0, previous: 0, change: 0 },
+        month: { current: 0, previous: 0, change: 0 },
+      }
+
+    const calculateStats = (
+      currentFilter: (date: Date) => boolean,
+      previousFilter: (date: Date) => boolean
+    ) => {
+      const currentCount = responses.filter((response) =>
+        currentFilter(new Date(response.createdAt))
+      ).length
+
+      const previousCount = responses.filter((response) =>
+        previousFilter(new Date(response.createdAt))
+      ).length
+
+      const percentageChange =
+        previousCount === 0
+          ? 100
+          : ((currentCount - previousCount) / previousCount) * 100
+
+      return {
+        current: currentCount,
+        previous: previousCount,
+        change: Math.round(percentageChange),
+      }
+    }
+
+    return {
+      week: calculateStats(isThisWeek, (date) => isThisWeek(subWeeks(date, 1))),
+      month: calculateStats(isThisMonth, (date) =>
+        isThisMonth(subMonths(date, 1))
+      ),
+    }
+  }, [responses])
 
   useEffect(() => {
     fetch(`/api/forms/${formId}/responses`)
@@ -161,46 +208,54 @@ export default function Responses() {
             x-chunk="dashboard-05-chunk-0"
           >
             <CardHeader className="pb-3">
-              <CardTitle>Form Responses</CardTitle>
+              <CardTitle>Form Insights</CardTitle>
               <CardDescription className="text-balance max-w-lg leading-relaxed">
                 Introducing Our Dashboard for Seamless Management and Insightful
-                Analysis of Form Responses.
+                Analysis of Form.
               </CardDescription>
             </CardHeader>
             <CardFooter className="absolute bottom-0">
               <Button>View form</Button>
             </CardFooter>
           </Card>
-          <Card x-chunk="dashboard-05-chunk-1">
+
+          {/* This Week Stats */}
+          <Card>
             <CardHeader className="pb-2">
               <CardDescription>This Week</CardDescription>
-              <CardTitle className="text-4xl">
-                {responses?.length ?? '1,329'}
-              </CardTitle>
+              <CardTitle className="text-4xl">{stats.week.current}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground">
-                +25% from last week
+                {stats.week.change >= 0 ? '+' : ''}
+                {stats.week.change}% from last week
               </div>
             </CardContent>
             <CardFooter>
-              <Progress value={25} aria-label="25% increase" />
+              <Progress
+                value={Math.abs(stats.week.change)}
+                aria-label={`${stats.week.change}% change`}
+              />
             </CardFooter>
           </Card>
-          <Card x-chunk="dashboard-05-chunk-2">
+
+          {/* This Month Stats */}
+          <Card>
             <CardHeader className="pb-2">
               <CardDescription>This Month</CardDescription>
-              <CardTitle className="text-4xl">
-                {responses?.length ?? '5,329'}
-              </CardTitle>
+              <CardTitle className="text-4xl">{stats.month.current}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground">
-                +10% from last month
+                {stats.month.change >= 0 ? '+' : ''}
+                {stats.month.change}% from last month
               </div>
             </CardContent>
             <CardFooter>
-              <Progress value={12} aria-label="12% increase" />
+              <Progress
+                value={Math.abs(stats.month.change)}
+                aria-label={`${stats.month.change}% change`}
+              />
             </CardFooter>
           </Card>
         </div>
