@@ -259,7 +259,7 @@ export default function Responses() {
                 className="h-8 ml-auto gap-2"
                 asChild
               >
-                <Link href={`/forms/${selectedResponse?.formsId}`}>
+                <Link href={`/dashboard/builder/${selectedResponse?.formsId}`}>
                   <Edit2Icon className="h-4 w-4" />
                   Edit form
                 </Link>
@@ -466,13 +466,6 @@ export default function Responses() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {selectedResponse && (
-                    <Link
-                      href={`/dashboard/builder/${selectedResponse?.formsId}`}
-                    >
-                      <DropdownMenuItem>Edit form</DropdownMenuItem>
-                    </Link>
-                  )}
                   <DropdownMenuItem>Copy JSON</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
