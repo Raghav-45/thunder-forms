@@ -4,8 +4,10 @@ import { Announcement } from '@/components/Announcement'
 import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Icons } from '@/components/Icons'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import Link from 'next/link'
+import { cn } from '@/lib/utils'
 
 interface templateType {
   id: string
@@ -154,7 +156,12 @@ const TemplateDialog: FC<TemplateDialogProps> = ({ template }) => {
               </Badge>
             </div>
             <div className="mt-auto">
-              <Button className="w-full">Continue with this template</Button>
+              <Link
+                href={`/dashboard/builder/new-form?template=${template.id}`}
+                className={cn(buttonVariants(), 'w-full')}
+              >
+                Continue with this template
+              </Link>
             </div>
           </div>
         </div>
