@@ -15,9 +15,11 @@ import { Separator } from '@/components/ui/separator'
 const data = [
   {
     icon: <Trophy />,
-    title: 'Industry Recognition',
-    category: 'Achievement',
-    description: 'Outstanding Performance Award.',
+    // title: 'Industry Recognition',
+    title: 'Hackathon Contribution',
+    category: 'College Engagement',
+    description:
+      'Thunder Forms managed registrations at the Uncharted Hackathon by CSI INNOWAVE, with 5,000 participants.',
     link: '#',
   },
   {
@@ -64,16 +66,16 @@ export default function OurAchievements() {
       {data.map((item, index) => (
         <React.Fragment key={index}>
           <div className="grid items-center gap-4 px-4 py-5 md:grid-cols-4">
-            <div className="order-2 flex items-center gap-2 md:order-none">
-              <span className="flex h-14 w-16 shrink-0 items-center justify-center rounded-md bg-muted">
+            <div className="order-2 flex items-center gap-4 md:order-none">
+              <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-muted">
                 {item.icon}
               </span>
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-0.5 justify-center">
                 <h3 className="font-semibold">{item.title}</h3>
                 <p className="text-sm text-muted-foreground">{item.category}</p>
               </div>
             </div>
-            <p className="order-1 text-2xl font-semibold md:order-none md:col-span-2">
+            <p className="order-1 line-clamp-2 text-xl font-semibold md:order-none md:col-span-2">
               {item.description}
             </p>
             <Button variant="outline" asChild>
@@ -81,7 +83,7 @@ export default function OurAchievements() {
                 className="order-3 ml-auto w-fit gap-2 md:order-none"
                 href={item.link}
               >
-                <span>View project</span>
+                <span>Know more</span>
                 <ArrowRight className="h-4 w-4" />
               </a>
             </Button>
