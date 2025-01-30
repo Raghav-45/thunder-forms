@@ -105,7 +105,6 @@ export default function Dashboard() {
   }
 
   return (
-    // <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
       <div className="grid grid-cols-2 gap-2 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
         <Card x-chunk="dashboard-01-chunk-0">
@@ -169,7 +168,7 @@ export default function Dashboard() {
               <CardDescription>All your forms in one place.</CardDescription>
             </div>
             <Button asChild size="sm" className="ml-auto gap-1">
-              {userForms && userForms.length > 0 ? (
+              {userForms ? (
                 <Link href="/dashboard/forms">
                   View All
                   <ArrowUpRight className="h-4 w-4" />
@@ -191,49 +190,30 @@ export default function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            {!userForms ? (
-              <p>loading...</p>
-            ) : userForms && userForms.length > 0 ? (
+            {userForms ? (
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
-                    {/* <TableHead className="hidden xl:table-column">Type</TableHead>
-                    <TableHead className="hidden xl:table-column">
-                      Status
-                    </TableHead>
-                    <TableHead className="hidden xl:table-column">Date</TableHead> */}
                     <TableHead className="text-right w-[150px]">
                       Created on
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {userForms &&
-                    userForms.map((form, index) => (
-                      <TableRow key={index}>
-                        <TableCell>
-                          <div className="font-medium">{form.title}</div>
-                          <div className="text-sm line-clamp-1 text-muted-foreground">
-                            {form.description}
-                          </div>
-                        </TableCell>
-                        {/* <TableCell className="hidden xl:table-column">
-                        {transaction.type}
+                  {userForms.map((form) => (
+                    <TableRow key={form.id}>
+                      <TableCell>
+                        <div className="font-medium">{form.title}</div>
+                        <div className="text-sm line-clamp-1 text-muted-foreground">
+                          {form.description}
+                        </div>
                       </TableCell>
-                      <TableCell className="hidden xl:table-column">
-                        <Badge className="text-xs" variant="outline">
-                          {transaction.status}
-                        </Badge>
+                      <TableCell className="text-right">
+                        {format(form.createdAt, 'PPP')}
                       </TableCell>
-                      <TableCell className="hidden md:table-cell lg:hidden xl:table-column">
-                        {transaction.date}
-                      </TableCell> */}
-                        <TableCell className="text-right">
-                          {format(form.createdAt, 'PPP')}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             ) : (
