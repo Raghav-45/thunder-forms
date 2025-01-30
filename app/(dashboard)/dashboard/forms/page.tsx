@@ -173,7 +173,7 @@ export default function Forms() {
                             >
                               <LuTrash2 />
                             </Button>
-                            <Link href={`/dashboard/responses/${form.id}`}>
+                            <Link href={`/dashboard/forms/${form.id}`}>
                               <Button size="sm" variant="secondary">
                                 View Responses
                               </Button>
