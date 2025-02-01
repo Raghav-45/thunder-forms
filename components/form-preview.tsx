@@ -176,22 +176,8 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
   })
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    // try {
-    //   toast.custom(() => (
-    //     <pre className="w-[340px] rounded-lg bg-neutral-800 px-4 py-2">
-    //       <code className="text-white font-mono text-xs">
-    //         {JSON.stringify(data, null, 2)}
-    //       </code>
-    //     </pre>
-    //   ))
-    // } catch (error) {
-    //   console.error('Form submission error', error)
-    //   toast.error('Failed to submit the form. Please try again.')
-    // }
     if (behaveAsPreview) {
       try {
-        // await createResponse(formId!, data)
-
         await fetch(`/api/forms/${formId}/responses/new`, {
           method: 'POST',
           headers: {
