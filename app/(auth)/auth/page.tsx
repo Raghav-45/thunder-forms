@@ -32,8 +32,8 @@ export default function AuthenticationPage() {
           className="hidden dark:block"
         />
       </div>
-      <div className="px-56 align-middle max-h-screen h-screen content-center bg-gradient-to-r from-blue-400 to-purple-700">
-        <div className="container bg-black rounded-3xl overflow-hidden relative hidden h-[650px] flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+      <div className="align-middle max-h-screen h-screen content-center bg-gradient-to-r from-blue-400 to-purple-700">
+        <div className="container bg-black rounded-3xl overflow-hidden relative hidden w-[1200px] aspect-video flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
           <Link
             href="/examples/authentication"
             className={cn(
