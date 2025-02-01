@@ -17,7 +17,7 @@ export function SiteHeader() {
           {/* <div className="w-full flex-1 md:w-auto md:flex-none">
             <CommandMenu />
           </div> */}
-          <nav className="flex items-center">
+          <nav className="flex items-center space-x-2">
             {isLoggedIn ? (
               <>
                 <Link
