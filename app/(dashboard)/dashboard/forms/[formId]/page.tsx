@@ -177,14 +177,13 @@ export default function Responses() {
   }, [responses])
 
   useEffect(() => {
-    fetch(`/api/forms/${formId}/responses`)
-      .then((response) => {
+    const fetchResponses = async () => {
+      try {
+        const response = await fetch(`/api/forms/${formId}/responses`)
         if (!response.ok) {
           throw new Error('Network response was not ok')
         }
-        return response.json()
-      })
-      .then((responseData) => {
+        const responseData = await response.json()
         if (responseData.responses) {
           setResponses(responseData.responses)
           setSelectedResponse(responseData.responses[0])
@@ -192,11 +191,13 @@ export default function Responses() {
         } else {
           toast.error('Failed to load form data')
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('Error fetching form data:', error)
         toast.error('Error loading form data')
-      })
+      }
+    }
+
+    fetchResponses()
   }, [formId]) // Only depends on slug
 
   const handleDeleteResponse = async (id: string) => {
@@ -396,7 +397,7 @@ export default function Responses() {
                                 addSuffix: true,
                               })}
                             </TableCell>
-                            <TableCell className='text-right'>
+                            <TableCell className="text-right">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button
