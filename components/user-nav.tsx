@@ -15,12 +15,9 @@ export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarImage
-              src="https://github.com/rsaghav-45.png"
-              alt="@aditya"
-            />
+        <Button variant="ghost" className="relative h-7 w-7 rounded-full">
+          <Avatar className="h-7 w-7">
+            <AvatarImage src="https://github.com/raghav-45.png" alt="@aditya" />
             <AvatarFallback>
               <UserCircle className="size-4" />
             </AvatarFallback>
@@ -39,12 +36,11 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem>Billing</DropdownMenuItem>
-          <DropdownMenuItem>Settings</DropdownMenuItem>
-          <DropdownMenuItem>New Team</DropdownMenuItem>
+          {/* <DropdownMenuItem>Billing</DropdownMenuItem> */}
+          <DropdownMenuItem>Account Settings</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>Log out</DropdownMenuItem>
+        <DropdownMenuItem>Log Out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
