@@ -151,9 +151,7 @@ const TemplateDialog: FC<TemplateDialogProps> = ({ template }) => {
             <div className="flex gap-2 mb-6 flex-wrap">
               <Badge variant="secondary">#{template.author}</Badge>
               <Badge variant="secondary">#{template.label}</Badge>
-              <Badge variant="secondary">
-                #TemplateTemplateTemplateTemplate
-              </Badge>
+              <Badge variant="secondary">#Template</Badge>
             </div>
             <div className="mt-auto">
               <Link
