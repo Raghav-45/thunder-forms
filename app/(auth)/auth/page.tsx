@@ -1,6 +1,6 @@
 import { LoginForm } from '@/components/login-form'
 import { Icons } from '@/components/Icons'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { ChevronLeftIcon } from 'lucide-react'
