@@ -1,5 +1,5 @@
 import { FC } from 'react'
-import { TrendingUpIcon } from 'lucide-react'
+// import { TrendingUpIcon } from 'lucide-react'
 import { Announcement } from '@/components/Announcement'
 import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
@@ -8,56 +8,37 @@ import { buttonVariants } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { TemplateType } from '@/types/types'
+import { siteConfig } from '@/config/site'
 
-interface templateType {
-  id: string
-  title: string
-  summary: string
-  label: string
-  author: string
-  href: string
-  image: string
-  isNew: boolean
+const baseUrl =
+  process.env.NODE_ENV === 'development'
+    ? 'http://localhost:3000'
+    : siteConfig.url
+
+async function getTemplates() {
+  try {
+    const response = await fetch(`${baseUrl}/api/forms/templates`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store', // for dynamic data
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch templates')
+    }
+
+    return response.json()
+  } catch (error) {
+    console.error('Error fetching templates:', error)
+    return []
+  }
 }
 
-const templates: templateType[] = [
-  {
-    id: 'template-1',
-    title: 'Feedback Form Template',
-    summary:
-      'This template is designed to help you easily collect user feedback. Whether you’re gathering survey responses or customer reviews, this form can be fully customized with your own questions.',
-    label: 'Customizable Questions',
-    author: 'Thunder Forms Team',
-    href: 'dummy-template',
-    image:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDXLuGqSfz6wXt0CQAYY6acmUhNB-66IVyLg&s',
-    isNew: true,
-  },
-  {
-    id: 'template-2',
-    title: 'Event Registration Form',
-    summary:
-      'Organize events more effectively with this multi-step registration form. It allows users to select events, submit personal information, and add special requests, making it the perfect.',
-    label: 'Multi-step Form',
-    author: 'Thunder Forms Team',
-    href: '#template-2',
-    image: 'https://www.shadcnblocks.com/images/block/placeholder-dark-1.svg',
-    isNew: false,
-  },
-  {
-    id: 'template-3',
-    title: 'Contact Us Form',
-    summary:
-      'Simplify communication with this user-friendly contact form template. Whether you’re providing customer support or just collecting inquiries, this form makes it easy for visitors to get in touch.',
-    label: 'Easy to Use',
-    author: 'Thunder Forms Team',
-    href: '#template-3',
-    image: 'https://www.shadcnblocks.com/images/block/placeholder-dark-1.svg',
-    isNew: false,
-  },
-]
-
-export default function TemplatesPage() {
+export default async function TemplatesPage() {
+  const templates: TemplateType[] = await getTemplates()
   return (
     <section className="py-32">
       <div className="container">
@@ -89,7 +70,7 @@ export default function TemplatesPage() {
 }
 
 interface TemplateDialogProps {
-  template: templateType
+  template: TemplateType
 }
 
 const TemplateDialog: FC<TemplateDialogProps> = ({ template }) => {
@@ -102,28 +83,28 @@ const TemplateDialog: FC<TemplateDialogProps> = ({ template }) => {
         >
           <div className="relative">
             <Image
-              src={template.image}
+              src={template.thumbnailUrl}
               alt={template.title}
               className="aspect-video size-full object-cover object-center"
               height={90}
               width={160}
             />
             <div className="absolute top-0 right-0 px-2 py-1 z-100 flex justify-between text-xs">
-              {template.isNew && (
+              {/* {template.isNew && (
                 <Badge
                   variant={'destructive'}
                   className="text-white rounded-full bg-red-500 hover:bg-red-500/70"
                 >
                   <TrendingUpIcon className="size-4 mr-1" /> New
                 </Badge>
-              )}
+              )} */}
             </div>
           </div>
           <div className="px-3 py-8 md:px-8 md:py-8 lg:px-6 lg:py-4">
             <h3 className="mb-2 text-lg font-semibold md:mb-3 md:text-xl lg:mb-4">
               {template.title}
             </h3>
-            <p className="mb-4 text-muted-foreground">{template.summary}</p>
+            <p className="mb-4 text-muted-foreground">{template.description}</p>
           </div>
         </div>
       </DialogTrigger>
@@ -131,7 +112,7 @@ const TemplateDialog: FC<TemplateDialogProps> = ({ template }) => {
         <div className="flex h-[500px]">
           <div className="w-1/2 relative">
             <Image
-              src={template.image || '/placeholder.svg'}
+              src={template.thumbnailUrl || '/placeholder.svg'}
               alt={template.title}
               className="w-full h-full"
               layout="fill"
@@ -147,15 +128,15 @@ const TemplateDialog: FC<TemplateDialogProps> = ({ template }) => {
           </div>
           <div className="w-1/2 p-6 pl-2 flex flex-col">
             <h2 className="text-2xl font-bold mb-4">{template.title}</h2>
-            <p className="text-muted-foreground mb-6">{template.summary}</p>
+            <p className="text-muted-foreground mb-6">{template.description}</p>
             <div className="flex gap-2 mb-6 flex-wrap">
-              <Badge variant="secondary">#{template.author}</Badge>
-              <Badge variant="secondary">#{template.label}</Badge>
+              <Badge variant="secondary">#{template.createdBy}</Badge>
+              <Badge variant="secondary">#{template.slug}</Badge>
               <Badge variant="secondary">#Template</Badge>
             </div>
             <div className="mt-auto">
               <Link
-                href={`/dashboard/builder/new-form?template=${template.href}`}
+                href={`/dashboard/builder/new-form?template=${template.slug}`}
                 className={cn(buttonVariants(), 'w-full')}
               >
                 Continue with this template
