@@ -32,7 +32,7 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
               disabled={!variant.isAvaliable}
               draggable
             >
-              <div className="overflow-hidden truncate text-[0.625rem] md:text-md">
+              <div className="overflow-hidden truncate text-[0.625rem] md:text-xs">
                 {variant.name}
               </div>
               {!variant.isAvaliable && (
