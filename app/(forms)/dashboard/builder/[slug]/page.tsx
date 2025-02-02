@@ -42,9 +42,6 @@ export default function FormBuilder() {
   )
   const [formName, setFormName] = useState<string>('')
   const [formDescription, setFormDescription] = useState<string>('')
-  const [templateId, setTemplateId] = useState<string | null>(
-    searchParams.get('template')
-  )
   // BASIC FORM DETAILS
 
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
@@ -74,9 +71,15 @@ export default function FormBuilder() {
           console.error('Error fetching form data:', error)
           toast.error('Error loading form data')
         }
-      } else if (formId && formId == 'new-form' && templateId) {
+      } else if (
+        formId &&
+        formId == 'new-form' &&
+        searchParams.get('template')
+      ) {
         try {
-          const response = await fetch(`/api/forms/templates/${templateId}`)
+          const response = await fetch(
+            `/api/forms/templates/${searchParams.get('template')}`
+          )
           const templateData: TemplateType = await response.json()
 
           if (templateData) {
