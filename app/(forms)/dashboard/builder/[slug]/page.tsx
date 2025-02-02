@@ -17,17 +17,23 @@ import { siteConfig } from '@/config/site'
 import { defaultFieldConfig } from '@/constants'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
-import { FormFieldType, FormFieldOrGroup, FormType } from '@/types/types'
+import {
+  FormFieldType,
+  FormFieldOrGroup,
+  FormType,
+  TemplateType,
+} from '@/types/types'
 import { PlusIcon, SaveIcon } from 'lucide-react'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-const DEFAULT_FORM_NAME = ''
-const DEFAULT_FORM_DESCRIPTION = ''
+const DEFAULT_FORM_NAME = 'New form'
+const DEFAULT_FORM_DESCRIPTION = 'Lorem ipsum dolor sit amet'
 
 export default function FormBuilder() {
   const { slug } = useParams()
+  const searchParams = useSearchParams()
   const { addForm, updateForm } = useGenerationStore()
 
   // BASIC FORM DETAILS
@@ -36,6 +42,9 @@ export default function FormBuilder() {
   )
   const [formName, setFormName] = useState<string>('')
   const [formDescription, setFormDescription] = useState<string>('')
+  const [templateId, setTemplateId] = useState<string | null>(
+    searchParams.get('template')
+  )
   // BASIC FORM DETAILS
 
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
@@ -65,6 +74,24 @@ export default function FormBuilder() {
           console.error('Error fetching form data:', error)
           toast.error('Error loading form data')
         }
+      } else if (formId && formId == 'new-form' && templateId) {
+        try {
+          const response = await fetch(`/api/forms/templates/${templateId}`)
+          const templateData: TemplateType = await response.json()
+
+          if (templateData) {
+            // setFormFields(templateData.fields)
+            setFormName(templateData.title)
+            setFormDescription(templateData.description)
+            generateFormWithTemplate(templateData)
+            console.log('Template Data: ', templateData)
+          } else {
+            toast.error('Failed to load template')
+          }
+        } catch (error) {
+          console.error('Error fetching template data:', error)
+          toast.error('Error loading template data')
+        }
       } else {
         // Reset the form state for a new form
         setFormFields([]) // Clear the form fields
@@ -78,6 +105,37 @@ export default function FormBuilder() {
 
   const handleDragStart = (e: React.DragEvent, variant: string) => {
     e.dataTransfer.setData('elementVariant', variant)
+  }
+
+  const generateFormWithTemplate = (template: TemplateType) => {
+    const templateFormFields: FormFieldOrGroup[] = []
+
+    template.fields.map((field) => {
+      // Generate a unique field name using a random number
+      const newFieldName = `name_${Math.random().toString().slice(-10)}`
+
+      const newField: FormFieldType = {
+        checked: true, // Field is initially checked
+        description: field.description || '', // Use default or fallback to an empty string
+        disabled: false, // Field is enabled by default
+        label: field.label || newFieldName, // Use label from config or fallback to generated field name
+        name: newFieldName, // Unique field name
+        onChange: () => {}, // Placeholder for the onChange handler
+        onSelect: () => {}, // Placeholder for the onSelect handler
+        placeholder: field.placeholder || 'Placeholder', // Default placeholder if not provided
+        required: true, // Field is required by default
+        rowIndex: 0, // Index to track field's position
+        setValue: () => {}, // Placeholder for the setValue handler
+        type: '', // Type of the field (left empty for now)
+        value: '', // Default value (empty)
+        variant: field.variant, // Field type/variant (e.g., text, checkbox, etc.)
+        order: formFields.length,
+      }
+      // Appending the new field
+
+      templateFormFields.push(newField)
+    })
+    setFormFields(templateFormFields)
   }
 
   const addFormField = (variant: string) => {

@@ -24,3 +24,13 @@ model response {
   forms     forms?   @relation(fields: [formsId], references: [id])
   formsId   String?
 }
+
+model templates {
+  id           String   @id @default(cuid()) // Unique identifier for the template
+  title        String   // Display title for the template
+  description  String   // Short description of the template
+  fields       Json     // Form fields included in the template
+  createdBy    String   // Creator's name
+  createdAt    DateTime @default(now()) // Timestamp
+  thumbnailUrl String   // URL to an image preview of the template
+}
