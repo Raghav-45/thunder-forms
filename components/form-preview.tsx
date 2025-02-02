@@ -131,30 +131,24 @@ const DraggableElement = ({
       </div>
     </Reorder.Item>
   ) : (
-    <p>
-      <div
-        className={cn(
-          'flex flex-row relative rounded-md mb-4 transition-colors hover:border-primary bg-background'
+    <div className="flex flex-row relative rounded-md mb-4 transition-colors hover:border-primary bg-background">
+      <FormField
+        control={form.control}
+        name={field.name}
+        render={({ field: formField }) => (
+          <FormItem className="col-span-12 w-full">
+            <FormControl>
+              {React.cloneElement(
+                RenderFormField(field, form) as React.ReactElement,
+                {
+                  ...formField,
+                }
+              )}
+            </FormControl>
+          </FormItem>
         )}
-      >
-        <FormField
-          control={form.control}
-          name={field.name}
-          render={({ field: formField }) => (
-            <FormItem className="col-span-12 w-full">
-              <FormControl>
-                {React.cloneElement(
-                  RenderFormField(field, form) as React.ReactElement,
-                  {
-                    ...formField,
-                  }
-                )}
-              </FormControl>
-            </FormItem>
-          )}
-        />
-      </div>
-    </p>
+      />
+    </div>
   )
 }
 
