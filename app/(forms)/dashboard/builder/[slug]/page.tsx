@@ -282,12 +282,12 @@ export default function FormBuilder() {
       </Card>
 
       <div
-        className="flex-1 p-4 pt-6 md:p-8 overflow-auto"
+        className="flex-1 p-4 pt-6 md:p-4 overflow-auto"
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
       >
         <div className="flex flex-row justify-between">
-          <h2 className="text-3xl font-bold mb-6">Form Preview</h2>
+          <h2 className="text-3xl font-bold mb-6">Builder</h2>
 
           <div className="flex flex-row gap-x-2">
             {formId !== 'new-form' && (
@@ -296,7 +296,7 @@ export default function FormBuilder() {
           </div>
         </div>
         <Card className="min-h-[600px] border-2 border-dashed !p-0 border-muted">
-          <CardContent className="p-3 md:p-6">
+          <CardContent className="p-3 md:p-4">
             {formFields.length > 0 ? (
               <div>
                 <FormPreview
