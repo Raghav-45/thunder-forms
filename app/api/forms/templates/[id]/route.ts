@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-import { FieldType, FormFieldType, TemplateType } from '@/types/types'
+// import { PrismaClient } from '@prisma/client'
+// import { FieldType, FormFieldType } from '@/types/types'
+import { TemplateType } from '@/types/types'
 
-const prisma = new PrismaClient()
+// const prisma = new PrismaClient()
 
 const dummyTemplate = {
   id: 'dummy-template',
@@ -40,8 +41,8 @@ const dummyTemplate = {
 } satisfies TemplateType
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  // request: Request,
+  // { params }: { params: { id: string } }
 ) {
   try {
     // const id = params.id
