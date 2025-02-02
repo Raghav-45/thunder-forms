@@ -23,8 +23,7 @@ export const fieldTypes: FieldType[] = [
 
 export const defaultFieldConfig: Record<
   string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  { label: string; description: string; placeholder?: any }
+  { label: string; description: string; placeholder?: string }
 > = {
   Checkbox: {
     label: 'Use different settings for my mobile devices',

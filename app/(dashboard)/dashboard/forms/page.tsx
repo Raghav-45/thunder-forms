@@ -124,7 +124,7 @@ export default function Forms() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead className="hidden md:table-cell">Status</TableHead>
                       <TableHead className="hidden md:table-cell">
                         Total Responses
                       </TableHead>
