@@ -317,7 +317,39 @@ export default function FormBuilder() {
         </Card>
       </div>
 
-      {!isDesktop && (
+      {isDesktop ? (
+        // Right Side bar - Desktop Only
+        <>
+          <Card className="hidden md:block w-80 border-0 border-l-2 rounded-none h-screen overflow-hidden">
+            <CardContent className="p-4 pt-6">
+              <h2 className="text-2xl font-bold">Available Fields</h2>
+              <CardDescription>
+                Select fields from the list to add to your form
+              </CardDescription>
+              <Separator className="my-4" />
+              <ScrollArea className="h-[calc(100vh-8rem)]">
+                <div className="flex flex-row">
+                  <FieldSelector
+                    addFormField={(variant: string) => addFormField(variant)}
+                    onDragStart={(e, variant: string) =>
+                      handleDragStart(e, variant)
+                    }
+                  />
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+          <EditFieldForm
+            isOpen={isEditingWindowOpen}
+            onClose={() => setIsEditingWindowOpen(false)}
+            field={selectedField}
+            onEditingField={(editedField) => {
+              handleSaveField(editedField!)
+            }}
+          />
+        </>
+      ) : (
+        // Drawer - Mobile Only
         <Drawer
           open={isElementAddingWindowOpen}
           onOpenChange={(isOpen) => setIsElementAddingWindowOpen(isOpen)}
@@ -363,35 +395,6 @@ export default function FormBuilder() {
           </DrawerContent>
         </Drawer>
       )}
-
-      {/* Right Side bar */}
-      <Card className="hidden md:block w-80 border-0 border-l-2 rounded-none h-screen overflow-hidden">
-        <CardContent className="p-4 pt-6">
-          <h2 className="text-2xl font-bold">Available Fields</h2>
-          <CardDescription>
-            Select fields from the list to add to your form
-          </CardDescription>
-          <Separator className="my-4" />
-          <ScrollArea className="h-[calc(100vh-8rem)]">
-            <div className="flex flex-row">
-              <FieldSelector
-                addFormField={(variant: string) => addFormField(variant)}
-                onDragStart={(e, variant: string) =>
-                  handleDragStart(e, variant)
-                }
-              />
-            </div>
-          </ScrollArea>
-        </CardContent>
-      </Card>
-      <EditFieldForm
-        isOpen={isEditingWindowOpen}
-        onClose={() => setIsEditingWindowOpen(false)}
-        field={selectedField}
-        onEditingField={(editedField) => {
-          handleSaveField(editedField!)
-        }}
-      />
     </div>
   )
 }
