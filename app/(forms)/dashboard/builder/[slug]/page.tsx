@@ -77,8 +77,6 @@ export default function FormBuilder() {
   ) => {
     e.dataTransfer.setData('elementVariant', variant)
     e.dataTransfer.setData('elementIndex', index.toString())
-
-    setIsElementAddingWindowOpen(false)
   }
 
   const handleDrop = (e: React.DragEvent) => {
