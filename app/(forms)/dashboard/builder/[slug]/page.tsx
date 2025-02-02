@@ -172,11 +172,6 @@ export default function FormBuilder() {
     setFormFields(updatedFields)
   }
 
-  const openEditingWindow = (field: FormFieldType) => {
-    setSelectedField(field)
-    setIsEditingWindowOpen(true)
-  }
-
   const removeFormField = (fieldToRemove: FormFieldType) => {
     setFormFields((prevFields) =>
       prevFields.filter((field) => {
@@ -187,6 +182,11 @@ export default function FormBuilder() {
         }
       })
     )
+  }
+
+  const openEditingWindow = (field: FormFieldType) => {
+    setSelectedField(field)
+    setIsEditingWindowOpen(true)
   }
 
   const handleSaveForm = async () => {
