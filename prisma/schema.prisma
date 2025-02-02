@@ -27,6 +27,7 @@ model response {
 
 model templates {
   id           String   @id @default(cuid()) // Unique identifier for the template
+  slug         String   // Slug for the template
   title        String   // Display title for the template
   description  String   // Short description of the template
   fields       Json     // Form fields included in the template
