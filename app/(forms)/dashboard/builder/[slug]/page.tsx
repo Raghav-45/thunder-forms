@@ -71,23 +71,20 @@ export default function FormBuilder() {
   }, [formId]) // Only depends on formId
 
   const handleDragStart = (
-    e: React.DragEvent,
     variant: string,
     index: number
-  ) => {
+  const handleDragStart = (e: React.DragEvent, variant: string) => {
     e.dataTransfer.setData('elementVariant', variant)
-    e.dataTransfer.setData('elementIndex', index.toString())
   }
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     const variant = e.dataTransfer.getData('elementVariant')
-    const index = parseInt(e.dataTransfer.getData('elementIndex'), 10)
 
-    addFormField(variant, index)
+    addFormField(variant)
   }
 
-  const addFormField = (variant: string, index: number) => {
+  const addFormField = (variant: string) => {
     // Generate a unique field name using a random number
     const newFieldName = `name_${Math.random().toString().slice(-10)}`
 
@@ -108,7 +105,7 @@ export default function FormBuilder() {
       onSelect: () => {}, // Placeholder for the onSelect handler
       placeholder: placeholder || 'Placeholder', // Default placeholder if not provided
       required: true, // Field is required by default
-      rowIndex: index, // Index to track field's position
+      rowIndex: 0, // Index to track field's position
       setValue: () => {}, // Placeholder for the setValue handler
       type: '', // Type of the field (left empty for now)
       value: '', // Default value (empty)
@@ -370,13 +367,14 @@ export default function FormBuilder() {
               <Separator className="my-4" />
               <div className="flex flex-row">
                 <FieldSelector
-                  addFormField={(variant: string, index: number = 0) => {
+                  addFormField={(variant: string) => {
                     setIsElementAddingWindowOpen(false)
-                    addFormField(variant, index)
+                    addFormField(variant)
                   }}
-                  onDragStart={(e, variant: string, index: number = 0) =>
-                    handleDragStart(e, variant, index)
-                  }
+                  onDragStart={(e, variant: string) => {
+                    handleDragStart(e, variant)
+                    setIsElementAddingWindowOpen(false)
+                  }}
                 />
               </div>
               {/* <DrawerHeader>
@@ -407,11 +405,9 @@ export default function FormBuilder() {
           <ScrollArea className="h-[calc(100vh-8rem)]">
             <div className="flex flex-row">
               <FieldSelector
-                addFormField={(variant: string, index: number = 0) =>
-                  addFormField(variant, index)
-                }
-                onDragStart={(e, variant: string, index: number = 0) =>
-                  handleDragStart(e, variant, index)
+                addFormField={(variant: string) => addFormField(variant)}
+                onDragStart={(e, variant: string) =>
+                  handleDragStart(e, variant)
                 }
               />
             </div>
