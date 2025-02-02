@@ -131,7 +131,7 @@ const DraggableElement = ({
       </div>
     </Reorder.Item>
   ) : (
-    <div className="flex flex-row relative rounded-md mb-4 transition-colors hover:border-primary bg-background">
+    <div className="flex flex-row relative pb-4">
       <FormField
         control={form.control}
         name={field.name}
