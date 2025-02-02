@@ -149,6 +149,15 @@ export default function FormBuilder() {
     return search(fields, [])
   }
 
+  const handleSaveField = (updatedField: FormFieldType) => {
+    if (selectedField) {
+      const path = findFieldPath(formFields, selectedField.name)
+      if (path) {
+        updateFormField(path, updatedField)
+      }
+    }
+  }
+
   const updateFormField = (path: number[], updates: Partial<FormFieldType>) => {
     const updatedFields = JSON.parse(JSON.stringify(formFields)) // Deep clone
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -166,15 +175,6 @@ export default function FormBuilder() {
   const openEditingWindow = (field: FormFieldType) => {
     setSelectedField(field)
     setIsEditingWindowOpen(true)
-  }
-
-  const handleSaveField = (updatedField: FormFieldType) => {
-    if (selectedField) {
-      const path = findFieldPath(formFields, selectedField.name)
-      if (path) {
-        updateFormField(path, updatedField)
-      }
-    }
   }
 
   const removeFormField = (fieldToRemove: FormFieldType) => {
