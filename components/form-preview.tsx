@@ -178,15 +178,23 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
   async function onSubmit(data: z.infer<typeof formSchema>) {
     if (behaveAsPreview) {
       try {
-        await fetch(`/api/forms/${formId}/responses/new`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        })
+        const submitFormResponse = async () => {
+          const res = await fetch(`/api/forms/${formId}/responses/new`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          })
+          if (!res.ok) throw new Error('Failed to submit form')
+          return res.json()
+        }
 
-        toast.success('Form submitted successfully!')
+        toast.promise(submitFormResponse, {
+          loading: 'Submitting form...',
+          success: () => 'Form submitted successfully!',
+          error: 'Failed to submit form',
+        })
       } catch (error) {
         console.error('Form submission error', error)
         toast.error('Failed to submit the form. Please try again.')
