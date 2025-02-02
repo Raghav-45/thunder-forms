@@ -240,7 +240,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
                   )
               )
             )}
-            <Button>Submit</Button>
+            <Button type={behaveAsPreview ? 'submit' : 'button'}>Submit</Button>
           </form>
         </Form>
       )}
