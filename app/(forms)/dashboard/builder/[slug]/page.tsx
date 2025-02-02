@@ -54,6 +54,7 @@ export default function FormBuilder() {
             setFormDescription(
               formData.description || 'Lorem ipsum dolor sit amet'
             )
+            console.log(formData)
           } else {
             toast.error('Failed to load form data')
           }
@@ -70,9 +71,6 @@ export default function FormBuilder() {
     }
   }, [formId]) // Only depends on formId
 
-  const handleDragStart = (
-    variant: string,
-    index: number
   const handleDragStart = (e: React.DragEvent, variant: string) => {
     e.dataTransfer.setData('elementVariant', variant)
   }
@@ -276,17 +274,6 @@ export default function FormBuilder() {
               onChange={(e) => setFormDescription(e.target.value)}
             />
           </div>
-          {/* <div className="grid w-full items-center gap-1.5">
-            <Label>Form Link</Label>
-            <Input
-              value={`https://${
-                process.env.VERCEL_URL ??
-                process.env.NEXT_PUBLIC_VERCEL_URL ??
-                'localhost:3000'
-              }/forms/${formId ?? 'new-form'}`}
-              readOnly
-            />
-          </div> */}
         </CardContent>
       </Card>
 
@@ -302,20 +289,6 @@ export default function FormBuilder() {
             {formId !== 'new-form' && (
               <CopyButton value={`${siteConfig.url}/forms/${formId}`} />
             )}
-            {/* <Select
-              onValueChange={(e) =>
-                setWhichTabIsOpen(e as 'editing' | 'preview')
-              }
-              defaultValue={whichTabIsOpen}
-            >
-              <SelectTrigger className="w-[180px] h-8">
-                <SelectValue placeholder="Editing" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="preview">Preview</SelectItem>
-                <SelectItem value="editing">Editing</SelectItem>
-              </SelectContent>
-            </Select> */}
           </div>
         </div>
         <Card className="min-h-[600px] border-2 border-dashed !p-0 border-muted">
@@ -377,17 +350,10 @@ export default function FormBuilder() {
                   }}
                 />
               </div>
-              {/* <DrawerHeader>
-              <DrawerTitle>Are you absolutely sure?</DrawerTitle>
-              <DrawerDescription>This action cannot be undone.</DrawerDescription>
-            </DrawerHeader> */}
               <div className="flex flex-row pt-4 space-x-2">
                 <Button className="w-full" variant="outline">
                   Settings
                 </Button>
-                {/* <Button className="w-full" variant="outline">
-                Cancel
-              </Button> */}
               </div>
             </div>
           </DrawerContent>
