@@ -28,7 +28,7 @@ const templates: templateType[] = [
       'This template is designed to help you easily collect user feedback. Whether you’re gathering survey responses or customer reviews, this form can be fully customized with your own questions.',
     label: 'Customizable Questions',
     author: 'Thunder Forms Team',
-    href: '#template-1',
+    href: '#dummy-template',
     image:
       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDXLuGqSfz6wXt0CQAYY6acmUhNB-66IVyLg&s',
     isNew: true,
