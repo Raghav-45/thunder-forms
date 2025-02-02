@@ -237,7 +237,12 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
                   )
               )
             )}
-            <Button type={behaveAsPreview ? 'submit' : 'button'}>Submit</Button>
+            <Button
+              type={behaveAsPreview ? 'submit' : 'button'}
+              className="w-full md:w-auto"
+            >
+              Submit
+            </Button>
           </form>
         </Form>
       )}
