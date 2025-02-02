@@ -177,6 +177,7 @@ export const RenderFormField = (field: FormFieldType, form: UseFormReturn) => {
                     'w-full justify-between',
                     !value && 'text-muted-foreground'
                   )}
+                  disabled={field.disabled}
                 >
                   {value
                     ? languages.find((language) => language.value === value)
@@ -330,6 +331,7 @@ export const RenderFormField = (field: FormFieldType, form: UseFormReturn) => {
               placeholder={field.placeholder}
               disabled={field.disabled}
               type={field?.type}
+              // required={field.required}
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
@@ -415,7 +417,12 @@ export const RenderFormField = (field: FormFieldType, form: UseFormReturn) => {
       return (
         <FormItem>
           <FormLabel>{field.label}</FormLabel> {field.required && '*'}
-          <Select onValueChange={field.onChange} defaultValue="m@example.com">
+          <Select
+            onValueChange={field.onChange}
+            defaultValue="m@example.com"
+            disabled={field.disabled}
+            // required={field.required}
+          >
             <FormControl>
               <SelectTrigger>
                 <SelectValue placeholder="Select a verified email to display" />
@@ -503,17 +510,20 @@ export const RenderFormField = (field: FormFieldType, form: UseFormReturn) => {
     //   )
     case 'Switch':
       return (
-        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
           <div className="space-y-0.5">
             <FormLabel>{field.label}</FormLabel> {field.required && '*'}
             <FormDescription>{field.description}</FormDescription>
           </div>
           <FormControl>
             <Switch
+              defaultChecked={checked}
               checked={checked}
               onCheckedChange={() => {
                 setChecked(!checked)
               }}
+              disabled={field.disabled}
+              aria-readonly={field.disabled}
             />
           </FormControl>
         </FormItem>
@@ -546,12 +556,13 @@ export const RenderFormField = (field: FormFieldType, form: UseFormReturn) => {
     case 'Textarea':
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel>
+          <FormLabel>{field.label}</FormLabel> {field.required && '*'}
           <FormControl>
             <Textarea
               placeholder={field.placeholder}
+              disabled={field.disabled}
               className="resize-none"
-              // {...field}
+              // required={field.required}
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
