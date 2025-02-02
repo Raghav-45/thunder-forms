@@ -155,7 +155,7 @@ const TemplateDialog: FC<TemplateDialogProps> = ({ template }) => {
             </div>
             <div className="mt-auto">
               <Link
-                href={`/dashboard/builder/new-form?template=${template.id}`}
+                href={`/dashboard/builder/new-form?template=${template.href}`}
                 className={cn(buttonVariants(), 'w-full')}
               >
                 Continue with this template
