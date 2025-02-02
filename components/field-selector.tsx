@@ -27,12 +27,14 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
               variant="outline"
               onClick={() => addFormField(variant.name, variant.index)}
               onDragStart={(e) => onDragStart(e, variant.name, variant.index)}
-              className="rounded-xl w-full"
+              className="rounded-xl w-full px-2 md:pl-3"
               size="sm"
               disabled={!variant.isAvaliable}
               draggable
             >
-              {variant.name}
+              <div className="overflow-hidden truncate text-[0.625rem] md:text-md">
+                {variant.name}
+              </div>
               {!variant.isAvaliable && (
                 <div className="hidden md:block ml-1 text-[9px] font-bold px-1 bg-blue-400 text-black rounded-full">
                   coming soon
