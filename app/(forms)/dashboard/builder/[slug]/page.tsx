@@ -23,6 +23,9 @@ import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
+const DEFAULT_FORM_NAME = ''
+const DEFAULT_FORM_DESCRIPTION = ''
+
 export default function FormBuilder() {
   const { slug } = useParams()
   const { addForm, updateForm } = useGenerationStore()
@@ -31,8 +34,8 @@ export default function FormBuilder() {
   const [formId, setFormId] = useState<string | null>(
     typeof slug == 'string' ? slug : null
   )
-  const [formName, setFormName] = useState('')
-  const [formDescription, setFormDescription] = useState('')
+  const [formName, setFormName] = useState<string>('')
+  const [formDescription, setFormDescription] = useState<string>('')
   // BASIC FORM DETAILS
 
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
@@ -43,43 +46,38 @@ export default function FormBuilder() {
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
   useEffect(() => {
-    // If a valid `formId` is present and it's not 'new-form', fetch the existing form's data
-    if (formId && formId !== 'new-form') {
-      fetch(`/api/forms/${formId}`)
-        .then((response) => response.json())
-        .then((formData) => {
+    const fetchFormData = async () => {
+      // If a valid `formId` is present and it's not 'new-form', fetch the existing form's data
+      if (formId && formId !== 'new-form') {
+        try {
+          const response = await fetch(`/api/forms/${formId}`)
+          const formData = await response.json()
+
           if (formData) {
             setFormFields(formData.fields)
-            setFormName(formData.title || 'New form')
-            setFormDescription(
-              formData.description || 'Lorem ipsum dolor sit amet'
-            )
-            console.log(formData)
+            setFormName(formData.title)
+            setFormDescription(formData.description)
+            console.log('Form Data: ', formData)
           } else {
             toast.error('Failed to load form data')
           }
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error('Error fetching form data:', error)
           toast.error('Error loading form data')
-        })
-    } else {
-      // Reset the form state for a new form
-      setFormFields([]) // Clear the form fields
-      setFormName('New form') // Reset the form name to 'New form'
-      setFormDescription('Lorem ipsum dolor sit amet') // Reset the form description to placeholder text
+        }
+      } else {
+        // Reset the form state for a new form
+        setFormFields([]) // Clear the form fields
+        setFormName(DEFAULT_FORM_NAME) // Reset the form name to 'New form'
+        setFormDescription(DEFAULT_FORM_DESCRIPTION) // Reset the form description to placeholder text
+      }
     }
+
+    fetchFormData()
   }, [formId]) // Only depends on formId
 
   const handleDragStart = (e: React.DragEvent, variant: string) => {
     e.dataTransfer.setData('elementVariant', variant)
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    const variant = e.dataTransfer.getData('elementVariant')
-
-    addFormField(variant)
   }
 
   const addFormField = (variant: string) => {
@@ -112,6 +110,12 @@ export default function FormBuilder() {
     }
     // Appending the new field to the existing formFields
     setFormFields([...formFields, newField])
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    const variant = e.dataTransfer.getData('elementVariant')
+    addFormField(variant)
   }
 
   const handleReorder = (reorderedElements: FormFieldOrGroup[]) => {
