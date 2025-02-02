@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { siteConfig } from '@/config/site'
 import { defaultFieldConfig } from '@/constants'
+import { useMediaQuery } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
 import { FormFieldType, FormFieldOrGroup, FormType } from '@/types/types'
 import { PlusIcon, SaveIcon } from 'lucide-react'
@@ -39,6 +40,7 @@ export default function FormBuilder() {
   const [isEditingWindowOpen, setIsEditingWindowOpen] = useState(false)
   const [isElementAddingWindowOpen, setIsElementAddingWindowOpen] =
     useState(false)
+  const isDesktop = useMediaQuery('(min-width: 768px)')
 
   useEffect(() => {
     // If a valid `formId` is present and it's not 'new-form', fetch the existing form's data
@@ -341,56 +343,58 @@ export default function FormBuilder() {
         </Card>
       </div>
 
-      <Drawer
-        open={isElementAddingWindowOpen}
-        onOpenChange={(isOpen) => setIsElementAddingWindowOpen(isOpen)}
-      >
-        <DrawerTrigger asChild>
-          <div
-            className={cn(
-              buttonVariants({
-                variant: 'ghost',
-              }),
-              'size-14 justify-center px-0 rounded-full border fixed z-100 bottom-8 right-8 cursor-pointer bg-black'
-            )}
-          >
-            <PlusIcon className="!size-8" />
-            <span className="sr-only">Add Field</span>
-          </div>
-        </DrawerTrigger>
-        <DrawerContent className="p-4 pt-0">
-          <div className="pt-6">
-            <h2 className="text-2xl font-bold">Available Fields</h2>
-            <CardDescription>
-              Select fields from the list to add to your form
-            </CardDescription>
-            <Separator className="my-4" />
-            <div className="flex flex-row">
-              <FieldSelector
-                addFormField={(variant: string, index: number = 0) => {
-                  setIsElementAddingWindowOpen(false)
-                  addFormField(variant, index)
-                }}
-                onDragStart={(e, variant: string, index: number = 0) =>
-                  handleDragStart(e, variant, index)
-                }
-              />
+      {!isDesktop && (
+        <Drawer
+          open={isElementAddingWindowOpen}
+          onOpenChange={(isOpen) => setIsElementAddingWindowOpen(isOpen)}
+        >
+          <DrawerTrigger asChild>
+            <div
+              className={cn(
+                buttonVariants({
+                  variant: 'ghost',
+                }),
+                'size-14 justify-center px-0 rounded-full border fixed z-100 bottom-8 right-8 cursor-pointer bg-black'
+              )}
+            >
+              <PlusIcon className="!size-8" />
+              <span className="sr-only">Add Field</span>
             </div>
-            {/* <DrawerHeader>
+          </DrawerTrigger>
+          <DrawerContent className="p-4 pt-0">
+            <div className="pt-6">
+              <h2 className="text-2xl font-bold">Available Fields</h2>
+              <CardDescription>
+                Select fields from the list to add to your form
+              </CardDescription>
+              <Separator className="my-4" />
+              <div className="flex flex-row">
+                <FieldSelector
+                  addFormField={(variant: string, index: number = 0) => {
+                    setIsElementAddingWindowOpen(false)
+                    addFormField(variant, index)
+                  }}
+                  onDragStart={(e, variant: string, index: number = 0) =>
+                    handleDragStart(e, variant, index)
+                  }
+                />
+              </div>
+              {/* <DrawerHeader>
               <DrawerTitle>Are you absolutely sure?</DrawerTitle>
               <DrawerDescription>This action cannot be undone.</DrawerDescription>
             </DrawerHeader> */}
-            <div className="flex flex-row pt-4 space-x-2">
-              <Button className="w-full" variant="outline">
-                Settings
-              </Button>
-              {/* <Button className="w-full" variant="outline">
+              <div className="flex flex-row pt-4 space-x-2">
+                <Button className="w-full" variant="outline">
+                  Settings
+                </Button>
+                {/* <Button className="w-full" variant="outline">
                 Cancel
               </Button> */}
+              </div>
             </div>
-          </div>
-        </DrawerContent>
-      </Drawer>
+          </DrawerContent>
+        </Drawer>
+      )}
 
       {/* Right Side bar */}
       <Card className="hidden md:block w-80 border-0 border-l-2 rounded-none h-screen overflow-hidden">
