@@ -4,6 +4,7 @@ import { CopyButton } from '@/components/copy-button'
 import { EditFieldForm } from '@/components/edit-field-form'
 import { FieldSelector } from '@/components/field-selector'
 import { FormPreview } from '@/components/form-preview'
+import GenerateWithAiPrompt from '@/components/generate-with-ai'
 import { useGenerationStore } from '@/components/GenerationStore'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardDescription } from '@/components/ui/card'
@@ -339,6 +340,14 @@ export default function FormBuilder() {
               onChange={(e) => setFormDescription(e.target.value)}
             />
           </div>
+
+          <GenerateWithAiPrompt
+            onGeneratedFields={(title, description, fields) => {
+              setFormName(title)
+              setFormDescription(description)
+              setFormFields(fields)
+            }}
+          />
         </CardContent>
       </Card>
 
