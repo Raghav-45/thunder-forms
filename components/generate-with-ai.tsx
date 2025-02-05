@@ -11,8 +11,8 @@ import {
 import { FormFieldOrGroup, FormFieldType, TemplateType } from '@/types/types'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Icons } from './Icons'
+import { Icons } from '@/components/Icons'
+import { Textarea } from '@/components/ui/textarea'
 
 interface GenerateWithAiPromptProps {
   onGeneratedFields: (
@@ -25,7 +25,7 @@ interface GenerateWithAiPromptProps {
 const GenerateWithAiPrompt: FC<GenerateWithAiPromptProps> = ({
   onGeneratedFields,
 }) => {
-  const [aiPrompt, setAiPrompt] = useState('')
+  const [aiPrompt, setAiPrompt] = useState<string>('')
 
   async function handleAiPrompt() {
     const templatePrompt = `User Input: ${aiPrompt}
@@ -93,11 +93,8 @@ remember just give JSON, no extra TEXTS`
           }
         )
         if (!res.ok) throw new Error('Failed to generate form')
-        // console.log(res.json())
         return res.json()
       }
-
-      // const data = await getGeminiResponse()
 
       const generateFormFields = async () => {
         const geminiResponse = await getGeminiResponse()
@@ -111,8 +108,6 @@ remember just give JSON, no extra TEXTS`
             TemplateType,
             'title' | 'description' | 'fields'
           > = JSON.parse(parsedFormFields)
-          // setFormTitle(generatedFormResponse.title)
-          // setFormDescription(generatedFormResponse.description)
 
           const generatedFormFields: FormFieldOrGroup[] = []
           generatedFormResponse.fields.map((field) => {
@@ -165,28 +160,27 @@ remember just give JSON, no extra TEXTS`
           </Button>
         </div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg p-4">
         <DialogHeader>
           <DialogTitle>AI Prompt</DialogTitle>
           <DialogDescription>
-            Enter your prompt and click Generate or press Enter
+            Enter your prompt and click Generate
           </DialogDescription>
         </DialogHeader>
         <div className="relative w-full">
-          <Icons.Sparkles className="absolute left-3 top-1/2 size-4 -translate-y-1/2 fill-white" />
-          <Input
-            id="aiPrompt"
-            type="text"
-            className="w-full h-10 pl-10 pr-24 rounded-full"
+          <Icons.Sparkles className="absolute left-3 top-2.5 size-4 fill-white" />
+          <Textarea
+            className="w-full pl-9 rounded-xl resize-none overflow-hidden"
+            rows={3}
             name="prompt"
-            placeholder="Ask AI..."
+            placeholder="Ask me anything..."
             value={aiPrompt}
             onChange={(e) => setAiPrompt(e.target.value)}
           />
           <DialogClose asChild>
             <Button
               variant="secondary"
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-6 rounded-full"
+              className="absolute shadow-[0px_0px_15px_4px_#000000] right-2 bottom-2 h-6 rounded-lg"
               onClick={() => handleAiPrompt()}
             >
               Generate
