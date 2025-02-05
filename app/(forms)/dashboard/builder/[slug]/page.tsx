@@ -367,7 +367,7 @@ export default function FormBuilder() {
         </CardContent>
       </Card>
 
-      <div
+      <ScrollArea
         className="flex-1 p-4 pt-6 md:p-4 overflow-auto"
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
@@ -401,7 +401,7 @@ export default function FormBuilder() {
             )}
           </CardContent>
         </Card>
-      </div>
+      </ScrollArea>
 
       {isDesktop ? (
         // Right Side bar - Desktop Only
