@@ -24,7 +24,7 @@ import {
   FormType,
   TemplateType,
 } from '@/types/types'
-import { PlusIcon, SaveIcon } from 'lucide-react'
+import { Loader2Icon, PlusIcon, SaveIcon } from 'lucide-react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -44,6 +44,8 @@ export default function FormBuilder() {
   const [formName, setFormName] = useState<string>('')
   const [formDescription, setFormDescription] = useState<string>('')
   // BASIC FORM DETAILS
+
+  const [isFormSaving, setIsFormSaving] = useState(false)
 
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
   const [selectedField, setSelectedField] = useState<FormFieldType | null>(null)
@@ -252,10 +254,12 @@ export default function FormBuilder() {
   }
 
   const handleSaveForm = async () => {
+    setIsFormSaving(true)
     console.log('Form Fields: ', formFields)
 
     if (!formName) {
       toast.error('Form name is required')
+      setIsFormSaving(false)
       return
     }
 
@@ -275,6 +279,7 @@ export default function FormBuilder() {
       const body = (await response.json()) as FormType
       const newFormId = body.id
 
+      setIsFormSaving(false)
       setFormId(newFormId)
       addForm({
         id: newFormId,
@@ -303,6 +308,7 @@ export default function FormBuilder() {
         }),
       })
       const updatedForm = (await response.json()) as FormType
+      setIsFormSaving(false)
 
       updateForm(formId, updatedForm)
       toast.success('Form updated successfully!')
@@ -317,8 +323,18 @@ export default function FormBuilder() {
           <div className="flex flex-row justify-between mb-8">
             <h2 className="text-2xl font-bold">Settings</h2>
 
-            <Button size="sm" variant="secondary" onClick={handleSaveForm}>
-              <SaveIcon /> Save
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={handleSaveForm}
+              disabled={isFormSaving}
+            >
+              {isFormSaving ? (
+                <Loader2Icon className="animate-spin" />
+              ) : (
+                <SaveIcon />
+              )}{' '}
+              {isFormSaving ? 'Saving...' : 'Save'}
             </Button>
           </div>
           <div className="grid w-full items-center gap-1.5">
