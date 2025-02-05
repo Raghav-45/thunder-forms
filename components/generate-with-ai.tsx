@@ -153,12 +153,10 @@ remember just give JSON, no extra TEXTS`
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div>
-          <Button className="w-full mt-8" variant="secondary">
-            <Icons.Sparkles className="size-4 fill-white" />
-            Generate with AI
-          </Button>
-        </div>
+        <Button className="w-full" variant="secondary">
+          <Icons.Sparkles className="size-4 fill-white" />
+          Generate with AI
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg p-4">
         <DialogHeader>
