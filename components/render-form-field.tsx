@@ -21,13 +21,13 @@ import { Input } from '@/components/ui/input'
 //   InputOTPSeparator,
 //   InputOTPSlot,
 // } from '@/components/ui/input-otp'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 // import { Calendar } from '@/components/ui/calendar'
@@ -331,7 +331,7 @@ export const RenderFormField = (field: FormFieldType, form: UseFormReturn) => {
             <Input
               placeholder={field.placeholder}
               disabled={field.disabled}
-              type={field?.type}
+              type={field?.type || 'text'}
               // required={field.required}
             />
           </FormControl>
@@ -414,31 +414,31 @@ export const RenderFormField = (field: FormFieldType, form: UseFormReturn) => {
     //       <FormMessage />
     //     </FormItem>
     //   )
-    case 'Select':
-      return (
-        <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && '*'}
-          <Select
-            onValueChange={field.onChange}
-            defaultValue="m@example.com"
-            disabled={field.disabled}
-            // required={field.required}
-          >
-            <FormControl>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a verified email to display" />
-              </SelectTrigger>
-            </FormControl>
-            <SelectContent>
-              <SelectItem value="m@example.com">m@example.com</SelectItem>
-              <SelectItem value="m@google.com">m@google.com</SelectItem>
-              <SelectItem value="m@support.com">m@support.com</SelectItem>
-            </SelectContent>
-          </Select>
-          <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
-        </FormItem>
-      )
+    // case 'Select':
+    //   return (
+    //     <FormItem>
+    //       <FormLabel>{field.label}</FormLabel> {field.required && '*'}
+    //       <Select
+    //         onValueChange={field.onChange}
+    //         defaultValue="m@example.com"
+    //         disabled={field.disabled}
+    //         // required={field.required}
+    //       >
+    //         <FormControl>
+    //           <SelectTrigger>
+    //             <SelectValue placeholder="Select a verified email to display" />
+    //           </SelectTrigger>
+    //         </FormControl>
+    //         <SelectContent>
+    //           <SelectItem value="m@example.com">m@example.com</SelectItem>
+    //           <SelectItem value="m@google.com">m@google.com</SelectItem>
+    //           <SelectItem value="m@support.com">m@support.com</SelectItem>
+    //         </SelectContent>
+    //       </Select>
+    //       <FormDescription>{field.description}</FormDescription>
+    //       <FormMessage />
+    //     </FormItem>
+    //   )
     // case 'Slider':
     //   const min = field.min || 0
     //   const max = field.max || 100
