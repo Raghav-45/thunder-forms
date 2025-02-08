@@ -2,7 +2,7 @@ import { FieldType } from '@/types/types'
 
 export const fieldTypes: FieldType[] = [
   { name: 'Checkbox', isAvaliable: true },
-  { name: 'Combobox', isAvaliable: true },
+  { name: 'Combobox', isAvaliable: false },
   { name: 'Date Picker', isAvaliable: false },
   { name: 'Datetime Picker', isAvaliable: false },
   { name: 'File Input', isAvaliable: false },
