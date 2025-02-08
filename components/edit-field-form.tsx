@@ -99,19 +99,36 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                 }
               />
             </div>
-            <div>
-              <Label htmlFor="placeholder">Placeholder</Label>
-              <Input
-                id="placeholder"
-                value={editedField.placeholder}
-                onChange={(e) =>
-                  setEditedField({
-                    ...editedField,
-                    placeholder: e.target.value,
-                  })
-                }
-              />
-            </div>
+            {field?.variant !== 'Switch' && (
+              <div>
+                <Label htmlFor="placeholder">Placeholder</Label>
+                <Input
+                  id="placeholder"
+                  value={editedField.placeholder}
+                  onChange={(e) =>
+                    setEditedField({
+                      ...editedField,
+                      placeholder: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            )}
+            {field?.variant === 'Checkbox' && (
+              <div className="col-span-1 flex items-end gap-1 p-3 rounded">
+                <Checkbox
+                  id="defaultChecked"
+                  checked={editedField.checked}
+                  onCheckedChange={(checked) =>
+                    setEditedField({
+                      ...editedField,
+                      checked: checked as boolean,
+                    })
+                  }
+                />
+                <Label htmlFor="defaultChecked">Default Checked?</Label>
+              </div>
+            )}
             {/* <div>
               <Label htmlFor="label">Name</Label>
               <Input
