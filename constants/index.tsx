@@ -26,9 +26,9 @@ export const defaultFieldConfig: Record<
   { label: string; description: string; placeholder?: string }
 > = {
   Checkbox: {
-    label: 'Use different settings for my mobile devices',
+    label: 'Agree to terms and conditions',
     description:
-      'You can manage your mobile notifications in the mobile settings page.',
+      'By checking this box, you agree to our terms of service and privacy policy.',
   },
   Combobox: {
     label: 'Language',
@@ -47,9 +47,9 @@ export const defaultFieldConfig: Record<
     description: 'Select a file to upload.',
   },
   Input: {
-    label: 'Username',
-    description: 'This is your public display name.',
-    placeholder: 'shadcn',
+    label: 'Your Name',
+    description: 'Provide your name for identification.',
+    placeholder: 'e.g., John Doe',
   },
   'Input OTP': {
     label: 'One-Time Password',
@@ -65,9 +65,10 @@ export const defaultFieldConfig: Record<
     description: 'Select multiple options.',
   },
   Select: {
-    label: 'Email',
-    description: 'You can manage email addresses in your email settings.',
-    placeholder: 'Select a verified email to display',
+    label: 'Choose from available options',
+    description:
+      'Choose the most relevant option from the dropdown list to proceed.',
+    placeholder: 'Select an option to continue',
   },
   Slider: {
     label: 'Set Price Range',
@@ -87,8 +88,9 @@ export const defaultFieldConfig: Record<
   },
   'Tags Input': { label: 'Enter your tech stack.', description: 'Add tags.' },
   Textarea: {
-    label: 'Bio',
-    description: 'You can @mention other users and organizations.',
+    label: 'Your Message',
+    description: 'Your message will be copied to the support team.',
+    placeholder: 'Type your message here.',
   },
   Password: {
     label: 'Password',
