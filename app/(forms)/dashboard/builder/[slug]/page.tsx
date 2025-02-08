@@ -122,12 +122,12 @@ export default function FormBuilder() {
 
       const newField: FormFieldType = {
         checked: true, // Field is initially checked
-        description: field.description || '', // Use default or fallback to an empty string
-        disabled: false, // Field is enabled by default
         label: field.label || '', // Use label from config or fallback to generated field name
+        description: field.description || '', // Use default or fallback to an empty string
+        required: false, // Field is required by default
+        disabled: false, // Field is enabled by default
         name: newFieldName, // Unique field name
         placeholder: field.placeholder || '', // Default placeholder if not provided
-        required: false, // Field is required by default
         rowIndex: 0, // Index to track field's position
         type: field.variant == 'Input' ? 'text' : '', // Type of the field (left empty for now)
         value: '', // Default value (empty)
@@ -157,12 +157,12 @@ export default function FormBuilder() {
 
     const newField: FormFieldType = {
       checked: true, // Field is initially checked
-      description: description, // Use default or fallback to an empty string
-      disabled: false, // Field is enabled by default
       label: label, // Use label from config or fallback to generated field name
+      description: description, // Use default or fallback to an empty string
+      required: false, // Field is required by default
+      disabled: false, // Field is enabled by default
       name: newFieldName, // Unique field name
       placeholder: placeholder || 'Placeholder', // Default placeholder if not provided
-      required: false, // Field is required by default
       rowIndex: 0, // Index to track field's position
       type: variant == 'Input' ? 'text' : '', // Type of the field (left empty for now)
       value: '', // Default value (empty)
