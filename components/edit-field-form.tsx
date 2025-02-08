@@ -40,7 +40,6 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
   // onSave,
 }) => {
   const [editedField, setEditedField] = useState<FormFieldType | null>(null)
-  const [fieldType, setFieldType] = useState<string>()
 
   useEffect(() => {
     setEditedField(field)
@@ -48,7 +47,7 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
 
   useEffect(() => {
     onEditingField(editedField)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editedField])
 
   if (!editedField) return null
@@ -57,7 +56,7 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
     <Sheet open={isOpen} onOpenChange={onClose}>
       {/* <SheetTrigger>Open</SheetTrigger> */}
       <SheetContent side="right" isClosable={false} className="w-80">
-        <SheetHeader className="">
+        <SheetHeader>
           <div className="flex flex-row justify-between">
             <SheetTitle>Edit {editedField.variant} Field</SheetTitle>
             <SheetClose
@@ -113,17 +112,7 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                 }
               />
             </div>
-            <div>
-              <Label htmlFor="className">className</Label>
-              <Input
-                id="className"
-                value={editedField.className}
-                onChange={(e) =>
-                  setEditedField({ ...editedField, className: e.target.value })
-                }
-              />
-            </div>
-            <div>
+            {/* <div>
               <Label htmlFor="label">Name</Label>
               <Input
                 id="name"
@@ -133,7 +122,7 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                   setEditedField({ ...editedField, name: e.target.value })
                 }
               />
-            </div>
+            </div> */}
             {field?.variant === 'Input' && (
               <div>
                 <Label htmlFor="type">Type</Label>
@@ -141,7 +130,6 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                   // id="type"
                   value={editedField.type}
                   onValueChange={(value) => {
-                    setFieldType(value)
                     setEditedField({ ...editedField, type: value })
                   }}
                 >
@@ -151,45 +139,43 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                   <SelectContent>
                     <SelectItem value="text">Text</SelectItem>
                     <SelectItem value="email">Email</SelectItem>
-                    <SelectItem value="file">File</SelectItem>
                     <SelectItem value="number">Number</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             )}
-            {fieldType === 'number' ||
-              (fieldType === 'text' && (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="col-span-1 flex flex-col gap-1 ">
-                    <Label>Min Value</Label>
-                    <Input
-                      id="min"
-                      type="number"
-                      value={editedField.min}
-                      onChange={(e) =>
-                        setEditedField({
-                          ...editedField,
-                          min: Number(e.target.value),
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="col-span-1 flex flex-col gap-1 ">
-                    <Label>Max Value</Label>
-                    <Input
-                      id="max"
-                      type="number"
-                      value={editedField.max}
-                      onChange={(e) =>
-                        setEditedField({
-                          ...editedField,
-                          max: Number(e.target.value),
-                        })
-                      }
-                    />
-                  </div>
+            {editedField.type === 'number' && (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-1 flex flex-col gap-1">
+                  <Label>Min Value</Label>
+                  <Input
+                    id="min"
+                    type="number"
+                    value={editedField.min}
+                    onChange={(e) =>
+                      setEditedField({
+                        ...editedField,
+                        min: Number(e.target.value),
+                      })
+                    }
+                  />
                 </div>
-              ))}
+                <div className="col-span-1 flex flex-col gap-1">
+                  <Label>Max Value</Label>
+                  <Input
+                    id="max"
+                    type="number"
+                    value={editedField.max}
+                    onChange={(e) =>
+                      setEditedField({
+                        ...editedField,
+                        max: Number(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            )}
             {field?.variant === 'Slider' && (
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-1 flex flex-col gap-1 ">
@@ -277,8 +263,8 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                 </div>
               </div>
             )}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 border p-3 rounded">
+            <div className="flex items-center gap-3 w-full justify-end">
+              <div className="flex items-center gap-1 border px-3 py-2 rounded w-full">
                 <Checkbox
                   checked={editedField.required}
                   onCheckedChange={(checked) =>
@@ -290,7 +276,7 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                 />
                 <Label>Required</Label>
               </div>
-              <div className="flex items-center gap-1 border p-3 rounded">
+              <div className="flex items-center gap-1 border px-3 py-2 rounded w-full">
                 <Checkbox
                   checked={editedField.disabled}
                   onCheckedChange={(checked) =>

@@ -4,6 +4,7 @@ import { CopyButton } from '@/components/copy-button'
 import { EditFieldForm } from '@/components/edit-field-form'
 import { FieldSelector } from '@/components/field-selector'
 import { FormPreview } from '@/components/form-preview'
+import GenerateWithAiPrompt from '@/components/generate-with-ai'
 import { useGenerationStore } from '@/components/GenerationStore'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardDescription } from '@/components/ui/card'
@@ -17,17 +18,23 @@ import { siteConfig } from '@/config/site'
 import { defaultFieldConfig } from '@/constants'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
-import { FormFieldType, FormFieldOrGroup, FormType } from '@/types/types'
-import { PlusIcon, SaveIcon } from 'lucide-react'
-import { useParams } from 'next/navigation'
+import {
+  FormFieldType,
+  FormFieldOrGroup,
+  FormType,
+  TemplateType,
+} from '@/types/types'
+import { Loader2Icon, PlusIcon, SaveIcon } from 'lucide-react'
+import { useParams, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-const DEFAULT_FORM_NAME = ''
-const DEFAULT_FORM_DESCRIPTION = ''
+const DEFAULT_FORM_NAME = 'New form'
+const DEFAULT_FORM_DESCRIPTION = 'Lorem ipsum dolor sit amet'
 
 export default function FormBuilder() {
   const { slug } = useParams()
+  const searchParams = useSearchParams()
   const { addForm, updateForm } = useGenerationStore()
 
   // BASIC FORM DETAILS
@@ -37,6 +44,8 @@ export default function FormBuilder() {
   const [formName, setFormName] = useState<string>('')
   const [formDescription, setFormDescription] = useState<string>('')
   // BASIC FORM DETAILS
+
+  const [isFormSaving, setIsFormSaving] = useState(false)
 
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
   const [selectedField, setSelectedField] = useState<FormFieldType | null>(null)
@@ -65,6 +74,30 @@ export default function FormBuilder() {
           console.error('Error fetching form data:', error)
           toast.error('Error loading form data')
         }
+      } else if (
+        formId &&
+        formId == 'new-form' &&
+        searchParams.get('template')
+      ) {
+        try {
+          const response = await fetch(
+            `/api/forms/templates/${searchParams.get('template')}`
+          )
+          const templateData: TemplateType = await response.json()
+
+          if (templateData) {
+            // setFormFields(templateData.fields)
+            setFormName(templateData.title)
+            setFormDescription(templateData.description)
+            generateFormWithTemplate(templateData)
+            console.log('Template Data: ', templateData)
+          } else {
+            toast.error('Failed to load template')
+          }
+        } catch (error) {
+          console.error('Error fetching template data:', error)
+          toast.error('Error loading template data')
+        }
       } else {
         // Reset the form state for a new form
         setFormFields([]) // Clear the form fields
@@ -78,6 +111,37 @@ export default function FormBuilder() {
 
   const handleDragStart = (e: React.DragEvent, variant: string) => {
     e.dataTransfer.setData('elementVariant', variant)
+  }
+
+  const generateFormWithTemplate = (template: TemplateType) => {
+    const templateFormFields: FormFieldOrGroup[] = []
+
+    template.fields.map((field) => {
+      // Generate a unique field name using a random number
+      const newFieldName = `name_${Math.random().toString().slice(-10)}`
+
+      const newField: FormFieldType = {
+        checked: true, // Field is initially checked
+        description: field.description || '', // Use default or fallback to an empty string
+        disabled: false, // Field is enabled by default
+        label: field.label || newFieldName, // Use label from config or fallback to generated field name
+        name: newFieldName, // Unique field name
+        onChange: () => {}, // Placeholder for the onChange handler
+        onSelect: () => {}, // Placeholder for the onSelect handler
+        placeholder: field.placeholder || 'Placeholder', // Default placeholder if not provided
+        required: true, // Field is required by default
+        rowIndex: 0, // Index to track field's position
+        setValue: () => {}, // Placeholder for the setValue handler
+        type: '', // Type of the field (left empty for now)
+        value: '', // Default value (empty)
+        variant: field.variant, // Field type/variant (e.g., text, checkbox, etc.)
+        order: formFields.length,
+      }
+      // Appending the new field
+
+      templateFormFields.push(newField)
+    })
+    setFormFields(templateFormFields)
   }
 
   const addFormField = (variant: string) => {
@@ -190,10 +254,12 @@ export default function FormBuilder() {
   }
 
   const handleSaveForm = async () => {
+    setIsFormSaving(true)
     console.log('Form Fields: ', formFields)
 
     if (!formName) {
       toast.error('Form name is required')
+      setIsFormSaving(false)
       return
     }
 
@@ -213,6 +279,7 @@ export default function FormBuilder() {
       const body = (await response.json()) as FormType
       const newFormId = body.id
 
+      setIsFormSaving(false)
       setFormId(newFormId)
       addForm({
         id: newFormId,
@@ -241,6 +308,7 @@ export default function FormBuilder() {
         }),
       })
       const updatedForm = (await response.json()) as FormType
+      setIsFormSaving(false)
 
       updateForm(formId, updatedForm)
       toast.success('Form updated successfully!')
@@ -255,8 +323,18 @@ export default function FormBuilder() {
           <div className="flex flex-row justify-between mb-8">
             <h2 className="text-2xl font-bold">Settings</h2>
 
-            <Button size="sm" variant="secondary" onClick={handleSaveForm}>
-              <SaveIcon /> Save
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={handleSaveForm}
+              disabled={isFormSaving}
+            >
+              {isFormSaving ? (
+                <Loader2Icon className="animate-spin" />
+              ) : (
+                <SaveIcon />
+              )}{' '}
+              {isFormSaving ? 'Saving...' : 'Save'}
             </Button>
           </div>
           <div className="grid w-full items-center gap-1.5">
@@ -278,10 +356,18 @@ export default function FormBuilder() {
               onChange={(e) => setFormDescription(e.target.value)}
             />
           </div>
+
+          <GenerateWithAiPrompt
+            onGeneratedFields={(title, description, fields) => {
+              setFormName(title)
+              setFormDescription(description)
+              setFormFields(fields)
+            }}
+          />
         </CardContent>
       </Card>
 
-      <div
+      <ScrollArea
         className="flex-1 p-4 pt-6 md:p-4 overflow-auto"
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
@@ -315,7 +401,7 @@ export default function FormBuilder() {
             )}
           </CardContent>
         </Card>
-      </div>
+      </ScrollArea>
 
       {isDesktop ? (
         // Right Side bar - Desktop Only

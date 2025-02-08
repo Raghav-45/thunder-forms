@@ -2,6 +2,7 @@ import * as Locales from 'date-fns/locale'
 
 import { forms as FormType } from '@prisma/client'
 import { response as ResponseType } from '@prisma/client'
+import { templates as TemplateTypePrisma } from '@prisma/client'
 
 // Define the FormField type
 export type FormFieldType = {
@@ -32,8 +33,19 @@ export type FormFieldType = {
   order: number
 }
 
+type TemplateType = Omit<TemplateTypePrisma, 'fields'> & {
+  fields: {
+    variant: string
+    type: string
+    label: string
+    placeholder: string
+    description: string
+    required: boolean
+  }[]
+}
+
 export type FieldType = { name: string; isAvaliable: boolean; index?: number }
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
-export type { FormType, ResponseType }
+export type { FormType, ResponseType, TemplateType }
