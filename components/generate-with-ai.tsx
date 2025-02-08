@@ -114,20 +114,20 @@ remember just give JSON, no extra TEXTS`
             const newFieldName = `name_${Math.random().toString().slice(-10)}` // Generate a unique field name using a random number
             const newField: FormFieldType = {
               checked: true, // Field is initially checked
+              label: field.label || '', // Use label from config or fallback to generated field name
               description: field.description || '', // Use default or fallback to an empty string
+              required: false, // Field is required by default
               disabled: false, // Field is enabled by default
-              label: field.label || newFieldName, // Use label from config or fallback to generated field name
               name: newFieldName, // Unique field name
-              onChange: () => {}, // Placeholder for the onChange handler
-              onSelect: () => {}, // Placeholder for the onSelect handler
-              placeholder: field.placeholder || 'Placeholder', // Default placeholder if not provided
-              required: true, // Field is required by default
+              placeholder: field.placeholder || '', // Default placeholder if not provided
               rowIndex: 0, // Index to track field's position
-              setValue: () => {}, // Placeholder for the setValue handler
-              type: '', // Type of the field (left empty for now)
+              type: field.type || (field.variant == 'Input' ? 'text' : ''), // Type of the field (left empty for now)
               value: '', // Default value (empty)
               variant: field.variant, // Field type/variant (e.g., text, checkbox, etc.)
               order: generatedFormFields.length,
+              onChange: () => {}, // Placeholder for the onChange handler
+              onSelect: () => {}, // Placeholder for the onSelect handler
+              setValue: () => {}, // Placeholder for the setValue handler
             }
             generatedFormFields.push(newField)
           })
