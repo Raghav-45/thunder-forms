@@ -126,16 +126,16 @@ export default function FormBuilder() {
         disabled: false, // Field is enabled by default
         label: field.label || newFieldName, // Use label from config or fallback to generated field name
         name: newFieldName, // Unique field name
+        placeholder: field.placeholder || 'Placeholder', // Default placeholder if not provided
+        required: false, // Field is required by default
+        rowIndex: 0, // Index to track field's position
+        type: field.variant == 'Input' ? 'text' : '', // Type of the field (left empty for now)
+        value: '', // Default value (empty)
+        variant: field.variant, // Field variant (e.g., text, checkbox, etc.)
+        order: formFields.length,
         onChange: () => {}, // Placeholder for the onChange handler
         onSelect: () => {}, // Placeholder for the onSelect handler
-        placeholder: field.placeholder || 'Placeholder', // Default placeholder if not provided
-        required: true, // Field is required by default
-        rowIndex: 0, // Index to track field's position
         setValue: () => {}, // Placeholder for the setValue handler
-        type: '', // Type of the field (left empty for now)
-        value: '', // Default value (empty)
-        variant: field.variant, // Field type/variant (e.g., text, checkbox, etc.)
-        order: formFields.length,
       }
       // Appending the new field
 
@@ -161,16 +161,16 @@ export default function FormBuilder() {
       disabled: false, // Field is enabled by default
       label: label || newFieldName, // Use label from config or fallback to generated field name
       name: newFieldName, // Unique field name
+      placeholder: placeholder || 'Placeholder', // Default placeholder if not provided
+      required: false, // Field is required by default
+      rowIndex: 0, // Index to track field's position
+      type: variant == 'Input' ? 'text' : '', // Type of the field (left empty for now)
+      value: '', // Default value (empty)
+      variant, // Field variant (e.g., text, checkbox, etc.)
+      order: formFields.length,
       onChange: () => {}, // Placeholder for the onChange handler
       onSelect: () => {}, // Placeholder for the onSelect handler
-      placeholder: placeholder || 'Placeholder', // Default placeholder if not provided
-      required: true, // Field is required by default
-      rowIndex: 0, // Index to track field's position
       setValue: () => {}, // Placeholder for the setValue handler
-      type: '', // Type of the field (left empty for now)
-      value: '', // Default value (empty)
-      variant, // Field type/variant (e.g., text, checkbox, etc.)
-      order: formFields.length,
     }
     // Appending the new field to the existing formFields
     setFormFields([...formFields, newField])
