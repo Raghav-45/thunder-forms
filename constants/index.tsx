@@ -12,7 +12,7 @@ export const fieldTypes: FieldType[] = [
   { name: 'Multi Select', isAvaliable: false },
   { name: 'Password', isAvaliable: false },
   { name: 'Phone', isAvaliable: false },
-  { name: 'Select', isAvaliable: true },
+  { name: 'Select', isAvaliable: false },
   { name: 'Signature Input', isAvaliable: false },
   { name: 'Slider', isAvaliable: false },
   { name: 'Smart Datetime Input', isAvaliable: false },
