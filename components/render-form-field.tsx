@@ -31,20 +31,20 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 // import { Calendar } from '@/components/ui/calendar'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import { Button } from '@/components/ui/button'
+// import {
+//   Command,
+//   CommandEmpty,
+//   CommandGroup,
+//   CommandInput,
+//   CommandItem,
+//   CommandList,
+// } from '@/components/ui/command'
+// import {
+//   Popover,
+//   PopoverContent,
+//   PopoverTrigger,
+// } from '@/components/ui/popover'
+// import { Button } from '@/components/ui/button'
 // import { format } from 'date-fns'
 // import { PasswordInput } from '@/components/ui/password-input'
 // import { PhoneInput } from '@/components/ui/phone-input'
@@ -55,12 +55,12 @@ import { Button } from '@/components/ui/button'
 //   FileInput,
 // } from '@/components/ui/file-upload'
 // import { Slider } from '@/components/ui/slider'
-import {
-  // CalendarIcon,
-  Check,
-  ChevronsUpDown,
-  // Paperclip,
-} from 'lucide-react'
+// import {
+//   CalendarIcon,
+//   Check,
+//   ChevronsUpDown,
+//   Paperclip,
+// } from 'lucide-react'
 import { UseFormReturn } from 'react-hook-form'
 // import { TagsInput } from '@/components/ui/tags-input'
 // import {
@@ -76,17 +76,17 @@ import { UseFormReturn } from 'react-hook-form'
 // import LocationSelector from '@/components/ui/location-input'
 // import SignatureInput from '@/components/ui/signature-input'
 
-const languages = [
-  { label: 'English', value: 'en' },
-  { label: 'French', value: 'fr' },
-  { label: 'German', value: 'de' },
-  { label: 'Spanish', value: 'es' },
-  { label: 'Portuguese', value: 'pt' },
-  { label: 'Russian', value: 'ru' },
-  { label: 'Japanese', value: 'ja' },
-  { label: 'Korean', value: 'ko' },
-  { label: 'Chinese', value: 'zh' },
-] as const
+// const languages = [
+//   { label: 'English', value: 'en' },
+//   { label: 'French', value: 'fr' },
+//   { label: 'German', value: 'de' },
+//   { label: 'Spanish', value: 'es' },
+//   { label: 'Portuguese', value: 'pt' },
+//   { label: 'Russian', value: 'ru' },
+//   { label: 'Japanese', value: 'ja' },
+//   { label: 'Korean', value: 'ko' },
+//   { label: 'Chinese', value: 'zh' },
+// ] as const
 
 // const FileSvgDraw = () => {
 //   return (
@@ -117,9 +117,10 @@ const languages = [
 //   )
 // }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const RenderFormField = (field: FormFieldType, form: UseFormReturn) => {
   const [checked, setChecked] = useState<boolean>(field.checked)
-  const [value, setValue] = useState<typeof field.value>(field.value)
+  // const [value, setValue] = useState<typeof field.value>(field.value)
   // const [selectedValues, setSelectedValues] = useState<string[]>(['React'])
   // const [tagsValue, setTagsValue] = useState<string[]>([])
   // const [files, setFiles] = useState<File[] | null>(null) // Initialize to null or use [] for an empty array
@@ -161,67 +162,67 @@ export const RenderFormField = (field: FormFieldType, form: UseFormReturn) => {
           <FormMessage />
         </FormItem>
       )
-    case 'Combobox':
-      return (
-        <FormItem className="flex flex-col">
-          <div>
-            <FormLabel>{field.label}</FormLabel> {field.required && '*'}
-          </div>{' '}
-          <Popover>
-            <PopoverTrigger asChild>
-              <FormControl>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  className={cn(
-                    'w-full justify-between',
-                    !value && 'text-muted-foreground'
-                  )}
-                  disabled={field.disabled}
-                >
-                  {value
-                    ? languages.find((language) => language.value === value)
-                        ?.label
-                    : 'Select language'}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
-              <Command>
-                <CommandInput placeholder="Search language..." />
-                <CommandList>
-                  <CommandEmpty>No language found.</CommandEmpty>
-                  <CommandGroup>
-                    {languages.map((language) => (
-                      <CommandItem
-                        value={language.label}
-                        key={language.value}
-                        onSelect={() => {
-                          setValue(language.value)
-                          form.setValue(field.name, language.value)
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            'mr-2 h-4 w-4',
-                            language.value === value
-                              ? 'opacity-100'
-                              : 'opacity-0'
-                          )}
-                        />
-                        {language.label}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-          <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
-        </FormItem>
-      )
+    // case 'Combobox':
+    //   return (
+    //     <FormItem className="flex flex-col">
+    //       <div>
+    //         <FormLabel>{field.label}</FormLabel> {field.required && '*'}
+    //       </div>{' '}
+    //       <Popover>
+    //         <PopoverTrigger asChild>
+    //           <FormControl>
+    //             <Button
+    //               variant="outline"
+    //               role="combobox"
+    //               className={cn(
+    //                 'w-full justify-between',
+    //                 !value && 'text-muted-foreground'
+    //               )}
+    //               disabled={field.disabled}
+    //             >
+    //               {value
+    //                 ? languages.find((language) => language.value === value)
+    //                     ?.label
+    //                 : 'Select language'}
+    //               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+    //             </Button>
+    //           </FormControl>
+    //         </PopoverTrigger>
+    //         <PopoverContent className="w-[200px] p-0">
+    //           <Command>
+    //             <CommandInput placeholder="Search language..." />
+    //             <CommandList>
+    //               <CommandEmpty>No language found.</CommandEmpty>
+    //               <CommandGroup>
+    //                 {languages.map((language) => (
+    //                   <CommandItem
+    //                     value={language.label}
+    //                     key={language.value}
+    //                     onSelect={() => {
+    //                       setValue(language.value)
+    //                       form.setValue(field.name, language.value)
+    //                     }}
+    //                   >
+    //                     <Check
+    //                       className={cn(
+    //                         'mr-2 h-4 w-4',
+    //                         language.value === value
+    //                           ? 'opacity-100'
+    //                           : 'opacity-0'
+    //                       )}
+    //                     />
+    //                     {language.label}
+    //                   </CommandItem>
+    //                 ))}
+    //               </CommandGroup>
+    //             </CommandList>
+    //           </Command>
+    //         </PopoverContent>
+    //       </Popover>
+    //       <FormDescription>{field.description}</FormDescription>
+    //       <FormMessage />
+    //     </FormItem>
+    //   )
     // case 'Date Picker':
     //   return (
     //     <FormItem className="flex flex-col">
