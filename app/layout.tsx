@@ -3,6 +3,7 @@ import localFont from 'next/font/local'
 import './globals.css'
 import { cn } from '@/lib/utils'
 import { Toaster } from 'sonner'
+import { Analytics } from '@vercel/analytics/next'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -28,6 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <Analytics />
       <body
         className={cn(
           'min-h-screen bg-background font-sans antialiased dark',
