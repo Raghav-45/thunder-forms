@@ -162,7 +162,7 @@ export default function FormBuilder() {
       required: false, // Field is required by default
       disabled: false, // Field is enabled by default
       name: newFieldName, // Unique field name
-      placeholder: placeholder || 'Placeholder', // Default placeholder if not provided
+      placeholder: placeholder, // Default placeholder if not provided
       rowIndex: 0, // Index to track field's position
       type: variant == 'Input' ? 'text' : '', // Type of the field (left empty for now)
       value: '', // Default value (empty)
