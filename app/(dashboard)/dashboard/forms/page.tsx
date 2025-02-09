@@ -49,7 +49,12 @@ export default function Forms() {
     const fetchFormsData = async () => {
       if (isLoading) {
         try {
-          const response = await fetch('/api/forms')
+          const response = await fetch('/api/forms', {
+            cache: 'no-store',
+            next: {
+              revalidate: 0, // Disable caching completely
+            },
+          })
           const data = await response.json()
           setUserForms(data)
         } catch (error) {
@@ -124,7 +129,9 @@ export default function Forms() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
-                      <TableHead className="hidden md:table-cell">Status</TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        Status
+                      </TableHead>
                       <TableHead className="hidden md:table-cell">
                         Total Responses
                       </TableHead>
@@ -149,7 +156,7 @@ export default function Forms() {
                           <Badge variant="outline">Active</Badge>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
-                          {0}
+                          {form._count.responses || 0}
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           {format(form.createdAt, 'PPP')}
