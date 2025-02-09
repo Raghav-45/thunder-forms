@@ -287,6 +287,7 @@ export default function FormBuilder() {
         description: body.description,
         fields: JSON.parse(JSON.stringify(formFields)),
         createdAt: body.createdAt,
+        _count: { responses: 0 },
       })
 
       // Update the URL without refreshing the page
