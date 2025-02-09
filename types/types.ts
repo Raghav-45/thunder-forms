@@ -48,4 +48,10 @@ export type FieldType = { name: string; isAvaliable: boolean; index?: number }
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
-export type { FormType, ResponseType, TemplateType }
+export type FormWithResponseCount = FormType & {
+  _count: {
+    responses: number
+  }
+}
+
+export type { FormWithResponseCount as FormType , ResponseType, TemplateType }

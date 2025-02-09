@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-import { forms as FormType } from '@prisma/client'
+import { FormType } from '@/types/types'
 // import { response as ResponseType } from '@prisma/client'
 
 interface generationState {
