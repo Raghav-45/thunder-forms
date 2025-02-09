@@ -19,7 +19,7 @@ interface FormActionButtonsProps {
 }
 
 const FormActionButtons: FC<FormActionButtonsProps> = ({ form }) => {
-  const { userForms, setUserForms } = useGenerationStore()
+  const { userForms } = useGenerationStore()
 
   async function handleDeleteForm(id: string) {
     if (!id || !userForms) {
