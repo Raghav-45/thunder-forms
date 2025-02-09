@@ -26,15 +26,15 @@ const FormActionButtons: FC<FormActionButtonsProps> = ({ form }) => {
       return
     }
 
-    try {
-      const response = await fetch(`/api/forms/${id}/delete`, {
-        method: 'DELETE',
-      })
-      if (!response.ok) throw new Error('Failed to delete form')
-      setUserForms(userForms.filter((form) => form.id !== id))
-    } catch (error) {
-      console.error('Error deleting form:', error)
-    }
+    // try {
+    //   const response = await fetch(`/api/forms/${id}/delete`, {
+    //     method: 'DELETE',
+    //   })
+    //   if (!response.ok) throw new Error('Failed to delete form')
+    //   setUserForms(userForms.filter((form) => form.id !== id))
+    // } catch (error) {
+    //   console.error('Error deleting form:', error)
+    // }
   }
   return (
     <DropdownMenu>

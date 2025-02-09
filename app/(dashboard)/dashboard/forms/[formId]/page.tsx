@@ -205,19 +205,19 @@ export default function Responses() {
       return
     }
 
-    try {
-      const response = await fetch(
-        `/api/forms/${formId}/responses/${id}/delete`,
-        {
-          method: 'DELETE',
-        }
-      )
-      if (!response.ok) throw new Error('Failed to delete response')
-      setResponses(responses!.filter((response) => response.id !== id))
-      setIsDeleteConfirmationOpen(false)
-    } catch (error) {
-      console.error('Error deleting response:', error)
-    }
+    // try {
+    //   const response = await fetch(
+    //     `/api/forms/${formId}/responses/${id}/delete`,
+    //     {
+    //       method: 'DELETE',
+    //     }
+    //   )
+    //   if (!response.ok) throw new Error('Failed to delete response')
+    //   setResponses(responses!.filter((response) => response.id !== id))
+    //   setIsDeleteConfirmationOpen(false)
+    // } catch (error) {
+    //   console.error('Error deleting response:', error)
+    // }
   }
 
   if (isLoading) {

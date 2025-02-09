@@ -68,16 +68,16 @@ export default function Forms() {
       return
     }
 
-    try {
-      const response = await fetch(`/api/forms/${deleteFormId}/delete`, {
-        method: 'DELETE',
-      })
-      if (!response.ok) throw new Error('Failed to delete form')
-      const id = deleteFormId
-      setUserForms(userForms.filter((form) => form.id !== id))
-    } catch (error) {
-      console.error('Error deleting form:', error)
-    }
+    // try {
+    //   const response = await fetch(`/api/forms/${deleteFormId}/delete`, {
+    //     method: 'DELETE',
+    //   })
+    //   if (!response.ok) throw new Error('Failed to delete form')
+    //   const id = deleteFormId
+    //   setUserForms(userForms.filter((form) => form.id !== id))
+    // } catch (error) {
+    //   console.error('Error deleting form:', error)
+    // }
   }
 
   return (
