@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/Icons'
 import { Textarea } from '@/components/ui/textarea'
+import { fieldTypes } from '@/constants'
 
 interface GenerateWithAiPromptProps {
   onGeneratedFields: (
@@ -26,6 +27,10 @@ const GenerateWithAiPrompt: FC<GenerateWithAiPromptProps> = ({
   onGeneratedFields,
 }) => {
   const [aiPrompt, setAiPrompt] = useState<string>('')
+
+  const availableFieldNames = fieldTypes
+    .filter((field) => field.isAvaliable === true)
+    .map((field) => field.name)
 
   async function handleAiPrompt() {
     const templatePrompt = `User Input: ${aiPrompt}
@@ -61,16 +66,21 @@ const GenerateWithAiPrompt: FC<GenerateWithAiPromptProps> = ({
   ]
 }
 
-Required Properties:
+make sure to Strictly follow these Properties:
+
 title: The name of the form.
 description: A short description of the form's purpose.
 fields: An array containing field definitions with the following:
-type: Field type (text, email, number are supported currently).
-label: Field label visible to users.
-variant: Indicates input type (Input or Textarea are supported currently).
-required: Boolean (true or false) for mandatory fields.
-description: A short explanation of the field.
-placeholder: Placeholder text inside the field.
+{
+  type: Field type (text, email, number are supported currently).
+  label: Field label visible to users.
+  variant: Indicates input type ({${availableFieldNames.join(
+    ', '
+  )}} are supported currently).
+  required: Boolean (true or false) for mandatory fields.
+  description: A short explanation of the field.
+  placeholder: Placeholder text inside the field.
+}
 
 remember just give JSON, no extra TEXTS`
 
