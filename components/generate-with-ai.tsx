@@ -40,28 +40,28 @@ const GenerateWithAiPrompt: FC<GenerateWithAiPromptProps> = ({
 {
   [
     {
+      "variant": "Input",
       "type": "text",
+      "required": true,
       "label": "Your Name",
-      "variant": "Input",
-      "required": true,
-      "description": "Provide your name for identification.",
       "placeholder": "e.g., John Doe"
+      "description": "Provide your name for identification.",
     },
     {
-      "type": "email",
-      "label": "Your Email",
       "variant": "Input",
+      "type": "email",
       "required": true,
-      "description": "The user's email address for follow-up.",
+      "label": "Your Email",
       "placeholder": "Enter your email"
+      "description": "The user's email address for follow-up.",
     },
     {
-      "type": "textarea",
-      "label": "Feedback",
       "variant": "Textarea",
+      "type": "textarea",
       "required": false,
-      "description": "Detailed feedback from the user.",
+      "label": "Feedback",
       "placeholder": "Write your feedback here"
+      "description": "Detailed feedback from the user.",
     }
   ]
 }
