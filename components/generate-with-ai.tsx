@@ -76,7 +76,7 @@ fields: An array containing field definitions with the following:
   label: Field label visible to users.
   variant: Indicates input type ({${availableFieldNames.join(
     ', '
-  )}} are supported currently).
+  )}} are only supported currently).
   required: Boolean (true or false) for mandatory fields.
   description: A short explanation of the field.
   placeholder: Placeholder text inside the field.
