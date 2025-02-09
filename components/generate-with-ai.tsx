@@ -44,8 +44,8 @@ const GenerateWithAiPrompt: FC<GenerateWithAiPromptProps> = ({
       "label": "Your Name",
       "variant": "Input",
       "required": true,
-      "description": "The user's full name for personalization.",
-      "placeholder": "Enter your name"
+      "description": "Provide your name for identification.",
+      "placeholder": "e.g., John Doe"
     },
     {
       "type": "email",
