@@ -87,7 +87,7 @@ remember just give JSON, no extra TEXTS`
     try {
       const getGeminiResponse = async () => {
         const res = await fetch(
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCKktPBcP5xHerZxIP5AYNb6L1n_dVNn-M',
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
           {
             method: 'POST',
             headers: {
