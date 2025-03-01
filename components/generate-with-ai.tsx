@@ -30,9 +30,7 @@ const GenerateWithAiPrompt: FC<GenerateWithAiPromptProps> = ({
   async function handleAiPrompt() {
     try {
       const getGeminiResponse = async () => {
-        const res = await fetch(
-          `http://localhost:3000/api/generatewithai?prompt=${aiPrompt}`
-        )
+        const res = await fetch(`/api/generatewithai?prompt=${aiPrompt}`)
         if (!res.ok) throw new Error('Failed to generate form')
         return res.json()
       }
