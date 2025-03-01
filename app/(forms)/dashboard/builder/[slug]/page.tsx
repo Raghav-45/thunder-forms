@@ -320,8 +320,8 @@ export default function FormBuilder() {
     <div className="flex h-screen bg-background text-foreground">
       {/* Left Side bar with Form Details */}
       <Card className="hidden md:block w-80 border-0 border-r-2 rounded-none h-screen overflow-hidden">
-        <CardContent className="p-4 pt-6 space-y-4">
-          <div className="flex flex-row justify-between mb-8">
+        <CardContent className="p-4 pt-6 space-y-4 flex flex-col h-full">
+          <div className="flex flex-row justify-between mb-4">
             <h2 className="text-2xl font-bold">Settings</h2>
 
             <Button
@@ -358,6 +358,10 @@ export default function FormBuilder() {
             />
           </div>
 
+          {/* This div will push the content below it to the bottom */}
+          <div className="flex-grow"></div>
+
+          {/* This will now be at the bottom */}
           <GenerateWithAiPrompt
             onGeneratedFields={(title, description, fields) => {
               setFormName(title)
