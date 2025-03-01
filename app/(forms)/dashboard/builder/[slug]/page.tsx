@@ -386,7 +386,12 @@ export default function FormBuilder() {
             )}
           </div>
         </div>
-        <Card className="min-h-[600px] border-2 border-dashed !p-0 border-muted">
+        <Card
+          className={cn(
+            'min-h-[600px] border-2 border-dashed !p-0 border-muted',
+            !(formFields.length > 0) && 'content-center'
+          )}
+        >
           <CardContent className="p-3 md:p-4">
             {formFields.length > 0 ? (
               <div>
@@ -401,7 +406,7 @@ export default function FormBuilder() {
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-center text-muted-foreground">
-                <p>Drag elements here to build your form</p>
+                <p>Drag elements here to build your form or Generate with AI</p>
               </div>
             )}
           </CardContent>
