@@ -357,14 +357,6 @@ export default function FormBuilder() {
               onChange={(e) => setFormDescription(e.target.value)}
             />
           </div>
-
-          <GenerateWithAiPrompt
-            onGeneratedFields={(title, description, fields) => {
-              setFormName(title)
-              setFormDescription(description)
-              setFormFields(fields)
-            }}
-          />
         </CardContent>
       </Card>
 
@@ -382,7 +374,12 @@ export default function FormBuilder() {
             )}
           </div>
         </div>
-        <Card className="min-h-[600px] border-2 border-dashed !p-0 border-muted">
+        <Card
+          className={cn(
+            'min-h-[600px] border-2 border-dashed !p-0 border-muted',
+            !(formFields.length > 0) && 'content-center'
+          )}
+        >
           <CardContent className="p-3 md:p-4">
             {formFields.length > 0 ? (
               <div>
@@ -396,8 +393,16 @@ export default function FormBuilder() {
                 />
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full text-center text-muted-foreground">
-                <p>Drag elements here to build your form</p>
+              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                {/* <p>Drag elements here to build your form or generate with AI</p> */}
+
+                <GenerateWithAiPrompt
+                  onGeneratedFields={(title, description, fields) => {
+                    setFormName(title)
+                    setFormDescription(description)
+                    setFormFields(fields)
+                  }}
+                />
               </div>
             )}
           </CardContent>

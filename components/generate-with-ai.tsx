@@ -1,19 +1,11 @@
 import { FC, useState } from 'react'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
 import { FormFieldOrGroup, FormFieldType, TemplateType } from '@/types/types'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/Icons'
 import { Textarea } from '@/components/ui/textarea'
 import { fieldTypes } from '@/constants'
+import { Card, CardContent, CardDescription } from '@/components/ui/card'
 
 interface GenerateWithAiPromptProps {
   onGeneratedFields: (
@@ -161,41 +153,35 @@ remember just give JSON, no extra TEXTS`
   }
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button className="w-full" variant="secondary">
-          <Icons.Sparkles className="size-4 fill-white" />
-          Generate with AI
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-lg p-4">
-        <DialogHeader>
-          <DialogTitle>AI Prompt</DialogTitle>
-          <DialogDescription>
-            Enter your prompt and click Generate
-          </DialogDescription>
-        </DialogHeader>
-        <div className="relative w-full">
+    <Card className=" w-full max-w-xl border-0">
+      <CardContent className="p-4 pt-6 text-left">
+        {/* <h2 className="text-2xl font-bold">AI Prompt</h2>
+        <CardDescription>Enter your prompt and click Generate</CardDescription> */}
+        <h2 className="text-xl font-semibold">
+          Drag elements here or Generate with AI
+        </h2>
+        {/* <CardDescription>
+          Explain AI which type of form you want to build
+        </CardDescription> */}
+        <div className="relative mt-4">
           <Icons.Sparkles className="absolute left-3 top-2.5 size-4 fill-white" />
           <Textarea
-            className="w-full pl-9 rounded-xl resize-none overflow-hidden h-10 min-h-10 group focus:h-24 focus:min-h-24 transition-all"
+            className="w-full pl-9 rounded-xl resize-none overflow-hidden h-24 min-h-24"
             name="prompt"
-            placeholder="Ask me anything..."
+            placeholder="Which type of form you want to build?"
             value={aiPrompt}
             onChange={(e) => setAiPrompt(e.target.value)}
           />
-          <DialogClose asChild>
-            <Button
-              variant="secondary"
-              className="absolute shadow-[0px_0px_15px_4px_#000000] right-2 bottom-2 h-6 rounded-lg"
-              onClick={() => handleAiPrompt()}
-            >
-              Generate
-            </Button>
-          </DialogClose>
+          <Button
+            variant="secondary"
+            className="absolute shadow-[0px_0px_15px_4px_#000000] right-2 bottom-2 h-6 rounded-lg"
+            onClick={() => handleAiPrompt()}
+          >
+            Generate
+          </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </CardContent>
+    </Card>
   )
 }
 
