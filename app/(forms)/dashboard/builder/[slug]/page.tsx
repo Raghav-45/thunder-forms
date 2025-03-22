@@ -28,6 +28,7 @@ import { Loader2Icon, PlusIcon, SaveIcon } from 'lucide-react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { DatePickerWithPresets } from '@/components/date-picker-with-presets'
 
 const DEFAULT_FORM_NAME = 'New form'
 const DEFAULT_FORM_DESCRIPTION = 'Lorem ipsum dolor sit amet'
@@ -70,6 +71,8 @@ export default function FormBuilder() {
             setFormName(formData.title)
             setFormDescription(formData.description)
             setMaxSubmissions(formData.maxSubmissions)
+            setExpiresAt(formData.expiresAt ? new Date(formData.expiresAt) : null)
+            setRedirectUrl(formData.redirectUrl)
             console.log('Form Data: ', formData)
           } else {
             toast.error('Failed to load form data')
@@ -279,6 +282,8 @@ export default function FormBuilder() {
           formDescription: formDescription,
           formFields: formFields,
           maxSubmissions: maxSubmissions,
+          expiresAt: expiresAt,
+          redirectUrl: redirectUrl,
         }),
       })
       const body = (await response.json()) as FormType
@@ -315,6 +320,8 @@ export default function FormBuilder() {
           description: formDescription,
           fields: formFields,
           maxSubmissions: maxSubmissions,
+          expiresAt: expiresAt,
+          redirectUrl: redirectUrl,
         }),
       })
       const updatedForm = (await response.json()) as FormType
@@ -372,6 +379,14 @@ export default function FormBuilder() {
           </div>
 
           <div className="items-center gap-1.5 grid w-full">
+            <Label htmlFor="expiresAt">Expiration Date</Label>
+            <DatePickerWithPresets
+              date={expiresAt}
+              setDate={setExpiresAt}
+            />
+          </div>
+
+          <div className="items-center gap-1.5 grid w-full">
             <Label htmlFor="maxSubmission">Max Submission Limit</Label>
             <Input
               id="maxSubmission"
@@ -379,6 +394,17 @@ export default function FormBuilder() {
               placeholder="Enter max value (optional)"
               value={maxSubmissions || ''}
               onChange={(e) => setMaxSubmissions(e.target.value ? parseInt(e.target.value) : null)}
+            />
+          </div>
+
+          <div className="items-center gap-1.5 grid w-full">
+            <Label htmlFor="redirectUrl">Redirect URL</Label>
+            <Input
+              id="redirectUrl"
+              type="url"
+              placeholder="https://example.com (optional)"
+              value={redirectUrl || ''}
+              onChange={(e) => setRedirectUrl(e.target.value || null)}
             />
           </div>
 

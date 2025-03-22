@@ -15,10 +15,12 @@ export async function POST(request: Request) {
         description: body.formDescription || '',
         fields: body.formFields,
         maxSubmissions: body.maxSubmissions || null,
+        expiresAt: body.expiresAt || null,
+        redirectUrl: body.redirectUrl || null,
       },
     })
 
-    // Return success response
+    // Return success response with the created form
     return NextResponse.json(
       {
         success: true,
