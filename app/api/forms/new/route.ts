@@ -14,6 +14,7 @@ export async function POST(request: Request) {
         title: body.formName,
         description: body.formDescription || '',
         fields: body.formFields,
+        maxSubmissions: body.maxSubmissions || null,
       },
     })
 

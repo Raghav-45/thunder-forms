@@ -43,6 +43,9 @@ export default function FormBuilder() {
   )
   const [formName, setFormName] = useState<string>('')
   const [formDescription, setFormDescription] = useState<string>('')
+  const [maxSubmissions, setMaxSubmissions] = useState<number | null>(null)
+  const [expiresAt, setExpiresAt] = useState<Date | null>(null)
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null)
   // BASIC FORM DETAILS
 
   const [isFormSaving, setIsFormSaving] = useState(false)
@@ -66,6 +69,7 @@ export default function FormBuilder() {
             setFormFields(formData.fields)
             setFormName(formData.title)
             setFormDescription(formData.description)
+            setMaxSubmissions(formData.maxSubmissions)
             console.log('Form Data: ', formData)
           } else {
             toast.error('Failed to load form data')
@@ -274,6 +278,7 @@ export default function FormBuilder() {
           formName: formName,
           formDescription: formDescription,
           formFields: formFields,
+          maxSubmissions: maxSubmissions,
         }),
       })
       const body = (await response.json()) as FormType
@@ -287,6 +292,9 @@ export default function FormBuilder() {
         description: body.description,
         fields: JSON.parse(JSON.stringify(formFields)),
         createdAt: body.createdAt,
+        maxSubmissions: body.maxSubmissions,
+        expiresAt: body.expiresAt,
+        redirectUrl: body.redirectUrl,
         _count: { responses: 0 },
       })
 
@@ -306,6 +314,7 @@ export default function FormBuilder() {
           title: formName,
           description: formDescription,
           fields: formFields,
+          maxSubmissions: maxSubmissions,
         }),
       })
       const updatedForm = (await response.json()) as FormType
@@ -317,12 +326,12 @@ export default function FormBuilder() {
   }
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
+    <div className="flex bg-background h-screen text-foreground">
       {/* Left Side bar with Form Details */}
-      <Card className="hidden md:block w-80 border-0 border-r-2 rounded-none h-screen overflow-hidden">
-        <CardContent className="p-4 pt-6 space-y-4 flex flex-col h-full">
+      <Card className="hidden md:block border-0 border-r-2 rounded-none w-80 h-screen overflow-hidden">
+        <CardContent className="flex flex-col space-y-4 p-4 pt-6 h-full">
           <div className="flex flex-row justify-between mb-4">
-            <h2 className="text-2xl font-bold">Settings</h2>
+            <h2 className="font-bold text-2xl">Settings</h2>
 
             <Button
               size="sm"
@@ -338,7 +347,7 @@ export default function FormBuilder() {
               {isFormSaving ? 'Saving...' : 'Save'}
             </Button>
           </div>
-          <div className="grid w-full items-center gap-1.5">
+          <div className="items-center gap-1.5 grid w-full">
             <Label htmlFor="formName">Form Title</Label>
             <Input
               id="formName"
@@ -347,7 +356,7 @@ export default function FormBuilder() {
               onChange={(e) => setFormName(e.target.value)}
             />
           </div>
-          <div className="grid w-full items-center gap-1.5">
+          <div className="items-center gap-1.5 grid w-full">
             <Label htmlFor="formDescription">Form Description</Label>
             <Textarea
               id="formDescription"
@@ -355,6 +364,21 @@ export default function FormBuilder() {
               className="max-h-24"
               value={formDescription}
               onChange={(e) => setFormDescription(e.target.value)}
+            />
+          </div>
+
+          <div className='py-2'>
+            <Separator />
+          </div>
+
+          <div className="items-center gap-1.5 grid w-full">
+            <Label htmlFor="maxSubmission">Max Submission Limit</Label>
+            <Input
+              id="maxSubmission"
+              type="number"
+              placeholder="Enter max value (optional)"
+              value={maxSubmissions || ''}
+              onChange={(e) => setMaxSubmissions(e.target.value ? parseInt(e.target.value) : null)}
             />
           </div>
 
@@ -373,12 +397,12 @@ export default function FormBuilder() {
       </Card>
 
       <ScrollArea
-        className="flex-1 p-4 pt-6 md:p-4 overflow-auto"
+        className="flex-1 p-4 md:p-4 pt-6 overflow-auto"
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
       >
         <div className="flex flex-row justify-between">
-          <h2 className="text-3xl font-bold mb-6">Builder</h2>
+          <h2 className="mb-6 font-bold text-3xl">Builder</h2>
 
           <div className="flex flex-row gap-x-2">
             {formId !== 'new-form' && (
@@ -405,7 +429,7 @@ export default function FormBuilder() {
                 />
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full text-center text-muted-foreground">
+              <div className="flex justify-center items-center h-full text-muted-foreground text-center">
                 <p>Drag elements here to build your form or Generate with AI</p>
               </div>
             )}
@@ -416,9 +440,9 @@ export default function FormBuilder() {
       {isDesktop ? (
         // Right Side bar - Desktop Only
         <>
-          <Card className="hidden md:block w-80 border-0 border-l-2 rounded-none h-screen overflow-hidden">
+          <Card className="hidden md:block border-0 border-l-2 rounded-none w-80 h-screen overflow-hidden">
             <CardContent className="p-4 pt-6">
-              <h2 className="text-2xl font-bold">Available Fields</h2>
+              <h2 className="font-bold text-2xl">Available Fields</h2>
               <CardDescription>
                 Select fields from the list to add to your form
               </CardDescription>
@@ -465,7 +489,7 @@ export default function FormBuilder() {
           </DrawerTrigger>
           <DrawerContent className="p-4 pt-0">
             <div className="pt-6">
-              <h2 className="text-2xl font-bold">Available Fields</h2>
+              <h2 className="font-bold text-2xl">Available Fields</h2>
               <CardDescription>
                 Select fields from the list to add to your form
               </CardDescription>
@@ -482,7 +506,7 @@ export default function FormBuilder() {
                   }}
                 />
               </div>
-              <div className="flex flex-row pt-4 space-x-2">
+              <div className="flex flex-row space-x-2 pt-4">
                 <Button className="w-full" variant="outline">
                   Settings
                 </Button>
