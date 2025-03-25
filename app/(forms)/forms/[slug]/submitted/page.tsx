@@ -104,7 +104,7 @@ export default function FormSubmissionPage() {
               >
                 <div className="relative">
                   <motion.div
-                    className="absolute inset-0 blur-xl bg-emerald-500/10 rounded-full"
+                    className="absolute inset-0 blur-xl bg-[#ff822d]/5 rounded-full"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{
@@ -116,7 +116,7 @@ export default function FormSubmissionPage() {
                   <Checkmark
                     size={80}
                     strokeWidth={4}
-                    color="rgb(16 185 129)"
+                    color="#ff822d"
                     className="relative z-10"
                   />
                 </div>
