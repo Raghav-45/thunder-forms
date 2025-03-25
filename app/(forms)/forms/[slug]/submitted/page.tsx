@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Icons } from '@/components/Icons'
+import { usePathname } from 'next/navigation'
 
 interface CheckmarkProps {
   size?: number
@@ -77,6 +78,10 @@ function Checkmark({
 }
 
 export default function FormSubmissionPage() {
+  const pathname = usePathname() // Get the current pathname
+  // Remove '/submitted' from the current path to get the form URL
+  const formPath = pathname.replace('/submitted', '')
+
   return (
     <div className="flex flex-col min-h-svh bg-neutral-950">
       <div className="flex flex-col flex-1 p-6 md:p-10">
@@ -87,7 +92,7 @@ export default function FormSubmissionPage() {
 
         <div className="flex-1 flex items-center justify-center">
           <Card className="w-full max-w-sm mx-auto p-6 min-h-[400px] flex flex-col justify-center bg-neutral-900 border-neutral-800 backdrop-blur-sm">
-            <CardContent className="space-y-4 flex flex-col items-center justify-center">
+            <CardContent className="space-y-4 flex flex-col items-center justify-center px-2 md:px-4 pb-2 md:pb-4 pt-0">
               <motion.div
                 className="flex justify-center"
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -151,7 +156,7 @@ export default function FormSubmissionPage() {
                 >
                   <div className="flex flex-col items-center gap-3">
                     <p className="text-sm text-neutral-100">
-                      Thank you for your submission! We've received your
+                      Thank you for your submission! We&apos;ve received your
                       request.
                     </p>
                     <div className="w-full h-px bg-gradient-to-r from-transparent via-neutral-700 to-transparent" />
@@ -161,12 +166,46 @@ export default function FormSubmissionPage() {
                   </div>
                 </motion.div>
 
+                {/* Buttons Section */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.6, duration: 0.4 }}
-                  className="pt-2"
+                  className="pt-2 flex flex-col gap-3"
                 >
+                  {/* Submit Another Response Button (First) */}
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="bg-neutral-800 hover:bg-neutral-700 text-neutral-100 border-neutral-700 hover:border-neutral-600 transition-all"
+                  >
+                    <Link href={formPath}>
+                      <motion.span
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1.8, duration: 0.4 }}
+                        className="flex items-center gap-2"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <title>Form</title>
+                          <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                          <polyline points="13 2 13 9 20 9" />
+                        </svg>
+                        Submit Another Response
+                      </motion.span>
+                    </Link>
+                  </Button>
+
+                  {/* Return to Homepage Button (Second) */}
                   <Button
                     asChild
                     variant="outline"
@@ -176,7 +215,7 @@ export default function FormSubmissionPage() {
                       <motion.span
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ delay: 1.8, duration: 0.4 }}
+                        transition={{ delay: 1.9, duration: 0.4 }}
                         className="flex items-center gap-2"
                       >
                         <svg
