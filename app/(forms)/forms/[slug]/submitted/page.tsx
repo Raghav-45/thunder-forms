@@ -4,8 +4,9 @@ import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { Icons } from '@/components/Icons'
-import { usePathname } from 'next/navigation'
 
 interface CheckmarkProps {
   size?: number
@@ -78,9 +79,21 @@ function Checkmark({
 }
 
 export default function FormSubmissionPage() {
-  const pathname = usePathname() // Get the current pathname
-  // Remove '/submitted' from the current path to get the form URL
+  const pathname = usePathname()
+  const router = useRouter()
   const formPath = pathname.replace('/submitted', '')
+  const [countdown, setCountdown] = useState(4)
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setInterval(() => {
+        setCountdown((prev) => prev - 1)
+      }, 1000)
+      return () => clearInterval(timer)
+    } else if (countdown === 0) {
+      router.replace('https://google.com') // Redirect when countdown reaches 0
+    }
+  }, [countdown, router])
 
   return (
     <div className="flex flex-col min-h-svh bg-neutral-950">
@@ -162,6 +175,15 @@ export default function FormSubmissionPage() {
                     <div className="w-full h-px bg-gradient-to-r from-transparent via-neutral-700 to-transparent" />
                     <p className="text-xs text-neutral-400">
                       You will receive a confirmation email shortly.
+                    </p>
+                    {/* Updated Redirect Notice */}
+                    <p className="text-xs text-neutral-400">
+                      Redirecting to homepage in {countdown} second
+                      {countdown !== 1 ? 's' : ''}. <br /> Or{' '}
+                      <Link href="/" className="text-[#ff822d] hover:underline">
+                        click here
+                      </Link>{' '}
+                      to go now.
                     </p>
                   </div>
                 </motion.div>
