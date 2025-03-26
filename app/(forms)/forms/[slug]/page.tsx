@@ -34,7 +34,7 @@ export default function Page({ params }: PageProps) {
           setFormFields(data.fields)
           setFormName(data.title || 'New form')
           setFormDescription(data.description || 'Lorem ipsum dolor sit amet')
-          setFormRedirectUrl(data.redirectUrl)
+          setFormRedirectUrl(data.redirectUrl || null)
         }
         setLoading(false)
       })
