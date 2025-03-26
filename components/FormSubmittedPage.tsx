@@ -49,6 +49,8 @@ function Checkmark({
       initial="hidden"
       animate="visible"
       className={className}
+      role="img"
+      aria-label="Form submission successful"
     >
       <title>Animated Checkmark</title>
       <motion.circle
@@ -90,23 +92,23 @@ const FormSubmittedPage: FC<FormSubmittedPageProps> = ({ redirectUrl }) => {
   const formPath = pathname.replace('/submitted', '')
   const [countdown, setCountdown] = useState(4)
 
-  // Determine the final redirect URL
-  const finalRedirectUrl =
-    redirectUrl &&
-    (redirectUrl.startsWith('http://') || redirectUrl.startsWith('https://'))
+  // Determine the final redirect URL with validation
+  const finalRedirectUrl = redirectUrl
+    ? redirectUrl.startsWith('http://') || redirectUrl.startsWith('https://')
       ? redirectUrl
-      : `https://${redirectUrl}` // Prepend https:// if no protocol
+      : `https://${redirectUrl}`
+    : null
 
   useEffect(() => {
-    if (countdown > 0 && redirectUrl !== null) {
+    if (finalRedirectUrl && countdown > 0) {
       const timer = setInterval(() => {
         setCountdown((prev) => prev - 1)
       }, 1000)
       return () => clearInterval(timer)
-    } else if (countdown === 0) {
-      router.push(finalRedirectUrl) // Redirect to the URL when countdown reaches 0
+    } else if (finalRedirectUrl && countdown === 0) {
+      router.push(finalRedirectUrl)
     }
-  }, [countdown, router, redirectUrl, finalRedirectUrl])
+  }, [countdown, router, finalRedirectUrl])
 
   return (
     <div className="flex flex-col min-h-svh bg-neutral-950">
@@ -126,11 +128,7 @@ const FormSubmittedPage: FC<FormSubmittedPageProps> = ({ redirectUrl }) => {
                 transition={{
                   duration: 0.4,
                   ease: [0.4, 0, 0.2, 1],
-                  scale: {
-                    type: 'spring',
-                    damping: 15,
-                    stiffness: 200,
-                  },
+                  scale: { type: 'spring', damping: 15, stiffness: 200 },
                 }}
               >
                 <div className="relative">
@@ -138,11 +136,7 @@ const FormSubmittedPage: FC<FormSubmittedPageProps> = ({ redirectUrl }) => {
                     className="absolute inset-0 blur-xl bg-[#ff822d]/5 rounded-full"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{
-                      delay: 0.2,
-                      duration: 0.8,
-                      ease: 'easeOut',
-                    }}
+                    transition={{ delay: 0.2, duration: 0.8, ease: 'easeOut' }}
                   />
                   <Checkmark
                     size={80}
@@ -189,8 +183,7 @@ const FormSubmittedPage: FC<FormSubmittedPageProps> = ({ redirectUrl }) => {
                     <p className="text-xs text-neutral-400">
                       You will receive a confirmation email shortly.
                     </p>
-                    {/* Redirect Notice */}
-                    {redirectUrl && finalRedirectUrl && (
+                    {finalRedirectUrl && (
                       <p className="text-xs text-neutral-400">
                         Redirecting you in {countdown} seconds. <br /> Or{' '}
                         <Link
@@ -205,14 +198,12 @@ const FormSubmittedPage: FC<FormSubmittedPageProps> = ({ redirectUrl }) => {
                   </div>
                 </motion.div>
 
-                {/* Buttons Section */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.6, duration: 0.4 }}
                   className="pt-2 flex flex-col gap-3"
                 >
-                  {/* Submit Another Response Button (First) */}
                   <Button
                     asChild
                     variant="outline"
@@ -231,7 +222,6 @@ const FormSubmittedPage: FC<FormSubmittedPageProps> = ({ redirectUrl }) => {
                     </Link>
                   </Button>
 
-                  {/* Return to Homepage Button (Second) */}
                   <Button
                     asChild
                     variant="outline"
