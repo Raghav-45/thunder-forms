@@ -1,5 +1,6 @@
 'use client'
 
+import { FC } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -7,7 +8,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { Icons } from '@/components/Icons'
-import { FileIcon, FileTextIcon, HomeIcon } from 'lucide-react'
+import { FileIcon, HomeIcon } from 'lucide-react'
 
 interface CheckmarkProps {
   size?: number
@@ -79,22 +80,33 @@ function Checkmark({
   )
 }
 
-export default function FormSubmittedPage() {
+interface FormSubmittedPageProps {
+  redirectUrl?: string | null
+}
+
+const FormSubmittedPage: FC<FormSubmittedPageProps> = ({ redirectUrl }) => {
   const pathname = usePathname()
   const router = useRouter()
   const formPath = pathname.replace('/submitted', '')
   const [countdown, setCountdown] = useState(4)
 
+  // Determine the final redirect URL
+  const finalRedirectUrl =
+    redirectUrl &&
+    (redirectUrl.startsWith('http://') || redirectUrl.startsWith('https://'))
+      ? redirectUrl
+      : `https://${redirectUrl}` // Prepend https:// if no protocol
+
   useEffect(() => {
-    if (countdown > 0) {
+    if (countdown > 0 && redirectUrl !== null) {
       const timer = setInterval(() => {
         setCountdown((prev) => prev - 1)
       }, 1000)
       return () => clearInterval(timer)
     } else if (countdown === 0) {
-      router.push('https://instagram.com/thunderforms') // Redirect when countdown reaches 0
+      router.push(finalRedirectUrl) // Redirect to the URL when countdown reaches 0
     }
-  }, [countdown, router])
+  }, [countdown, router, redirectUrl, finalRedirectUrl])
 
   return (
     <div className="flex flex-col min-h-svh bg-neutral-950">
@@ -177,14 +189,19 @@ export default function FormSubmittedPage() {
                     <p className="text-xs text-neutral-400">
                       You will receive a confirmation email shortly.
                     </p>
-                    {/* Updated Redirect Notice */}
-                    <p className="text-xs text-neutral-400">
-                      Redirecting you in {countdown} seconds. <br /> Or{' '}
-                      <Link href="/" className="text-[#ff822d] hover:underline">
-                        click here
-                      </Link>{' '}
-                      to go now.
-                    </p>
+                    {/* Redirect Notice */}
+                    {redirectUrl && finalRedirectUrl && (
+                      <p className="text-xs text-neutral-400">
+                        Redirecting you in {countdown} seconds. <br /> Or{' '}
+                        <Link
+                          href={finalRedirectUrl}
+                          className="text-[#ff822d] hover:underline"
+                        >
+                          click here
+                        </Link>{' '}
+                        to go now.
+                      </p>
+                    )}
                   </div>
                 </motion.div>
 
@@ -241,3 +258,5 @@ export default function FormSubmittedPage() {
     </div>
   )
 }
+
+export default FormSubmittedPage
