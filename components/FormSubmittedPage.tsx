@@ -79,7 +79,7 @@ function Checkmark({
   )
 }
 
-export default function FormSubmissionPage() {
+export default function FormSubmittedPage() {
   const pathname = usePathname()
   const router = useRouter()
   const formPath = pathname.replace('/submitted', '')
@@ -92,7 +92,7 @@ export default function FormSubmissionPage() {
       }, 1000)
       return () => clearInterval(timer)
     } else if (countdown === 0) {
-      router.push('https://google.com') // Redirect when countdown reaches 0
+      router.push('https://instagram.com/thunderforms') // Redirect when countdown reaches 0
     }
   }, [countdown, router])
 
