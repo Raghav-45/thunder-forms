@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { Icons } from '@/components/Icons'
+import { FileIcon, FileTextIcon, HomeIcon } from 'lucide-react'
 
 interface CheckmarkProps {
   size?: number
@@ -91,7 +92,7 @@ export default function FormSubmissionPage() {
       }, 1000)
       return () => clearInterval(timer)
     } else if (countdown === 0) {
-      router.replace('https://google.com') // Redirect when countdown reaches 0
+      router.push('https://google.com') // Redirect when countdown reaches 0
     }
   }, [countdown, router])
 
@@ -178,8 +179,7 @@ export default function FormSubmissionPage() {
                     </p>
                     {/* Updated Redirect Notice */}
                     <p className="text-xs text-neutral-400">
-                      Redirecting to homepage in {countdown} second
-                      {countdown !== 1 ? 's' : ''}. <br /> Or{' '}
+                      Redirecting you in {countdown} seconds. <br /> Or{' '}
                       <Link href="/" className="text-[#ff822d] hover:underline">
                         click here
                       </Link>{' '}
@@ -208,20 +208,7 @@ export default function FormSubmissionPage() {
                         transition={{ delay: 1.8, duration: 0.4 }}
                         className="flex items-center gap-2"
                       >
-                        <svg
-                          className="w-4 h-4"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <title>Form</title>
-                          <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
-                          <polyline points="13 2 13 9 20 9" />
-                        </svg>
+                        <FileIcon className="w-4 h-4" />
                         Submit Another Response
                       </motion.span>
                     </Link>
@@ -240,20 +227,7 @@ export default function FormSubmissionPage() {
                         transition={{ delay: 1.9, duration: 0.4 }}
                         className="flex items-center gap-2"
                       >
-                        <svg
-                          className="w-4 h-4"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <title>Home</title>
-                          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                          <polyline points="9 22 9 12 15 12 15 22" />
-                        </svg>
+                        <HomeIcon className="w-4 h-4" />
                         Return to Homepage
                       </motion.span>
                     </Link>
