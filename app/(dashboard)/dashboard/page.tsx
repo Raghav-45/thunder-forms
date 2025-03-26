@@ -195,7 +195,7 @@ export default function Dashboard() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
-                    <TableHead className="text-right w-[150px]">
+                    <TableHead className="text-right w-[256px]">
                       Created on
                     </TableHead>
                   </TableRow>
@@ -210,7 +210,8 @@ export default function Dashboard() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        {format(form.createdAt, 'PPP')}
+                        {format(new Date(form.createdAt), 'PPP')} at{' '}
+                        {format(new Date(form.createdAt), 'p')}
                       </TableCell>
                     </TableRow>
                   ))}

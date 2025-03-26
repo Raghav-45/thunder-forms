@@ -159,7 +159,7 @@ export default function Forms() {
                           {form._count.responses || 0}
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
-                          {format(form.createdAt, 'PPP')}
+                          {format(new Date(form.createdAt), 'PPP')}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-row space-x-2 items-center justify-end">
