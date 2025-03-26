@@ -28,6 +28,7 @@ export type FormPreviewProps = {
   selectedField?: FormFieldType | null
   behaveAsPreview: boolean
   formId?: string
+  afterSubmitted?: () => void
 }
 
 const DraggableElement = ({
@@ -161,6 +162,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
   selectedField,
   behaveAsPreview,
   formId,
+  afterSubmitted,
 }) => {
   const router = useRouter()
   const formSchema = generateZodSchema(formFields)
@@ -189,9 +191,8 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
         loading: 'Submitting form...',
         success: () => 'Form submitted successfully!',
         error: 'Failed to submit form',
-        finally: () => {
-          router.push(`/forms/${formId}/submitted`)
-        },
+        finally: afterSubmitted,
+        // router.push(`/forms/${formId}/submitted`)
       })
     }
   }
