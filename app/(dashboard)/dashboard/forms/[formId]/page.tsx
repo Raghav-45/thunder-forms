@@ -393,9 +393,13 @@ export default function Responses() {
                               </Badge>
                             </TableCell>
                             <TableCell className="hidden md:table-cell">
-                              {formatDistance(response.createdAt, currentDate, {
-                                addSuffix: true,
-                              })}
+                              {formatDistance(
+                                new Date(response.createdAt),
+                                currentDate,
+                                {
+                                  addSuffix: true,
+                                }
+                              )}
                             </TableCell>
                             <TableCell className="text-right">
                               <DropdownMenu>
@@ -433,7 +437,7 @@ export default function Responses() {
         </Tabs>
       </div>
 
-      <div className='hidden md:block'>
+      <div className="hidden md:block">
         <Card className="overflow-hidden" x-chunk="dashboard-05-chunk-4">
           <CardHeader className="flex flex-row items-start bg-muted/50">
             <div className="grid gap-0.5">
@@ -483,9 +487,9 @@ export default function Responses() {
             <div className="text-xs text-muted-foreground">
               {selectedResponse?.createdAt &&
                 `Submitted on ${format(
-                  selectedResponse.createdAt,
+                  new Date(selectedResponse.createdAt),
                   'PPP'
-                )} @ ${format(selectedResponse.createdAt, 'p')}`}
+                )} @ ${format(new Date(selectedResponse.createdAt), 'p')}`}
             </div>
             <div className="ml-auto mr-0 w-auto flex gap-x-4">
               {selectedResponse && (

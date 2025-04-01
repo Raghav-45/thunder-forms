@@ -20,8 +20,8 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select'
-import { Separator } from './ui/separator'
-import { ScrollArea } from './ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Cross2Icon } from '@radix-ui/react-icons'
 
 type EditFieldFormProps = {

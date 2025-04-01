@@ -1,8 +1,8 @@
 import { siteConfig } from '@/config/site'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Input } from './ui/input'
-import { Button } from './ui/button'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { Icons } from './Icons'
 
 export function SiteFooter() {

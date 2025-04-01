@@ -15,6 +15,9 @@ model forms {
   createdAt   DateTime   @default(now())
   // updatedAt   DateTime @updatedAt
   responses   response[] // List of responses linked to this form
+  maxSubmissions Int? // Maximum number of submissions allowed (optional)
+  expiresAt      DateTime? // Expiration time and date (optional)
+  redirectUrl    String? // URL to redirect users after submission (optional)
 }
 
 model response {
