@@ -3,7 +3,6 @@ import { z } from 'zod'
 import { useForm, UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
 
 import { RenderFormField } from '@/components/render-form-field'
 import { Form, FormField, FormItem, FormControl } from '@/components/ui/form'
@@ -164,7 +163,6 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
   formId,
   afterSubmitted,
 }) => {
-  const router = useRouter()
   const formSchema = generateZodSchema(formFields)
   const defaultVals = generateDefaultValues(formFields)
 
