@@ -18,6 +18,15 @@ export async function GET(
       return NextResponse.json({ error: 'Form not found' }, { status: 404 })
     }
 
+    if (form.expiresAt && new Date(form.expiresAt) < new Date()) {
+      return NextResponse.json(
+        {
+          error: 'Form has expired',
+        },
+        { status: 410 }
+      )
+    }
+
     return NextResponse.json(form)
   } catch (error) {
     console.error('Get form error:', error)
