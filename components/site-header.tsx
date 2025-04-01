@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 import { cn } from '@/lib/utils'
 import { MainNav } from '@/components/mainNav'
-import { buttonVariants } from './ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { GithubIcon, TerminalIcon, UserCircle2Icon } from 'lucide-react'
 import { siteConfig } from '@/config/site'
 import { UserNav } from './user-nav'
