@@ -94,7 +94,7 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                   Basic Properties
                 </AccordionTrigger>
                 <AccordionContent className="flex flex-col gap-y-2">
-                  <div>
+                  <div className='flex flex-col gap-2'>
                     <Label htmlFor="label">Label</Label>
                     <Input
                       id="label"
@@ -200,7 +200,7 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                     />
                   </div> */}
                   {field?.variant === 'Input' && (
-                    <div>
+                    <div className='flex flex-col gap-2'>
                       <Label htmlFor="type">Type</Label>
                       <Select
                         // id="type"
