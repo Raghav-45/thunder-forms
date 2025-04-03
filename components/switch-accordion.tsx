@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import * as AccordionPrimitive from "@radix-ui/react-accordion"
-import { Switch } from "@/components/ui/switch"
-import { cn } from "@/lib/utils"
+import * as React from 'react'
+import * as AccordionPrimitive from '@radix-ui/react-accordion'
+import { Switch } from '@/components/ui/switch'
+import { cn } from '@/lib/utils'
 
 const Accordion = AccordionPrimitive.Root
 
@@ -11,41 +11,30 @@ const AccordionItem = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item>
 >(({ className, ...props }, ref) => (
-  <AccordionPrimitive.Item
-    ref={ref}
-    className={cn("border-b", className)}
-    {...props}
-  />
+  <AccordionPrimitive.Item ref={ref} className={className} {...props} />
 ))
-AccordionItem.displayName = "AccordionItem"
+AccordionItem.displayName = 'AccordionItem'
 
 const AccordionTrigger = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger>
 >(({ className, children, ...props }, ref) => {
-  // Get the current value prop of the parent AccordionItem
   const triggerRef = React.useRef<HTMLButtonElement>(null)
   const [isOpen, setIsOpen] = React.useState(false)
-
-  // Check if the accordion is controlled by the Root component
-  const isControlled = React.useMemo(() => {
-    return props["data-state"] !== undefined
-  }, [props])
-
-  // Update the local state when the controlled state changes
-  React.useEffect(() => {
-    if (isControlled) {
-      setIsOpen(props["data-state"] === "open")
-    }
-  }, [isControlled, props])
 
   // Handle switch toggle
   const handleSwitchChange = (checked: boolean) => {
     setIsOpen(checked)
-    
+
     // Programmatically click the accordion trigger to change state
     if (triggerRef.current && checked !== isOpen) {
-      triggerRef.current.click()
+      // Create and dispatch a custom event
+      const customEvent = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+      })
+      triggerRef.current.dispatchEvent(customEvent)
     }
   }
 
@@ -59,30 +48,24 @@ const AccordionTrigger = React.forwardRef<
           triggerRef.current = node
         }}
         className={cn(
-          "flex flex-1 items-center justify-between py-4 text-sm font-medium transition-all text-left",
+          'flex flex-1 items-center justify-between py-2 text-sm font-medium transition-all text-left',
           className
         )}
         {...props}
         onClick={(e) => {
-          // Don't propagate the click event if it comes from the Switch
-          if ((e.target as HTMLElement).closest('.switch-control')) {
+          // Prevent default trigger behavior for all clicks except our programmatic ones
+          if (!e.isTrusted) {
+            // This is our programmatic click, let it proceed
+            if (props.onClick) props.onClick(e)
+          } else {
+            // This is a real user click, prevent accordion toggling
+            e.preventDefault()
             e.stopPropagation()
-            return
           }
-          
-          // Otherwise, update our state and call the original onClick if provided
-          setIsOpen(!isOpen)
-          if (props.onClick) props.onClick(e)
         }}
       >
         {children}
-        <div 
-          className="switch-control" 
-          onClick={(e) => {
-            // Stop propagation to prevent the accordion from toggling twice
-            e.stopPropagation()
-          }}
-        >
+        <div className="switch-control">
           <Switch
             checked={isOpen}
             onCheckedChange={handleSwitchChange}
@@ -93,7 +76,7 @@ const AccordionTrigger = React.forwardRef<
     </AccordionPrimitive.Header>
   )
 })
-AccordionTrigger.displayName = "AccordionTrigger"
+AccordionTrigger.displayName = 'AccordionTrigger'
 
 const AccordionContent = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Content>,
@@ -102,14 +85,14 @@ const AccordionContent = React.forwardRef<
   <AccordionPrimitive.Content
     ref={ref}
     className={cn(
-      "overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
+      'overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down',
       className
     )}
     {...props}
   >
-    <div className={cn("pb-4 pt-0", className)}>{children}</div>
+    <div className={cn('py-px', className)}>{children}</div>
   </AccordionPrimitive.Content>
 ))
-AccordionContent.displayName = "AccordionContent"
+AccordionContent.displayName = 'AccordionContent'
 
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }
