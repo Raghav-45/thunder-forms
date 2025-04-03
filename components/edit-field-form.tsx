@@ -1,4 +1,4 @@
-import React, { useState, useEffect, FC } from 'react'
+import React, { useState, useEffect } from 'react'
 import * as Locales from 'date-fns/locale'
 
 import {
@@ -41,6 +41,7 @@ type EditFieldFormProps = {
   onClose: () => void
   field: FormFieldType | null
   onEditingField: (editedField: FormFieldType | null) => void
+  // onSave: (updatedField: FormFieldType) => void
 }
 
 export const EditFieldForm: React.FC<EditFieldFormProps> = ({
@@ -48,10 +49,9 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
   onClose,
   field,
   onEditingField,
+  // onSave,
 }) => {
   const [editedField, setEditedField] = useState<FormFieldType | null>(null)
-  const [isDescriptionEnabled, setIsDescriptionEnabled] = useState(!!field?.description)
-  const [isPlaceholderEnabled, setIsPlaceholderEnabled] = useState(!!field?.placeholder)
 
   useEffect(() => {
     setEditedField(field)
@@ -62,17 +62,11 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editedField])
 
-  useEffect(() => {
-    if (field) {
-      setIsDescriptionEnabled(!!field.description)
-      setIsPlaceholderEnabled(!!field.placeholder)
-    }
-  }, [field])
-
   if (!editedField) return null
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
+      {/* <SheetTrigger>Open</SheetTrigger> */}
       <SheetContent side="right" isClosable={false} className="w-80">
         <SheetHeader>
           <div className="flex flex-row justify-between">
@@ -113,56 +107,66 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                       }
                     />
                   </div>
+                  {/* <div>
+                    <Label htmlFor="label">Description</Label>
+                    <Input
+                      id="description"
+                      value={editedField.description}
+                      onChange={(e) =>
+                        setEditedField({
+                          ...editedField,
+                          description: e.target.value,
+                        })
+                      }
+                    />
+                  </div> */}
                   <SwitchAccordion type="single" collapsible>
                     <SwitchAccordionItem value="item-1">
-                      <SwitchAccordionTrigger onSwitchChange={(checked) => {
-                        setIsDescriptionEnabled(checked)
-                        if (!checked) {
-                          setEditedField(prev => prev ? {
-                            ...prev,
-                            description: ""
-                          } : null)
-                        }
-                      }}>
+                      <SwitchAccordionTrigger>
                         Description
                       </SwitchAccordionTrigger>
                       <SwitchAccordionContent>
                         <Input
                           id="description"
-                          value={isDescriptionEnabled ? editedField?.description : ""}
+                          value={editedField.description}
                           onChange={(e) =>
-                            setEditedField(prev => prev ? {
-                              ...prev,
+                            setEditedField({
+                              ...editedField,
                               description: e.target.value,
-                            } : null)
+                            })
                           }
                         />
                       </SwitchAccordionContent>
                     </SwitchAccordionItem>
                   </SwitchAccordion>
                   {field?.variant !== 'Switch' && (
+                    // <div>
+                    //   <Label htmlFor="placeholder">Placeholder</Label>
+                    //   <Input
+                    //     id="placeholder"
+                    //     value={editedField.placeholder}
+                    //     onChange={(e) =>
+                    //       setEditedField({
+                    //         ...editedField,
+                    //         placeholder: e.target.value,
+                    //       })
+                    //     }
+                    //   />
+                    // </div>
                     <SwitchAccordion type="single" collapsible>
                       <SwitchAccordionItem value="item-1">
-                        <SwitchAccordionTrigger onSwitchChange={(checked) => {
-                          setIsPlaceholderEnabled(checked)
-                          if (!checked) {
-                            setEditedField(prev => prev ? {
-                              ...prev,
-                              placeholder: ""
-                            } : null)
-                          }
-                        }}>
+                        <SwitchAccordionTrigger>
                           Placeholder
                         </SwitchAccordionTrigger>
                         <SwitchAccordionContent>
                           <Input
                             id="placeholder"
-                            value={isPlaceholderEnabled ? editedField?.placeholder : ""}
+                            value={editedField.placeholder}
                             onChange={(e) =>
-                              setEditedField(prev => prev ? {
-                                ...prev,
+                              setEditedField({
+                                ...editedField,
                                 placeholder: e.target.value,
-                              } : null)
+                              })
                             }
                           />
                         </SwitchAccordionContent>
@@ -184,10 +188,22 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                       <Label htmlFor="defaultChecked">Default Checked?</Label>
                     </div>
                   )}
+                  {/* <div>
+                    <Label htmlFor="label">Name</Label>
+                    <Input
+                      id="name"
+                      type={field?.type}
+                      value={editedField.name}
+                      onChange={(e) =>
+                        setEditedField({ ...editedField, name: e.target.value })
+                      }
+                    />
+                  </div> */}
                   {field?.variant === 'Input' && (
                     <div>
                       <Label htmlFor="type">Type</Label>
                       <Select
+                        // id="type"
                         value={editedField.type}
                         onValueChange={(value) => {
                           setEditedField({ ...editedField, type: value })
@@ -287,6 +303,7 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                       <div className="col-span-1 flex flex-col gap-1 ">
                         <Label htmlFor="locale">Locale</Label>
                         <Select
+                          // id="locale"
                           value={editedField.locale ?? ''}
                           onValueChange={(value) => {
                             setEditedField({
@@ -309,6 +326,7 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                       </div>
                       <div className="col-span-1 flex items-end gap-1 p-3 rounded">
                         <Checkbox
+                          // id="hour12"
                           checked={editedField.hour12}
                           onCheckedChange={(checked) =>
                             setEditedField({
@@ -356,24 +374,3 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
     </Sheet>
   )
 }
-
-interface ToggleFieldWrapperProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {}
-
-const ToggleFieldWrapper: FC<ToggleFieldWrapperProps> = ({
-  value,
-  onChange,
-}) => {
-  return (
-    <SwitchAccordion type="single" collapsible>
-      <SwitchAccordionItem value="item-1">
-        <SwitchAccordionTrigger>Placeholder</SwitchAccordionTrigger>
-        <SwitchAccordionContent>
-          <Input id="item-1" value={value} onChange={onChange} />
-        </SwitchAccordionContent>
-      </SwitchAccordionItem>
-    </SwitchAccordion>
-  )
-}
-
-export default ToggleFieldWrapper
