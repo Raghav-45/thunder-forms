@@ -107,7 +107,7 @@ const GenerateWithAiPrompt: FC<GenerateWithAiPromptProps> = ({
         <div className="relative w-full">
           <Icons.Sparkles className="absolute left-3 top-2.5 size-4 fill-white" />
           <Textarea
-            className="w-full pl-9 rounded-xl resize-none overflow-hidden h-10 min-h-10 group focus:h-24 focus:min-h-24 transition-all"
+            className="w-full pl-9 rounded-xl resize-none overflow-hidden h-24 min-h-24"
             name="prompt"
             placeholder="Ask me anything..."
             value={aiPrompt}
