@@ -17,14 +17,19 @@ AccordionItem.displayName = 'AccordionItem'
 
 const AccordionTrigger = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger>
->(({ className, children, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger> & {
+    onSwitchChange?: (checked: boolean) => void
+  }
+>(({ className, children, onSwitchChange, ...props }, ref) => {
   const triggerRef = React.useRef<HTMLButtonElement>(null)
   const [isOpen, setIsOpen] = React.useState(false)
 
   // Handle switch toggle
   const handleSwitchChange = (checked: boolean) => {
     setIsOpen(checked)
+    if (onSwitchChange) {
+      onSwitchChange(checked)
+    }
 
     // Programmatically click the accordion trigger to change state
     if (triggerRef.current && checked !== isOpen) {
