@@ -28,13 +28,8 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from './ui/accordion'
-import {
-  Accordion as SwitchAccordion,
-  AccordionContent as SwitchAccordionContent,
-  AccordionItem as SwitchAccordionItem,
-  AccordionTrigger as SwitchAccordionTrigger,
-} from './switch-accordion'
+} from '@/components/ui/accordion'
+import AccordionWithSwitch from '@/components/accordion-with-switch'
 
 type EditFieldFormProps = {
   isOpen: boolean
@@ -94,7 +89,7 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                   Basic Properties
                 </AccordionTrigger>
                 <AccordionContent className="flex flex-col gap-y-2">
-                  <div className='flex flex-col gap-2'>
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="label">Label</Label>
                     <Input
                       id="label"
@@ -107,8 +102,11 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                       }
                     />
                   </div>
-                  {/* <div>
-                    <Label htmlFor="label">Description</Label>
+
+                  <AccordionWithSwitch
+                    text="Description"
+                    defaultOpen={!!editedField.description}
+                  >
                     <Input
                       id="description"
                       value={editedField.description}
@@ -119,59 +117,23 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                         })
                       }
                     />
-                  </div> */}
-                  <SwitchAccordion type="single" collapsible>
-                    <SwitchAccordionItem value="item-1">
-                      <SwitchAccordionTrigger>
-                        Description
-                      </SwitchAccordionTrigger>
-                      <SwitchAccordionContent>
-                        <Input
-                          id="description"
-                          value={editedField.description}
-                          onChange={(e) =>
-                            setEditedField({
-                              ...editedField,
-                              description: e.target.value,
-                            })
-                          }
-                        />
-                      </SwitchAccordionContent>
-                    </SwitchAccordionItem>
-                  </SwitchAccordion>
+                  </AccordionWithSwitch>
                   {field?.variant !== 'Switch' && (
-                    // <div>
-                    //   <Label htmlFor="placeholder">Placeholder</Label>
-                    //   <Input
-                    //     id="placeholder"
-                    //     value={editedField.placeholder}
-                    //     onChange={(e) =>
-                    //       setEditedField({
-                    //         ...editedField,
-                    //         placeholder: e.target.value,
-                    //       })
-                    //     }
-                    //   />
-                    // </div>
-                    <SwitchAccordion type="single" collapsible>
-                      <SwitchAccordionItem value="item-1">
-                        <SwitchAccordionTrigger>
-                          Placeholder
-                        </SwitchAccordionTrigger>
-                        <SwitchAccordionContent>
-                          <Input
-                            id="placeholder"
-                            value={editedField.placeholder}
-                            onChange={(e) =>
-                              setEditedField({
-                                ...editedField,
-                                placeholder: e.target.value,
-                              })
-                            }
-                          />
-                        </SwitchAccordionContent>
-                      </SwitchAccordionItem>
-                    </SwitchAccordion>
+                    <AccordionWithSwitch
+                      text="Placeholder"
+                      defaultOpen={!!editedField.placeholder}
+                    >
+                      <Input
+                        id="placeholder"
+                        value={editedField.placeholder}
+                        onChange={(e) =>
+                          setEditedField({
+                            ...editedField,
+                            placeholder: e.target.value,
+                          })
+                        }
+                      />
+                    </AccordionWithSwitch>
                   )}
                   {field?.variant === 'Checkbox' && (
                     <div className="col-span-1 flex items-end gap-1 p-3 rounded">
@@ -200,7 +162,7 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
                     />
                   </div> */}
                   {field?.variant === 'Input' && (
-                    <div className='flex flex-col gap-2'>
+                    <div className="flex flex-col gap-2">
                       <Label htmlFor="type">Type</Label>
                       <Select
                         // id="type"
