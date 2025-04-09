@@ -15,7 +15,7 @@ import {
 } from '@/components/generate-code-parts'
 import { LuPencil, LuTrash2 } from 'react-icons/lu'
 import { cn } from '@/lib/utils'
-import { Reorder } from 'framer-motion'
+import { Reorder, AnimatePresence, motion } from 'framer-motion'
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
@@ -197,59 +197,91 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
 
   return (
     <div className="w-full h-full col-span-1 rounded-xl flex justify-center">
-      {formFields.length > 0 && (
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-2 w-full mx-auto"
+      <AnimatePresence>
+        {formFields.length > 0 && (
+          <motion.div
+            className="w-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            {!behaveAsPreview ? (
-              <Reorder.Group
-                axis="y"
-                values={formFields}
-                onReorder={onReorder!}
-                className="space-y-4"
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-2 w-full mx-auto"
               >
-                {formFields.map(
-                  (fieldOrGroup) =>
-                    !Array.isArray(fieldOrGroup) && (
-                      <DraggableElement
-                        key={fieldOrGroup.name}
-                        field={fieldOrGroup}
-                        form={form}
-                        onClickEdit={onClickEdit!}
-                        onClickRemove={onClickRemove!}
-                        selectedField={selectedField!}
-                        behaveAsPreview={behaveAsPreview}
-                      />
+                <motion.div
+                  layout
+                  className="space-y-4"
+                  transition={{
+                    duration: 0.2,
+                    type: 'spring',
+                    stiffness: 500,
+                    damping: 30,
+                  }}
+                >
+                  {!behaveAsPreview ? (
+                    <Reorder.Group
+                      axis="y"
+                      values={formFields}
+                      onReorder={onReorder!}
+                      className="space-y-4"
+                    >
+                      {formFields.map(
+                        (fieldOrGroup) =>
+                          !Array.isArray(fieldOrGroup) && (
+                            <DraggableElement
+                              key={fieldOrGroup.name}
+                              field={fieldOrGroup}
+                              form={form}
+                              onClickEdit={onClickEdit!}
+                              onClickRemove={onClickRemove!}
+                              selectedField={selectedField!}
+                              behaveAsPreview={behaveAsPreview}
+                            />
+                          )
+                      )}
+                    </Reorder.Group>
+                  ) : (
+                    formFields.map(
+                      (fieldOrGroup) =>
+                        !Array.isArray(fieldOrGroup) && (
+                          <DraggableElement
+                            key={fieldOrGroup.name}
+                            field={fieldOrGroup}
+                            form={form}
+                            onClickEdit={onClickEdit!}
+                            onClickRemove={onClickRemove!}
+                            selectedField={selectedField!}
+                            behaveAsPreview={behaveAsPreview}
+                          />
+                        )
                     )
-                )}
-              </Reorder.Group>
-            ) : (
-              formFields.map(
-                (fieldOrGroup) =>
-                  !Array.isArray(fieldOrGroup) && (
-                    <DraggableElement
-                      key={fieldOrGroup.name}
-                      field={fieldOrGroup}
-                      form={form}
-                      onClickEdit={onClickEdit!}
-                      onClickRemove={onClickRemove!}
-                      selectedField={selectedField!}
-                      behaveAsPreview={behaveAsPreview}
-                    />
-                  )
-              )
-            )}
-            <Button
-              type={behaveAsPreview ? 'submit' : 'button'}
-              className="w-full md:w-auto"
-            >
-              Submit
-            </Button>
-          </form>
-        </Form>
-      )}
+                  )}
+                </motion.div>
+
+                <motion.div
+                  layout
+                  initial={{ opacity: 1, y: -30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 300,
+                    damping: 30,
+                  }}
+                >
+                  <Button
+                    type={behaveAsPreview ? 'submit' : 'button'}
+                    className="w-full md:w-auto"
+                  >
+                    Submit
+                  </Button>
+                </motion.div>
+              </form>
+            </Form>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
