@@ -4,11 +4,14 @@ import { cn } from '@/lib/utils'
 import { MainNav } from '@/components/mainNav'
 import { buttonVariants } from '@/components/ui/button'
 import { GithubIcon, TerminalIcon, UserCircle2Icon } from 'lucide-react'
-import { siteConfig } from '@/config/site'
-import { UserNav } from './user-nav'
+import { UserNav } from '@/components/user-nav'
 
-export function SiteHeader() {
-  const isLoggedIn = true
+import { createClient } from '@/utils/supabase/server'
+
+export async function SiteHeader() {
+  const supabase = await createClient()
+  const { data } = await supabase.auth.getUser()
+  const isLoggedIn = data?.user
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center">
@@ -33,12 +36,12 @@ export function SiteHeader() {
                   <TerminalIcon className="size-4" />
                   Go to dashboard
                 </Link>
-                <UserNav />
+                <UserNav isDashboard={false} />
               </>
             ) : (
               <>
                 <Link
-                  href="/auth"
+                  href="/auth/login"
                   className={cn(
                     buttonVariants({
                       variant: 'secondary',
@@ -49,23 +52,6 @@ export function SiteHeader() {
                 >
                   <UserCircle2Icon className="size-4" />
                   Login
-                </Link>
-                <Link
-                  href={siteConfig.links.github}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <div
-                    className={cn(
-                      buttonVariants({
-                        variant: 'ghost',
-                      }),
-                      'w-9 px-0'
-                    )}
-                  >
-                    <GithubIcon className="size-4" />
-                    <span className="sr-only">GitHub</span>
-                  </div>
                 </Link>
               </>
             )}

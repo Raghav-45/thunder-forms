@@ -168,7 +168,7 @@ export default function Dashboard() {
               <CardDescription>All your forms in one place.</CardDescription>
             </div>
             <Button asChild size="sm" className="ml-auto gap-1">
-              {userForms ? (
+              {userForms && userForms.length > 0 ? (
                 <Link href="/dashboard/forms">
                   View All
                   <ArrowUpRight className="h-4 w-4" />
@@ -190,7 +190,9 @@ export default function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            {userForms ? (
+            {!userForms ? (
+              <p>loading...</p>
+            ) : userForms && userForms.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>

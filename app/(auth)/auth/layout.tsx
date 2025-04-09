@@ -1,11 +1,14 @@
-import { LoginForm } from '@/components/login-form'
 import { Icons } from '@/components/Icons'
 import { buttonVariants } from '@/components/ui/button'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { ChevronLeftIcon } from 'lucide-react'
 
-export default function LoginPage() {
+export default function AuthLayout({
+  children, // will be a page or nested layout
+}: {
+  children: React.ReactNode
+}) {
   return (
     <div className="flex min-h-svh h-full w-full justify-center md:items-center md:bg-gradient-to-r md:from-blue-400 md:to-purple-700">
       <div className="grid w-full lg:grid-cols-2 md:aspect-video md:rounded-3xl overflow-hidden md:w-[1200px]">
@@ -39,9 +42,7 @@ export default function LoginPage() {
             </Link>
           </div>
           <div className="flex flex-1 items-center justify-center">
-            <div className="w-full max-w-xs">
-              <LoginForm />
-            </div>
+            <div className="w-full max-w-xs">{children}</div>
           </div>
         </div>
       </div>

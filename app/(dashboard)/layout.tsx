@@ -1,20 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import {
-  LineChart,
-  PanelLeft,
-  Search,
-  Settings,
-} from 'lucide-react'
+import { LineChart, PanelLeft, Search, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import {
@@ -24,6 +11,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import DashboardNav, { DashboardBreadcrumb } from '@/components/dashboardNav'
+import { UserNav } from '@/components/user-nav'
 
 export default function DashboardLayout({
   children, // will be a page or nested layout
@@ -99,7 +87,8 @@ export default function DashboardLayout({
               className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
             />
           </div>
-          <DropdownMenu>
+          <UserNav />
+          {/* <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
@@ -123,7 +112,7 @@ export default function DashboardLayout({
               <DropdownMenuSeparator />
               <DropdownMenuItem>Logout</DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu> */}
         </header>
         {children}
       </div>

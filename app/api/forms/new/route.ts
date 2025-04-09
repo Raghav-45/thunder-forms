@@ -1,9 +1,19 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { createClient } from '@/utils/supabase/server'
 
 const prisma = new PrismaClient()
 
 export async function POST(request: Request) {
+  const supabase = await createClient()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  if (!session?.user.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     // Parse the request body
     const body = await request.json()
@@ -11,6 +21,7 @@ export async function POST(request: Request) {
     // Create the form in the database
     const form = await prisma.forms.create({
       data: {
+        userId: session.user.id,
         title: body.formName,
         description: body.formDescription || '',
         fields: body.formFields,
@@ -42,7 +53,7 @@ export async function POST(request: Request) {
         status: 500,
       }
     )
-  // } finally {
-  //   await prisma.$disconnect()
+    // } finally {
+    //   await prisma.$disconnect()
   }
 }

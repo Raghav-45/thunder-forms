@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { createClient } from '@/utils/supabase/server'
 
 const prisma = new PrismaClient()
 
@@ -7,6 +8,15 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const supabase = await createClient()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  if (!session?.user.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const id = (await params).id
     const body = await request.json()
@@ -20,6 +30,10 @@ export async function POST(
       return NextResponse.json({ error: 'Form not found' }, { status: 404 })
     }
 
+    if (existingForm.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    }
+
     // Update the form with the new data
     const updatedForm = await prisma.forms.update({
       where: { id },
@@ -30,6 +44,7 @@ export async function POST(
         maxSubmissions: body.maxSubmissions,
         expiresAt: body.expiresAt,
         redirectUrl: body.redirectUrl,
+        // Add any other things you want to update here.
       },
     })
 

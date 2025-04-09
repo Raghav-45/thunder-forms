@@ -1,13 +1,24 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { createClient } from '@/utils/supabase/server'
 
 const prisma = new PrismaClient()
 
 export async function GET() {
+  const supabase = await createClient()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  if (!session?.user.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const forms = await prisma.forms.findMany({
     orderBy: {
-      createdAt: 'desc', // Get newest first
+      createdAt: 'desc',
     },
+    where: { userId: { equals: session.user.id } },
     select: {
       id: true,
       title: true,
@@ -15,10 +26,9 @@ export async function GET() {
       createdAt: true,
       _count: {
         select: {
-          responses: true, // Only select the count of responses
+          responses: true,
         },
       },
-      // Don't include `fields` or any other unnecessary relations/fields
     },
   })
   return NextResponse.json(forms)

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { createClient } from '@/utils/supabase/server'
 
 const prisma = new PrismaClient()
 
@@ -7,6 +8,15 @@ export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
+  const supabase = await createClient()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  if (!session?.user.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const id = params.id
 
@@ -24,6 +34,10 @@ export async function GET(
 
     if (!formWithResponses) {
       return NextResponse.json({ error: 'Form not found' }, { status: 404 })
+    }
+
+    if (formWithResponses.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
     return NextResponse.json({

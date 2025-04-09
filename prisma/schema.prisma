@@ -8,33 +8,40 @@ datasource db {
 }
 
 model forms {
-  id          String     @id @default(cuid())
-  title       String // Title of the form
-  description String // Form description
-  fields      Json // Form fields stored as JSON
-  createdAt   DateTime   @default(now())
-  // updatedAt   DateTime @updatedAt
-  responses   response[] // List of responses linked to this form
-  maxSubmissions Int? // Maximum number of submissions allowed (optional)
-  expiresAt      DateTime? // Expiration time and date (optional)
-  redirectUrl    String? // URL to redirect users after submission (optional)
+  id             String     @id @default(cuid())
+  title          String
+  description    String
+  fields         Json
+  createdAt      DateTime   @default(now())
+  maxSubmissions Int?
+  expiresAt      DateTime?
+  redirectUrl    String?
+  userId         String     @db.Uuid
+  profiles       profiles   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  responses      response[]
 }
 
 model response {
   id        String   @id @default(cuid())
-  data      Json // Submitted form responses as JSON
-  createdAt DateTime @default(now()) // Timestamp of submission
-  forms     forms?   @relation(fields: [formsId], references: [id])
-  formsId   String?
+  data      Json
+  createdAt DateTime @default(now())
+  formsId   String
+  forms     forms    @relation(fields: [formsId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model templates {
-  id           String   @id @default(cuid()) // Unique identifier for the template
-  slug         String   @unique // Slug for the template
-  title        String   // Display title for the template
-  description  String   // Short description of the template
-  fields       Json     // Form fields included in the template
-  createdBy    String   // Creator's name
-  createdAt    DateTime @default(now()) // Timestamp
-  thumbnailUrl String   // URL to an image preview of the template
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  description  String
+  fields       Json
+  createdBy    String
+  createdAt    DateTime @default(now())
+  thumbnailUrl String
+}
+
+model profiles {
+  id    String  @id @db.Uuid
+  email String? @db.VarChar(256)
+  forms forms[]
 }

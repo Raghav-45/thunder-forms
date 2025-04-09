@@ -42,8 +42,8 @@ export default function Forms() {
   const [isLoading, setIsLoading] = useState(!userForms)
 
   const [deleteFormId, setDeleteFormId] = useState<string | null>(null)
-  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
-    useState<boolean>(false)
+  // const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
+  //   useState<boolean>(false)
 
   useEffect(() => {
     const fetchFormsData = async () => {
@@ -67,23 +67,6 @@ export default function Forms() {
 
     fetchFormsData()
   }, [isLoading, setUserForms])
-
-  const handleDeleteForm = async () => {
-    if (!deleteFormId || !userForms) {
-      return
-    }
-
-    // try {
-    //   const response = await fetch(`/api/forms/${deleteFormId}/delete`, {
-    //     method: 'DELETE',
-    //   })
-    //   if (!response.ok) throw new Error('Failed to delete form')
-    //   const id = deleteFormId
-    //   setUserForms(userForms.filter((form) => form.id !== id))
-    // } catch (error) {
-    //   console.error('Error deleting form:', error)
-    // }
-  }
 
   return (
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
@@ -178,7 +161,6 @@ export default function Forms() {
                               className="size-8"
                               onClick={() => {
                                 setDeleteFormId(form.id)
-                                setIsDeleteConfirmationOpen(true)
                               }}
                             >
                               <LuTrash2 />
@@ -192,39 +174,10 @@ export default function Forms() {
                         </TableCell>
                       </TableRow>
                     ))}
-
-                    <Dialog
-                      open={isDeleteConfirmationOpen}
-                      onOpenChange={setIsDeleteConfirmationOpen}
-                    >
-                      <DialogContent isClosable={false}>
-                        <DialogHeader>
-                          <DialogTitle>Are you absolutely sure?</DialogTitle>
-                          <DialogDescription>
-                            This action cannot be undone. This will permanently
-                            delete your form and remove your data from our
-                            servers.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                          <DialogClose asChild>
-                            <Button type="button" variant="outline">
-                              Close
-                            </Button>
-                          </DialogClose>
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            onClick={() => {
-                              handleDeleteForm()
-                              setIsDeleteConfirmationOpen(false)
-                            }}
-                          >
-                            Continue
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                    <DeleteFormDialog
+                      deleteFormId={deleteFormId}
+                      setDeleteFormId={setDeleteFormId}
+                    />
                   </TableBody>
                 </Table>
               ) : (
@@ -268,5 +221,65 @@ function NoDataComponent() {
         </p>
       </div>
     </div>
+  )
+}
+
+const DeleteFormDialog = ({
+  deleteFormId,
+  setDeleteFormId,
+}: {
+  deleteFormId: string | null
+  setDeleteFormId: (id: string | null) => void
+}) => {
+  const { userForms, setUserForms } = useGenerationStore()
+  const handleDeleteForm = async () => {
+    if (!deleteFormId || !userForms) {
+      return
+    }
+    try {
+      const response = await fetch(`/api/forms/${deleteFormId}/delete`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) throw new Error('Failed to delete form')
+      const id = deleteFormId
+      setUserForms(userForms.filter((form) => form.id !== id))
+    } catch (error) {
+      console.error('Error deleting form:', error)
+    } finally {
+      setDeleteFormId(null)
+    }
+  }
+
+  return (
+    <Dialog
+      open={deleteFormId !== null}
+      onOpenChange={(open) => !open && setDeleteFormId(null)}
+    >
+      <DialogContent isClosable={false}>
+        <DialogHeader>
+          <DialogTitle>Are you absolutely sure?</DialogTitle>
+          <DialogDescription>
+            This action cannot be undone. This will permanently delete your form
+            and data from our servers.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button type="button" variant="outline">
+              Close
+            </Button>
+          </DialogClose>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              handleDeleteForm()
+            }}
+          >
+            Confirm Deletion
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
