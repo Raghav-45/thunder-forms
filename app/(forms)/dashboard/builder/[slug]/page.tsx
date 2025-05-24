@@ -75,11 +75,9 @@ export default function FormBuilder({ params }: FormBuilderProps) {
 
   const [formName, setFormName] = useState<string>(
     isNewForm ? DEFAULT_FORM_NAME : ''
-    // ''
   )
   const [formDescription, setFormDescription] = useState<string>(
     isNewForm ? DEFAULT_FORM_DESCRIPTION : ''
-    // ''
   )
 
   const template = useQuery({
