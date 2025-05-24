@@ -4,6 +4,7 @@ import './globals.css'
 import { cn } from '@/lib/utils'
 import { Toaster } from 'sonner'
 import { Analytics } from '@vercel/analytics/next'
+import Providers from '@/components/Providers'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -38,8 +39,10 @@ export default function RootLayout({
         )}
       >
         <div className="relative flex min-h-screen flex-col bg-background">
-          {children}
-          <Toaster />
+          <Providers>
+            {children}
+            <Toaster />
+          </Providers>
         </div>
       </body>
     </html>

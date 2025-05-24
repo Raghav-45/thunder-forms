@@ -39,6 +39,7 @@ model response {
   formsId String
 }
 
+// TODO: Later, we can make this Template Model to be same as the form model and add a field to indicate if it is a template or not
 model templates {
   id           String   @id @default(cuid())
   slug         String   @unique
@@ -49,3 +50,17 @@ model templates {
   createdAt    DateTime @default(now())
   thumbnailUrl String
 }
+
+// model templates {
+//   id           String   @id @default(cuid())
+//   slug         String   @unique
+//   title        String
+//   description  String
+//   createdBy    String
+//   createdAt    DateTime @default(now())
+//   thumbnailUrl String
+
+//   // This allows you to easily create a template from an existing form.
+//   form   forms? @relation(fields: [formId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+//   formId String? // Foreign key to the forms model
+// }
