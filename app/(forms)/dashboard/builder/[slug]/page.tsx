@@ -69,9 +69,9 @@ export default function FormBuilder({ params }: FormBuilderProps) {
   const { slug: currentFormId } = params
   const templateUniqueName = searchParams.get('template')
 
-  const isExistingForm = currentFormId && currentFormId !== 'new-form'
-  const isNewForm = !isExistingForm && currentFormId === 'new-form'
-  const isGoingToUseTemplate = isNewForm && templateUniqueName
+  const isExistingForm = currentFormId && currentFormId !== 'new-form' // Means Form Id is provided
+  const isNewForm = !isExistingForm && currentFormId === 'new-form' // Means we are creating a new form
+  const isGoingToUseTemplate = isNewForm && templateUniqueName // Means we are creating a new form with a template
 
   const [formName, setFormName] = useState<string>(
     isNewForm ? DEFAULT_FORM_NAME : ''
@@ -92,7 +92,7 @@ export default function FormBuilder({ params }: FormBuilderProps) {
     retryOnMount: false,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    enabled: !!isGoingToUseTemplate, // Only fetch when both conditions are met
+    enabled: !!isGoingToUseTemplate, // Only fetch when condition met
   })
 
   const form = useQuery({
@@ -137,12 +137,12 @@ export default function FormBuilder({ params }: FormBuilderProps) {
         return
       }
       if (form.isSuccess && form.data) {
-        setFormFields(form.data.fields)
         setFormName(form.data.title)
         setFormDescription(form.data.description)
-        setMaxSubmissions(form.data.maxSubmissions)
         setExpiresAt(form.data.expiresAt ? new Date(form.data.expiresAt) : null)
+        setMaxSubmissions(form.data.maxSubmissions)
         setRedirectUrl(form.data.redirectUrl)
+        setFormFields(form.data.fields as unknown as FormFieldOrGroup[])
       }
     }
   }, [isExistingForm, currentFormId, form.isSuccess, form.isError, form.data])
