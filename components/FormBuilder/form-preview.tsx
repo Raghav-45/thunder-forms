@@ -225,36 +225,30 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
                       onReorder={onReorder!}
                       className="space-y-4"
                     >
-                      {formFields.map(
-                        (fieldOrGroup) =>
-                          !Array.isArray(fieldOrGroup) && (
-                            <DraggableElement
-                              key={fieldOrGroup.name}
-                              field={fieldOrGroup}
-                              form={form}
-                              onClickEdit={onClickEdit!}
-                              onClickRemove={onClickRemove!}
-                              selectedField={selectedField!}
-                              behaveAsPreview={behaveAsPreview}
-                            />
-                          )
-                      )}
+                      {formFields.map((eachField) => (
+                        <DraggableElement
+                          key={eachField.name}
+                          field={eachField}
+                          form={form}
+                          onClickEdit={onClickEdit!}
+                          onClickRemove={onClickRemove!}
+                          selectedField={selectedField!}
+                          behaveAsPreview={behaveAsPreview}
+                        />
+                      ))}
                     </Reorder.Group>
                   ) : (
-                    formFields.map(
-                      (fieldOrGroup) =>
-                        !Array.isArray(fieldOrGroup) && (
-                          <DraggableElement
-                            key={fieldOrGroup.name}
-                            field={fieldOrGroup}
-                            form={form}
-                            onClickEdit={onClickEdit!}
-                            onClickRemove={onClickRemove!}
-                            selectedField={selectedField!}
-                            behaveAsPreview={behaveAsPreview}
-                          />
-                        )
-                    )
+                    formFields.map((eachField) => (
+                      <DraggableElement
+                        key={eachField.name}
+                        field={eachField}
+                        form={form}
+                        onClickEdit={onClickEdit!}
+                        onClickRemove={onClickRemove!}
+                        selectedField={selectedField!}
+                        behaveAsPreview={behaveAsPreview}
+                      />
+                    ))
                   )}
                 </motion.div>
 
