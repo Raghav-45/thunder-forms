@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import {
   generateZodSchema,
   generateDefaultValues,
-} from '@/components/generate-code-parts'
+} from '@/components/FormBuilder/generate-code-parts'
 import { LuPencil, LuTrash2 } from 'react-icons/lu'
 import { cn } from '@/lib/utils'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
