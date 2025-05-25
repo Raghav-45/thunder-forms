@@ -10,10 +10,7 @@ import { siteConfig } from '@/config/site'
 import { defaultFieldConfig } from '@/constants'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
-import {
-  FormType,
-  TemplateType,
-} from '@/types/types'
+import { FormType, TemplateType } from '@/types/types'
 import { Loader2Icon, PlusIcon, SaveIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -56,7 +53,9 @@ export default function FormBuilder({ params }: FormBuilderProps) {
   // const [isFormSaving, setIsFormSaving] = useState(false)
 
   const [formFields, setFormFields] = useState<FormFieldPayload[]>([])
-  const [selectedField, setSelectedField] = useState<FormFieldPayload | null>(null)
+  const [selectedField, setSelectedField] = useState<FormFieldPayload | null>(
+    null
+  )
   const [isEditingWindowOpen, setIsEditingWindowOpen] = useState(false)
   const [isElementAddingWindowOpen, setIsElementAddingWindowOpen] =
     useState(false)
@@ -257,7 +256,10 @@ export default function FormBuilder({ params }: FormBuilderProps) {
     }
   }
 
-  const updateFormField = (path: number[], updates: Partial<FormFieldPayload>) => {
+  const updateFormField = (
+    path: number[],
+    updates: Partial<FormFieldPayload>
+  ) => {
     const updatedFields = JSON.parse(JSON.stringify(formFields)) // Deep clone
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let current: any = updatedFields

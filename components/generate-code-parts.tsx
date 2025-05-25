@@ -72,18 +72,18 @@ export const generateZodSchema = (
         fieldSchema = z.string()
     }
 
-    // if (field.min !== undefined && 'min' in fieldSchema) {
-    //   fieldSchema = (fieldSchema as any).min(
-    //     field.min,
-    //     `Must be at least ${field.min}`
-    //   )
-    // }
-    // if (field.max !== undefined && 'max' in fieldSchema) {
-    //   fieldSchema = (fieldSchema as any).max(
-    //     field.max,
-    //     `Must be at most ${field.max}`
-    //   )
-    // }
+    if (field.min !== undefined && 'min' in fieldSchema) {
+      fieldSchema = (fieldSchema as any).min(
+        field.min,
+        `Must be at least ${field.min}`
+      )
+    }
+    if (field.max !== undefined && 'max' in fieldSchema) {
+      fieldSchema = (fieldSchema as any).max(
+        field.max,
+        `Must be at most ${field.max}`
+      )
+    }
 
     if (field.required !== true) {
       fieldSchema = fieldSchema.optional()
