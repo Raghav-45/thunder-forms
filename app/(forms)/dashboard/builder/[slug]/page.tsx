@@ -1,8 +1,8 @@
 'use client'
 
 import { CopyButton } from '@/components/copy-button'
-import { EditFieldForm } from '@/components/edit-field-form'
-import { FieldSelector } from '@/components/field-selector'
+import { EditFieldForm } from '@/components/FormBuilder/edit-field-form'
+import { FieldSelector } from '@/components/FormBuilder/field-selector'
 import { FormPreview } from '@/components/FormBuilder/form-preview'
 import GenerateWithAiPrompt from '@/components/generate-with-ai'
 // import { useGenerationStore } from '@/components/GenerationStore'
