@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z, ZodTypeAny } from 'zod'
-import { FormFieldType } from '@/types/types'
+// import { FormFieldType } from '@/types/types'
+import { FormFieldPayload } from '@/lib/validators/form'
 
-type FormFieldOrGroup = FormFieldType | FormFieldType[]
+// type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
 export const generateZodSchema = (
-  formFields: FormFieldOrGroup[]
+  formFields: FormFieldPayload[]
 ): z.ZodObject<any> => {
   const schemaObject: Record<string, z.ZodTypeAny> = {}
 
-  const processField = (field: FormFieldType): void => {
+  const processField = (field: FormFieldPayload): void => {
     if (field.variant === 'Label') return
 
     let fieldSchema: z.ZodTypeAny
@@ -74,18 +75,18 @@ export const generateZodSchema = (
         fieldSchema = z.string()
     }
 
-    if (field.min !== undefined && 'min' in fieldSchema) {
-      fieldSchema = (fieldSchema as any).min(
-        field.min,
-        `Must be at least ${field.min}`
-      )
-    }
-    if (field.max !== undefined && 'max' in fieldSchema) {
-      fieldSchema = (fieldSchema as any).max(
-        field.max,
-        `Must be at most ${field.max}`
-      )
-    }
+    // if (field.min !== undefined && 'min' in fieldSchema) {
+    //   fieldSchema = (fieldSchema as any).min(
+    //     field.min,
+    //     `Must be at least ${field.min}`
+    //   )
+    // }
+    // if (field.max !== undefined && 'max' in fieldSchema) {
+    //   fieldSchema = (fieldSchema as any).max(
+    //     field.max,
+    //     `Must be at most ${field.max}`
+    //   )
+    // }
 
     if (field.required !== true) {
       fieldSchema = fieldSchema.optional()
@@ -100,7 +101,7 @@ export const generateZodSchema = (
 
 // New function to generate defaultValues
 export const generateDefaultValues = (
-  fields: FormFieldOrGroup[],
+  fields: FormFieldPayload[],
   existingDefaultValues: Record<string, any> = {}
 ): Record<string, any> => {
   const defaultValues: Record<string, any> = { ...existingDefaultValues }

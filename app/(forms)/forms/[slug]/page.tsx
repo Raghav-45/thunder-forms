@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { FormFieldOrGroup } from '@/types/types'
+// import { FormFieldOrGroup } from '@/types/types'
 import { FormPreview } from '@/components/form-preview'
 import SkeletonPage from '../skeleton/page'
 import FormSubmissionPage from '@/components/FormSubmittedPage'
+import { FormFieldPayload } from '@/lib/validators/form'
 
 interface PageProps {
   params: {
@@ -20,7 +21,7 @@ export default function Page({ params }: PageProps) {
   // BASIC FORM DETAILS
 
   const [formRedirectUrl, setFormRedirectUrl] = useState<null | string>(null)
-  const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
+  const [formFields, setFormFields] = useState<FormFieldPayload[]>([])
 
   const [loading, setLoading] = useState(true)
   const [isFormSubmitted, setIsFormSubmitted] = useState(false)

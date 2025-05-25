@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-import { FormFieldType } from '@/types/types'
+// import { FormFieldType } from '@/types/types'
 import { cn } from '@/lib/utils'
 
 import {
@@ -62,6 +62,7 @@ import { Textarea } from '@/components/ui/textarea'
 //   Paperclip,
 // } from 'lucide-react'
 import { UseFormReturn } from 'react-hook-form'
+import { FormFieldPayload } from '@/lib/validators/form'
 // import { TagsInput } from '@/components/ui/tags-input'
 // import {
 //   MultiSelector,
@@ -118,8 +119,8 @@ import { UseFormReturn } from 'react-hook-form'
 // }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const RenderFormField = (field: FormFieldType, form: UseFormReturn) => {
-  const [checked, setChecked] = useState<boolean>(field.checked)
+export const RenderFormField = (field: FormFieldPayload, form: UseFormReturn) => {
+  const [checked, setChecked] = useState<boolean>(field.checked || false)
   // const [value, setValue] = useState<typeof field.value>(field.value)
   // const [selectedValues, setSelectedValues] = useState<string[]>(['React'])
   // const [tagsValue, setTagsValue] = useState<string[]>([])
@@ -143,7 +144,7 @@ export const RenderFormField = (field: FormFieldType, form: UseFormReturn) => {
         <FormItem
           className={cn(
             'flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4',
-            field.className
+            // field.className
           )}
         >
           <FormControl>

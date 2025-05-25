@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { RenderFormField } from '@/components/render-form-field'
 import { Form, FormField, FormItem, FormControl } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
-import { FormFieldType } from '@/types/types'
+// import { FormFieldType } from '@/types/types'
 
 import {
   generateZodSchema,
@@ -16,15 +16,16 @@ import {
 import { LuPencil, LuTrash2 } from 'react-icons/lu'
 import { cn } from '@/lib/utils'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
+import { FormFieldPayload } from '@/lib/validators/form'
 
-export type FormFieldOrGroup = FormFieldType | FormFieldType[]
+// export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
 export type FormPreviewProps = {
-  formFields: FormFieldOrGroup[]
-  onClickEdit?: (fields: FormFieldType) => void
-  onClickRemove?: (fields: FormFieldType) => void
-  onReorder?: (reorderedElements: FormFieldOrGroup[]) => void
-  selectedField?: FormFieldType | null
+  formFields: FormFieldPayload[]
+  onClickEdit?: (fields: FormFieldPayload) => void
+  onClickRemove?: (fields: FormFieldPayload) => void
+  onReorder?: (reorderedElements: FormFieldPayload[]) => void
+  selectedField?: FormFieldPayload | null
   behaveAsPreview: boolean
   formId?: string
   afterSubmitted?: () => void
@@ -38,11 +39,11 @@ const DraggableElement = ({
   selectedField,
   behaveAsPreview = false,
 }: {
-  field: FormFieldType
+  field: FormFieldPayload
   form: UseFormReturn
-  onClickEdit: (field: FormFieldType) => void
-  onClickRemove: (field: FormFieldType) => void
-  selectedField: FormFieldType | null
+  onClickEdit: (field: FormFieldPayload) => void
+  onClickRemove: (field: FormFieldPayload) => void
+  selectedField: FormFieldPayload | null
   behaveAsPreview: boolean
 }) => {
   const [isDragging, setIsDragging] = useState(false)

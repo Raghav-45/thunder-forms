@@ -8,17 +8,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { FormFieldOrGroup, FormFieldType, TemplateType } from '@/types/types'
+import { TemplateType } from '@/types/types'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/Icons'
 import { Textarea } from '@/components/ui/textarea'
+import { FormFieldPayload } from '@/lib/validators/form'
 
 interface GenerateWithAiPromptProps {
   onGeneratedFields: (
     title: string,
     description: string,
-    fields: FormFieldOrGroup[]
+    fields: FormFieldPayload[]
   ) => void
 }
 
@@ -48,10 +49,10 @@ const GenerateWithAiPrompt: FC<GenerateWithAiPromptProps> = ({
             'title' | 'description' | 'fields'
           > = JSON.parse(parsedFormFields)
 
-          const generatedFormFields: FormFieldOrGroup[] = []
+          const generatedFormFields: FormFieldPayload[] = []
           generatedFormResponse.fields.map((field) => {
             const newFieldName = `name_${Math.random().toString().slice(-10)}` // Generate a unique field name using a random number
-            const newField: FormFieldType = {
+            const newField: FormFieldPayload = {
               checked: true, // Field is initially checked
               label: field.label || '', // Use label from config or fallback to generated field name
               description: field.description || '', // Use default or fallback to an empty string
@@ -64,9 +65,9 @@ const GenerateWithAiPrompt: FC<GenerateWithAiPromptProps> = ({
               value: '', // Default value (empty)
               variant: field.variant, // Field type/variant (e.g., text, checkbox, etc.)
               order: generatedFormFields.length,
-              onChange: () => {}, // Placeholder for the onChange handler
-              onSelect: () => {}, // Placeholder for the onSelect handler
-              setValue: () => {}, // Placeholder for the setValue handler
+              // onChange: () => {}, // Placeholder for the onChange handler
+              // onSelect: () => {}, // Placeholder for the onSelect handler
+              // setValue: () => {}, // Placeholder for the setValue handler
             }
             generatedFormFields.push(newField)
           })

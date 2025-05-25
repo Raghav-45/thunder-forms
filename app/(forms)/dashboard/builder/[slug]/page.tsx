@@ -5,19 +5,19 @@ import { EditFieldForm } from '@/components/edit-field-form'
 import { FieldSelector } from '@/components/field-selector'
 import { FormPreview } from '@/components/form-preview'
 import GenerateWithAiPrompt from '@/components/generate-with-ai'
-import { useGenerationStore } from '@/components/GenerationStore'
+// import { useGenerationStore } from '@/components/GenerationStore'
 import { siteConfig } from '@/config/site'
 import { defaultFieldConfig } from '@/constants'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
 import {
-  FormFieldType,
-  FormFieldOrGroup,
+  // FormFieldType,
+  // FormFieldOrGroup,
   FormType,
   TemplateType,
 } from '@/types/types'
 import { Loader2Icon, PlusIcon, SaveIcon } from 'lucide-react'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { DatePickerWithPresets } from '@/components/date-picker-with-presets'
@@ -31,9 +31,8 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { CreateFormPayload } from '@/lib/validators/form'
+import { CreateFormPayload, FormFieldPayload } from '@/lib/validators/form'
 import axios from 'axios'
-import { is } from 'date-fns/locale'
 
 const DEFAULT_FORM_NAME = 'New form'
 const DEFAULT_FORM_DESCRIPTION = 'Lorem ipsum dolor sit amet'
@@ -58,8 +57,8 @@ export default function FormBuilder({ params }: FormBuilderProps) {
 
   // const [isFormSaving, setIsFormSaving] = useState(false)
 
-  const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
-  const [selectedField, setSelectedField] = useState<FormFieldType | null>(null)
+  const [formFields, setFormFields] = useState<FormFieldPayload[]>([])
+  const [selectedField, setSelectedField] = useState<FormFieldPayload | null>(null)
   const [isEditingWindowOpen, setIsEditingWindowOpen] = useState(false)
   const [isElementAddingWindowOpen, setIsElementAddingWindowOpen] =
     useState(false)
@@ -142,19 +141,19 @@ export default function FormBuilder({ params }: FormBuilderProps) {
         setExpiresAt(form.data.expiresAt ? new Date(form.data.expiresAt) : null)
         setMaxSubmissions(form.data.maxSubmissions)
         setRedirectUrl(form.data.redirectUrl)
-        setFormFields(form.data.fields as unknown as FormFieldOrGroup[])
+        setFormFields(form.data.fields as unknown as FormFieldPayload[])
       }
     }
   }, [isExistingForm, currentFormId, form.isSuccess, form.isError, form.data])
 
   const generateFormWithTemplate = (template: TemplateType) => {
-    const templateFormFields: FormFieldOrGroup[] = []
+    const templateFormFields: FormFieldPayload[] = []
 
     template.fields.map((field) => {
       // Generate a unique field name using a random number
       const newFieldName = `name_${Math.random().toString().slice(-10)}`
 
-      const newField: FormFieldType = {
+      const newField: FormFieldPayload = {
         checked: true, // Field is initially checked
         label: field.label || '', // Use label from config or fallback to generated field name
         description: field.description || '', // Use default or fallback to an empty string
@@ -167,9 +166,9 @@ export default function FormBuilder({ params }: FormBuilderProps) {
         value: '', // Default value (empty)
         variant: field.variant, // Field variant (e.g., text, checkbox, etc.)
         order: formFields.length,
-        onChange: () => {}, // Placeholder for the onChange handler
-        onSelect: () => {}, // Placeholder for the onSelect handler
-        setValue: () => {}, // Placeholder for the setValue handler
+        // onChange: () => {}, // Placeholder for the onChange handler
+        // onSelect: () => {}, // Placeholder for the onSelect handler
+        // setValue: () => {}, // Placeholder for the setValue handler
       }
       // Appending the new field
 
@@ -189,7 +188,7 @@ export default function FormBuilder({ params }: FormBuilderProps) {
       placeholder: '',
     }
 
-    const newField: FormFieldType = {
+    const newField: FormFieldPayload = {
       checked: true, // Field is initially checked
       label: label, // Use label from config or fallback to generated field name
       description: description, // Use default or fallback to an empty string
@@ -202,9 +201,9 @@ export default function FormBuilder({ params }: FormBuilderProps) {
       value: '', // Default value (empty)
       variant, // Field variant (e.g., text, checkbox, etc.)
       order: formFields.length,
-      onChange: () => {}, // Placeholder for the onChange handler
-      onSelect: () => {}, // Placeholder for the onSelect handler
-      setValue: () => {}, // Placeholder for the setValue handler
+      // onChange: () => {}, // Placeholder for the onChange handler
+      // onSelect: () => {}, // Placeholder for the onSelect handler
+      // setValue: () => {}, // Placeholder for the setValue handler
     }
     // Appending the new field to the existing formFields
     setFormFields([...formFields, newField])
@@ -220,7 +219,7 @@ export default function FormBuilder({ params }: FormBuilderProps) {
     addFormField(variant)
   }
 
-  const handleReorder = (reorderedElements: FormFieldOrGroup[]) => {
+  const handleReorder = (reorderedElements: FormFieldPayload[]) => {
     setFormFields(
       reorderedElements.map((element, index) => ({
         ...element,
@@ -230,11 +229,11 @@ export default function FormBuilder({ params }: FormBuilderProps) {
   }
 
   const findFieldPath = (
-    fields: FormFieldOrGroup[],
+    fields: FormFieldPayload[],
     name: string
   ): number[] | null => {
     const search = (
-      currentFields: FormFieldOrGroup[],
+      currentFields: FormFieldPayload[],
       currentPath: number[]
     ): number[] | null => {
       for (let i = 0; i < currentFields.length; i++) {
@@ -251,7 +250,7 @@ export default function FormBuilder({ params }: FormBuilderProps) {
     return search(fields, [])
   }
 
-  const handleSaveField = (updatedField: FormFieldType) => {
+  const handleSaveField = (updatedField: FormFieldPayload) => {
     if (selectedField) {
       const path = findFieldPath(formFields, selectedField.name)
       if (path) {
@@ -260,7 +259,7 @@ export default function FormBuilder({ params }: FormBuilderProps) {
     }
   }
 
-  const updateFormField = (path: number[], updates: Partial<FormFieldType>) => {
+  const updateFormField = (path: number[], updates: Partial<FormFieldPayload>) => {
     const updatedFields = JSON.parse(JSON.stringify(formFields)) // Deep clone
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let current: any = updatedFields
@@ -274,7 +273,7 @@ export default function FormBuilder({ params }: FormBuilderProps) {
     setFormFields(updatedFields)
   }
 
-  const removeFormField = (fieldToRemove: FormFieldType) => {
+  const removeFormField = (fieldToRemove: FormFieldPayload) => {
     setFormFields((prevFields) =>
       prevFields.filter((field) => {
         if (Array.isArray(field)) {
@@ -286,7 +285,7 @@ export default function FormBuilder({ params }: FormBuilderProps) {
     )
   }
 
-  const openEditingWindow = (field: FormFieldType) => {
+  const openEditingWindow = (field: FormFieldPayload) => {
     setSelectedField(field)
     setIsEditingWindowOpen(true)
   }
@@ -474,7 +473,7 @@ export default function FormBuilder({ params }: FormBuilderProps) {
             onGeneratedFields={(title, description, fields) => {
               setFormName(title)
               setFormDescription(description)
-              setFormFields(fields)
+              setFormFields(fields as unknown as FormFieldPayload[])
             }}
           />
         </CardContent>

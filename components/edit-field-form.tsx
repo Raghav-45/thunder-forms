@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { FormFieldType } from '@/types/types'
+// import { FormFieldPayload } from '@/types/types'
 import {
   Select,
   SelectTrigger,
@@ -30,13 +30,14 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import AccordionWithSwitch from '@/components/accordion-with-switch'
+import { FormFieldPayload } from '@/lib/validators/form'
 
 type EditFieldFormProps = {
   isOpen: boolean
   onClose: () => void
-  field: FormFieldType | null
-  onEditingField: (editedField: FormFieldType | null) => void
-  // onSave: (updatedField: FormFieldType) => void
+  field: FormFieldPayload | null
+  onEditingField: (editedField: FormFieldPayload | null) => void
+  // onSave: (updatedField: FormFieldPayload) => void
 }
 
 export const EditFieldForm: React.FC<EditFieldFormProps> = ({
@@ -46,7 +47,7 @@ export const EditFieldForm: React.FC<EditFieldFormProps> = ({
   onEditingField,
   // onSave,
 }) => {
-  const [editedField, setEditedField] = useState<FormFieldType | null>(null)
+  const [editedField, setEditedField] = useState<FormFieldPayload | null>(null)
 
   useEffect(() => {
     setEditedField(field)
