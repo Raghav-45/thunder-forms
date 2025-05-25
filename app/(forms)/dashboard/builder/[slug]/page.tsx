@@ -7,7 +7,7 @@ import { FormPreview } from '@/components/form-preview'
 import GenerateWithAiPrompt from '@/components/generate-with-ai'
 // import { useGenerationStore } from '@/components/GenerationStore'
 import { siteConfig } from '@/config/site'
-import { defaultFieldConfig } from '@/constants'
+import { getDefaultFieldConfig } from '@/constants'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
 import { FormType, TemplateType } from '@/types/types'
@@ -150,17 +150,20 @@ export default function FormBuilder({ params }: FormBuilderProps) {
       // Generate a unique field name using a random number
       const newFieldName = `name_${Math.random().toString().slice(-10)}`
 
+      const { checked, rowIndex, disabled, required, value, type } =
+        getDefaultFieldConfig(field.variant)
+
       const newField: FormFieldPayload = {
-        checked: true, // Field is initially checked
+        checked: checked, // Field is initially checked
         label: field.label || '', // Use label from config or fallback to generated field name
         description: field.description || '', // Use default or fallback to an empty string
-        required: false, // Field is required by default
-        disabled: false, // Field is enabled by default
+        required: required, // Field is required by default
+        disabled: disabled, // Field is enabled by default
         name: newFieldName, // Unique field name
         placeholder: field.placeholder || '', // Default placeholder if not provided
-        rowIndex: 0, // Index to track field's position
-        type: field.variant == 'Input' ? 'text' : '', // Type of the field (left empty for now)
-        value: '', // Default value (empty)
+        rowIndex: rowIndex, // Index to track field's position
+        type: type, // Type of the field (left empty for now)
+        value: value, // Default value (empty)
         variant: field.variant, // Field variant (e.g., text, checkbox, etc.)
         order: formFields.length,
         // onChange: () => {}, // Placeholder for the onChange handler
@@ -179,25 +182,42 @@ export default function FormBuilder({ params }: FormBuilderProps) {
     const newFieldName = `name_${Math.random().toString().slice(-10)}`
 
     // Retrieve default configuration (label, description, placeholder) for the selected field variant
-    const { label, description, placeholder } = defaultFieldConfig[variant] || {
-      label: '',
-      description: '',
-      placeholder: '',
-    }
+    const {
+      label,
+      description,
+      placeholder,
+      checked,
+      rowIndex,
+      disabled,
+      hour12,
+      locale,
+      max,
+      min,
+      required,
+      step,
+      value,
+      type,
+      // variant: fieldVariant
+    } = getDefaultFieldConfig(variant)
 
     const newField: FormFieldPayload = {
-      checked: true, // Field is initially checked
+      checked: checked, // Field is initially checked or not
       label: label, // Use label from config or fallback to generated field name
       description: description, // Use default or fallback to an empty string
-      required: false, // Field is required by default
-      disabled: false, // Field is enabled by default
+      required: required, // Field is required by default
+      disabled: disabled, // Field is enabled by default
       name: newFieldName, // Unique field name
       placeholder: placeholder, // Default placeholder if not provided
-      rowIndex: 0, // Index to track field's position
-      type: variant == 'Input' ? 'text' : '', // Type of the field (left empty for now)
-      value: '', // Default value (empty)
+      rowIndex: rowIndex, // Index to track field's position
+      type: type, // Type of the field (left empty for now)
+      value: value, // Default value (empty)
       variant, // Field variant (e.g., text, checkbox, etc.)
       order: formFields.length,
+      min: min, // Minimum value if applicable
+      max: max, // Maximum value if applicable
+      step: step, // Step value if applicable
+      locale: locale, // Locale for date/time fields
+      hour12: hour12, // 12-hour format for time fields
       // onChange: () => {}, // Placeholder for the onChange handler
       // onSelect: () => {}, // Placeholder for the onSelect handler
       // setValue: () => {}, // Placeholder for the setValue handler

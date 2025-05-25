@@ -1,4 +1,5 @@
 import { z } from 'zod'
+// import * as Locales from 'date-fns/locale'
 import { fieldTypes } from '@/constants'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -19,14 +20,13 @@ export const FormFieldSchema = z.object({
   placeholder: z.string().optional(),
   rowIndex: z.number(),
   type: z.string(), // Can be 'text', 'email', 'number', etc. or empty string
-  value: z.string(),
+  value: z.string().optional(),
   variant: fieldVariantEnum, // This should match your field variants like 'Input', 'Textarea', etc.
   min: z.number().optional(),
   max: z.number().optional(),
   step: z.number().optional(),
-  locale: z.string().optional(), // Adjust as per the actual type
+  locale: z.string().optional(), // Adjust as per the actual type = keyof typeof Locales
   hour12: z.boolean().optional(),
-  className: z.string().optional(),
   order: z.number(),
   // Functions are not validated in Zod as they're runtime-only
   // onChange, onSelect, setValue are handled at runtime
