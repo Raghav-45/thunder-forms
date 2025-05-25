@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
 import { FormType, TemplateType } from '@/types/types'
 import { Loader2Icon, PlusIcon, SaveIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { DatePickerWithPresets } from '@/components/date-picker-with-presets'
 
@@ -90,7 +90,6 @@ export default function FormBuilder({ params }: FormBuilderProps) {
     refetchOnWindowFocus: false,
     enabled: !!isGoingToUseTemplate, // Only fetch when condition met
   })
-
   const form = useQuery({
     queryKey: ['template', currentFormId],
     queryFn: async () => {
@@ -104,46 +103,7 @@ export default function FormBuilder({ params }: FormBuilderProps) {
     enabled: !!isExistingForm, // Only fetch when condition met
   })
 
-  // Use useEffect to set state when template data is successfully loaded
-  useEffect(() => {
-    if (isGoingToUseTemplate) {
-      if (template.isError) {
-        toast.error('Failed to load Template')
-        return
-      }
-      if (template.isSuccess && template.data) {
-        setFormName(template.data.title)
-        setFormDescription(template.data.description)
-        generateFormWithTemplate(template.data)
-      }
-    }
-  }, [
-    isGoingToUseTemplate,
-    templateUniqueName,
-    template.isSuccess,
-    template.isError,
-    template.data,
-  ])
-
-  // Use useEffect to set state when form data is successfully loaded
-  useEffect(() => {
-    if (isExistingForm) {
-      if (form.isError) {
-        toast.error('Failed to load Form')
-        return
-      }
-      if (form.isSuccess && form.data) {
-        setFormName(form.data.title)
-        setFormDescription(form.data.description)
-        setExpiresAt(form.data.expiresAt ? new Date(form.data.expiresAt) : null)
-        setMaxSubmissions(form.data.maxSubmissions)
-        setRedirectUrl(form.data.redirectUrl)
-        setFormFields(form.data.fields as unknown as FormFieldPayload[])
-      }
-    }
-  }, [isExistingForm, currentFormId, form.isSuccess, form.isError, form.data])
-
-  const generateFormWithTemplate = (template: TemplateType) => {
+  const generateFormWithTemplate = useCallback((template: TemplateType) => {
     const templateFormFields: FormFieldPayload[] = []
 
     template.fields.map((field) => {
@@ -175,7 +135,45 @@ export default function FormBuilder({ params }: FormBuilderProps) {
       templateFormFields.push(newField)
     })
     setFormFields(templateFormFields)
-  }
+  }, [formFields.length])
+
+  // Use useEffect to set state when template data is successfully loaded
+  useEffect(() => {
+    if (isGoingToUseTemplate) {
+      if (template.isError) {
+        toast.error('Failed to load Template')
+        return
+      }
+      if (template.isSuccess && template.data) {
+        setFormName(template.data.title)
+        setFormDescription(template.data.description)
+        generateFormWithTemplate(template.data)
+      }
+    }  }, [
+    isGoingToUseTemplate,
+    templateUniqueName,
+    template.isSuccess,
+    template.isError,
+    template.data,
+    generateFormWithTemplate,
+  ])
+
+  // Use useEffect to set state when form data is successfully loaded
+  useEffect(() => {
+    if (isExistingForm) {
+      if (form.isError) {
+        toast.error('Failed to load Form')
+        return
+      }
+      if (form.isSuccess && form.data) {
+        setFormName(form.data.title)
+        setFormDescription(form.data.description)
+        setExpiresAt(form.data.expiresAt ? new Date(form.data.expiresAt) : null)
+        setMaxSubmissions(form.data.maxSubmissions)
+        setRedirectUrl(form.data.redirectUrl)
+        setFormFields(form.data.fields as unknown as FormFieldPayload[])
+      }
+    }  }, [isExistingForm, currentFormId, form.isSuccess, form.isError, form.data])
 
   const addFormField = (variant: string) => {
     // Generate a unique field name using a random number
@@ -234,6 +232,66 @@ export default function FormBuilder({ params }: FormBuilderProps) {
     e.preventDefault()
     const variant = e.dataTransfer.getData('elementVariant')
     addFormField(variant)
+  }
+
+  const handleDropBetween = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    const variant = e.dataTransfer.getData('elementVariant')
+
+    if (variant) {
+      // Generate a unique field name using a random number
+      const newFieldName = `name_${Math.random().toString().slice(-10)}`
+
+      // Retrieve default configuration for the selected field variant
+      const {
+        label,
+        description,
+        placeholder,
+        checked,
+        rowIndex,
+        disabled,
+        hour12,
+        locale,
+        max,
+        min,
+        required,
+        step,
+        value,
+        type,
+      } = getDefaultFieldConfig(variant)
+
+      const newField: FormFieldPayload = {
+        checked: checked,
+        label: label,
+        description: description,
+        required: required,
+        disabled: disabled,
+        name: newFieldName,
+        placeholder: placeholder,
+        rowIndex: rowIndex,
+        type: type,
+        value: value,
+        variant,
+        order: index,
+        min: min,
+        max: max,
+        step: step,
+        locale: locale,
+        hour12: hour12,
+      }
+
+      // Insert the new field at the specified index
+      const updatedFields = [...formFields]
+      updatedFields.splice(index, 0, newField)
+
+      // Reorder all fields to maintain correct order
+      const reorderedFields = updatedFields.map((field, idx) => ({
+        ...field,
+        order: idx,
+      }))
+
+      setFormFields(reorderedFields)
+    }
   }
 
   const handleReorder = (reorderedElements: FormFieldPayload[]) => {
@@ -497,13 +555,7 @@ export default function FormBuilder({ params }: FormBuilderProps) {
             }}
           />
         </CardContent>
-      </Card>
-
-      <ScrollArea
-        className="flex-1 p-4 md:p-4 pt-6 overflow-auto"
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={handleDrop}
-      >
+      </Card>      <ScrollArea className="flex-1 p-4 md:p-4 pt-6 overflow-auto">
         <div className="flex flex-row justify-between">
           <h2 className="mb-6 font-bold text-3xl">Builder</h2>
 
@@ -512,35 +564,17 @@ export default function FormBuilder({ params }: FormBuilderProps) {
               <CopyButton value={`${siteConfig.url}/forms/${currentFormId}`} />
             )}
           </div>
-        </div>
-        <Card
-          className={cn(
-            'min-h-[600px] border-2 border-dashed !p-0 border-muted',
-            !(formFields.length > 0) && 'content-center'
-          )}
-        >
-          <CardContent className="p-3 md:p-4">
-            {formFields.length > 0 ? (
-              <div>
-                <FormPreview
-                  formFields={formFields}
-                  onClickEdit={openEditingWindow}
-                  onClickRemove={removeFormField}
-                  onReorder={handleReorder}
-                  selectedField={isEditingWindowOpen ? selectedField : null}
-                  behaveAsPreview={false}
-                />
-                {/* <pre className="mt-2 rounded-md bg-slate-600 p-4">
-                  <code className="text-white">{JSON.stringify(formFields, null, 2)}</code>
-                </pre> */}
-              </div>
-            ) : (
-              <div className="flex justify-center items-center h-full text-muted-foreground text-center">
-                <p>Drag elements here to build your form or Generate with AI</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        </div>          <FormPreview
+          formFields={formFields}
+          onClickEdit={openEditingWindow}
+          onClickRemove={removeFormField}
+          onReorder={handleReorder}
+          selectedField={isEditingWindowOpen ? selectedField : null}
+          behaveAsPreview={false}
+          onDrop={handleDrop}
+          onDragOver={(e) => e.preventDefault()}
+          onDropBetween={handleDropBetween}
+        />
       </ScrollArea>
 
       {isDesktop ? (
