@@ -530,6 +530,9 @@ export default function FormBuilder({ params }: FormBuilderProps) {
                   selectedField={isEditingWindowOpen ? selectedField : null}
                   behaveAsPreview={false}
                 />
+                {/* <pre className="mt-2 rounded-md bg-slate-600 p-4">
+                  <code className="text-white">{JSON.stringify(formFields, null, 2)}</code>
+                </pre> */}
               </div>
             ) : (
               <div className="flex justify-center items-center h-full text-muted-foreground text-center">
