@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 
-// import { FormFieldType } from '@/types/types'
 import { cn } from '@/lib/utils'
 
 import {
@@ -118,8 +117,11 @@ import { FormFieldPayload } from '@/lib/validators/form'
 //   )
 // }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const RenderFormField = (field: FormFieldPayload, form: UseFormReturn) => {
+export const RenderFormField = (
+  field: FormFieldPayload,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  form: UseFormReturn
+) => {
   const [checked, setChecked] = useState<boolean>(field.checked || false)
   // const [value, setValue] = useState<typeof field.value>(field.value)
   // const [selectedValues, setSelectedValues] = useState<string[]>(['React'])
@@ -143,7 +145,7 @@ export const RenderFormField = (field: FormFieldPayload, form: UseFormReturn) =>
       return (
         <FormItem
           className={cn(
-            'flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4',
+            'flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4'
             // field.className
           )}
         >

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-// import { FormFieldOrGroup } from '@/types/types'
 import { FormPreview } from '@/components/form-preview'
 import SkeletonPage from '../skeleton/page'
 import FormSubmissionPage from '@/components/FormSubmittedPage'

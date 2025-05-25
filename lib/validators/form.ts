@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { fieldTypes } from '@/constants'
-// import { FormFieldType } from '@/types/types'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const availableFieldNames = fieldTypes

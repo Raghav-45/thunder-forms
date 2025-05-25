@@ -11,8 +11,6 @@ import { defaultFieldConfig } from '@/constants'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
 import {
-  // FormFieldType,
-  // FormFieldOrGroup,
   FormType,
   TemplateType,
 } from '@/types/types'

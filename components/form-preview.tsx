@@ -7,7 +7,6 @@ import { toast } from 'sonner'
 import { RenderFormField } from '@/components/render-form-field'
 import { Form, FormField, FormItem, FormControl } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
-// import { FormFieldType } from '@/types/types'
 
 import {
   generateZodSchema,
@@ -17,8 +16,6 @@ import { LuPencil, LuTrash2 } from 'react-icons/lu'
 import { cn } from '@/lib/utils'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
 import { FormFieldPayload } from '@/lib/validators/form'
-
-// export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
 export type FormPreviewProps = {
   formFields: FormFieldPayload[]

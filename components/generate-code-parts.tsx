@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z, ZodTypeAny } from 'zod'
-// import { FormFieldType } from '@/types/types'
 import { FormFieldPayload } from '@/lib/validators/form'
-
-// type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
 export const generateZodSchema = (
   formFields: FormFieldPayload[]
