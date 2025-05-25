@@ -4,7 +4,7 @@ import { useForm, UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 
-import { RenderFormField } from '@/components/render-form-field'
+import { RenderFormField } from '@/components/FormBuilder/render-form-field'
 import { Form, FormField, FormItem, FormControl } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 
