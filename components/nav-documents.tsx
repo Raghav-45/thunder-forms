@@ -24,6 +24,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
 
 export function NavDocuments({
   items,
@@ -35,6 +37,12 @@ export function NavDocuments({
   }[]
 }) {
   const { isMobile } = useSidebar()
+  const pathname = usePathname()
+
+  const checkIsActive = (link: string) => {
+    const isActive = pathname === link
+    return isActive
+  }
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -43,7 +51,12 @@ export function NavDocuments({
         {items.map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
-              <a href={item.url}>
+              <a
+                href={item.url}
+                className={cn(
+                  checkIsActive(item.url) ? 'bg-sidebar-accent' : ''
+                )}
+              >
                 <item.icon />
                 <span>{item.name}</span>
               </a>
