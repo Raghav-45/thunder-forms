@@ -1,5 +1,9 @@
+import { DataTable } from "@/components/data-table";
+import { tableData } from "@/config/data";
+
 export default function FormsPage() {
   return (
+    <>
     <div className="flex flex-col items-center justify-between gap-y-4 px-4 lg:px-6">
       <div className="flex w-full justify-between items-center">
         <div className="flex flex-col gap-2">
@@ -10,5 +14,7 @@ export default function FormsPage() {
         </div>
       </div>
     </div>
+    <DataTable data={tableData} />
+    </>
   )
 }
