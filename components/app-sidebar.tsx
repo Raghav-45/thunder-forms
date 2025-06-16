@@ -48,8 +48,8 @@ const data = {
   ],
   navSecondary: [
     {
-      name: 'Data Library',
-      url: '#',
+      name: 'Template Library',
+      url: '/dashboard/templates',
       icon: IconDatabase,
     },
     {
