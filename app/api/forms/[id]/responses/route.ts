@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import { createClient } from '@/utils/supabase/server'
+import { PrismaClient } from '@prisma/client'
+import { NextResponse } from 'next/server'
 
 const prisma = new PrismaClient()
 
@@ -8,16 +8,30 @@ export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const supabase = await createClient()
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  if (!session?.user.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   try {
+    // Initialize Supabase client
+    const supabase = await createClient()
+
+    // Get the current session
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession()
+
+    // Handle session retrieval errors
+    if (sessionError) {
+      console.error('Session error:', sessionError)
+      return NextResponse.json(
+        { error: 'Authentication error' },
+        { status: 401 }
+      )
+    }
+
+    // Check if user is authenticated
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const id = params.id
 
     // Fetch form with its responses
@@ -47,9 +61,27 @@ export async function GET(
     })
   } catch (error) {
     console.error('Get form responses error:', error)
+
+    // Handle different types of errors
+    if (error instanceof Error) {
+      // Prisma or other known errors
+      return NextResponse.json(
+        {
+          error: 'Database error occurred',
+          message:
+            process.env.NODE_ENV === 'development' ? error.message : undefined,
+        },
+        { status: 500 }
+      )
+    }
+
+    // Unknown errors
     return NextResponse.json(
-      { error: 'Failed to fetch form responses' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
+  } finally {
+    // No need to disconnect when using shared Prisma instance
+    // The singleton handles connection management
   }
 }
