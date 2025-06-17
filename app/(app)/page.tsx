@@ -5,7 +5,7 @@ import { siteConfig } from '@/config/site'
 
 export default function Home() {
   return (
-    <div className="flex items-center justify-center bg-background">
+    <div className="flex items-center justify-center">
       <section>
         <div className="relative container py-32">
           <header className="mx-auto max-w-3xl text-center">
