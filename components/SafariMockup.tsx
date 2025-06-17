@@ -32,7 +32,7 @@ export const BrowserMockup = ({
         </div>
       </div>
       <div className="flex w-full items-center justify-center">
-        <p className="relative hidden w-full rounded-full bg-black/20 px-4 py-1 text-center text-sm tracking-tight md:block">
+        <p className="relative hidden w-full rounded-full bg-black/30 px-4 py-1 text-center text-sm tracking-tight md:block">
           {url}
           <RotateCw className="absolute top-2 right-3 size-3.5" />
         </p>
