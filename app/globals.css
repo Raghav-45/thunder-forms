@@ -3,6 +3,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@layer components {
+  .container {
+    @apply mx-auto px-8; /* px-8 is 2rem if base font-size is 16px */
+  }
+  @media (min-width: 1536px) {
+    .container {
+      max-width: 1400px;
+    }
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
