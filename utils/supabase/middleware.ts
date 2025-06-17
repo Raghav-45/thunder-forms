@@ -15,7 +15,9 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          )
           supabaseResponse = NextResponse.next({
             request,
           })
@@ -27,6 +29,16 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
+  function checkIsPathRestricted(): boolean {
+    return (
+      request.nextUrl.pathname !== '/' && // Include the root path
+      !user &&
+      !request.nextUrl.pathname.startsWith('/auth') && // Include the auth path
+      request.nextUrl.pathname.startsWith('/dashboard') &&
+      !request.nextUrl.pathname.startsWith('/dashboard/builder/new-form')
+    ) // Include the dashboard path and exclude the new form path
+  }
+
   // Do not run code between createServerClient and
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
@@ -37,14 +49,10 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth')
-  ) {
+  if (checkIsPathRestricted()) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = '/auth'
     return NextResponse.redirect(url)
   }
 
