@@ -30,7 +30,6 @@ export async function GET() {
     }
 
     // Fetch forms for the authenticated user only
-
     const forms = await prisma.forms.findMany({
       orderBy: {
         createdAt: 'desc',
