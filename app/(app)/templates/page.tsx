@@ -1,15 +1,6 @@
-import { FC } from 'react'
 // import { TrendingUpIcon } from 'lucide-react'
 import { Announcement } from '@/components/Announcement'
-import Image from 'next/image'
-import { Badge } from '@/components/ui/badge'
 import { Icons } from '@/components/Icons'
-import { buttonVariants } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
-import Link from 'next/link'
-import { cn } from '@/lib/utils'
-import { TemplateType } from '@/types/types'
-import { siteConfig } from '@/config/site'
 
 // const baseUrl =
 //   process.env.NODE_ENV === 'development'
