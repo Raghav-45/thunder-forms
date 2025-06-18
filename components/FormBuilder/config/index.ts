@@ -1,4 +1,4 @@
-import { FormFieldPayload } from '@/components/FormBuilder/validators/form'
+import { FormFieldPayload } from '@/components/FormBuilder/utils/validators/form'
 import { FieldType } from '@/components/FormBuilder/types/types'
 
 export const fieldTypes = [
