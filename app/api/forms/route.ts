@@ -34,7 +34,7 @@ export async function GET() {
       orderBy: {
         createdAt: 'desc',
       },
-      where: { userId: { equals: session.user.id } },
+      where: { userId: session.user.id },
       select: {
         id: true,
         title: true,
