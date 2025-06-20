@@ -90,7 +90,7 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
           <SheetTitle>Configure Multi Select</SheetTitle>
         </SheetHeader>
         
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 px-4">
           <div className="space-y-2">
             <Label htmlFor="field-label">Field Label *</Label>
             <Input
