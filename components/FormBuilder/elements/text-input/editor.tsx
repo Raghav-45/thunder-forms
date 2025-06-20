@@ -48,7 +48,7 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
           <SheetTitle>Configure Text Input</SheetTitle>
         </SheetHeader>
         
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 px-4">
           <div className="space-y-2">
             <Label htmlFor="field-label">Field Label *</Label>
             <Input
