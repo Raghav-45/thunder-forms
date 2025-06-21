@@ -9,7 +9,7 @@ export default function Home() {
       <section>
         <div className="relative container py-32">
           <header className="mx-auto max-w-3xl text-center">
-            <h1 className="font-anton text-5xl font-semibold tracking-tight text-foreground md:text-7xl">
+            <h1 className="font-anton text-5xl font-normal tracking-tight text-foreground md:text-7xl">
               Thunder Forms <br /> Unleash the Power of Forms
             </h1>
             <p className="my-7 max-w-3xl tracking-tight text-muted-foreground md:text-xl">
