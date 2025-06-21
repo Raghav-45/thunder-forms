@@ -1,4 +1,3 @@
-// components/FormBuilder/elements/index.ts
 import MultiSelect from './multi-select'
 import { MultiSelectEditor } from './multi-select/editor'
 import type { MultiSelectConfig } from './multi-select/types'
