@@ -1,10 +1,10 @@
 // components/FormBuilder/elements/index.ts
-import TextInput from './text-input'
-import { TextInputEditor } from './text-input/editor'
 import MultiSelect from './multi-select'
 import { MultiSelectEditor } from './multi-select/editor'
-import type { TextInputConfig } from './text-input/types'
 import type { MultiSelectConfig } from './multi-select/types'
+import TextInput from './text-input'
+import { TextInputEditor } from './text-input/editor'
+import type { TextInputConfig } from './text-input/types'
 
 // Text Input
 export { default as TextInput } from './text-input'
