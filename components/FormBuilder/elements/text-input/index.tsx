@@ -1,7 +1,7 @@
+import { FieldProps } from '@/components/FormBuilder/types/types'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import React from 'react'
-import { FieldProps } from '@/components/FormBuilder/types/types'
 import { TextInputConfig } from './types'
 
 const TextInput: React.FC<FieldProps<TextInputConfig>> = ({
@@ -53,8 +53,6 @@ const TextInput: React.FC<FieldProps<TextInputConfig>> = ({
         maxLength={field.maxLength}
         pattern={field.pattern}
         autoComplete={field.autoComplete}
-        aria-describedby={error ? `${inputId}-error` : undefined}
-        aria-invalid={!!error}
         className={error ? 'border-red-500 focus:border-red-500' : ''}
       />
 

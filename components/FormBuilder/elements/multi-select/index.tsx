@@ -111,7 +111,6 @@ const MultiSelect: React.FC<FieldProps<MultiSelectConfig>> = ({
                   onClick={() => handleRemove(option.value)}
                   disabled={field.disabled}
                   className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
-                  aria-label={`Remove ${option.label}`}
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -125,8 +124,6 @@ const MultiSelect: React.FC<FieldProps<MultiSelectConfig>> = ({
             <Button
               variant="outline"
               role="combobox"
-              aria-expanded={open}
-              aria-haspopup="listbox"
               className={`w-full justify-between ${
                 error ? 'border-red-500' : ''
               }`}

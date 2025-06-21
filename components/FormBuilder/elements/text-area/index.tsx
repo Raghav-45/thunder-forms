@@ -51,8 +51,6 @@ const TextArea: React.FC<FieldProps<TextAreaConfig>> = ({
         minLength={field.minLength}
         maxLength={field.maxLength}
         autoComplete={field.autoComplete}
-        aria-describedby={error ? `${inputId}-error` : undefined}
-        aria-invalid={!!error}
         className={error ? 'border-red-500 focus:border-red-500' : ''}
       />
 
