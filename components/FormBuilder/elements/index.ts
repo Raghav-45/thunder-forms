@@ -38,7 +38,7 @@ export const FIELD_REGISTRY = {
     editor: TextInputEditor,
     defaultConfig: (): TextInputConfig => ({
       id: `text_${Date.now()}`,
-      type: 'text-input',
+      uniqueIdentifier: 'text-input',
       label: 'Your Name',
       placeholder: 'e.g., John Doe',
       description: 'Provide your name for identification.',
@@ -52,7 +52,7 @@ export const FIELD_REGISTRY = {
     editor: MultiSelectEditor,
     defaultConfig: (): MultiSelectConfig => ({
       id: `multiselect_${Date.now()}`,
-      type: 'multi-select',
+      uniqueIdentifier: 'multi-select',
       label: 'Select your framework',
       placeholder: 'Select multiple options',
       required: false,
@@ -73,6 +73,7 @@ export const FIELD_REGISTRY = {
     editor: TextAreaEditor,
     defaultConfig: (): TextAreaConfig => ({
       id: `textarea_${Date.now()}`,
+      uniqueIdentifier: 'text-area',
       label: 'Your Message',
       placeholder: 'Type your message here.',
       description: 'Your message will be copied to the support team.',
