@@ -45,7 +45,7 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
     onClose()
   }
 
-  const handleInputChange = (key: keyof TextInputConfig, value: any) => {
+  const handleInputChange = (key: keyof TextInputConfig, value: unknown) => {
     setConfig((prev) => ({
       ...prev,
       [key]: value,

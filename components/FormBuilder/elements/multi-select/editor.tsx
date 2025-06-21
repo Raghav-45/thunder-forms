@@ -39,7 +39,7 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
     onClose()
   }
 
-  const handleInputChange = (key: keyof MultiSelectConfig, value: any) => {
+  const handleInputChange = (key: keyof MultiSelectConfig, value: unknown) => {
     setConfig((prev) => ({
       ...prev,
       [key]: value,
