@@ -7,7 +7,7 @@ export interface SelectOption {
 }
 
 export interface MultiSelectConfig extends BaseFieldConfig {
-  type: 'multi-select'
+  uniqueIdentifier: 'multi-select'
   options: SelectOption[]
   minSelections?: number
   maxSelections?: number
