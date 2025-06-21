@@ -7,6 +7,7 @@ export type FieldType = { name: string; isAvailable: boolean; index?: number }
  */
 export interface BaseFieldConfig {
   id: string
+  uniqueIdentifier: avaliableFieldsType
   label: string
   placeholder?: string
   required?: boolean
