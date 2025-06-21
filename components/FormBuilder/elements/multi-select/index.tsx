@@ -159,7 +159,7 @@ const MultiSelect: React.FC<FieldProps<MultiSelectConfig>> = ({
                       onClick={handleAddCustomValue}
                       className="w-full"
                     >
-                      Add "{searchValue}"
+                      Add &quot;{searchValue}&quot;
                     </Button>
                   </div>
                 ) : (
