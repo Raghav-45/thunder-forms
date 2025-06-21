@@ -1,9 +1,9 @@
-import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import './globals.css'
-import { Toaster } from 'sonner'
-import { Analytics } from '@vercel/analytics/next'
 import { cn } from '@/lib/utils'
+import { Analytics } from '@vercel/analytics/next'
+import type { Metadata } from 'next'
+import { Anton, Geist, Geist_Mono } from 'next/font/google'
+import { Toaster } from 'sonner'
+import './globals.css'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -13,6 +13,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+})
+
+const anton = Anton({
+  variable: '--font-anton',
+  subsets: ['latin'],
+  weight: '400',
 })
 
 export const metadata: Metadata = {
@@ -33,7 +39,8 @@ export default function RootLayout({
         className={cn(
           'min-h-screen bg-background font-sans antialiased dark',
           geistSans.variable,
-          geistMono.variable
+          geistMono.variable,
+          anton.variable
         )}
       >
         <div className="relative flex min-h-screen flex-col bg-background">
