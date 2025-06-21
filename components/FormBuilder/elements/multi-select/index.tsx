@@ -1,6 +1,6 @@
 'use client'
 
-// components/FormBuilder/elements/multi-select/index.tsx
+import { FieldProps } from '@/components/FormBuilder/types/types'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/popover'
 import { Check, ChevronsUpDown, X } from 'lucide-react'
 import React, { useState } from 'react'
-import { FieldProps } from '../../types/types'
 import { MultiSelectConfig } from './types'
 
 const MultiSelect: React.FC<FieldProps<MultiSelectConfig>> = ({

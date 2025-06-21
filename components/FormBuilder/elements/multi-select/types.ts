@@ -1,5 +1,4 @@
-// components/FormBuilder/elements/multi-select/types.ts
-import { BaseFieldConfig } from '../../types/types'
+import { BaseFieldConfig } from '@/components/FormBuilder/types/types'
 
 export interface SelectOption {
   label: string

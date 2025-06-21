@@ -1,17 +1,17 @@
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import React from 'react'
 import { FieldProps } from '@/components/FormBuilder/types/types'
-import { TextInputConfig } from './types'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import React from 'react'
+import { TextAreaConfig } from './types'
 
-const TextInput: React.FC<FieldProps<TextInputConfig>> = ({
+const TextArea: React.FC<FieldProps<TextAreaConfig>> = ({
   field,
   value,
   onChange,
   onBlur,
   error,
 }) => {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onChange(e.target.value)
   }
 
@@ -40,9 +40,8 @@ const TextInput: React.FC<FieldProps<TextInputConfig>> = ({
         <p className="text-sm text-muted-foreground">{field.description}</p>
       )}
 
-      <Input
+      <Textarea
         id={inputId}
-        type={field.inputType || 'text'}
         placeholder={field.placeholder}
         value={(value || '') as string}
         onChange={handleChange}
@@ -51,7 +50,6 @@ const TextInput: React.FC<FieldProps<TextInputConfig>> = ({
         required={field.required}
         minLength={field.minLength}
         maxLength={field.maxLength}
-        pattern={field.pattern}
         autoComplete={field.autoComplete}
         aria-describedby={error ? `${inputId}-error` : undefined}
         aria-invalid={!!error}
@@ -71,4 +69,4 @@ const TextInput: React.FC<FieldProps<TextInputConfig>> = ({
   )
 }
 
-export default TextInput
+export default TextArea

@@ -5,6 +5,9 @@ import type { MultiSelectConfig } from './multi-select/types'
 import TextInput from './text-input'
 import { TextInputEditor } from './text-input/editor'
 import type { TextInputConfig } from './text-input/types'
+import TextArea from './text-area'
+import { TextAreaEditor } from './text-area/editor'
+import type { TextAreaConfig } from './text-area/types'
 
 // Text Input
 export { default as TextInput } from './text-input'
@@ -16,6 +19,11 @@ export { default as MultiSelect } from './multi-select'
 export { MultiSelectEditor } from './multi-select/editor'
 export type { MultiSelectConfig, SelectOption } from './multi-select/types'
 
+// Text Area
+export { default as TextArea } from './text-area'
+export { TextAreaEditor } from './text-area/editor'
+export type { TextAreaConfig } from './text-area/types'
+
 // Field Registry
 export const FIELD_REGISTRY = {
   'text-input': {
@@ -26,6 +34,7 @@ export const FIELD_REGISTRY = {
       type: 'text-input',
       label: 'Your Name',
       placeholder: 'e.g., John Doe',
+      description: 'Provide your name for identification.',
       required: false,
       disabled: false,
       inputType: 'text',
@@ -52,7 +61,20 @@ export const FIELD_REGISTRY = {
       allowCustomValues: false,
     }),
   },
+  "text-area": {
+    component: TextArea,
+    editor: TextAreaEditor,
+    defaultConfig: (): TextAreaConfig => ({
+      id: `textarea_${Date.now()}`,
+      label: 'Your Message',
+      placeholder: 'Type your message here.',
+      description: 'Your message will be copied to the support team.',
+      required: false,
+      disabled: false,
+      maxLength: undefined,
+    }),
+  },
 } as const
 
 // Union type for all field configs
-export type FieldConfig = TextInputConfig | MultiSelectConfig
+export type FieldConfig = TextInputConfig | MultiSelectConfig | TextAreaConfig

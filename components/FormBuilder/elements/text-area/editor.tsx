@@ -21,19 +21,19 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import React, { useState } from 'react'
-import { TextInputConfig } from './types'
+import { TextAreaConfig } from './types'
 
-interface TextInputEditorProps extends EditorProps<TextInputConfig> {
+interface TextAreaEditorProps extends EditorProps<TextAreaConfig> {
   isOpen: boolean
 }
 
-export const TextInputEditor: React.FC<TextInputEditorProps> = ({
+export const TextAreaEditor: React.FC<TextAreaEditorProps> = ({
   field,
   onUpdate,
   onClose,
   isOpen,
 }) => {
-  const [config, setConfig] = useState<TextInputConfig>(field)
+  const [config, setConfig] = useState<TextAreaConfig>(field)
 
   const handleSave = () => {
     onUpdate(config)
@@ -45,7 +45,7 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
     onClose()
   }
 
-  const handleInputChange = (key: keyof TextInputConfig, value: any) => {
+  const handleInputChange = (key: keyof TextAreaConfig, value: any) => {
     setConfig((prev) => ({
       ...prev,
       [key]: value,

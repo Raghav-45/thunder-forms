@@ -1,7 +1,6 @@
 import { BaseFieldConfig } from '@/components/FormBuilder/types/types'
 
-export interface TextInputConfig extends BaseFieldConfig {
-  type: 'text-input'
+export interface TextAreaConfig extends BaseFieldConfig {
   inputType?: 'text' | 'email' | 'password' | 'tel' | 'url'
   minLength?: number
   maxLength?: number

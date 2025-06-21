@@ -4,7 +4,6 @@ export type FieldType = { name: string; isAvailable: boolean; index?: number }
 
 export interface BaseFieldConfig {
   id: string
-  type: string
   label: string
   placeholder?: string
   required?: boolean
