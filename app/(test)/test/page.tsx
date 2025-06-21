@@ -5,7 +5,6 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
-  FIELD_REGISTRY,
   FieldConfig,
   TextInputEditor,
   MultiSelectEditor,
@@ -15,6 +14,7 @@ import {
   getFieldComponent,
   createDefaultFieldConfig,
   validateFieldConfig,
+  getFieldEditor,
 } from '@/components/FormBuilder/utils/field-registry'
 import { validateFormData } from '@/components/FormBuilder/utils/validation'
 import {
@@ -24,7 +24,7 @@ import {
 
 const FormBuilderExample: React.FC = () => {
   const [fields, setFields] = useState<FieldConfig[]>([])
-  const [formData, setFormData] = useState<Record<string, any>>({})
+  const [formData, setFormData] = useState<Record<string, unknown>>({})
   const [editingField, setEditingField] = useState<FieldConfig | null>(null)
   const [editingIndex, setEditingIndex] = useState<number>(-1)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -59,7 +59,7 @@ const FormBuilderExample: React.FC = () => {
     setFields((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const handleFormChange = (fieldId: string, value: any) => {
+  const handleFormChange = (fieldId: string, value: unknown) => {
     setFormData((prev) => ({
       ...prev,
       [fieldId]: value,
@@ -88,7 +88,7 @@ const FormBuilderExample: React.FC = () => {
   }
 
   const renderField = (field: FieldConfig, index: number) => {
-    const FieldComponent = getFieldComponent(field.type)
+    const FieldComponent = getFieldComponent(field.uniqueIdentifier)
 
     return (
       <div key={field.id} className="relative group">
@@ -136,7 +136,9 @@ const FormBuilderExample: React.FC = () => {
       isOpen: true,
     }
 
-    switch (editingField.type) {
+    const editor = getFieldEditor(editingField.uniqueIdentifier)
+
+    switch (editingField.uniqueIdentifier) {
       case 'text-input':
         return <TextInputEditor {...commonProps} />
       case 'multi-select':
