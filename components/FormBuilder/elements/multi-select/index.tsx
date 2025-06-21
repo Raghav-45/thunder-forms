@@ -24,7 +24,7 @@ const MultiSelect: React.FC<FieldProps<MultiSelectConfig>> = ({
   field,
   value = [],
   onChange,
-  onBlur,
+  // onBlur,
   error,
 }) => {
   const [open, setOpen] = useState(false)
