@@ -1,87 +1,96 @@
-'use client';
+'use client'
 
 // components/FormBuilder/elements/multi-select/editor.tsx
-import React, { useState } from 'react';
-import { Plus, Trash2, GripVertical } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { EditorProps } from '../../types/types';
-import { MultiSelectConfig, SelectOption } from './types';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
+import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
+import { GripVertical, Plus, Trash2 } from 'lucide-react'
+import React, { useState } from 'react'
+import { EditorProps } from '../../types/types'
+import { MultiSelectConfig, SelectOption } from './types'
 
 interface MultiSelectEditorProps extends EditorProps<MultiSelectConfig> {
-  isOpen: boolean;
+  isOpen: boolean
 }
 
 export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
   field,
   onUpdate,
   onClose,
-  isOpen
+  isOpen,
 }) => {
-  const [config, setConfig] = useState<MultiSelectConfig>(field);
+  const [config, setConfig] = useState<MultiSelectConfig>(field)
 
   const handleSave = () => {
-    onUpdate(config);
-    onClose();
-  };
+    onUpdate(config)
+    onClose()
+  }
 
   const handleCancel = () => {
-    setConfig(field);
-    onClose();
-  };
+    setConfig(field)
+    onClose()
+  }
 
   const handleInputChange = (key: keyof MultiSelectConfig, value: any) => {
-    setConfig(prev => ({
+    setConfig((prev) => ({
       ...prev,
-      [key]: value
-    }));
-  };
+      [key]: value,
+    }))
+  }
 
   const handleAddOption = () => {
     const newOption: SelectOption = {
       label: 'New Option',
       value: `option_${Date.now()}`,
-      disabled: false
-    };
-    
-    setConfig(prev => ({
-      ...prev,
-      options: [...prev.options, newOption]
-    }));
-  };
+      disabled: false,
+    }
 
-  const handleUpdateOption = (index: number, updates: Partial<SelectOption>) => {
-    setConfig(prev => ({
+    setConfig((prev) => ({
       ...prev,
-      options: prev.options.map((option, i) => 
+      options: [...prev.options, newOption],
+    }))
+  }
+
+  const handleUpdateOption = (
+    index: number,
+    updates: Partial<SelectOption>
+  ) => {
+    setConfig((prev) => ({
+      ...prev,
+      options: prev.options.map((option, i) =>
         i === index ? { ...option, ...updates } : option
-      )
-    }));
-  };
+      ),
+    }))
+  }
 
   const handleRemoveOption = (index: number) => {
-    setConfig(prev => ({
+    setConfig((prev) => ({
       ...prev,
-      options: prev.options.filter((_, i) => i !== index)
-    }));
-  };
+      options: prev.options.filter((_, i) => i !== index),
+    }))
+  }
 
   const handleMoveOption = (fromIndex: number, toIndex: number) => {
-    if (toIndex < 0 || toIndex >= config.options.length) return;
-    
-    const newOptions = [...config.options];
-    const [movedOption] = newOptions.splice(fromIndex, 1);
-    newOptions.splice(toIndex, 0, movedOption);
-    
-    setConfig(prev => ({
+    if (toIndex < 0 || toIndex >= config.options.length) return
+
+    const newOptions = [...config.options]
+    const [movedOption] = newOptions.splice(fromIndex, 1)
+    newOptions.splice(toIndex, 0, movedOption)
+
+    setConfig((prev) => ({
       ...prev,
-      options: newOptions
-    }));
-  };
+      options: newOptions,
+    }))
+  }
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -89,7 +98,7 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
         <SheetHeader>
           <SheetTitle>Configure Multi Select</SheetTitle>
         </SheetHeader>
-        
+
         <div className="space-y-6 px-4">
           <div className="space-y-2">
             <Label htmlFor="field-label">Field Label *</Label>
@@ -140,7 +149,7 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
 
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {config.options.map((option, index) => (
-                <div 
+                <div
                   key={`${option.value}-${index}`}
                   className="flex items-center gap-2 p-2 border rounded-md"
                 >
@@ -149,22 +158,26 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
                     className="cursor-grab hover:cursor-grabbing p-1"
                     onMouseDown={(e) => {
                       // Simple drag functionality could be implemented here
-                      e.preventDefault();
+                      e.preventDefault()
                     }}
                   >
                     <GripVertical className="h-4 w-4 text-muted-foreground" />
                   </button>
-                  
+
                   <div className="flex-1 grid grid-cols-2 gap-2">
                     <Input
                       value={option.label}
-                      onChange={(e) => handleUpdateOption(index, { label: e.target.value })}
+                      onChange={(e) =>
+                        handleUpdateOption(index, { label: e.target.value })
+                      }
                       placeholder="Option label"
                       className="text-sm"
                     />
                     <Input
                       value={option.value}
-                      onChange={(e) => handleUpdateOption(index, { value: e.target.value })}
+                      onChange={(e) =>
+                        handleUpdateOption(index, { value: e.target.value })
+                      }
                       placeholder="Option value"
                       className="text-sm"
                     />
@@ -173,10 +186,12 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
                   <div className="flex items-center gap-1">
                     <Switch
                       checked={!option.disabled}
-                      onCheckedChange={(checked) => handleUpdateOption(index, { disabled: !checked })}
+                      onCheckedChange={(checked) =>
+                        handleUpdateOption(index, { disabled: !checked })
+                      }
                       aria-label={`Toggle ${option.label}`}
                     />
-                    
+
                     <Button
                       type="button"
                       variant="outline"
@@ -188,7 +203,7 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
                     >
                       ↑
                     </Button>
-                    
+
                     <Button
                       type="button"
                       variant="outline"
@@ -225,11 +240,16 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
                 type="number"
                 min="0"
                 value={config.minSelections || ''}
-                onChange={(e) => handleInputChange('minSelections', e.target.value ? parseInt(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleInputChange(
+                    'minSelections',
+                    e.target.value ? parseInt(e.target.value) : undefined
+                  )
+                }
                 placeholder="0"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="max-selections">Max Selections</Label>
               <Input
@@ -237,7 +257,12 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
                 type="number"
                 min="1"
                 value={config.maxSelections || ''}
-                onChange={(e) => handleInputChange('maxSelections', e.target.value ? parseInt(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleInputChange(
+                    'maxSelections',
+                    e.target.value ? parseInt(e.target.value) : undefined
+                  )
+                }
                 placeholder="No limit"
               />
             </div>
@@ -248,7 +273,9 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
             <Switch
               id="searchable-switch"
               checked={config.searchable || false}
-              onCheckedChange={(checked) => handleInputChange('searchable', checked)}
+              onCheckedChange={(checked) =>
+                handleInputChange('searchable', checked)
+              }
             />
           </div>
 
@@ -257,7 +284,9 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
             <Switch
               id="custom-values-switch"
               checked={config.allowCustomValues || false}
-              onCheckedChange={(checked) => handleInputChange('allowCustomValues', checked)}
+              onCheckedChange={(checked) =>
+                handleInputChange('allowCustomValues', checked)
+              }
             />
           </div>
 
@@ -266,7 +295,9 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
             <Switch
               id="required-switch"
               checked={config.required || false}
-              onCheckedChange={(checked) => handleInputChange('required', checked)}
+              onCheckedChange={(checked) =>
+                handleInputChange('required', checked)
+              }
             />
           </div>
 
@@ -275,7 +306,9 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
             <Switch
               id="disabled-switch"
               checked={config.disabled || false}
-              onCheckedChange={(checked) => handleInputChange('disabled', checked)}
+              onCheckedChange={(checked) =>
+                handleInputChange('disabled', checked)
+              }
             />
           </div>
         </div>
@@ -284,8 +317,8 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleSave} 
+          <Button
+            onClick={handleSave}
             disabled={!config.label.trim() || config.options.length === 0}
           >
             Save Changes
@@ -293,5 +326,5 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
         </SheetFooter>
       </SheetContent>
     </Sheet>
-  );
-};
+  )
+}

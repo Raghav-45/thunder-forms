@@ -1,44 +1,46 @@
 // components/FormBuilder/elements/text-input/index.tsx
-import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { FieldProps } from '../../types/types';
-import { TextInputConfig } from './types';
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import React from 'react'
+import { FieldProps } from '../../types/types'
+import { TextInputConfig } from './types'
 
 const TextInput: React.FC<FieldProps<TextInputConfig>> = ({
   field,
   value,
   onChange,
   onBlur,
-  error
+  error,
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(e.target.value);
-  };
+    onChange(e.target.value)
+  }
 
   const handleBlur = () => {
     if (onBlur) {
-      onBlur();
+      onBlur()
     }
-  };
+  }
 
-  const inputId = `field-${field.id}`;
+  const inputId = `field-${field.id}`
 
   return (
     <div className="space-y-2">
-      <Label 
+      <Label
         htmlFor={inputId}
-        className={`text-sm font-medium ${field.required ? "after:content-['*'] after:text-red-500 after:ml-1" : ""}`}
+        className={`text-sm font-medium ${
+          field.required
+            ? "after:content-['*'] after:text-red-500 after:ml-1"
+            : ''
+        }`}
       >
         {field.label}
       </Label>
-      
+
       {field.description && (
-        <p className="text-sm text-muted-foreground">
-          {field.description}
-        </p>
+        <p className="text-sm text-muted-foreground">{field.description}</p>
       )}
-      
+
       <Input
         id={inputId}
         type={field.inputType || 'text'}
@@ -54,11 +56,11 @@ const TextInput: React.FC<FieldProps<TextInputConfig>> = ({
         autoComplete={field.autoComplete}
         aria-describedby={error ? `${inputId}-error` : undefined}
         aria-invalid={!!error}
-        className={error ? "border-red-500 focus:border-red-500" : ""}
+        className={error ? 'border-red-500 focus:border-red-500' : ''}
       />
-      
+
       {error && (
-        <p 
+        <p
           id={`${inputId}-error`}
           className="text-sm text-red-500"
           role="alert"
@@ -67,7 +69,7 @@ const TextInput: React.FC<FieldProps<TextInputConfig>> = ({
         </p>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default TextInput;
+export default TextInput

@@ -1,45 +1,57 @@
-'use client';
+'use client'
 
 // components/FormBuilder/elements/text-input/editor.tsx
-import React, { useState } from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { EditorProps } from '../../types/types';
-import { TextInputConfig } from './types';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
+import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
+import React, { useState } from 'react'
+import { EditorProps } from '../../types/types'
+import { TextInputConfig } from './types'
 
 interface TextInputEditorProps extends EditorProps<TextInputConfig> {
-  isOpen: boolean;
+  isOpen: boolean
 }
 
 export const TextInputEditor: React.FC<TextInputEditorProps> = ({
   field,
   onUpdate,
   onClose,
-  isOpen
+  isOpen,
 }) => {
-  const [config, setConfig] = useState<TextInputConfig>(field);
+  const [config, setConfig] = useState<TextInputConfig>(field)
 
   const handleSave = () => {
-    onUpdate(config);
-    onClose();
-  };
+    onUpdate(config)
+    onClose()
+  }
 
   const handleCancel = () => {
-    setConfig(field);
-    onClose();
-  };
+    setConfig(field)
+    onClose()
+  }
 
   const handleInputChange = (key: keyof TextInputConfig, value: any) => {
-    setConfig(prev => ({
+    setConfig((prev) => ({
       ...prev,
-      [key]: value
-    }));
-  };
+      [key]: value,
+    }))
+  }
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -47,7 +59,7 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
         <SheetHeader>
           <SheetTitle>Configure Text Input</SheetTitle>
         </SheetHeader>
-        
+
         <div className="space-y-6 px-4">
           <div className="space-y-2">
             <Label htmlFor="field-label">Field Label *</Label>
@@ -108,11 +120,16 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
                 type="number"
                 min="0"
                 value={config.minLength || ''}
-                onChange={(e) => handleInputChange('minLength', e.target.value ? parseInt(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleInputChange(
+                    'minLength',
+                    e.target.value ? parseInt(e.target.value) : undefined
+                  )
+                }
                 placeholder="0"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="max-length">Max Length</Label>
               <Input
@@ -120,7 +137,12 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
                 type="number"
                 min="1"
                 value={config.maxLength || ''}
-                onChange={(e) => handleInputChange('maxLength', e.target.value ? parseInt(e.target.value) : undefined)}
+                onChange={(e) =>
+                  handleInputChange(
+                    'maxLength',
+                    e.target.value ? parseInt(e.target.value) : undefined
+                  )
+                }
                 placeholder="100"
               />
             </div>
@@ -141,7 +163,9 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
             <Input
               id="autocomplete"
               value={config.autoComplete || ''}
-              onChange={(e) => handleInputChange('autoComplete', e.target.value)}
+              onChange={(e) =>
+                handleInputChange('autoComplete', e.target.value)
+              }
               placeholder="name, email, etc."
             />
           </div>
@@ -151,7 +175,9 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
             <Switch
               id="required-switch"
               checked={config.required || false}
-              onCheckedChange={(checked) => handleInputChange('required', checked)}
+              onCheckedChange={(checked) =>
+                handleInputChange('required', checked)
+              }
             />
           </div>
 
@@ -160,7 +186,9 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
             <Switch
               id="disabled-switch"
               checked={config.disabled || false}
-              onCheckedChange={(checked) => handleInputChange('disabled', checked)}
+              onCheckedChange={(checked) =>
+                handleInputChange('disabled', checked)
+              }
             />
           </div>
         </div>
@@ -175,5 +203,5 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
         </SheetFooter>
       </SheetContent>
     </Sheet>
-  );
-};
+  )
+}
