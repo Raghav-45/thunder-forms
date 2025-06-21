@@ -2,12 +2,12 @@
 import MultiSelect from './multi-select'
 import { MultiSelectEditor } from './multi-select/editor'
 import type { MultiSelectConfig } from './multi-select/types'
-import TextInput from './text-input'
-import { TextInputEditor } from './text-input/editor'
-import type { TextInputConfig } from './text-input/types'
 import TextArea from './text-area'
 import { TextAreaEditor } from './text-area/editor'
 import type { TextAreaConfig } from './text-area/types'
+import TextInput from './text-input'
+import { TextInputEditor } from './text-input/editor'
+import type { TextInputConfig } from './text-input/types'
 
 // Text Input
 export { default as TextInput } from './text-input'
@@ -61,7 +61,7 @@ export const FIELD_REGISTRY = {
       allowCustomValues: false,
     }),
   },
-  "text-area": {
+  'text-area': {
     component: TextArea,
     editor: TextAreaEditor,
     defaultConfig: (): TextAreaConfig => ({
