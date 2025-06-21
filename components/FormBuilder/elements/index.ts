@@ -15,6 +15,9 @@ import type { TextAreaConfig } from './text-area/types'
 import TextInput from './text-input'
 import { TextInputEditor } from './text-input/editor'
 import type { TextInputConfig } from './text-input/types'
+import SwitchField from './switch'
+import { SwitchEditor } from './switch/editor'
+import type { SwitchConfig } from './switch/types'
 
 // Text Input
 export { default as TextInput } from './text-input'
@@ -30,6 +33,11 @@ export type { MultiSelectConfig, SelectOption } from './multi-select/types'
 export { default as TextArea } from './text-area'
 export { TextAreaEditor } from './text-area/editor'
 export type { TextAreaConfig } from './text-area/types'
+
+// Switch Field
+export { default as SwitchField } from './switch'
+export { SwitchEditor } from './switch/editor'
+export type { SwitchConfig } from './switch/types'
 
 // Field Registry
 export const FIELD_REGISTRY = {
@@ -80,6 +88,23 @@ export const FIELD_REGISTRY = {
       required: false,
       disabled: false,
       maxLength: undefined,
+    }),
+  },
+  'switch-field': {
+    component: SwitchField,
+    editor: SwitchEditor,
+    defaultConfig: (): SwitchConfig => ({
+      id: `switch_${Date.now()}`,
+      type: 'switch',
+      uniqueIdentifier: "switch-field",
+      label: 'Your Message',
+      placeholder: 'Type your message here.',
+      description: 'Your message will be copied to the support team.',
+      required: false,
+      disabled: false,
+      defaultValue: false,
+      checkedLabel: 'On',
+      uncheckedLabel: 'Off',
     }),
   },
 } as const

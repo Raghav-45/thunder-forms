@@ -9,6 +9,7 @@ import {
   TextInputEditor,
   MultiSelectEditor,
   TextAreaEditor,
+  SwitchEditor,
 } from '@/components/FormBuilder/elements'
 import {
   getFieldComponent,
@@ -136,8 +137,6 @@ const FormBuilderExample: React.FC = () => {
       isOpen: true,
     }
 
-    const editor = getFieldEditor(editingField.uniqueIdentifier)
-
     switch (editingField.uniqueIdentifier) {
       case 'text-input':
         return <TextInputEditor {...commonProps} />
@@ -145,6 +144,8 @@ const FormBuilderExample: React.FC = () => {
         return <MultiSelectEditor {...commonProps} />
       case 'text-area':
         return <TextAreaEditor {...commonProps} />
+      case 'switch-field':
+        return <SwitchEditor {...commonProps} />
       default:
         return null
     }
