@@ -2,6 +2,9 @@ import { FIELD_REGISTRY } from '@/components/FormBuilder/elements'
 
 export type FieldType = { name: string; isAvailable: boolean; index?: number }
 
+/**
+ * Serves as the foundational interface & specifies common properties like id, label, placeholder, required, disabled, and description.
+ */
 export interface BaseFieldConfig {
   id: string
   label: string
