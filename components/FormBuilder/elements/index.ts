@@ -1,3 +1,11 @@
+/**
+ * This index file serves as the primary entry point for all form field components.
+ * It re-exports [components, editors, and types] from their respective subdirectories.
+ *
+ * Additionally, this file holds the `FIELD_REGISTRY` variable, a variable of all available form field
+ * This registry facilitates dynamic rendering, configuration, and management of form fields.
+ */
+
 import MultiSelect from './multi-select'
 import { MultiSelectEditor } from './multi-select/editor'
 import type { MultiSelectConfig } from './multi-select/types'
