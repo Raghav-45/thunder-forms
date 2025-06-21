@@ -73,7 +73,6 @@ export const FIELD_REGISTRY = {
     editor: TextAreaEditor,
     defaultConfig: (): TextAreaConfig => ({
       id: `textarea_${Date.now()}`,
-      type: 'text-input',
       label: 'Your Message',
       placeholder: 'Type your message here.',
       description: 'Your message will be copied to the support team.',
