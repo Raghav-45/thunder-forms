@@ -1,14 +1,13 @@
 'use client'
 
-import { FC } from 'react'
-import { motion } from 'motion/react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Icons } from '@/components/Icons'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { FileIcon, HomeIcon } from 'lucide-react'
+import { motion } from 'motion/react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
-import { Icons } from '@/components/Icons'
-import { FileIcon, HomeIcon } from 'lucide-react'
+import { FC, useEffect, useState } from 'react'
 
 interface CheckmarkProps {
   size?: number
