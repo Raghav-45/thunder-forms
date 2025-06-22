@@ -85,7 +85,14 @@ interface FormSubmittedPageProps {
   redirectUrl?: string | null
 }
 
-const FormSubmittedPage: FC<FormSubmittedPageProps> = ({ redirectUrl }) => {
+const DEFAULT_REDIRECT_URL =
+  (process.env.NEXT_PUBLIC_ALWAYS_REDIRECT_TO_DEFAULT_URL === 'true' &&
+    process.env.NEXT_PUBLIC_DEFAULT_REDIRECT_URL) ||
+  null
+
+const FormSubmittedPage: FC<FormSubmittedPageProps> = ({
+  redirectUrl = DEFAULT_REDIRECT_URL,
+}) => {
   const pathname = usePathname()
   const router = useRouter()
   const formPath = pathname.replace('/submitted', '')
