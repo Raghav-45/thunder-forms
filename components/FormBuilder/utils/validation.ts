@@ -1,32 +1,6 @@
 import { FieldConfig } from '@/components/FormBuilder/elements'
 
-export interface ValidationResult {
-  isValid: boolean
-  errors: Record<string, string>
-}
-
-export const validateFormData = (
-  fields: FieldConfig[],
-  formData: Record<string, any>
-): ValidationResult => {
-  const errors: Record<string, string> = {}
-
-  fields.forEach((field) => {
-    const value = formData[field.id]
-    const fieldErrors = validateField(field, value)
-
-    if (fieldErrors.length > 0) {
-      errors[field.id] = fieldErrors[0] // Show first error only
-    }
-  })
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    errors,
-  }
-}
-
-export const validateField = (field: FieldConfig, value: any): string[] => {
+export const validateField = (field: FieldConfig, value: unknown): string[] => {
   const errors: string[] = []
 
   // // Required validation
