@@ -1,15 +1,6 @@
-import { FC } from 'react'
 // import { TrendingUpIcon } from 'lucide-react'
 import { Announcement } from '@/components/Announcement'
-import Image from 'next/image'
-import { Badge } from '@/components/ui/badge'
 import { Icons } from '@/components/Icons'
-import { buttonVariants } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
-import Link from 'next/link'
-import { cn } from '@/lib/utils'
-import { TemplateType } from '@/types/types'
-import { siteConfig } from '@/config/site'
 
 // const baseUrl =
 //   process.env.NODE_ENV === 'development'
@@ -50,8 +41,7 @@ export default async function TemplatesPage() {
           />
 
           <h1 className="flex mb-3 mt-1 text-balance text-3xl font-semibold md:text-4xl">
-            Choose a Template{' '}
-            <Icons.Logo className="h-auto w-10 mx-3" />
+            Choose a Template <Icons.Logo className="h-auto w-10 mx-3" />
           </h1>
           <p className="text-lg text-muted-foreground">
             Select a template and start creating your form instantly.
