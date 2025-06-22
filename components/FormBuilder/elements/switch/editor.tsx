@@ -5,13 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
   Sheet,
   SheetContent,
   SheetFooter,
@@ -57,7 +50,6 @@ export const SwitchEditor: React.FC<SwitchEditorProps> = ({
         <SheetHeader>
           <SheetTitle>Configure Switch</SheetTitle>
         </SheetHeader>
-
         <div className="space-y-6 px-4">
           <div className="space-y-2">
             <Label htmlFor="field-label">Field Label *</Label>
@@ -86,7 +78,9 @@ export const SwitchEditor: React.FC<SwitchEditorProps> = ({
             <Input
               id="checked-label"
               value={config.checkedLabel || ''}
-              onChange={(e) => handleInputChange('checkedLabel', e.target.value)}
+              onChange={(e) =>
+                handleInputChange('checkedLabel', e.target.value)
+              }
               placeholder="e.g., 'Enabled'"
             />
           </div>
@@ -96,30 +90,17 @@ export const SwitchEditor: React.FC<SwitchEditorProps> = ({
             <Input
               id="unchecked-label"
               value={config.uncheckedLabel || ''}
-              onChange={(e) => handleInputChange('uncheckedLabel', e.target.value)}
+              onChange={(e) =>
+                handleInputChange('uncheckedLabel', e.target.value)
+              }
               placeholder="e.g., 'Disabled'"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="switch-size">Size</Label>
-            <Select
-              value={config.size || 'md'}
-              onValueChange={(value) => handleInputChange('size', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select size" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sm">Small</SelectItem>
-                <SelectItem value="md">Medium</SelectItem>
-                <SelectItem value="lg">Large</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           <div className="flex items-center justify-between">
-            <Label htmlFor="default-value-switch">Default Value (Checked)</Label>
+            <Label htmlFor="default-value-switch">
+              Default Value (Checked)
+            </Label>
             <Switch
               id="default-value-switch"
               checked={config.defaultValue || false}
@@ -150,7 +131,8 @@ export const SwitchEditor: React.FC<SwitchEditorProps> = ({
               }
             />
           </div>
-        </div>        <SheetFooter className="gap-2">
+        </div>{' '}
+        <SheetFooter className="gap-2">
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
