@@ -6,8 +6,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { FileIcon, HomeIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
-import { FC, useEffect, useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 interface CheckmarkProps {
   size?: number
@@ -81,22 +81,20 @@ function Checkmark({
   )
 }
 
-interface FormSubmittedPageProps {
-  redirectUrl?: string | null
-}
-
 const DEFAULT_REDIRECT_URL =
   (process.env.NEXT_PUBLIC_ALWAYS_REDIRECT_TO_DEFAULT_URL === 'true' &&
     process.env.NEXT_PUBLIC_DEFAULT_REDIRECT_URL) ||
   null
 
-const FormSubmittedPage: FC<FormSubmittedPageProps> = ({
-  redirectUrl = DEFAULT_REDIRECT_URL,
-}) => {
+export default function FormSubmittedPage() {
   const pathname = usePathname()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const formPath = pathname.replace('/submitted', '')
   const [countdown, setCountdown] = useState(4)
+
+  // Get redirectUrl from search params or use default
+  const redirectUrl = searchParams.get('redirectUrl') || DEFAULT_REDIRECT_URL
 
   // Determine the final redirect URL with validation
   const finalRedirectUrl = redirectUrl
@@ -254,5 +252,3 @@ const FormSubmittedPage: FC<FormSubmittedPageProps> = ({
     </div>
   )
 }
-
-export default FormSubmittedPage
