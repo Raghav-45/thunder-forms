@@ -1,7 +1,7 @@
 'use client'
 
 import { FC } from 'react'
-import { motion } from "motion/react"
+import { motion } from 'motion/react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -17,7 +17,8 @@ interface CheckmarkProps {
   className?: string
 }
 
-const draw = {
+// Define variants for the Checkmark SVG elements
+const checkmarkVariants = {
   hidden: { pathLength: 0, opacity: 0 },
   visible: (i: number) => ({
     pathLength: 1,
@@ -25,10 +26,9 @@ const draw = {
     transition: {
       pathLength: {
         delay: i * 0.2,
-        type: 'spring',
+        type: 'spring' as const,
         duration: 1.5,
         bounce: 0.2,
-        ease: 'easeInOut',
       },
       opacity: { delay: i * 0.2, duration: 0.2 },
     },
@@ -58,7 +58,7 @@ function Checkmark({
         cy="50"
         r="40"
         stroke={color}
-        variants={draw}
+        variants={checkmarkVariants}
         custom={0}
         style={{
           strokeWidth,
@@ -69,7 +69,7 @@ function Checkmark({
       <motion.path
         d="M30 50L45 65L70 35"
         stroke={color}
-        variants={draw}
+        variants={checkmarkVariants}
         custom={1}
         style={{
           strokeWidth,
@@ -114,7 +114,7 @@ const FormSubmittedPage: FC<FormSubmittedPageProps> = ({ redirectUrl }) => {
     <div className="flex flex-col min-h-svh bg-neutral-950">
       <div className="flex flex-col flex-1 p-6 md:p-10">
         <div className="flex items-center justify-center text-2xl font-medium text-white mb-8">
-          <Icons.ThunderFormsLogo className="h-8 w-8 mr-2" />
+          <Icons.Logo className="h-8 w-8 mr-2" />
           Thunder Forms
         </div>
 
