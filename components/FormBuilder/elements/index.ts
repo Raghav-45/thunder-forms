@@ -96,7 +96,7 @@ export const FIELD_REGISTRY = {
     defaultConfig: (): SwitchConfig => ({
       id: `switch_${Date.now()}`,
       type: 'switch',
-      uniqueIdentifier: "switch-field",
+      uniqueIdentifier: 'switch-field',
       label: 'Your Message',
       placeholder: 'Type your message here.',
       description: 'Your message will be copied to the support team.',
@@ -109,5 +109,10 @@ export const FIELD_REGISTRY = {
   },
 } as const
 
+type FieldRegistry = typeof FIELD_REGISTRY
+type ExtractFieldConfig<T> = T extends { defaultConfig: () => infer U }
+  ? U
+  : never
+
 // Union type for all field configs
-export type FieldConfig = TextInputConfig | MultiSelectConfig | TextAreaConfig
+export type FieldConfig = ExtractFieldConfig<FieldRegistry[keyof FieldRegistry]>
