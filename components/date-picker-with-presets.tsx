@@ -22,11 +22,13 @@ import { cn } from '@/lib/utils'
 interface DatePickerWithPresetsProps {
   date: Date | null
   setDate: (date: Date | null) => void
+  className?: string
 }
 
 export function DatePickerWithPresets({
   date,
   setDate,
+  className = '',
 }: DatePickerWithPresetsProps) {
   return (
     <Popover>
@@ -35,7 +37,8 @@ export function DatePickerWithPresets({
           variant={'outline'}
           className={cn(
             'w-full justify-start text-left font-normal',
-            !date && 'text-muted-foreground'
+            !date && 'text-muted-foreground',
+            className
           )}
         >
           <CalendarIcon className="mr-2 w-4 h-4" />
