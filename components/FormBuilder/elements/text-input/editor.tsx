@@ -22,6 +22,7 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import React, { useState } from 'react'
 import { TextInputConfig } from './types'
+import AccordionWithSwitch from '@/components/accordion-with-switch'
 
 interface TextInputEditorProps extends EditorProps<TextInputConfig> {
   isOpen: boolean
@@ -59,7 +60,7 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
           <SheetTitle>Configure Text Input</SheetTitle>
         </SheetHeader>
 
-        <div className="space-y-6 px-4">
+        <div className="space-y-2 px-4">
           <div className="space-y-2">
             <Label htmlFor="field-label">Field Label *</Label>
             <Input
@@ -71,18 +72,22 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="field-placeholder">Placeholder</Label>
+          <AccordionWithSwitch
+            text="Placeholder"
+            defaultOpen={!!config.placeholder}
+          >
             <Input
               id="field-placeholder"
               value={config.placeholder || ''}
               onChange={(e) => handleInputChange('placeholder', e.target.value)}
               placeholder="Enter placeholder text"
             />
-          </div>
+          </AccordionWithSwitch>
 
-          <div className="space-y-2">
-            <Label htmlFor="field-description">Description</Label>
+          <AccordionWithSwitch
+            text="Description"
+            defaultOpen={!!config.description}
+          >
             <Textarea
               id="field-description"
               value={config.description || ''}
@@ -90,7 +95,7 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
               placeholder="Enter field description"
               rows={3}
             />
-          </div>
+          </AccordionWithSwitch>
 
           <div className="space-y-2">
             <Label htmlFor="input-type">Input Type</Label>
