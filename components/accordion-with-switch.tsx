@@ -1,4 +1,5 @@
 import { Switch } from '@/components/ui/switch'
+import { cn } from '@/lib/utils'
 import { FC, useEffect, useRef, useState } from 'react'
 
 interface AccordionWithSwitchProps {
@@ -30,7 +31,12 @@ const AccordionWithSwitch: FC<AccordionWithSwitchProps> = ({
 
   return (
     <div className={className}>
-      <div className="flex flex-1 items-center justify-between py-2 text-sm font-medium transition-all">
+      <div
+        className={cn(
+          'flex flex-1 items-center justify-between pt-2 text-sm font-medium transition-all',
+          isOpen && 'py-2'
+        )}
+      >
         <span className="text-left">{text}</span>
         <Switch
           checked={isOpen}
@@ -45,9 +51,7 @@ const AccordionWithSwitch: FC<AccordionWithSwitchProps> = ({
         data-state={isOpen ? 'open' : 'closed'}
         aria-hidden={!isOpen}
       >
-        <div ref={contentRef} className="pb-4">
-          {children}
-        </div>
+        <div ref={contentRef}>{children}</div>
       </div>
     </div>
   )
