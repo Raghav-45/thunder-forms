@@ -38,4 +38,55 @@ export interface BaseFieldConfig {
   description?: string
 }
 
+
+// --- Types from multi-select/types.ts ---
+export interface SelectOption {
+  label: string
+  value: string
+  disabled?: boolean
+}
+
+export interface MultiSelectConfig extends BaseFieldConfig {
+  uniqueIdentifier: 'multi-select'
+  options: SelectOption[]
+  minSelections?: number
+  maxSelections?: number
+  searchable?: boolean
+  allowCustomValues?: boolean
+}
+
+// --- Types from switch/types.ts ---
+export interface SwitchConfig extends BaseFieldConfig {
+  type: 'switch'
+  uniqueIdentifier: 'switch-field'
+  label: string
+  description?: string
+  required?: boolean
+  disabled?: boolean
+  defaultValue?: boolean
+  checkedLabel?: string
+  uncheckedLabel?: string
+}
+
+// --- Types from text-area/types.ts ---
+export interface TextAreaConfig extends BaseFieldConfig {
+  uniqueIdentifier: 'text-area',
+  inputType?: 'text' | 'email' | 'password' | 'tel' | 'url'
+  minLength?: number
+  maxLength?: number
+  pattern?: string
+  autoComplete?: string
+}
+
+// --- Types from text-input/types.ts ---
+export interface TextInputConfig extends BaseFieldConfig {
+  uniqueIdentifier: 'text-input'
+  inputType?: 'text' | 'email' | 'password' | 'tel' | 'url'
+  minLength?: number
+  maxLength?: number
+  pattern?: string
+  autoComplete?: string
+}
+
+
 `
