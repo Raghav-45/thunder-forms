@@ -1,6 +1,13 @@
 'use client'
 
+import AccordionWithSwitch from '@/components/accordion-with-switch'
 import { EditorProps } from '@/components/FormBuilder/types/types'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,13 +29,6 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import React, { useState } from 'react'
 import { TextInputConfig } from './types'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
-import AccordionWithSwitch from '@/components/accordion-with-switch'
 
 interface TextInputEditorProps extends EditorProps<TextInputConfig> {
   isOpen: boolean
@@ -61,9 +61,9 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="sm:max-w-md overflow-y-auto">
+      <SheetContent className="sm:max-w-md overflow-y-auto gap-y-0">
         <SheetHeader>
-          <SheetTitle>Configure Text Input</SheetTitle>
+          <SheetTitle className="text-lg">Configure Text Input</SheetTitle>
         </SheetHeader>
 
         <div className="space-y-2 px-4">
@@ -72,144 +72,158 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
               <AccordionTrigger className="text-base">
                 Basic Properties
               </AccordionTrigger>
-              <AccordionContent className="flex flex-col gap-y-2"></AccordionContent>
+              <AccordionContent className="flex flex-col gap-y-2">
+                <div className="space-y-2">
+                  <Label htmlFor="field-label">Field Label *</Label>
+                  <Input
+                    id="field-label"
+                    value={config.label}
+                    onChange={(e) => handleInputChange('label', e.target.value)}
+                    placeholder="Enter field label"
+                    required
+                  />
+                </div>
+
+                <AccordionWithSwitch
+                  text="Placeholder"
+                  defaultOpen={!!config.placeholder}
+                >
+                  <Input
+                    id="field-placeholder"
+                    value={config.placeholder || ''}
+                    onChange={(e) =>
+                      handleInputChange('placeholder', e.target.value)
+                    }
+                    placeholder="Enter placeholder text"
+                  />
+                </AccordionWithSwitch>
+
+                <AccordionWithSwitch
+                  text="Description"
+                  defaultOpen={!!config.description}
+                >
+                  <Textarea
+                    id="field-description"
+                    value={config.description || ''}
+                    onChange={(e) =>
+                      handleInputChange('description', e.target.value)
+                    }
+                    placeholder="Enter field description"
+                    rows={3}
+                  />
+                </AccordionWithSwitch>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="validaton">
+              <AccordionTrigger className="text-base">
+                Validaton Properties
+              </AccordionTrigger>
+              <AccordionContent className="flex flex-col gap-y-4">
+                <div className="grid grid-cols-10 gap-4">
+                  <div className="space-y-2 w-full col-span-4">
+                    <Label htmlFor="input-type">Input Type</Label>
+                    <Select
+                      value={config.inputType || 'text'}
+                      onValueChange={(value) =>
+                        handleInputChange('inputType', value)
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select input type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="text">Text</SelectItem>
+                        <SelectItem value="email">Email</SelectItem>
+                        <SelectItem value="password">Password</SelectItem>
+                        <SelectItem value="tel">Phone</SelectItem>
+                        <SelectItem value="url">URL</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2 col-span-3">
+                    <Label htmlFor="min-length">Min Length</Label>
+                    <Input
+                      id="min-length"
+                      type="number"
+                      min="0"
+                      value={config.minLength || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'minLength',
+                          e.target.value ? parseInt(e.target.value) : undefined
+                        )
+                      }
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div className="space-y-2 col-span-3">
+                    <Label htmlFor="max-length">Max Length</Label>
+                    <Input
+                      id="max-length"
+                      type="number"
+                      min="1"
+                      value={config.maxLength || ''}
+                      onChange={(e) =>
+                        handleInputChange(
+                          'maxLength',
+                          e.target.value ? parseInt(e.target.value) : undefined
+                        )
+                      }
+                      placeholder="100"
+                    />
+                  </div>
+                </div>
+
+                {/* <div className="space-y-2">
+                  <Label htmlFor="pattern">Pattern (Regex)</Label>
+                  <Input
+                    id="pattern"
+                    value={config.pattern || ''}
+                    onChange={(e) =>
+                      handleInputChange('pattern', e.target.value)
+                    }
+                    placeholder="^[a-zA-Z0-9]+$"
+                  />
+                </div> */}
+
+                {/* <div className="space-y-2">
+                  <Label htmlFor="autocomplete">Autocomplete</Label>
+                  <Input
+                    id="autocomplete"
+                    value={config.autoComplete || ''}
+                    onChange={(e) =>
+                      handleInputChange('autoComplete', e.target.value)
+                    }
+                    placeholder="name, email, etc."
+                  />
+                </div> */}
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="required-switch">Required Field</Label>
+                  <Switch
+                    id="required-switch"
+                    checked={config.required || false}
+                    onCheckedChange={(checked) =>
+                      handleInputChange('required', checked)
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="disabled-switch">Disabled</Label>
+                  <Switch
+                    id="disabled-switch"
+                    checked={config.disabled || false}
+                    onCheckedChange={(checked) =>
+                      handleInputChange('disabled', checked)
+                    }
+                  />
+                </div>
+              </AccordionContent>
             </AccordionItem>
           </Accordion>
-
-          <div className="space-y-2">
-            <Label htmlFor="field-label">Field Label *</Label>
-            <Input
-              id="field-label"
-              value={config.label}
-              onChange={(e) => handleInputChange('label', e.target.value)}
-              placeholder="Enter field label"
-              required
-            />
-          </div>
-
-          <AccordionWithSwitch
-            text="Placeholder"
-            defaultOpen={!!config.placeholder}
-          >
-            <Input
-              id="field-placeholder"
-              value={config.placeholder || ''}
-              onChange={(e) => handleInputChange('placeholder', e.target.value)}
-              placeholder="Enter placeholder text"
-            />
-          </AccordionWithSwitch>
-
-          <AccordionWithSwitch
-            text="Description"
-            defaultOpen={!!config.description}
-          >
-            <Textarea
-              id="field-description"
-              value={config.description || ''}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Enter field description"
-              rows={3}
-            />
-          </AccordionWithSwitch>
-
-          <div className="space-y-2">
-            <Label htmlFor="input-type">Input Type</Label>
-            <Select
-              value={config.inputType || 'text'}
-              onValueChange={(value) => handleInputChange('inputType', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select input type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="text">Text</SelectItem>
-                <SelectItem value="email">Email</SelectItem>
-                <SelectItem value="password">Password</SelectItem>
-                <SelectItem value="tel">Phone</SelectItem>
-                <SelectItem value="url">URL</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="min-length">Min Length</Label>
-              <Input
-                id="min-length"
-                type="number"
-                min="0"
-                value={config.minLength || ''}
-                onChange={(e) =>
-                  handleInputChange(
-                    'minLength',
-                    e.target.value ? parseInt(e.target.value) : undefined
-                  )
-                }
-                placeholder="0"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="max-length">Max Length</Label>
-              <Input
-                id="max-length"
-                type="number"
-                min="1"
-                value={config.maxLength || ''}
-                onChange={(e) =>
-                  handleInputChange(
-                    'maxLength',
-                    e.target.value ? parseInt(e.target.value) : undefined
-                  )
-                }
-                placeholder="100"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="pattern">Pattern (Regex)</Label>
-            <Input
-              id="pattern"
-              value={config.pattern || ''}
-              onChange={(e) => handleInputChange('pattern', e.target.value)}
-              placeholder="^[a-zA-Z0-9]+$"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="autocomplete">Autocomplete</Label>
-            <Input
-              id="autocomplete"
-              value={config.autoComplete || ''}
-              onChange={(e) =>
-                handleInputChange('autoComplete', e.target.value)
-              }
-              placeholder="name, email, etc."
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="required-switch">Required Field</Label>
-            <Switch
-              id="required-switch"
-              checked={config.required || false}
-              onCheckedChange={(checked) =>
-                handleInputChange('required', checked)
-              }
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="disabled-switch">Disabled</Label>
-            <Switch
-              id="disabled-switch"
-              checked={config.disabled || false}
-              onCheckedChange={(checked) =>
-                handleInputChange('disabled', checked)
-              }
-            />
-          </div>
         </div>
 
         <SheetFooter className="gap-2">

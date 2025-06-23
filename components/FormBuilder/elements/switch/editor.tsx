@@ -1,6 +1,13 @@
 'use client'
 
+import AccordionWithSwitch from '@/components/accordion-with-switch'
 import { EditorProps } from '@/components/FormBuilder/types/types'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -46,92 +53,76 @@ export const SwitchEditor: React.FC<SwitchEditorProps> = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="sm:max-w-md overflow-y-auto">
+      <SheetContent className="sm:max-w-md overflow-y-auto gap-y-0">
         <SheetHeader>
-          <SheetTitle>Configure Switch</SheetTitle>
+          <SheetTitle className="text-lg">Configure Switch</SheetTitle>
         </SheetHeader>
-        <div className="space-y-6 px-4">
-          <div className="space-y-2">
-            <Label htmlFor="field-label">Field Label *</Label>
-            <Input
-              id="field-label"
-              value={config.label}
-              onChange={(e) => handleInputChange('label', e.target.value)}
-              placeholder="Enter field label"
-              required
-            />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="field-description">Description</Label>
-            <Textarea
-              id="field-description"
-              value={config.description || ''}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Enter field description"
-              rows={3}
-            />
-          </div>
+        <div className="space-y-2 px-4">
+          <Accordion type="multiple" defaultValue={['basic']}>
+            <AccordionItem value="basic">
+              <AccordionTrigger className="text-base">
+                Basic Properties
+              </AccordionTrigger>
+              <AccordionContent className="flex flex-col gap-y-2">
+                <div className="space-y-2">
+                  <Label htmlFor="field-label">Field Label *</Label>
+                  <Input
+                    id="field-label"
+                    value={config.label}
+                    onChange={(e) => handleInputChange('label', e.target.value)}
+                    placeholder="Enter field label"
+                    required
+                  />
+                </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="checked-label">Checked Label</Label>
-            <Input
-              id="checked-label"
-              value={config.checkedLabel || ''}
-              onChange={(e) =>
-                handleInputChange('checkedLabel', e.target.value)
-              }
-              placeholder="e.g., 'Enabled'"
-            />
-          </div>
+                <AccordionWithSwitch
+                  text="Description"
+                  defaultOpen={!!config.description}
+                >
+                  <Textarea
+                    id="field-description"
+                    value={config.description || ''}
+                    onChange={(e) =>
+                      handleInputChange('description', e.target.value)
+                    }
+                    placeholder="Enter field description"
+                    rows={3}
+                  />
+                </AccordionWithSwitch>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="validaton">
+              <AccordionTrigger className="text-base">
+                Validaton Properties
+              </AccordionTrigger>
+              <AccordionContent className="flex flex-col gap-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="required-switch">Required Field</Label>
+                  <Switch
+                    id="required-switch"
+                    checked={config.required || false}
+                    onCheckedChange={(checked) =>
+                      handleInputChange('required', checked)
+                    }
+                  />
+                </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="unchecked-label">Unchecked Label</Label>
-            <Input
-              id="unchecked-label"
-              value={config.uncheckedLabel || ''}
-              onChange={(e) =>
-                handleInputChange('uncheckedLabel', e.target.value)
-              }
-              placeholder="e.g., 'Disabled'"
-            />
-          </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="disabled-switch">Disabled</Label>
+                  <Switch
+                    id="disabled-switch"
+                    checked={config.disabled || false}
+                    onCheckedChange={(checked) =>
+                      handleInputChange('disabled', checked)
+                    }
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="default-value-switch">
-              Default Value (Checked)
-            </Label>
-            <Switch
-              id="default-value-switch"
-              checked={config.defaultValue || false}
-              onCheckedChange={(checked) =>
-                handleInputChange('defaultValue', checked)
-              }
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="required-switch">Required Field</Label>
-            <Switch
-              id="required-switch"
-              checked={config.required || false}
-              onCheckedChange={(checked) =>
-                handleInputChange('required', checked)
-              }
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="disabled-switch">Disabled</Label>
-            <Switch
-              id="disabled-switch"
-              checked={config.disabled || false}
-              onCheckedChange={(checked) =>
-                handleInputChange('disabled', checked)
-              }
-            />
-          </div>
-        </div>{' '}
         <SheetFooter className="gap-2">
           <Button variant="outline" onClick={handleCancel}>
             Cancel
