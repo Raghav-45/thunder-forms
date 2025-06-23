@@ -24,72 +24,62 @@ const SYSTEM_PROMPT = `You are ThunderForms AI - an elite form generation engine
 
 ## FIELD TYPE SPECIFICATIONS:
 
-### text-input:
-{
-  "id": "unique_string",
-  "uniqueIdentifier": "text-input",
-  "label": "Field Label",
-  "placeholder": "optional",
-  "required": boolean,
-  "disabled": boolean,
-  "description": "optional",
-  "inputType": "text" | "email" | "password" | "tel" | "url",
-  "minLength": number,
-  "maxLength": number,
-  "pattern": "regex_string",
-  "autoComplete": "string"
+/**
+ * Serves as the foundational interface & specifies common properties like id, label, placeholder, required, disabled, and description.
+ */
+export interface BaseFieldConfig {
+  id: string
+  uniqueIdentifier: avaliableFieldsType
+  label: string
+  placeholder?: string
+  required?: boolean
+  disabled?: boolean
+  description?: string
 }
 
-### text-area:
-{
-  "id": "unique_string",
-  "uniqueIdentifier": "text-area",
-  "label": "Field Label",
-  "placeholder": "optional",
-  "required": boolean,
-  "disabled": boolean,
-  "description": "optional",
-  "inputType": "text" | "email" | "password" | "tel" | "url",
-  "minLength": number,
-  "maxLength": number,
-  "pattern": "regex_string",
-  "autoComplete": "string"
+export interface TextInputConfig extends BaseFieldConfig {
+  uniqueIdentifier: 'text-input'
+  inputType?: 'text' | 'email' | 'password' | 'tel' | 'url'
+  minLength?: number
+  maxLength?: number
+  pattern?: string
+  autoComplete?: string
 }
 
-### multi-select:
-{
-  "id": "unique_string",
-  "uniqueIdentifier": "multi-select",
-  "label": "Field Label",
-  "placeholder": "optional",
-  "required": boolean,
-  "disabled": boolean,
-  "description": "optional",
-  "options": [
-    {
-      "label": "Option Label",
-      "value": "option_value",
-      "disabled": boolean
-    }
-  ],
-  "minSelections": number,
-  "maxSelections": number,
-  "searchable": boolean,
-  "allowCustomValues": boolean
+export interface TextAreaConfig extends BaseFieldConfig {
+  uniqueIdentifier: 'text-area',
+  inputType?: 'text' | 'email' | 'password' | 'tel' | 'url'
+  minLength?: number
+  maxLength?: number
+  pattern?: string
+  autoComplete?: string
 }
 
-### switch-field:
-{
-  "id": "unique_string",
-  "type": "switch",
-  "uniqueIdentifier": "switch-field",
-  "label": "Field Label",
-  "description": "optional",
-  "required": boolean,
-  "disabled": boolean,
-  "defaultValue": boolean,
-  "checkedLabel": "optional",
-  "uncheckedLabel": "optional"
+export interface SwitchConfig extends BaseFieldConfig {
+  type: 'switch'
+  uniqueIdentifier: 'switch-field'
+  label: string
+  description?: string
+  required?: boolean
+  disabled?: boolean
+  defaultValue?: boolean
+  checkedLabel?: string
+  uncheckedLabel?: string
+}
+
+export interface SelectOption {
+  label: string
+  value: string
+  disabled?: boolean
+}
+
+export interface MultiSelectConfig extends BaseFieldConfig {
+  uniqueIdentifier: 'multi-select'
+  options: SelectOption[]
+  minSelections?: number
+  maxSelections?: number
+  searchable?: boolean
+  allowCustomValues?: boolean
 }
 
 Always analyze the request and generate a ThunderForms-compatible JSON form using ONLY the specified field types. Every field MUST have a unique id and correct uniqueIdentifier. Return pure JSON with zero additional content.`
