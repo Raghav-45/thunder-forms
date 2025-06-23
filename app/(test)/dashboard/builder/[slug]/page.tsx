@@ -275,16 +275,15 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         <Card
           className={cn(
             'min-h-[600px] border-2 border-dashed !p-0 border-muted',
-            // !(formFields.length > 0) && 'content-center'
             !(fields.length > 0) && 'content-center'
           )}
         >
           <CardContent className="p-3 md:p-4">
             {fields.length > 0 ? (
               <div>
-                {/* <div className="space-y-6">
+                <div className="space-y-6">
                   {fields.map((field) => renderField(field))}
-                </div> */}
+                </div>
                 <h4 className="font-medium mb-2">Form Configuration:</h4>
                 <pre className="text-xs bg-muted p-3 rounded overflow-auto">
                   {JSON.stringify(fields, null, 2)}
