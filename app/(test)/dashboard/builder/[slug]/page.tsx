@@ -185,7 +185,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         setFields(form.data.fields)
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExistingForm, currentFormId, form.isSuccess, form.isError, form.data])
 
   // Mutation for creating new forms
@@ -226,36 +226,36 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   })
 
   // Mutation for updating existing forms
-  // const updateFormMutation = useMutation({
-  //   mutationFn: async (payload: CreateFormPayload & { formId: string }) => {
-  //     const { formId, ...updateData } = payload
-  //     const { data } = await axios.post(`/api/forms/${formId}/update`, {
-  //       title: updateData.formName,
-  //       description: updateData.formDescription,
-  //       fields: updateData.formFields,
-  //       maxSubmissions: updateData.maxSubmissions,
-  //       expiresAt: updateData.expiresAt,
-  //       redirectUrl: updateData.redirectUrl,
-  //     })
-  //     return data as FormType
-  //   },
-  //   onError: (error) => {
-  //     console.error('Error updating form:', error)
-  //     toast.error('Failed to update form')
-  //   },
-  //   onSuccess: (data) => {
-  //     console.log('Form updated successfully:', data)
+  const updateFormMutation = useMutation({
+    mutationFn: async (payload: CreateFormPayload & { formId: string }) => {
+      const { formId, ...updateData } = payload
+      const { data } = await axios.post(`/api/forms/${formId}/update`, {
+        title: updateData.formName,
+        description: updateData.formDescription,
+        fields: updateData.formFields,
+        maxSubmissions: updateData.maxSubmissions,
+        expiresAt: updateData.expiresAt,
+        redirectUrl: updateData.redirectUrl,
+      })
+      return data
+    },
+    onError: (error) => {
+      console.error('Error updating form:', error)
+      toast.error('Failed to update form')
+    },
+    onSuccess: (data) => {
+      console.log('Form updated successfully:', data)
 
-  //     // Update store
-  //     // updateForm(currentFormId!, data)
+      // Update store
+      // updateForm(currentFormId!, data)
 
-  //     // Invalidate queries to refresh data
-  //     // queryClient.invalidateQueries({ queryKey: ['form', currentFormId] })
-  //     // queryClient.invalidateQueries({ queryKey: ['forms'] })
+      // Invalidate queries to refresh data
+      // queryClient.invalidateQueries({ queryKey: ['form', currentFormId] })
+      // queryClient.invalidateQueries({ queryKey: ['forms'] })
 
-  //     toast.success('Form updated successfully!')
-  //   },
-  // })
+      toast.success('Form updated successfully!')
+    },
+  })
 
   // Handle save form (create or update)
   const handleSaveForm = () => {
@@ -276,16 +276,15 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     if (isNewForm) {
       createFormMutation.mutate(payload)
     } else if (isExistingForm) {
-      // updateFormMutation.mutate({
-      //   ...payload,
-      //   formId: currentFormId,
-      // })
+      updateFormMutation.mutate({
+        ...payload,
+        formId: currentFormId,
+      })
     }
   }
 
   // Check if any mutation is loading
-  const isSaving = createFormMutation.isPending
-  //  || updateFormMutation.isPending
+  const isSaving = createFormMutation.isPending || updateFormMutation.isPending
 
   return (
     <div className="flex bg-background h-screen text-foreground">
