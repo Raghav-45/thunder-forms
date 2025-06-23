@@ -8,6 +8,13 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const aiPrompt = searchParams.get('prompt')
 
+  if (!aiPrompt) {
+    return NextResponse.json(
+      { error: 'Prompt parameter is required' },
+      { status: 400 }
+    )
+  }
+
   const startTime = Date.now()
 
   const response = await ai.models.generateContent({
