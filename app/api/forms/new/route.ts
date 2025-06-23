@@ -4,6 +4,17 @@ import { NextResponse } from 'next/server'
 
 const prisma = new PrismaClient()
 
+export interface CreateFormPayload {
+  formName: string
+  formDescription: string
+  formFields: unknown
+  maxSubmissions: number
+  expiresAt: string
+  redirectUrl: string
+}
+
+//TODO: Add validation for the request body using a library like Zod or Joi
+
 export async function POST(request: Request) {
   try {
     // Initialize Supabase client
@@ -30,7 +41,7 @@ export async function POST(request: Request) {
     }
 
     // Parse the request body
-    const body = await request.json()
+    const body: CreateFormPayload = await request.json()
 
     // Create the form in the database
     const form = await prisma.forms.create({
@@ -38,7 +49,7 @@ export async function POST(request: Request) {
         userId: session.user.id,
         title: body.formName,
         description: body.formDescription || '',
-        fields: body.formFields,
+        fields: body.formFields!,
         maxSubmissions: body.maxSubmissions || null,
         expiresAt: body.expiresAt || null,
         redirectUrl: body.redirectUrl || null,

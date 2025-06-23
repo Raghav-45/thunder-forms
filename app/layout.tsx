@@ -1,3 +1,4 @@
+import Providers from '@/components/Providers'
 import { cn } from '@/lib/utils'
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata } from 'next'
@@ -44,8 +45,10 @@ export default function RootLayout({
         )}
       >
         <div className="relative flex min-h-screen flex-col bg-background">
-          {children}
-          <Toaster />
+          <Providers>
+            {children}
+            <Toaster />
+          </Providers>
         </div>
       </body>
     </html>

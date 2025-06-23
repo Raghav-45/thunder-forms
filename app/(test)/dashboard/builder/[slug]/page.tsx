@@ -1,5 +1,6 @@
 'use client'
 
+import { CreateFormPayload } from '@/app/api/forms/new/route'
 import { CopyButton } from '@/components/copy-button'
 import { DatePickerWithPresets } from '@/components/date-picker-with-presets'
 import GenerateWithAiPrompt from '@/components/FormBuilder/core/generate-with-ai'
@@ -29,13 +30,17 @@ import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { siteConfig } from '@/config/site'
 import { cn } from '@/lib/utils'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import axios from 'axios'
 import {
   GripVerticalIcon,
+  Loader2Icon,
   PencilIcon,
   SaveIcon,
   Trash2Icon,
 } from 'lucide-react'
-import { use, useState } from 'react'
+import { use, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 // interface FormBuilderElementType {
 //   editor: any
@@ -52,6 +57,11 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   // const [elements, setElements] = useState([])
   const [fields, setFields] = useState<FieldConfig[]>([])
   const [editingField, setEditingField] = useState<FieldConfig | null>(null)
+
+  // BASIC FORM PROPERTIES CALCULATIONS
+  const isExistingForm = currentFormId && currentFormId !== 'new-form' // Means Form Id is provided
+  const isNewForm = !isExistingForm && currentFormId === 'new-form' // Means we are creating a new form
+  // const isGoingToUseTemplate = isNewForm && templateUniqueName // Means we are creating a new form with a template
 
   const handleAddField = (uniqueIdentifier: avaliableFieldsType) => {
     const newField = createDefaultFieldConfig(uniqueIdentifier)
@@ -143,6 +153,140 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     }
   }
 
+  const form = useQuery({
+    queryKey: ['form', currentFormId],
+    queryFn: async () => {
+      const { data } = await axios.get(`/api/forms/${currentFormId}`)
+      return data
+    },
+    retry: false,
+    retryOnMount: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    enabled: !!isExistingForm, // Only fetch when condition met
+  })
+
+  // Use useEffect to set state when form data is successfully loaded
+  useEffect(() => {
+    if (isExistingForm) {
+      if (form.isError) {
+        toast.error('Failed to load Form')
+        return
+      }
+      if (form.isSuccess && form.data) {
+        setFormSettings({
+          ...formSettings,
+          title: form.data.title,
+          description: form.data.description,
+          expiresAt: form.data.expiresAt && new Date(form.data.expiresAt),
+          maxSubmissions: form.data.maxSubmissions,
+          redirectUrl: form.data.redirectUrl,
+        })
+        setFields(form.data.fields)
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isExistingForm, currentFormId, form.isSuccess, form.isError, form.data])
+
+  // Mutation for creating new forms
+  const createFormMutation = useMutation({
+    mutationFn: async (payload: CreateFormPayload) => {
+      const { data } = await axios.post('/api/forms/new', payload)
+      return data
+    },
+    onError: (error) => {
+      console.error('Error creating form:', error)
+      toast.error('Failed to create form')
+    },
+    onSuccess: (data) => {
+      console.log('Form created successfully:', data)
+
+      // Add to store
+      // addForm({
+      //   id: data.id,
+      //   title: data.title,
+      //   description: data.description,
+      //   fields: JSON.parse(JSON.stringify(formFields)),
+      //   createdAt: data.createdAt,
+      //   maxSubmissions: data.maxSubmissions,
+      //   expiresAt: data.expiresAt,
+      //   redirectUrl: data.redirectUrl,
+      //   _count: { responses: 0 },
+      // })
+
+      // Update the URL without refreshing the page
+      const newUrl = `/dashboard/builder/${data.id}`
+      window.history.replaceState(null, '', newUrl)
+
+      // Invalidate queries to refresh data
+      // queryClient.invalidateQueries({ queryKey: ['forms'] })
+
+      toast.success('New Form created successfully!')
+    },
+  })
+
+  // Mutation for updating existing forms
+  // const updateFormMutation = useMutation({
+  //   mutationFn: async (payload: CreateFormPayload & { formId: string }) => {
+  //     const { formId, ...updateData } = payload
+  //     const { data } = await axios.post(`/api/forms/${formId}/update`, {
+  //       title: updateData.formName,
+  //       description: updateData.formDescription,
+  //       fields: updateData.formFields,
+  //       maxSubmissions: updateData.maxSubmissions,
+  //       expiresAt: updateData.expiresAt,
+  //       redirectUrl: updateData.redirectUrl,
+  //     })
+  //     return data as FormType
+  //   },
+  //   onError: (error) => {
+  //     console.error('Error updating form:', error)
+  //     toast.error('Failed to update form')
+  //   },
+  //   onSuccess: (data) => {
+  //     console.log('Form updated successfully:', data)
+
+  //     // Update store
+  //     // updateForm(currentFormId!, data)
+
+  //     // Invalidate queries to refresh data
+  //     // queryClient.invalidateQueries({ queryKey: ['form', currentFormId] })
+  //     // queryClient.invalidateQueries({ queryKey: ['forms'] })
+
+  //     toast.success('Form updated successfully!')
+  //   },
+  // })
+
+  // Handle save form (create or update)
+  const handleSaveForm = () => {
+    if (!formSettings.title.trim()) {
+      toast.error('Form name is required')
+      return
+    }
+
+    const payload: CreateFormPayload = {
+      formName: formSettings.title,
+      formDescription: formSettings.description!,
+      formFields: fields,
+      maxSubmissions: formSettings.maxSubmissions!,
+      expiresAt: formSettings.expiresAt as unknown as string,
+      redirectUrl: formSettings.redirectUrl!,
+    }
+
+    if (isNewForm) {
+      createFormMutation.mutate(payload)
+    } else if (isExistingForm) {
+      // updateFormMutation.mutate({
+      //   ...payload,
+      //   formId: currentFormId,
+      // })
+    }
+  }
+
+  // Check if any mutation is loading
+  const isSaving = createFormMutation.isPending
+  //  || updateFormMutation.isPending
+
   return (
     <div className="flex bg-background h-screen text-foreground">
       {/* Left Side bar with Form Details */}
@@ -154,16 +298,16 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
             <Button
               size="sm"
               variant="secondary"
-              // onClick={handleSaveForm}
-              // disabled={isFormSaving}
+              onClick={handleSaveForm}
+              disabled={isSaving}
               className="text-xs"
             >
-              {/* {isFormSaving ? (
+              {isSaving ? (
                 <Loader2Icon className="animate-spin" />
-              ) : ( */}
-              <SaveIcon /> Save
-              {/* )}{' '}
-              {isFormSaving ? 'Saving...' : 'Save'} */}
+              ) : (
+                <SaveIcon />
+              )}{' '}
+              {isSaving ? 'Saving...' : 'Save'}
             </Button>
           </div>
           <div className="items-center gap-1.5 grid w-full">
