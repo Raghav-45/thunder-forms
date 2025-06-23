@@ -22,6 +22,12 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import React, { useState } from 'react'
 import { TextInputConfig } from './types'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import AccordionWithSwitch from '@/components/accordion-with-switch'
 
 interface TextInputEditorProps extends EditorProps<TextInputConfig> {
@@ -61,6 +67,15 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
         </SheetHeader>
 
         <div className="space-y-2 px-4">
+          <Accordion type="multiple" defaultValue={['basic']}>
+            <AccordionItem value="basic">
+              <AccordionTrigger className="text-base">
+                Basic Properties
+              </AccordionTrigger>
+              <AccordionContent className="flex flex-col gap-y-2"></AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
           <div className="space-y-2">
             <Label htmlFor="field-label">Field Label *</Label>
             <Input
