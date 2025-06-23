@@ -29,7 +29,12 @@ import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { siteConfig } from '@/config/site'
 import { cn } from '@/lib/utils'
-import { GripVerticalIcon, SaveIcon } from 'lucide-react'
+import {
+  GripVerticalIcon,
+  PencilIcon,
+  SaveIcon,
+  Trash2Icon,
+} from 'lucide-react'
 import { use, useState } from 'react'
 
 // interface FormBuilderElementType {
@@ -63,31 +68,35 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
     return (
       <div key={field.id} className="relative group">
-        <FieldComponent
-          // @ts-expect-error field properties not guaranteed across all variants
-          field={field}
-          // value={formData[field.id]}
-          onChange={(value) => console.log(field.id, value)}
-          // error={errors[field.id]}
-        />
+        <div className="w-full pr-28">
+          <FieldComponent
+            // @ts-expect-error field properties not guaranteed across all variants
+            field={field}
+            // value={formData[field.id]}
+            onChange={(value) => console.log(field.id, value)}
+            // error={errors[field.id]}
+          />
+        </div>
 
-        <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute right-0 bottom-0 space-x-2 mr-4 transition-opacity">
           <div className="flex gap-1">
             <Button
-              variant="outline"
-              size="sm"
+              variant="ghost"
+              size="icon"
+              type="button"
+              className="cursor-pointer hover:bg-neutral-800!"
               onClick={() => setEditingField(field)}
-              className="h-8 px-2"
             >
-              Edit
+              <PencilIcon />
             </Button>
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
+              type="button"
+              className="cursor-pointer bg-neutral-900! hover:bg-neutral-800!"
               onClick={() => handleRemoveField(field.id)}
-              className="h-8 px-2 text-red-500 hover:text-red-700"
             >
-              Remove
+              <Trash2Icon />
             </Button>
           </div>
         </div>
