@@ -171,17 +171,6 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'type',
-    header: 'Section Type',
-    cell: ({ row }) => (
-      <div className="w-32">
-        <Badge variant="outline" className="text-muted-foreground px-1.5">
-          {row.original.type}
-        </Badge>
-      </div>
-    ),
-  },
-  {
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => (
@@ -193,6 +182,17 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
         )}
         {row.original.status}
       </Badge>
+    ),
+  },
+  {
+    accessorKey: 'type',
+    header: 'Section Type',
+    cell: ({ row }) => (
+      <div className="w-32">
+        <Badge variant="outline" className="text-muted-foreground px-1.5">
+          {row.original.type}
+        </Badge>
+      </div>
     ),
   },
   {
