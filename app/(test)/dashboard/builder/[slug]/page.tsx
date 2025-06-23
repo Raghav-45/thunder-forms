@@ -58,7 +58,6 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     setFields((prev) => [...prev, newField])
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const renderField = (field: FieldConfig) => {
     const FieldComponent = getFieldComponent(field.uniqueIdentifier)
 
@@ -84,7 +83,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
               variant="ghost"
               size="icon"
               type="button"
-              className="cursor-pointer hover:bg-neutral-800!"
+              className="cursor-pointer bg-neutral-900! hover:bg-neutral-800!"
               onClick={() => setEditingField(field)}
             >
               <PencilIcon />
