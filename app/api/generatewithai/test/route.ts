@@ -4,17 +4,21 @@ import { SYSTEM_PROMPT } from '../prompt'
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const aiPrompt = searchParams.get('prompt')
+
   const startTime = Date.now()
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash',
-    contents: 'How does AI work? explain in 10 words what is your name?',
+    contents: aiPrompt,
     config: {
       systemInstruction: SYSTEM_PROMPT,
       thinkingConfig: {
         thinkingBudget: 0, // Disables thinking
       },
+      temperature: 0.1,
     },
   })
 
