@@ -90,7 +90,7 @@ export interface TextInputConfig extends BaseFieldConfig {
 
 ## SOME DEFAULT FIELD CONFIGURATIONS (YOU CAN USE THESE VALUES): [
   {
-    "id": "text_1750679993280",
+    "id": "text_1750680110189",
     "uniqueIdentifier": "text-input",
     "label": "Your Name",
     "placeholder": "e.g., John Doe",
@@ -100,7 +100,7 @@ export interface TextInputConfig extends BaseFieldConfig {
     "inputType": "text"
   },
   {
-    "id": "multiselect_1750679993281",
+    "id": "multiselect_1750680110189",
     "uniqueIdentifier": "multi-select",
     "label": "Select your framework",
     "placeholder": "Select multiple options",
@@ -132,7 +132,7 @@ export interface TextInputConfig extends BaseFieldConfig {
     "allowCustomValues": false
   },
   {
-    "id": "textarea_1750679993281",
+    "id": "textarea_1750680110189",
     "uniqueIdentifier": "text-area",
     "label": "Your Message",
     "placeholder": "Type your message here.",
@@ -141,7 +141,7 @@ export interface TextInputConfig extends BaseFieldConfig {
     "disabled": false
   },
   {
-    "id": "switch_1750679993281",
+    "id": "switch_1750680110189",
     "type": "switch",
     "uniqueIdentifier": "switch-field",
     "label": "Your Message",

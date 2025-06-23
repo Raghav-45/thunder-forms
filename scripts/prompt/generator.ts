@@ -2,6 +2,8 @@ import { avaliableFieldsType } from '@/components/FormBuilder/types/types'
 import fs from 'fs'
 import path from 'path'
 
+const PROMPT_FILE_NAME = 'dynamic-system-prompt.ts'
+
 /**
  * Extracts all type definitions from 'type.ts' files within element folders,
  * removing import statements.
@@ -111,7 +113,7 @@ Always analyze the request and generate a ThunderForms-compatible JSON form usin
     }
 
     // Write the generated file
-    const outputPath = path.join(outputDir, 'ai-prompt.ts')
+    const outputPath = path.join(outputDir, PROMPT_FILE_NAME)
     fs.writeFileSync(outputPath, promptTemplate)
 
     console.log(`✅ Generated AI prompt at: ${outputPath}`)
