@@ -1,3 +1,4 @@
+import { avaliableFieldsType } from '@/components/FormBuilder/types/types'
 import fs from 'fs'
 import path from 'path'
 
@@ -7,13 +8,16 @@ import path from 'path'
  * @param elementsDirPath The path to the 'FormBuilder/elements' directory.
  * @returns A string containing all extracted type definitions.
  */
-export async function extractElementTypeDefinitions(elementsDirPath: string): Promise<string> {
+export async function extractElementTypeDefinitions(
+  elementsDirPath: string
+): Promise<string> {
   let allTypeDefs = ''
 
   try {
-    const elementFolders = fs.readdirSync(elementsDirPath, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory())
-      .map(dirent => dirent.name)
+    const elementFolders = fs
+      .readdirSync(elementsDirPath, { withFileTypes: true })
+      .filter((dirent) => dirent.isDirectory())
+      .map((dirent) => dirent.name)
 
     for (const folderName of elementFolders) {
       const typeFilePath = path.join(elementsDirPath, folderName, 'types.ts')
@@ -38,16 +42,17 @@ export async function extractElementTypeDefinitions(elementsDirPath: string): Pr
 async function extractBaseFieldConfig(filePath: string): Promise<string> {
   try {
     const fileContent = fs.readFileSync(filePath, 'utf-8')
-    
+
     // Regex to match the BaseFieldConfig interface with its JSDoc comment
-    const interfaceRegex = /\/\*\*[\s\S]*?\*\/\s*export\s+interface\s+BaseFieldConfig\s*\{[\s\S]*?\n\}/g
-    
+    const interfaceRegex =
+      /\/\*\*[\s\S]*?\*\/\s*export\s+interface\s+BaseFieldConfig\s*\{[\s\S]*?\n\}/g
+
     const match = fileContent.match(interfaceRegex)
-    
+
     if (!match || match.length === 0) {
       throw new Error('BaseFieldConfig interface not found in the file')
     }
-    
+
     return match[0]
   } catch (error) {
     throw new Error(`Failed to extract BaseFieldConfig: ${error}`)
@@ -61,17 +66,31 @@ async function generatePrompt() {
     const { AVAILABLE_FIELDS } = await import(
       '@/components/FormBuilder/types/types'
     )
-    
+    const { createDefaultFieldConfig } = await import(
+      '@/components/FormBuilder/utils/helperFunctions'
+    )
+
     // Extract BaseFieldConfig from the types file
-    const typesFilePath = path.resolve('./components/FormBuilder/types/types.ts')
+    const typesFilePath = path.resolve(
+      './components/FormBuilder/types/types.ts'
+    )
     const baseFieldConfigInterface = await extractBaseFieldConfig(typesFilePath)
 
     // NEW: Extract all specific element type definitions
-    const elementsDirPath = path.resolve('./components/FormBuilder/elements');
-    const specificFieldTypeDefinitions = await extractElementTypeDefinitions(elementsDirPath);
+    const elementsDirPath = path.resolve('./components/FormBuilder/elements')
+    const specificFieldTypeDefinitions = await extractElementTypeDefinitions(
+      elementsDirPath
+    )
+
+    const SOME_DEFAULT_VALUES_CONFIGRATIONS = `## SOME DEFAULT FIELD CONFIGURATIONS (YOU CAN USE THESE VALUES): ${JSON.stringify(
+      AVAILABLE_FIELDS.map((field) =>
+        createDefaultFieldConfig(field as avaliableFieldsType)
+      ),
+      null,
+      2
+    )}`
 
     const promptTemplate = `// This file is auto-generated from scripts/prompt/generator.ts
-// Do not edit manually - run 'npm run generate-prompt' to regenerate
 
 export const DYNAMIC_SYSTEM_PROMPT = \`${BASE_PROMPT}
 
@@ -81,7 +100,10 @@ ${baseFieldConfigInterface}
 
 ${specificFieldTypeDefinitions}
 
-\``
+${SOME_DEFAULT_VALUES_CONFIGRATIONS}
+
+Always analyze the request and generate a ThunderForms-compatible JSON form using ONLY the specified field types. Every field MUST have a unique id and correct uniqueIdentifier. Return pure JSON with zero additional content.\``
+
     // Ensure the output directory exists
     const outputDir = path.join(__dirname, './generated')
     if (!fs.existsSync(outputDir)) {
