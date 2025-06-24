@@ -4,8 +4,9 @@ import {
   FormTable,
   schema as TableDataItemSchema,
 } from '@/components/form-table'
+import { useQuery } from '@tanstack/react-query'
+import axios from 'axios'
 import { format } from 'date-fns'
-import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
 interface ApiFormData {
@@ -20,23 +21,12 @@ interface ApiFormData {
 }
 
 const getForms = async (): Promise<ApiFormData[]> => {
-  try {
-    const response = await fetch('/api/forms', {
-      cache: 'no-store',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch forms: ${response.status}`)
-    }
-
-    return response.json()
-  } catch (error) {
-    console.error('Error fetching forms:', error)
-    throw error
-  }
+  const response = await axios.get<ApiFormData[]>('/api/forms', {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  return response.data
 }
 
 function transformFormsData(
@@ -53,26 +43,19 @@ function transformFormsData(
 }
 
 export default function FormsPage() {
-  const [data, setData] = useState<z.infer<typeof TableDataItemSchema>[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const {
+    data: apiData,
+    isLoading,
+    error,
+    refetch,
+    isRefetching,
+  } = useQuery({
+    queryKey: ['forms'],
+    queryFn: getForms,
+  })
 
-  useEffect(() => {
-    const fetchForms = async () => {
-      try {
-        setIsLoading(true)
-        const apiData = await getForms()
-        const transformedData = transformFormsData(apiData)
-        setData(transformedData)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch forms')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchForms()
-  }, [])
+  // Transform data when available
+  const transformedData = apiData ? transformFormsData(apiData) : []
 
   if (isLoading) {
     return (
@@ -83,16 +66,25 @@ export default function FormsPage() {
   }
 
   if (error) {
+    const errorMessage = axios.isAxiosError(error)
+      ? error.response?.data?.message || error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to fetch forms'
+
     return (
-      <div className="flex items-center justify-center p-8 text-red-500">
-        Error: {error}
+      <div className="flex flex-col items-center justify-center p-8 text-red-500 space-y-4">
+        <div>Error: {errorMessage}</div>
+        <button
+          onClick={() => refetch()}
+          disabled={isRefetching}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+        >
+          {isRefetching ? 'Retrying...' : 'Retry'}
+        </button>
       </div>
     )
   }
 
-  return (
-    <>
-      <FormTable data={data} />
-    </>
-  )
+  return <FormTable data={transformedData} />
 }
