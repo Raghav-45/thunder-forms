@@ -2,7 +2,7 @@ import { ChartAreaInteractive } from '@/components/chart-area-interactive'
 import { DataTable } from '@/components/data-table'
 import { SectionCards } from '@/components/section-cards'
 
-import { tableData } from '@/config/data.js'
+import { tableData } from '@/config/data'
 
 export default function TestPage() {
   return (
