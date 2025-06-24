@@ -1,6 +1,11 @@
 import Script from 'next/script'
 
 const UmamiAnalytics = ({}) => {
+  // Only load analytics in production
+  if (process.env.NODE_ENV !== 'production') {
+    return null
+  }
+
   return (
     <Script
       src="https://thunder-forms-analytics.vercel.app/script.js"
