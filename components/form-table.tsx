@@ -97,6 +97,7 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { Skeleton } from './ui/skeleton'
 
 export const schema = z.object({
   id: z.string(),
@@ -127,96 +128,6 @@ export const schema = z.object({
 //   )
 // }
 
-const columns: ColumnDef<z.infer<typeof schema>>[] = [
-  // {
-  //   id: 'drag',
-  //   header: () => null,
-  //   cell: ({ row }) => <DragHandle id={row.original.id} />,
-  // },
-  {
-    id: 'select',
-    header: ({ table }) => (
-      <div className="flex items-center justify-center mx-3">
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && 'indeterminate')
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="flex items-center justify-center mx-3">
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: 'title',
-    header: 'Header',
-    cell: ({ row }) => {
-      return <TableCellViewer item={row.original} />
-    },
-    enableHiding: false,
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    cell: ({ row }) => (
-      <Badge variant="outline" className="text-muted-foreground px-1.5">
-        {row.original.status === 'Done' ? (
-          <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
-        ) : (
-          <IconLoader />
-        )}
-        {row.original.status}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: 'responses',
-    header: 'Responses',
-    cell: ({ row }) => row.original.responses,
-  },
-  {
-    accessorKey: 'createdAt',
-    header: 'createdAt',
-    cell: ({ row }) => row.original.createdAt,
-  },
-  {
-    id: 'actions',
-    cell: () => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-            size="icon"
-          >
-            <IconDotsVertical />
-            <span className="sr-only">Open menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem>Make a copy</DropdownMenuItem>
-          <DropdownMenuItem>Favorite</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-  },
-]
-
 function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original.id,
@@ -244,10 +155,18 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
 
 export function FormTable({
   data: initialData,
+  isLoading = false,
 }: {
   data: z.infer<typeof schema>[]
+  isLoading?: boolean
 }) {
   const [data, setData] = React.useState(() => initialData)
+
+  // Sync internal state with prop data
+  React.useEffect(() => {
+    setData(initialData)
+  }, [initialData])
+
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
@@ -269,6 +188,116 @@ export function FormTable({
   const dataIds = React.useMemo<UniqueIdentifier[]>(
     () => data?.map(({ id }) => id) || [],
     [data]
+  )
+
+  const columns: ColumnDef<z.infer<typeof schema>>[] = React.useMemo(
+    () => [
+      {
+        id: 'select',
+        header: ({ table }) => (
+          <div className="flex items-center justify-center mx-3">
+            <Checkbox
+              checked={
+                table.getIsAllPageRowsSelected() ||
+                (table.getIsSomePageRowsSelected() && 'indeterminate')
+              }
+              onCheckedChange={(value) =>
+                table.toggleAllPageRowsSelected(!!value)
+              }
+              aria-label="Select all"
+            />
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div className="flex items-center justify-center mx-3">
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label="Select row"
+            />
+          </div>
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      },
+      {
+        accessorKey: 'title',
+        header: 'Header',
+        cell: ({ row }) => {
+          return isLoading ? (
+            <Skeleton key={row.index} className="h-4 w-[250px]" />
+          ) : (
+            <TableCellViewer item={row.original} />
+          )
+        },
+        enableHiding: false,
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
+        cell: ({ row }) => {
+          return isLoading ? (
+            <Skeleton key={row.index} className="h-4 w-[50px] rounded-sm" />
+          ) : (
+            <Badge variant="outline" className="text-muted-foreground px-1.5">
+              {row.original.status === 'Done' ? (
+                <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+              ) : (
+                <IconLoader />
+              )}
+              {row.original.status}
+            </Badge>
+          )
+        },
+      },
+      {
+        accessorKey: 'responses',
+        header: 'Responses',
+        cell: ({ row }) => {
+          return isLoading ? (
+            <Skeleton key={row.index} className="h-4 w-[50px] rounded-sm" />
+          ) : (
+            row.original.responses
+          )
+        },
+      },
+      {
+        accessorKey: 'createdAt',
+        header: 'createdAt',
+        cell: ({ row }) => {
+          return isLoading ? (
+            <Skeleton key={row.index} className="h-4 w-[125px] rounded-sm" />
+          ) : (
+            row.original.createdAt
+          )
+        },
+      },
+      {
+        id: 'actions',
+        cell: () => (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+                size="icon"
+              >
+                <IconDotsVertical />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-32">
+              <DropdownMenuItem>Edit</DropdownMenuItem>
+              <DropdownMenuItem>Make a copy</DropdownMenuItem>
+              <DropdownMenuItem>Favorite</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ),
+      },
+    ],
+    [isLoading]
   )
 
   const table = useReactTable({
@@ -394,7 +423,12 @@ export function FormTable({
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
                       return (
-                        <TableHead key={header.id} colSpan={header.colSpan}>
+                        // Set the width of the second header to be larger
+                        <TableHead
+                          className="[&:nth-child(2)]:w-lg"
+                          key={header.id}
+                          colSpan={header.colSpan}
+                        >
                           {header.isPlaceholder
                             ? null
                             : flexRender(
