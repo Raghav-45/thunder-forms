@@ -13,9 +13,9 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
-import { login } from '@/app/(auth)/auth/actions'
+import { signup } from '@/app/(auth)/auth/actions'
 
-export function LoginForm({
+export function SignupForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<'div'>) {
@@ -26,9 +26,9 @@ export function LoginForm({
     setIsLoading(true)
 
     try {
-      await login(new FormData(e.currentTarget))
+      await signup(new FormData(e.currentTarget))
     } catch (error) {
-      console.error('Login error:', error)
+      console.error('Signup error:', error)
     } finally {
       setIsLoading(false)
     }
@@ -38,9 +38,9 @@ export function LoginForm({
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
+          <CardTitle className="text-xl">Create an account</CardTitle>
           <CardDescription>
-            Login with your Github or Google account
+            Sign up with your Github or Google account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -54,6 +54,17 @@ export function LoginForm({
               </div>
               <div className="grid gap-6">
                 <div className="grid gap-2">
+                  <Label htmlFor="displayName">Display name</Label>
+                  <Input
+                    id="displayName"
+                    name="displayName"
+                    type="text"
+                    placeholder="John Doe"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
@@ -65,15 +76,7 @@ export function LoginForm({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <div className="flex items-center">
-                    <Label htmlFor="password">Password</Label>
-                    <a
-                      href="#"
-                      className="ml-auto text-sm underline-offset-4 hover:underline"
-                    >
-                      Forgot your password?
-                    </a>
-                  </div>
+                  <Label htmlFor="password">Password</Label>
                   <Input
                     id="password"
                     name="password"
@@ -83,13 +86,13 @@ export function LoginForm({
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Signing in...' : 'Login'}
+                  {isLoading ? 'Creating account...' : 'Sign up'}
                 </Button>
               </div>
               <div className="text-center text-sm">
-                Don&apos;t have an account?{' '}
-                <a href="/auth/signup" className="underline underline-offset-4">
-                  Sign up
+                Already have an account?{' '}
+                <a href="/auth/login" className="underline underline-offset-4">
+                  Login
                 </a>
               </div>
             </div>
