@@ -1,18 +1,5 @@
 'use client'
 
-import {
-  IconDashboard,
-  IconDatabase,
-  IconFileWord,
-  IconHelp,
-  IconInnerShadowTop,
-  IconListDetails,
-  IconReport,
-  IconSearch,
-  IconSettings,
-} from '@tabler/icons-react'
-import * as React from 'react'
-
 import { NavMain } from '@/components/nav-main'
 import { NavOther } from '@/components/nav-other'
 import { NavSecondary } from '@/components/nav-secondary'
@@ -27,6 +14,19 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { siteConfig } from '@/config/site'
+import { createClient } from '@/utils/supabase/client'
+import {
+  IconDashboard,
+  IconDatabase,
+  IconFileWord,
+  IconHelp,
+  IconInnerShadowTop,
+  IconListDetails,
+  IconReport,
+  IconSearch,
+  IconSettings,
+} from '@tabler/icons-react'
+import * as React from 'react'
 
 const data = {
   user: {
@@ -83,6 +83,24 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [user, setUser] = React.useState<typeof data.user>()
+
+  React.useEffect(() => {
+    const loadUser = async () => {
+      const supabase = createClient()
+      const { data: userData } = await supabase.auth.getUser()
+      if (userData?.user) {
+        console.log(userData)
+        setUser({
+          name: userData.user.user_metadata?.full_name,
+          email: userData.user.email || '',
+          avatar: userData.user.user_metadata?.avatar_url || data.user.avatar,
+        })
+      }
+    }
+
+    loadUser()
+  }, [])
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -107,9 +125,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} />
         <NavOther items={data.navOther} className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
+      {user && (
+        <SidebarFooter>
+          <NavUser user={user} />
+        </SidebarFooter>
+      )}
     </Sidebar>
   )
 }
