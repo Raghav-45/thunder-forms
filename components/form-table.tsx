@@ -97,6 +97,8 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { Edit2Icon } from 'lucide-react'
+import Link from 'next/link'
 import { Skeleton } from './ui/skeleton'
 
 export const schema = z.object({
@@ -741,9 +743,19 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </form> */}
         </div>
         <DrawerFooter>
-          {/* <Button>Submit</Button> */}
+          {/* <Button>Edit Form</Button> */}
+
+          <Link href={`/dashboard/builder/${item.id}`}>
+            <Button className="w-full">
+              <Edit2Icon />
+              Edit Form
+            </Button>
+          </Link>
+
           <DrawerClose asChild>
-            <Button variant="outline">Done</Button>
+            <Button variant="outline" className="w-full">
+              Done
+            </Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>
