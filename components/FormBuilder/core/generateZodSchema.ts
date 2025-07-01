@@ -54,23 +54,46 @@ export const generateZodSchema = (
           }
 
           fieldSchema = emailSchema
-        // } else if (field.inputType === 'url') {
-        //   let emailSchema = z.string().email('Invalid email address')
+        } else if (field.inputType === 'url') {
+          let urlSchema = z.string().url('Invalid URL format')
 
-        //   if (field.minLength) {
-        //     emailSchema = emailSchema.min(
-        //       field.minLength,
-        //       `Must be at least ${field.minLength} characters`
-        //     )
-        //   }
-        //   if (field.maxLength) {
-        //     emailSchema = emailSchema.max(
-        //       field.maxLength,
-        //       `Must be at most ${field.maxLength} characters`
-        //     )
-        //   }
+          if (field.minLength) {
+            urlSchema = urlSchema.min(
+              field.minLength,
+              `Must be at least ${field.minLength} characters`
+            )
+          }
+          if (field.maxLength) {
+            urlSchema = urlSchema.max(
+              field.maxLength,
+              `Must be at most ${field.maxLength} characters`
+            )
+          }
 
-        //   fieldSchema = emailSchema
+          fieldSchema = urlSchema
+        } else if (field.inputType === 'tel') {
+          let telSchema = z.string()
+
+          if (field.minLength) {
+            telSchema = telSchema.min(
+              field.minLength,
+              `Must be at least ${field.minLength} characters`
+            )
+          }
+          if (field.maxLength) {
+            telSchema = telSchema.max(
+              field.maxLength,
+              `Must be at most ${field.maxLength} characters`
+            )
+          }
+          if (field.pattern) {
+            telSchema = telSchema.regex(
+              new RegExp(field.pattern),
+              'Invalid phone number format'
+            )
+          }
+
+          fieldSchema = telSchema
         } else {
           // Handle regular text input
           let stringSchema = z.string()
