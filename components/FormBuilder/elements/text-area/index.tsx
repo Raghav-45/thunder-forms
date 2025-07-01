@@ -36,10 +36,6 @@ const TextArea: React.FC<FieldProps<TextAreaConfig>> = ({
         {field.label}
       </Label>
 
-      {field.description && (
-        <p className="text-sm text-muted-foreground">{field.description}</p>
-      )}
-
       <Textarea
         id={inputId}
         placeholder={field.placeholder}
@@ -53,6 +49,10 @@ const TextArea: React.FC<FieldProps<TextAreaConfig>> = ({
         autoComplete={field.autoComplete}
         className={error ? 'border-red-500 focus:border-red-500' : ''}
       />
+
+      {field.description && (
+        <p className="text-sm text-muted-foreground">{field.description}</p>
+      )}
 
       {error && (
         <p

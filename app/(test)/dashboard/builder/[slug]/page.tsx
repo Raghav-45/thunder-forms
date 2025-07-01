@@ -432,13 +432,13 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           <CardContent className="p-3 md:p-4">
             {fields.length > 0 ? (
               <div>
-                <div className="space-y-6">
+                <div className="space-y-4 w-full">
                   {fields.map((field) => renderField(field))}
                 </div>
-                <h4 className="font-medium mb-2">Form Configuration:</h4>
+                {/* <h4 className="font-medium mt-8 mb-2">Form Configuration:</h4>
                 <pre className="text-xs bg-muted p-3 rounded overflow-auto">
                   {JSON.stringify(fields, null, 2)}
-                </pre>
+                </pre> */}
               </div>
             ) : (
               <div className="flex justify-center items-center h-full text-muted-foreground text-center">

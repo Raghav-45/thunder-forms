@@ -18,43 +18,36 @@ export const SwitchField: React.FC<FieldProps<SwitchConfig>> = ({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center space-x-2">
-        <Switch
-          id={field.id}
-          checked={(value as boolean) || false}
-          onCheckedChange={handleSwitchChange}
-          disabled={field.disabled}
-          aria-label={field.label}
-          tabIndex={0}
-        />
-        <Label
-          htmlFor={field.id}
-          className={`text-sm font-medium ${
-            field.disabled ? 'opacity-50' : 'cursor-pointer'
-          }`}
-        >
-          {field.label}
-          {field.required && <span className="text-red-500 ml-1">*</span>}
-        </Label>
-      </div>
-
-      {field.checkedLabel && field.uncheckedLabel && (
-        <div className="text-xs text-muted-foreground ml-6">
-          {value ? field.checkedLabel : field.uncheckedLabel}
+      <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+        <div className="space-y-0.5">
+          <Label
+            htmlFor={field.id}
+            className={`flex items-center gap-2 text-sm leading-none font-medium select-none ${
+              field.disabled ? 'opacity-50' : 'cursor-pointer'
+            }`}
+          >
+            {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+          <p className="text-sm text-muted-foreground">{field.description}</p>
+          {error && (
+            <p className="text-sm text-red-500 ml-6" role="alert">
+              {error}
+            </p>
+          )}
         </div>
-      )}
-
-      {field.description && (
-        <p className="text-sm text-muted-foreground ml-6">
-          {field.description}
-        </p>
-      )}
-
-      {error && (
-        <p className="text-sm text-red-500 ml-6" role="alert">
-          {error}
-        </p>
-      )}
+        <div>
+          <Switch
+            value={value == true ? 'on' : 'off'}
+            id={field.id}
+            checked={(value as boolean) || false}
+            onCheckedChange={handleSwitchChange}
+            disabled={field.disabled}
+            aria-label={field.label}
+            tabIndex={0}
+          />
+        </div>
+      </div>
     </div>
   )
 }

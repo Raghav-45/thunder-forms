@@ -36,10 +36,6 @@ const TextInput: React.FC<FieldProps<TextInputConfig>> = ({
         {field.label}
       </Label>
 
-      {field.description && (
-        <p className="text-sm text-muted-foreground">{field.description}</p>
-      )}
-
       <Input
         id={inputId}
         type={field.inputType || 'text'}
@@ -55,6 +51,10 @@ const TextInput: React.FC<FieldProps<TextInputConfig>> = ({
         autoComplete={field.autoComplete}
         className={error ? 'border-red-500 focus:border-red-500' : ''}
       />
+
+      {field.description && (
+        <p className="text-sm text-muted-foreground">{field.description}</p>
+      )}
 
       {error && (
         <p

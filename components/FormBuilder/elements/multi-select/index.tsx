@@ -96,10 +96,6 @@ const MultiSelect: React.FC<FieldProps<MultiSelectConfig>> = ({
         {field.label}
       </Label>
 
-      {field.description && (
-        <p className="text-sm text-muted-foreground">{field.description}</p>
-      )}
-
       <div className="space-y-2">
         {selectedValues.length > 0 && (
           <div className="flex flex-wrap gap-1">
@@ -188,11 +184,15 @@ const MultiSelect: React.FC<FieldProps<MultiSelectConfig>> = ({
         </Popover>
       </div>
 
-      {field.minSelections && selectedValues.length < field.minSelections && (
+      {/* {field.minSelections && selectedValues.length < field.minSelections && (
         <p className="text-sm text-muted-foreground">
           Select at least {field.minSelections} option
           {field.minSelections > 1 ? 's' : ''}
         </p>
+      )} */}
+
+      {field.description && (
+        <p className="text-sm text-muted-foreground">{field.description}</p>
       )}
 
       {error && (
