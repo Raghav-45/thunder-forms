@@ -1,143 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { FIELD_REGISTRY, FieldConfig } from '@/components/FormBuilder/elements'
 import { z } from 'zod'
-import { FieldConfig } from '../elements'
 
 export const generateZodSchema = (
   formFields: FieldConfig[]
 ): z.ZodObject<any> => {
   const schemaObject: Record<string, z.ZodTypeAny> = {}
 
-  const processField = (field: FieldConfig): void => {
-    if ((field.uniqueIdentifier as string) === 'Label') return
-
-    let fieldSchema: z.ZodTypeAny
-
-    switch (field.uniqueIdentifier) {
-      case 'text-input':
-        if (field.inputType === 'text') {
-          let textSchema = z.string()
-
-          if (field.minLength) {
-            textSchema = textSchema.min(
-              field.minLength,
-              `Must be at least ${field.minLength} characters`
-            )
-          }
-          if (field.maxLength) {
-            textSchema = textSchema.max(
-              field.maxLength,
-              `Must be at most ${field.maxLength} characters`
-            )
-          }
-          if (field.pattern) {
-            textSchema = textSchema.regex(
-              new RegExp(field.pattern),
-              'Invalid format'
-            )
-          }
-
-          fieldSchema = textSchema
-        } else if (field.inputType === 'email') {
-          let emailSchema = z.string().email('Invalid email address')
-
-          if (field.minLength) {
-            emailSchema = emailSchema.min(
-              field.minLength,
-              `Must be at least ${field.minLength} characters`
-            )
-          }
-          if (field.maxLength) {
-            emailSchema = emailSchema.max(
-              field.maxLength,
-              `Must be at most ${field.maxLength} characters`
-            )
-          }
-
-          fieldSchema = emailSchema
-        } else if (field.inputType === 'url') {
-          let urlSchema = z.string().url('Invalid URL format')
-
-          if (field.minLength) {
-            urlSchema = urlSchema.min(
-              field.minLength,
-              `Must be at least ${field.minLength} characters`
-            )
-          }
-          if (field.maxLength) {
-            urlSchema = urlSchema.max(
-              field.maxLength,
-              `Must be at most ${field.maxLength} characters`
-            )
-          }
-
-          fieldSchema = urlSchema
-        } else if (field.inputType === 'tel') {
-          let telSchema = z.string()
-
-          if (field.minLength) {
-            telSchema = telSchema.min(
-              field.minLength,
-              `Must be at least ${field.minLength} characters`
-            )
-          }
-          if (field.maxLength) {
-            telSchema = telSchema.max(
-              field.maxLength,
-              `Must be at most ${field.maxLength} characters`
-            )
-          }
-          if (field.pattern) {
-            telSchema = telSchema.regex(
-              new RegExp(field.pattern),
-              'Invalid phone number format'
-            )
-          }
-
-          fieldSchema = telSchema
-        } else {
-          // Handle regular text input
-          let stringSchema = z.string()
-
-          if (field.minLength) {
-            stringSchema = stringSchema.min(
-              field.minLength,
-              `Must be at least ${field.minLength} characters`
-            )
-          }
-          if (field.maxLength) {
-            stringSchema = stringSchema.max(
-              field.maxLength,
-              `Must be at most ${field.maxLength} characters`
-            )
-          }
-          if (field.pattern) {
-            stringSchema = stringSchema.regex(
-              new RegExp(field.pattern),
-              'Invalid format'
-            )
-          }
-
-          fieldSchema = stringSchema
-        }
-        break
-
-      default:
-        fieldSchema = z.string()
-        break
+  formFields.forEach((field) => {
+    const registry = FIELD_REGISTRY[field.uniqueIdentifier]
+    if (registry?.getValidationSchema) {
+      schemaObject[field.id] = registry.getValidationSchema(field as any)
     }
-
-    // Handle required/optional fields
-    if (field.required) {
-      // @ts-expect-error: ZodTypeAny doesn't have a required() method, but we handle this via the schema itself
-      fieldSchema = fieldSchema.required(`Field is required`) // If the field is required
-    } else {
-      fieldSchema = fieldSchema.optional() // If the field is optional
-    }
-
-    schemaObject[field.uniqueIdentifier] = fieldSchema
-  }
-
-  formFields.flat().forEach(processField)
+  })
 
   return z.object(schemaObject)
 }
