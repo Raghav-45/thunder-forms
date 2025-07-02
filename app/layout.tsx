@@ -7,6 +7,7 @@ import type { Metadata } from 'next'
 import { Anton, Geist, Geist_Mono } from 'next/font/google'
 import { Toaster } from 'sonner'
 import './globals.css'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -83,7 +84,7 @@ export default function RootLayout({
       >
         <div className="relative flex min-h-screen flex-col bg-background">
           <Providers>
-            {children}
+            <ScrollArea className="h-[100vh] w-full">{children}</ScrollArea>
             <Toaster />
           </Providers>
         </div>
