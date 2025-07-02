@@ -1,7 +1,7 @@
 export const siteConfig = {
   name: 'Thunder Forms',
   url: 'https://thunder-forms-reborn.vercel.app',
-  // ogImage: "https://ui.shadcn.com/og.jpg",
+  ogImage: "/og.png",
   description:
     'With Thunder Forms, you’re ready to create, customize, and capture insights in a snap.',
   links: {
@@ -10,7 +10,7 @@ export const siteConfig = {
     github: 'https://github.com/raghav-45',
   },
   keywords: [
-    'React',
+    'Form Builder',
     'Tailwind CSS',
     'Framer Motion',
     'Landing Page',
