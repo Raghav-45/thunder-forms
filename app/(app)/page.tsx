@@ -1,3 +1,4 @@
+import Dither from '@/components/background_Dither'
 import { BrowserMockup } from '@/components/SafariMockup'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -5,7 +6,28 @@ import { siteConfig } from '@/config/site'
 
 export default function Home() {
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex items-center justify-center relative">
+      <div className="absolute top-0 left-0 w-full h-full">
+        <div
+          style={{
+            width: '100%',
+            height: '60%',
+            position: 'relative',
+            opacity: 0.35,
+          }}
+        >
+          <Dither
+            waveColor={[0.5, 0.5, 0.5]}
+            disableAnimation={false}
+            enableMouseInteraction={true}
+            mouseRadius={0}
+            colorNum={4}
+            waveAmplitude={0.3}
+            waveFrequency={3}
+            waveSpeed={0.05}
+          />
+        </div>
+      </div>
       <section>
         <div className="relative container py-32">
           <header className="mx-auto max-w-3xl text-center">
