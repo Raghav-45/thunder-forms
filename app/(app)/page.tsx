@@ -26,6 +26,7 @@ export default function Home() {
             waveFrequency={3}
             waveSpeed={0.05}
           />
+          <div className="absolute bottom-0 h-1/3 w-full bg-linear-to-b from-transparent to-background" />
         </div>
       </div>
       <section>
