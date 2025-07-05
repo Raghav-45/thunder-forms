@@ -38,10 +38,12 @@ export async function POST(
 
     // Parse the request body
     const body = await request.json()
+
+    console.log(body)
     // Validate the request body
     const {
-      formName,
-      formDescription,
+      title,
+      description,
       formFields,
       maxSubmissions,
       expiresAt,
@@ -76,8 +78,8 @@ export async function POST(
     const updatedForm = await prisma.forms.update({
       where: { id },
       data: {
-        title: formName,
-        description: formDescription,
+        title: title,
+        description: description,
         fields: formFields!,
         maxSubmissions: maxSubmissions,
         expiresAt: expiresAt,
@@ -88,6 +90,7 @@ export async function POST(
 
     return NextResponse.json(updatedForm)
   } catch (error) {
+    console.error('Error updating form:', error)
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
