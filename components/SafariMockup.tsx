@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 
 export const BrowserMockup = ({
   className = '',
@@ -46,16 +47,19 @@ export const BrowserMockup = ({
     </div>
 
     <div className="relative w-full">
-      <img
+      <Image
         src={DahboardUrlDesktop}
         alt=""
-        className="object-cove hidden aspect-video h-full w-full object-top md:block"
+        width={1880}
+        height={1175}
+        priority
+        className="object-cover hidden aspect-video h-full w-full object-top md:block"
       />
-      <img
+      {/* <Image
         src={DahboardUrlMobile}
         alt=""
         className="block h-full w-full object-cover md:hidden"
-      />
+      /> */}
     </div>
     <div className="absolute bottom-0 z-10 flex w-full items-center justify-center bg-muted py-3 md:hidden">
       <p className="relative flex items-center gap-2 rounded-full px-8 py-1 text-center text-sm tracking-tight">
