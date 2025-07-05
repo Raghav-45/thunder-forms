@@ -46,35 +46,28 @@ export async function GET(
       return NextResponse.json({ error: 'Form not found' }, { status: 404 })
     }
 
-    if (form.expiresAt && new Date(form.expiresAt) < new Date()) {
-      return NextResponse.json(
-        {
-          error: 'Form has expired',
-        },
-        { status: 410 }
-      )
-    }
+    // // Check if the form has expired
+    // if (form.expiresAt && new Date(form.expiresAt) < new Date()) {
+    //   return NextResponse.json(
+    //     {
+    //       error: 'Form has expired',
+    //     },
+    //     { status: 410 }
+    //   )
+    // }
 
     return NextResponse.json(form)
   } catch (error) {
-    console.error('Get form error:', error)
-
-    // Handle different types of errors
-    if (error instanceof Error) {
-      // Prisma or other known errors
-      return NextResponse.json(
-        {
-          error: 'Database error occurred',
-          message:
-            process.env.NODE_ENV === 'development' ? error.message : undefined,
-        },
-        { status: 500 }
-      )
-    }
-
     // Unknown errors
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        success: false,
+        error: 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development' && error instanceof Error
+            ? error.message
+            : undefined,
+      },
       { status: 500 }
     )
   } finally {
