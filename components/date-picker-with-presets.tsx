@@ -41,7 +41,11 @@ export function DatePickerWithPresets({
           )}
         >
           <CalendarIcon className="mr-2 w-4 h-4" />
-          {date ? format(date, 'PPP') : <span>Pick a date</span>}
+          {date ? (
+            `${format(date, 'PPP')} at ${format(new Date(date), 'p')}`
+          ) : (
+            <span>Pick a date</span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -58,19 +62,23 @@ export function DatePickerWithPresets({
           </SelectTrigger>
           <SelectContent position="popper">
             <SelectItem value="1">Tomorrow</SelectItem>
-            <SelectItem value="3">In 3 days</SelectItem>
-            <SelectItem value="7">In a week</SelectItem>
-            <SelectItem value="30">In a month</SelectItem>
-            <SelectItem value="90">In 3 months</SelectItem>
-            <SelectItem value="180">In 6 months</SelectItem>
-            <SelectItem value="365">In a year</SelectItem>
+            <SelectItem value="3">After 3 days</SelectItem>
+            <SelectItem value="7">After a week</SelectItem>
+            <SelectItem value="30">After a month</SelectItem>
+            <SelectItem value="90">After 3 months</SelectItem>
+            <SelectItem value="180">After 6 months</SelectItem>
+            <SelectItem value="365">After a year</SelectItem>
           </SelectContent>
         </Select>
         <div className="border rounded-md">
+          {/* TODO: Add a way to select time */}
           <Calendar
             mode="single"
             selected={date || undefined}
             onSelect={(day) => setDate(day || null)}
+            disabled={(date) =>
+              date <= new Date() || date > new Date('2075-01-01')
+            }
             autoFocus
           />
         </div>
