@@ -1,6 +1,8 @@
+import { FormValidator } from '@/lib/validators/form'
 import { createClient } from '@/utils/supabase/server'
 import { PrismaClient } from '@prisma/client'
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const prisma = new PrismaClient()
 
@@ -34,24 +36,17 @@ export async function POST(
 
     const { id } = await params
 
-    // Parse request body
-    let updateData
-    try {
-      updateData = await request.json()
-    } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON in request body' },
-        { status: 400 }
-      )
-    }
-
-    // Validate that we have data to update
-    if (!updateData || Object.keys(updateData).length === 0) {
-      return NextResponse.json(
-        { error: 'No update data provided' },
-        { status: 400 }
-      )
-    }
+    // Parse the request body
+    const body = await request.json()
+    // Validate the request body
+    const {
+      formName,
+      formDescription,
+      formFields,
+      maxSubmissions,
+      expiresAt,
+      redirectUrl,
+    } = FormValidator.parse(body)
 
     // Check if form exists and user has permission
     const existingForm = await prisma.forms.findUnique({
@@ -81,21 +76,38 @@ export async function POST(
     const updatedForm = await prisma.forms.update({
       where: { id },
       data: {
-        title: updateData.title,
-        description: updateData.description,
-        fields: updateData.fields,
-        maxSubmissions: updateData.maxSubmissions,
-        expiresAt: updateData.expiresAt,
-        redirectUrl: updateData.redirectUrl,
+        title: formName,
+        description: formDescription,
+        fields: formFields!,
+        maxSubmissions: maxSubmissions,
+        expiresAt: expiresAt,
+        redirectUrl: redirectUrl,
         // Add any other things you want to update here.
       },
     })
 
     return NextResponse.json(updatedForm)
   } catch (error) {
-    console.error('Update form error:', error)
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Validation error',
+        },
+        { status: 422 }
+      )
+    }
+
+    // Unknown errors
     return NextResponse.json(
-      { error: 'Failed to update form' },
+      {
+        success: false,
+        error: 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development' && error instanceof Error
+            ? error.message
+            : undefined,
+      },
       { status: 500 }
     )
   } finally {
