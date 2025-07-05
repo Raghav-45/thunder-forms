@@ -1,6 +1,5 @@
 'use client'
 
-import { CreateFormPayload } from '@/lib/validators/form'
 import { CopyButton } from '@/components/copy-button'
 import { DatePickerWithPresets } from '@/components/date-picker-with-presets'
 import GenerateWithAiPrompt from '@/components/FormBuilder/core/generate-with-ai'
@@ -30,6 +29,7 @@ import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { siteConfig } from '@/config/site'
 import { cn } from '@/lib/utils'
+import { CreateFormPayload } from '@/lib/validators/form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import axios, { AxiosError } from 'axios'
 import {
@@ -178,7 +178,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           ...formSettings,
           title: form.data.title,
           description: form.data.description,
-          expiresAt: form.data.expiresAt && new Date(form.data.expiresAt),
+          expiresAt: new Date(form.data.expiresAt),
           maxSubmissions: form.data.maxSubmissions,
           redirectUrl: form.data.redirectUrl,
         })
@@ -234,9 +234,11 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   const updateFormMutation = useMutation({
     mutationFn: async (payload: CreateFormPayload & { formId: string }) => {
       const { formId, ...updateData } = payload
+      console.log('Updating form with data:', payload)
+
       const { data } = await axios.post(`/api/forms/${formId}/update`, {
-        title: updateData.formName,
-        description: updateData.formDescription,
+        title: updateData.title,
+        description: updateData.description,
         fields: updateData.formFields,
         maxSubmissions: updateData.maxSubmissions,
         expiresAt: updateData.expiresAt,
@@ -245,12 +247,17 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
       return data
     },
     onError: (error) => {
-      console.error('Error updating form:', error)
-      toast.error('Failed to update form')
+      // TODO: Handle errors related to Authentication
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 422) {
+          // Handle validation errors in realtime instead of this fallback serverside error
+          toast.error('Validation error')
+          return
+        }
+        toast.error('Failed to update form')
+      }
     },
-    onSuccess: (data) => {
-      console.log('Form updated successfully:', data)
-
+    onSuccess: () => {
       // Update store
       // updateForm(currentFormId!, data)
 
@@ -270,12 +277,12 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     }
 
     const payload: CreateFormPayload = {
-      formName: formSettings.title,
-      formDescription: formSettings.description!,
+      title: formSettings.title,
+      description: formSettings.description,
       formFields: fields,
-      maxSubmissions: formSettings.maxSubmissions!,
+      maxSubmissions: formSettings.maxSubmissions,
       expiresAt: formSettings.expiresAt,
-      redirectUrl: formSettings.redirectUrl!,
+      redirectUrl: formSettings.redirectUrl,
     }
 
     if (isNewForm) {
@@ -315,9 +322,9 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
             </Button>
           </div>
           <div className="items-center gap-1.5 grid w-full">
-            <Label htmlFor="formName">Form Title</Label>
+            <Label htmlFor="title">Form Title</Label>
             <Input
-              id="formName"
+              id="title"
               placeholder="Enter form name"
               value={formSettings.title}
               onChange={(e) =>
@@ -330,9 +337,9 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
             />
           </div>
           <div className="items-center gap-1.5 grid w-full">
-            <Label htmlFor="formDescription">Form Description</Label>
+            <Label htmlFor="description">Form Description</Label>
             <Textarea
-              id="formDescription"
+              id="description"
               placeholder="Enter description"
               className="max-h-24 bg-neutral-900!"
               value={formSettings.description}
