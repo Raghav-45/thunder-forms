@@ -38,8 +38,6 @@ export async function POST(
 
     // Parse the request body
     const body = await request.json()
-
-    console.log(body)
     // Validate the request body
     const {
       title,
