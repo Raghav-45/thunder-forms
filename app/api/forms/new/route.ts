@@ -35,8 +35,8 @@ export async function POST(request: Request) {
     const body = await request.json()
     // Validate the request body
     const {
-      formName,
-      formDescription,
+      title,
+      description,
       formFields,
       maxSubmissions,
       expiresAt,
@@ -49,8 +49,8 @@ export async function POST(request: Request) {
         userId: session.user.id,
 
         // Request body
-        title: formName,
-        description: formDescription,
+        title: title,
+        description: description,
         fields: formFields!,
         maxSubmissions: maxSubmissions,
         expiresAt: expiresAt,
@@ -69,6 +69,7 @@ export async function POST(request: Request) {
       }
     )
   } catch (error) {
+    console.error('Error creating form:', error)
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
