@@ -72,7 +72,7 @@ export function DatePickerWithPresets({
             mode="single"
             selected={date || undefined}
             onSelect={(day) => setDate(day || null)}
-            initialFocus
+            autoFocus
           />
         </div>
       </PopoverContent>
