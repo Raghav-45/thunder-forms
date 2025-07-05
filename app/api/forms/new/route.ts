@@ -1,19 +1,10 @@
+import { FormValidator } from '@/lib/validators/form'
 import { createClient } from '@/utils/supabase/server'
 import { PrismaClient } from '@prisma/client'
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const prisma = new PrismaClient()
-
-export interface CreateFormPayload {
-  formName: string
-  formDescription: string
-  formFields: unknown
-  maxSubmissions: number
-  expiresAt: string
-  redirectUrl: string
-}
-
-//TODO: Add validation for the request body using a library like Zod or Joi
 
 export async function POST(request: Request) {
   try {
@@ -41,18 +32,29 @@ export async function POST(request: Request) {
     }
 
     // Parse the request body
-    const body: CreateFormPayload = await request.json()
+    const body = await request.json()
+    // Validate the request body
+    const {
+      formName,
+      formDescription,
+      formFields,
+      maxSubmissions,
+      expiresAt,
+      redirectUrl,
+    } = FormValidator.parse(body)
 
     // Create the form in the database
     const form = await prisma.forms.create({
       data: {
         userId: session.user.id,
-        title: body.formName,
-        description: body.formDescription || '',
-        fields: body.formFields!,
-        maxSubmissions: body.maxSubmissions || null,
-        expiresAt: body.expiresAt || null,
-        redirectUrl: body.redirectUrl || null,
+
+        // Request body
+        title: formName,
+        description: formDescription,
+        fields: formFields!,
+        maxSubmissions: maxSubmissions,
+        expiresAt: expiresAt,
+        redirectUrl: redirectUrl,
       },
     })
 
@@ -67,19 +69,13 @@ export async function POST(request: Request) {
       }
     )
   } catch (error) {
-    console.error('Error creating form:', error)
-
-    // Handle different types of errors
-    if (error instanceof Error) {
-      // Prisma or other known errors
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Database error occurred',
-          message:
-            process.env.NODE_ENV === 'development' ? error.message : undefined,
+          error: 'Validation error',
         },
-        { status: 500 }
+        { status: 422 }
       )
     }
 
@@ -88,6 +84,10 @@ export async function POST(request: Request) {
       {
         success: false,
         error: 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development' && error instanceof Error
+            ? error.message
+            : undefined,
       },
       { status: 500 }
     )

@@ -1,6 +1,6 @@
 'use client'
 
-import { CreateFormPayload } from '@/app/api/forms/new/route'
+import { CreateFormPayload } from '@/lib/validators/form'
 import { CopyButton } from '@/components/copy-button'
 import { DatePickerWithPresets } from '@/components/date-picker-with-presets'
 import GenerateWithAiPrompt from '@/components/FormBuilder/core/generate-with-ai'
@@ -31,7 +31,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { siteConfig } from '@/config/site'
 import { cn } from '@/lib/utils'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import {
   GripVerticalIcon,
   Loader2Icon,
@@ -195,12 +195,17 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
       return data
     },
     onError: (error) => {
-      console.error('Error creating form:', error)
-      toast.error('Failed to create form')
+      // TODO: Handle errors related to Authentication
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 422) {
+          // Handle validation errors in realtime instead of this fallback serverside error
+          toast.error('Validation error')
+          return
+        }
+        toast.error('Failed to create form')
+      }
     },
     onSuccess: (data) => {
-      console.log('Form created successfully:', data)
-
       // Add to store
       // addForm({
       //   id: data.id,
@@ -269,7 +274,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
       formDescription: formSettings.description!,
       formFields: fields,
       maxSubmissions: formSettings.maxSubmissions!,
-      expiresAt: formSettings.expiresAt as unknown as string,
+      expiresAt: formSettings.expiresAt,
       redirectUrl: formSettings.redirectUrl!,
     }
 
