@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 import { usePathname } from 'next/navigation'
+import Link from 'next/link'
 
 export function NavMain({
   items,
@@ -55,7 +56,7 @@ export function NavMain({
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton tooltip={item.title} asChild>
-                <a
+                <Link
                   href={item.url}
                   className={cn(
                     checkIsActive(item.url) ? 'bg-sidebar-accent' : ''
@@ -63,7 +64,7 @@ export function NavMain({
                 >
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
