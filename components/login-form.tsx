@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { login } from '@/app/(auth)/auth/actions'
 import { ContinueWithOAuthButtonsGroup } from '@/components/OAuthButtons'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,7 +13,12 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
-import { login } from '@/app/(auth)/auth/actions'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Loader2Icon } from 'lucide-react'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { z } from 'zod'
 
 export function LoginForm({
   className,
@@ -21,17 +26,43 @@ export function LoginForm({
 }: React.ComponentPropsWithoutRef<'div'>) {
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const AuthCredentialsValidator = z.object({
+    email: z.string().email('Invalid email address'),
+    password: z.string().min(1, 'Password must be at least 1 characters long'),
+  })
+
+  type TAuthCredentials = z.infer<typeof AuthCredentialsValidator>
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<TAuthCredentials>({
+    resolver: zodResolver(AuthCredentialsValidator),
+  })
+
+  const onSubmit = async ({ email, password }: TAuthCredentials) => {
     setIsLoading(true)
 
-    try {
-      await login(new FormData(e.currentTarget))
-    } catch (error) {
-      console.error('Login error:', error)
-    } finally {
-      setIsLoading(false)
+    const result = await login({ email, password })
+
+    // Check if we got an error result
+    if (result && result.success) {
+      toast.success('Login successful!')
+    } else if (result && !result.success) {
+      switch (result.error.message) {
+        case 'Invalid login credentials':
+          toast.error('Invalid login credentials')
+          break
+        case 'Too many requests':
+          toast.error('Too many login attempts. Please wait and try later.')
+          break
+        default:
+          toast.error('Login failed. Please try again.')
+      }
     }
+
+    setIsLoading(false)
   }
 
   return (
@@ -44,7 +75,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="grid gap-6">
               <ContinueWithOAuthButtonsGroup />
               <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
@@ -56,12 +87,11 @@ export function LoginForm({
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
-                    id="email"
-                    name="email"
-                    type="email"
+                    {...register('email')}
                     placeholder="m@example.com"
                     required
                     disabled={isLoading}
+                    className={cn({ 'border-red-500': errors.email })}
                   />
                 </div>
                 <div className="grid gap-2">
@@ -75,14 +105,17 @@ export function LoginForm({
                     </a>
                   </div>
                   <Input
-                    id="password"
-                    name="password"
+                    {...register('password')}
                     type="password"
                     required
                     disabled={isLoading}
+                    className={cn({ 'border-red-500': errors.email })}
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading && (
+                    <Loader2Icon className="h-4 w-4 animate-spin" />
+                  )}
                   {isLoading ? 'Signing in...' : 'Login'}
                 </Button>
               </div>
