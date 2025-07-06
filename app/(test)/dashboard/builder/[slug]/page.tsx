@@ -441,14 +441,14 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         </div>
         <Card
           className={cn(
-            'min-h-[600px] border-2 border-dashed !p-0 border-muted',
+            'min-h-[600px] border-2 border-dashed !p-0 border-muted mb-1',
             !(fields.length > 0) && 'content-center'
           )}
         >
           <CardContent className="p-3 md:p-4">
             {fields.length > 0 ? (
               <div>
-                <div className="space-y-4 w-full">
+                <div className="space-y-6 w-full">
                   {fields.map((field) => renderField(field))}
                 </div>
                 {/* <h4 className="font-medium mt-8 mb-2">Form Configuration:</h4>
