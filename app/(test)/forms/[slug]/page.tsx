@@ -96,7 +96,12 @@ export default function FormPage({ params }: FormPageProps) {
       <div className="space-y-4 w-full">
         {fields.map((field) => renderField(field))}
       </div>
-      <Button onClick={() => setIsFormSubmitted(true)}>Submit</Button>
+      <Button
+        className="w-full md:w-auto"
+        onClick={() => setIsFormSubmitted(true)}
+      >
+        Submit
+      </Button>
     </div>
   )
 }
