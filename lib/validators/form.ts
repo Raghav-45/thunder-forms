@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const FormValidator = z.object({
   title: z.string().min(10, 'Title is required'),
   description: z.string().nullable().optional(),
-  formFields: z.unknown(), // Assuming formFields is a complex object, adjust as necessary
+  fields: z.unknown(), // Assuming formFields is a complex object, adjust as necessary
   maxSubmissions: z
     .number()
     .int()

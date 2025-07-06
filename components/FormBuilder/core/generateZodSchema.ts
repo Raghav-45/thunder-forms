@@ -3,11 +3,11 @@ import { FIELD_REGISTRY, FieldConfig } from '@/components/FormBuilder/elements'
 import { z } from 'zod'
 
 export const generateZodSchema = (
-  formFields: FieldConfig[]
+  fields: FieldConfig[]
 ): z.ZodObject<any> => {
   const schemaObject: Record<string, z.ZodTypeAny> = {}
 
-  formFields.forEach((field) => {
+  fields.forEach((field) => {
     const registry = FIELD_REGISTRY[field.uniqueIdentifier]
     if (registry?.getValidationSchema) {
       schemaObject[field.id] = registry.getValidationSchema(field as any)

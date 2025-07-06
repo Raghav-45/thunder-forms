@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     const {
       title,
       description,
-      formFields,
+      fields,
       maxSubmissions,
       expiresAt,
       redirectUrl,
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
         // Request body
         title: title,
         description: description,
-        fields: formFields!,
+        fields: fields!,
         maxSubmissions: maxSubmissions,
         expiresAt: expiresAt,
         redirectUrl: redirectUrl,

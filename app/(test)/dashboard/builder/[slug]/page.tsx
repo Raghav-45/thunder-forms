@@ -239,7 +239,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
       const { data } = await axios.post(`/api/forms/${formId}/update`, {
         title: updateData.title,
         description: updateData.description,
-        fields: updateData.formFields,
+        fields: updateData.fields,
         maxSubmissions: updateData.maxSubmissions,
         expiresAt: updateData.expiresAt,
         redirectUrl: updateData.redirectUrl,
@@ -279,7 +279,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     const payload: CreateFormPayload = {
       title: formSettings.title,
       description: formSettings.description?.trim() || null,
-      formFields: fields,
+      fields: fields,
       maxSubmissions: formSettings.maxSubmissions
         ? isNaN(formSettings.maxSubmissions)
           ? null
