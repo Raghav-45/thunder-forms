@@ -44,7 +44,9 @@ export function DatePickerWithPresets({
           {date ? (
             `${format(date, 'PPP')} at ${format(new Date(date), 'p')}`
           ) : (
-            <span>Pick a date</span>
+            // <span>Pick a date</span>
+            // <span>Currently it never expires</span>
+            <span>Immortal ⚡</span>
           )}
         </Button>
       </PopoverTrigger>
@@ -53,14 +55,19 @@ export function DatePickerWithPresets({
         className="flex flex-col space-y-2 p-2 w-auto"
       >
         <Select
-          onValueChange={(value) =>
-            setDate(addDays(new Date(), parseInt(value)))
-          }
+          onValueChange={(value) => {
+            if (value === 'never') {
+              setDate(null)
+            } else {
+              setDate(addDays(new Date(), parseInt(value)))
+            }
+          }}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select" />
           </SelectTrigger>
           <SelectContent position="popper">
+            <SelectItem value="never">Never expires</SelectItem>
             <SelectItem value="1">Tomorrow</SelectItem>
             <SelectItem value="3">After 3 days</SelectItem>
             <SelectItem value="7">After a week</SelectItem>
