@@ -278,11 +278,15 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
     const payload: CreateFormPayload = {
       title: formSettings.title,
-      description: formSettings.description,
+      description: formSettings.description?.trim() || null,
       formFields: fields,
-      maxSubmissions: formSettings.maxSubmissions,
+      maxSubmissions: formSettings.maxSubmissions
+        ? isNaN(formSettings.maxSubmissions)
+          ? null
+          : formSettings.maxSubmissions
+        : null,
       expiresAt: formSettings.expiresAt,
-      redirectUrl: formSettings.redirectUrl,
+      redirectUrl: formSettings.redirectUrl?.trim() || null,
     }
 
     if (isNewForm) {
