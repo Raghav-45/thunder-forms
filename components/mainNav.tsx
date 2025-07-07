@@ -41,7 +41,7 @@ export function MainNav() {
           {!pathname?.startsWith('/templates') && (
             <Badge
               variant="outline"
-              className="ml-1 bg-blue-500 px-1.5 py-0.5 text-blue-100 align-middle text-xs leading-none"
+              className="ml-1 h-full bg-blue-500 px-1.5 py-0.5 text-blue-100 align-middle text-xs leading-none"
             >
               new
             </Badge>
