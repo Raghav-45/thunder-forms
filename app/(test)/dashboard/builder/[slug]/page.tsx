@@ -53,10 +53,16 @@ interface FormBuilderProps {
 
 export default function FormBuilderPage({ params }: FormBuilderProps) {
   const { formSettings, setFormSettings } = useFormStore()
-  const { slug: currentFormId } = use(params)
-  // const [elements, setElements] = useState([])
+  const { slug: paramFormId } = use(params)
+  // Add local state for currentFormId that can be updated
+  const [currentFormId, setCurrentFormId] = useState<string>(paramFormId)
   const [fields, setFields] = useState<FieldConfig[]>([])
   const [editingField, setEditingField] = useState<FieldConfig | null>(null)
+
+  // Update currentFormId when params change
+  useEffect(() => {
+    setCurrentFormId(paramFormId)
+  }, [paramFormId])
 
   // BASIC FORM PROPERTIES CALCULATIONS
   const isExistingForm = currentFormId && currentFormId !== 'new-form' // Means Form Id is provided
@@ -206,18 +212,8 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
       }
     },
     onSuccess: (data) => {
-      // Add to store
-      // addForm({
-      //   id: data.id,
-      //   title: data.title,
-      //   description: data.description,
-      //   fields: JSON.parse(JSON.stringify(formFields)),
-      //   createdAt: data.createdAt,
-      //   maxSubmissions: data.maxSubmissions,
-      //   expiresAt: data.expiresAt,
-      //   redirectUrl: data.redirectUrl,
-      //   _count: { responses: 0 },
-      // })
+      // Update local state with new form ID
+      setCurrentFormId(data.id)
 
       // Update the URL without refreshing the page
       const newUrl = `/dashboard/builder/${data.id}`
