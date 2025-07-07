@@ -20,15 +20,14 @@ import {
   IconDatabase,
   IconFileWord,
   IconHelp,
-  IconInnerShadowTop,
   IconListDetails,
   IconReport,
   IconSearch,
   IconSettings,
 } from '@tabler/icons-react'
+import Link from 'next/link'
 import * as React from 'react'
 import { Icons } from './Icons'
-import Link from 'next/link'
 
 const data = {
   user: {
