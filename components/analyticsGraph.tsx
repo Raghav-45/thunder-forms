@@ -213,8 +213,8 @@ const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
             dataKey="impressions"
             // type="natural"
             // type="linear"
-            // type="bump"
-            type="step"
+            // type="step"
+            type="bump"
             fill="var(--color-impressions)"
             fillOpacity={0.4}
             stroke="var(--color-impressions)"
@@ -227,13 +227,12 @@ const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
       <Separator />
       <div className="grid gap-2">
         <div className="flex gap-2 leading-none font-medium">
-          Impressions in 24 Hours : {totalImpressions}
+          Impressions : {totalImpressions}
           <IconTrendingUp className="size-4 -translate-y-1" />
         </div>
         <div className="text-muted-foreground text-sm">
-          Showing total visitors for the last 6 months. This is just some random
-          text to test the layout. It spans multiple lines and should wrap
-          around.
+          Showing total impressions for the last 24 Hours. This metric represents
+          how many users viewed your form during this period.
         </div>
       </div>
       <Separator />
