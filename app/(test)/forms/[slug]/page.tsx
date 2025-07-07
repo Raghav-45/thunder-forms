@@ -41,7 +41,7 @@ export default function FormPage({ params }: FormPageProps) {
   const form = useQuery({
     queryKey: ['form', currentFormId],
     queryFn: async () => {
-      const { data } = await axios.get(`/api/forms/${currentFormId}`)
+      const { data } = await axios.get(`/api/forms/${currentFormId}/viewForm`)
       return data
     },
     enabled: !!currentFormId,
