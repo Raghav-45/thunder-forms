@@ -30,23 +30,26 @@ async function fetchAnalyticsData(formId: string): Promise<AnalyticsData[]> {
   return data.analytics
 }
 
-// Generate full day intervals with zero impressions
+// Generate full day intervals with zero impressions starting from 11PM
 const generateFullDayIntervals = (
   intervalMinutes = 15
 ): GroupedImpression[] => {
   const intervals: GroupedImpression[] = []
   const totalMinutes = 24 * 60 // Full day in minutes
+  const startHour = 23 // Start from 11PM
 
   for (let minutes = 0; minutes < totalMinutes; minutes += intervalMinutes) {
-    const hours = Math.floor(minutes / 60)
+    const totalHours = Math.floor(minutes / 60)
+    const currentHour = (startHour + totalHours) % 24
+
     const timeString =
-      hours === 0
+      currentHour === 0
         ? '12AM'
-        : hours < 12
-        ? `${hours}AM`
-        : hours === 12
+        : currentHour < 12
+        ? `${currentHour}AM`
+        : currentHour === 12
         ? '12PM'
-        : `${hours - 12}PM`
+        : `${currentHour - 12}PM`
 
     intervals.push({
       time: timeString,
@@ -61,7 +64,7 @@ const groupImpressionsByInterval = (
   data: AnalyticsData[],
   intervalMinutes = 15
 ): GroupedImpression[] => {
-  // Start with a full day of zero impressions
+  // Start with a full day of zero impressions from 11PM
   const fullDayIntervals = generateFullDayIntervals(intervalMinutes)
 
   if (!data.length) return fullDayIntervals
@@ -97,10 +100,10 @@ const groupImpressionsByInterval = (
     }
   })
 
-  // Convert back to array format
-  return Array.from(intervalMap.entries()).map(([time, impressions]) => ({
-    time,
-    impressions,
+  // Convert back to array format maintaining the order from 11PM onwards
+  return fullDayIntervals.map((interval) => ({
+    time: interval.time,
+    impressions: intervalMap.get(interval.time) || 0,
   }))
 }
 
@@ -189,14 +192,14 @@ const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
           data={processedData}
           margin={{
             left: 0,
-            right: 10,
+            right: 0,
           }}
         >
           <CartesianGrid vertical={false} />
           <XAxis
             dataKey="time"
-            tickLine={false}
-            axisLine={false}
+            tickLine={true}
+            axisLine={true}
             tickMargin={8}
             tickFormatter={(value) => value} // Show full time format
           />
@@ -208,7 +211,8 @@ const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
             dataKey="impressions"
             // type="natural"
             // type="linear"
-            type="bump"
+            // type="bump"
+            type="step"
             fill="var(--color-impressions)"
             fillOpacity={0.4}
             stroke="var(--color-impressions)"
