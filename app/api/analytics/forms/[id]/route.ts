@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 const analyticsPrisma = new PrismaClient({
   datasources: {
@@ -10,10 +10,10 @@ const analyticsPrisma = new PrismaClient({
 })
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params
+  const { id } = await params
 
   if (!id) {
     return NextResponse.json({ error: 'Missing ID' }, { status: 400 })
@@ -28,7 +28,10 @@ export async function GET(
       ORDER BY "created_at" DESC
     `
 
-    return NextResponse.json({ success: true, data: logs }, { status: 200 })
+    return NextResponse.json(
+      { success: true, analytics: logs },
+      { status: 200 }
+    )
   } catch (error) {
     console.error('Analytics fetch error:', error)
     return NextResponse.json(
