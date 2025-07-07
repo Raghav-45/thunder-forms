@@ -191,8 +191,9 @@ const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
           accessibilityLayer
           data={processedData}
           margin={{
-            left: 0,
-            right: 0,
+            left: 16,
+            right: 10,
+            top: 5,
           }}
         >
           <CartesianGrid vertical={false} />
@@ -201,6 +202,7 @@ const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
             tickLine={true}
             axisLine={true}
             tickMargin={8}
+            interval={2}
             tickFormatter={(value) => value} // Show full time format
           />
           <ChartTooltip
