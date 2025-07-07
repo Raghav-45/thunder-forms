@@ -9,15 +9,6 @@ import { useQuery } from '@tanstack/react-query'
 import { FC } from 'react'
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 
-// Sample chart data - replace with your actual data
-const defaultChartData = [
-  { time: '09:42', impressions: 3 },
-  { time: '10:14', impressions: 1 },
-  { time: '10:56', impressions: 1 },
-  { time: '11:38', impressions: 4 },
-  { time: '12:15', impressions: 1 },
-]
-
 // Types for the analytics data
 type AnalyticsData = {
   url_path: string
@@ -125,7 +116,6 @@ interface AnalyticsGraphProps {
   data?: GroupedImpression[]
   rawData?: AnalyticsData[]
   intervalMinutes?: number
-  trendPercentage?: number
   className?: string
 }
 
@@ -134,7 +124,6 @@ const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
   data,
   rawData,
   intervalMinutes = 15,
-  trendPercentage = 5.2,
   className = '',
 }) => {
   // Fetch analytics data using TanStack Query
@@ -165,7 +154,6 @@ const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
     (sum, item) => sum + item.impressions,
     0
   )
-  const avgImpressions = totalImpressions / processedData.length
 
   // Handle loading state
   if (isLoading) {
@@ -233,13 +221,9 @@ const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
       <Separator />
       <div className="grid gap-2">
         <div className="flex gap-2 leading-none font-medium">
-          Trending up by {trendPercentage}% this month{' '}
-          <IconTrendingUp className="size-4" />
+          Impressions in 24 Hours : {totalImpressions}
+          <IconTrendingUp className="size-4 -translate-y-1" />
         </div>
-        {/* <div className="text-muted-foreground text-sm">
-          Total impressions: {totalImpressions} | Average:{' '}
-          {avgImpressions.toFixed(1)} per interval
-        </div> */}
         <div className="text-muted-foreground text-sm">
           Showing total visitors for the last 6 months. This is just some random
           text to test the layout. It spans multiple lines and should wrap
