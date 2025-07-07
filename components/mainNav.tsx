@@ -47,7 +47,7 @@ export function MainNav() {
             </Badge>
           )}
         </Link>
-        <Link
+        {/* <Link
           href="/pricing"
           className={cn(
             'transition-colors hover:text-foreground/80',
@@ -57,7 +57,7 @@ export function MainNav() {
           )}
         >
           Pricing
-        </Link>
+        </Link> */}
       </nav>
     </div>
   )
