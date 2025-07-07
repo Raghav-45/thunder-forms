@@ -192,7 +192,7 @@ const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
           data={processedData}
           margin={{
             left: 16,
-            right: 10,
+            right: 8,
             top: 5,
           }}
         >
