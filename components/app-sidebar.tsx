@@ -27,6 +27,8 @@ import {
   IconSettings,
 } from '@tabler/icons-react'
 import * as React from 'react'
+import { Icons } from './Icons'
+import Link from 'next/link'
 
 const data = {
   user: {
@@ -110,12 +112,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href={siteConfig.url}>
-                <IconInnerShadowTop className="!size-5" />
+              <Link
+                href={siteConfig.url}
+                className="flex items-center gap-2 self-center"
+              >
+                <Icons.Logo className="!size-5" />
                 <span className="text-base font-semibold">
                   {siteConfig.name}
                 </span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
