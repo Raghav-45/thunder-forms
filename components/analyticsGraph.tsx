@@ -39,47 +39,80 @@ async function fetchAnalyticsData(formId: string): Promise<AnalyticsData[]> {
   return data.analytics
 }
 
-function groupImpressionsByInterval(
-  data: AnalyticsData[],
+// Generate full day intervals with zero impressions
+const generateFullDayIntervals = (
   intervalMinutes = 15
-): GroupedImpression[] {
-  if (!data.length) return []
+): GroupedImpression[] => {
+  const intervals: GroupedImpression[] = []
+  const totalMinutes = 24 * 60 // Full day in minutes
 
-  // Sort by time ascending
-  const sorted = [...data].sort(
-    (a, b) =>
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-  )
+  for (let minutes = 0; minutes < totalMinutes; minutes += intervalMinutes) {
+    const hours = Math.floor(minutes / 60)
+    const timeString =
+      hours === 0
+        ? '12AM'
+        : hours < 12
+        ? `${hours}AM`
+        : hours === 12
+        ? '12PM'
+        : `${hours - 12}PM`
 
-  const groups: GroupedImpression[] = []
-  let groupStartTime = new Date(sorted[0].created_at)
-  let count = 1
-
-  for (let i = 1; i < sorted.length; i++) {
-    const currentTime = new Date(sorted[i].created_at)
-    const diffMinutes =
-      (currentTime.getTime() - groupStartTime.getTime()) / (1000 * 60)
-
-    if (diffMinutes <= intervalMinutes) {
-      count++
-    } else {
-      groups.push({
-        time: groupStartTime.toISOString().substring(11, 16), // "HH:mm"
-        impressions: count,
-      })
-      groupStartTime = currentTime
-      count = 1
-    }
+    intervals.push({
+      time: timeString,
+      impressions: 0,
+    })
   }
 
-  // Push last group
-  groups.push({
-    time: groupStartTime.toISOString().substring(11, 16),
-    impressions: count,
+  return intervals
+}
+
+const groupImpressionsByInterval = (
+  data: AnalyticsData[],
+  intervalMinutes = 15
+): GroupedImpression[] => {
+  // Start with a full day of zero impressions
+  const fullDayIntervals = generateFullDayIntervals(intervalMinutes)
+
+  if (!data.length) return fullDayIntervals
+
+  // Create a map for easy lookup and updating
+  const intervalMap = new Map<string, number>()
+  fullDayIntervals.forEach((interval) => {
+    intervalMap.set(interval.time, 0)
   })
 
-  return groups
+  // Process actual data and increment counters
+  data.forEach((item) => {
+    const date = new Date(item.created_at)
+    const hours = date.getHours()
+    const minutes = date.getMinutes()
+
+    // Round down to nearest interval
+    const intervalStart =
+      Math.floor(minutes / intervalMinutes) * intervalMinutes
+    const intervalHour = intervalStart === 60 ? hours + 1 : hours
+
+    const timeKey =
+      intervalHour === 0
+        ? '12AM'
+        : intervalHour < 12
+        ? `${intervalHour}AM`
+        : intervalHour === 12
+        ? '12PM'
+        : `${intervalHour - 12}PM`
+
+    if (intervalMap.has(timeKey)) {
+      intervalMap.set(timeKey, intervalMap.get(timeKey)! + 1)
+    }
+  })
+
+  // Convert back to array format
+  return Array.from(intervalMap.entries()).map(([time, impressions]) => ({
+    time,
+    impressions,
+  }))
 }
+
 const chartConfig = {
   impressions: {
     label: 'Impressions',
@@ -118,14 +151,14 @@ const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
     gcTime: 10 * 60 * 1000, // 10 minutes
   })
 
-  // Process data - use provided data or process rawData/fetchedData, fallback to default
+  // Process data - use provided data or process rawData/fetchedData, fallback to full day with zeros
   const processedData =
     data ||
     (rawData
       ? groupImpressionsByInterval(rawData, intervalMinutes)
       : fetchedData
       ? groupImpressionsByInterval(fetchedData, intervalMinutes)
-      : defaultChartData)
+      : generateFullDayIntervals(intervalMinutes))
 
   // Calculate total impressions for trend analysis
   const totalImpressions = processedData.reduce(
@@ -185,7 +218,9 @@ const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
           />
           <Area
             dataKey="impressions"
-            type="natural"
+            // type="natural"
+            // type="linear"
+            type="bump"
             fill="var(--color-impressions)"
             fillOpacity={0.4}
             stroke="var(--color-impressions)"
