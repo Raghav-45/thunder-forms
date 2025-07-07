@@ -299,6 +299,7 @@ export function FormTable({
               <DropdownMenuItem
                 variant="destructive"
                 onClick={() => setDeleteFormId(row.original.id)}
+                className="cursor-pointer"
               >
                 Delete
               </DropdownMenuItem>
