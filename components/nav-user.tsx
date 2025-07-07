@@ -96,7 +96,11 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <form action={logout}>
-              <DropdownMenuItem className="cursor-pointer" asChild>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                variant="destructive"
+                asChild
+              >
                 <button type="submit" className="w-full cursor-pointer">
                   <IconLogout />
                   Log out
