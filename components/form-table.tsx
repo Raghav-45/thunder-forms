@@ -100,6 +100,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { Edit2Icon } from 'lucide-react'
 import Link from 'next/link'
 import { Skeleton } from './ui/skeleton'
+import { DeleteFormDialog } from './delete-form-dialog'
 
 export const schema = z.object({
   id: z.string(),
@@ -186,6 +187,8 @@ export function FormTable({
     useSensor(TouchSensor, {}),
     useSensor(KeyboardSensor, {})
   )
+
+  const [deleteFormId, setDeleteFormId] = React.useState<string | null>(null)
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
     () => data?.map(({ id }) => id) || [],
@@ -276,7 +279,7 @@ export function FormTable({
       },
       {
         id: 'actions',
-        cell: () => (
+        cell: ({ row }) => (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -293,7 +296,12 @@ export function FormTable({
               <DropdownMenuItem>Make a copy</DropdownMenuItem>
               <DropdownMenuItem>Favorite</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => setDeleteFormId(row.original.id)}
+              >
+                Delete
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ),
@@ -406,6 +414,13 @@ export function FormTable({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        <DeleteFormDialog
+          deleteFormId={deleteFormId}
+          setDeleteFormId={setDeleteFormId}
+          afterFormDeleted={(id) => {
+            setData((prevData) => prevData.filter((item) => item.id !== id))
+          }}
+        />
       </div>
       <TabsContent
         value="all"
