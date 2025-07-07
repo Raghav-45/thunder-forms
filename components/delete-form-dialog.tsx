@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-// import { toast } from 'sonner'
+import { toast } from 'sonner'
 
 export const DeleteFormDialog = ({
   deleteFormId,
@@ -21,20 +21,30 @@ export const DeleteFormDialog = ({
 }) => {
   const handleDeleteForm = async () => {
     if (!deleteFormId) return
+
+    const id = deleteFormId
     setDeleteFormId(null)
 
-    try {
-      const response = await fetch(`/api/forms/${deleteFormId}/delete`, {
+    const deletePromise = async () => {
+      const response = await fetch(`/api/forms/${id}/delete`, {
         method: 'DELETE',
       })
-      if (!response.ok) throw new Error('Failed to delete form')
-      const id = deleteFormId
-      afterFormDeleted?.(id)
-    } catch (error) {
-      console.error('Error deleting form:', error)
-    } finally {
-      setDeleteFormId(null)
+
+      if (!response.ok) {
+        throw new Error('Failed to delete form')
+      }
+
+      return { id }
     }
+
+    toast.promise(deletePromise(), {
+      loading: 'Deleting form...',
+      success: (data) => {
+        afterFormDeleted?.(data.id)
+        return 'Form deleted successfully'
+      },
+      error: 'Failed to delete form. Please try again.',
+    })
   }
 
   return (
@@ -59,9 +69,7 @@ export const DeleteFormDialog = ({
           <Button
             type="button"
             variant="destructive"
-            onClick={() => {
-              handleDeleteForm()
-            }}
+            onClick={handleDeleteForm}
             className="cursor-pointer"
           >
             Confirm Deletion
