@@ -6,7 +6,7 @@ const prisma = new PrismaClient()
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = await createClient()
   const {
@@ -17,9 +17,9 @@ export async function DELETE(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  try {
-    const id = params.id
+  const { id } = await params
 
+  try {
     // Validate the form exists
     const existingForm = await prisma.forms.findUnique({
       where: { id },
