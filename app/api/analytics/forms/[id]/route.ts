@@ -25,6 +25,7 @@ export async function GET(
       FROM "website_event"
       WHERE "url_path" ILIKE '%' || ${id} || '%'
         AND "url_path" NOT ILIKE '/dashboard/builder/%'
+        AND "url_path" NOT ILIKE '/api/analytics/%'
       ORDER BY "created_at" DESC
     `
 
