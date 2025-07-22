@@ -22,7 +22,7 @@ type GroupedImpression = {
 
 // API fetch function
 async function fetchAnalyticsData(formId: string): Promise<AnalyticsData[]> {
-  const response = await fetch(`/api/analytics/forms/${formId}`)
+  const response = await fetch(`/api/analytics/forms/${formId}/today`)
   if (!response.ok) {
     throw new Error('Failed to fetch analytics data')
   }
