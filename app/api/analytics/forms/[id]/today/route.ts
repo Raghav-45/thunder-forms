@@ -1,3 +1,4 @@
+// pages/api/analytics/[id]/today.ts
 import { PrismaClient } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
@@ -33,9 +34,9 @@ export async function GET(
       { status: 200 }
     )
   } catch (error) {
-    console.error('Analytics fetch error:', error)
+    console.error('Analytics fetch error for today:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch analytics' },
+      { error: 'Failed to fetch analytics for today' },
       { status: 500 }
     )
   }
