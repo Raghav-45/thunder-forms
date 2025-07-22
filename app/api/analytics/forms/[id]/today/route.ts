@@ -24,6 +24,7 @@ export async function GET(
       SELECT "url_path", "created_at"
       FROM "website_event"
       WHERE "url_path" ILIKE ${`/forms/${id}%`}
+      AND DATE_TRUNC('day', "created_at") = CURRENT_DATE
       ORDER BY "created_at" DESC
     `
 
