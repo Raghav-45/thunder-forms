@@ -21,7 +21,7 @@ export async function GET(
 
   try {
     const logs = await analyticsPrisma.$queryRaw`
-      SELECT "url_path", "created_at"
+      SELECT "event_id", "session_id", "visit_id", "created_at", "url_path", "event_type"
       FROM "website_event"
       WHERE "url_path" ILIKE ${`/forms/${id}%`}
       ORDER BY "created_at" DESC
