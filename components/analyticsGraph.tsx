@@ -11,8 +11,12 @@ import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 
 // Types for the analytics data
 type AnalyticsData = {
-  url_path: string
+  event_id: string
+  session_id: string
+  visit_id: string
   created_at: string
+  url_path: string
+  event_type: number
 }
 
 type GroupedImpression = {
@@ -231,8 +235,8 @@ const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
           <IconTrendingUp className="size-4 -translate-y-1" />
         </div>
         <div className="text-muted-foreground text-sm">
-          Showing total impressions for the last 24 Hours. This metric represents
-          how many users viewed your form during this period.
+          Showing total impressions for the last 24 Hours. This metric
+          represents how many users viewed your form during this period.
         </div>
       </div>
       <Separator />
