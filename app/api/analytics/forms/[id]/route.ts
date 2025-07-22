@@ -32,9 +32,9 @@ export async function GET(
       { status: 200 }
     )
   } catch (error) {
-    console.error('Analytics fetch error:', error)
+    console.error('Analytics fetch error for all time:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch analytics' },
+      { error: 'Failed to fetch analytics for all time' },
       { status: 500 }
     )
   }
