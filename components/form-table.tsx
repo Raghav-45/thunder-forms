@@ -88,7 +88,7 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { Edit2Icon } from 'lucide-react'
+import { ChartLineIcon, Edit2Icon } from 'lucide-react'
 import Link from 'next/link'
 import AnalyticsGraph from './analyticsGraph'
 import { DeleteFormDialog } from './delete-form-dialog'
@@ -572,7 +572,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   return (
     <Drawer direction={isMobile ? 'bottom' : 'right'}>
       <DrawerTrigger asChild>
-        <Button variant="link" className="text-foreground w-fit px-0 text-left">
+        <Button variant="link" className="text-foreground w-fit px-0 text-left cursor-pointer">
           {item.title}
         </Button>
       </DrawerTrigger>
@@ -585,12 +585,23 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
         </DrawerHeader>
         <AnalyticsGraph formId={item.id} intervalMinutes={60} />
         <DrawerFooter>
-          <Link href={`/dashboard/builder/${item.id}`}>
-            <Button className="w-full">
-              <Edit2Icon />
-              Edit Form
-            </Button>
-          </Link>
+          <div className="flex flex-row gap-2 w-full">
+            <Link href={`/dashboard/builder/${item.id}`} className="flex-1">
+              <Button className="w-full cursor-pointer">
+                <Edit2Icon />
+                Edit Form
+              </Button>
+            </Link>
+            <Link
+              href={`/dashboard/forms/${item.id}/analytics`}
+              className="flex-1"
+            >
+              <Button variant="secondary" className="w-full cursor-pointer">
+                <ChartLineIcon />
+                View Detailed Analytics
+              </Button>
+            </Link>
+          </div>
           <DrawerClose asChild>
             <Button variant="outline" className="w-full">
               Done
