@@ -2,8 +2,7 @@
 
 import * as React from 'react'
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts'
-
-import { chartData } from '@/config/data'
+import { useParams } from 'next/navigation'
 
 import {
   Card,
@@ -19,45 +18,165 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart'
 
-export const description = 'An interactive bar chart'
+export const description = 'Form analytics chart showing daily views and visits'
 
 const chartConfig = {
   views: {
-    label: 'Page Views',
-  },
-  desktop: {
-    label: 'Desktop',
-    color: 'var(--chart-2)',
-  },
-  mobile: {
-    label: 'Mobile',
+    label: 'Views',
     color: 'var(--chart-1)',
+  },
+  visits: {
+    label: 'Visits',
+    color: 'var(--chart-2)',
   },
 } satisfies ChartConfig
 
-export function ChartBarInteractive() {
-  const [activeChart, setActiveChart] =
-    React.useState<keyof typeof chartConfig>('desktop')
+interface DailyViewData {
+  date: string
+  views: number
+  visits: number
+}
 
-  const total = React.useMemo(
-    () => ({
-      desktop: chartData.reduce((acc, curr) => acc + curr.desktop, 0),
-      mobile: chartData.reduce((acc, curr) => acc + curr.mobile, 0),
-    }),
-    []
-  )
+interface AnalyticsData {
+  analytics: {
+    views: number
+    visits: number
+    visitors: number
+    bounceRate: number
+    visitDuration: number
+  }
+  dailyViews: DailyViewData[]
+}
+
+// Function to generate 3 months of data with actual data points
+function generateThreeMonthsData(dailyViews: DailyViewData[]): DailyViewData[] {
+  const result: DailyViewData[] = []
+  const today = new Date()
+  const threeMonthsAgo = new Date(today)
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
+  
+  // Create a map of existing data for quick lookup
+  const dataMap = new Map<string, DailyViewData>()
+  dailyViews.forEach(item => {
+    const dateKey = new Date(item.date).toISOString().split('T')[0]
+    dataMap.set(dateKey, item)
+  })
+  
+  // Generate all days for 3 months
+  const currentDate = new Date(threeMonthsAgo)
+  while (currentDate <= today) {
+    const dateKey = currentDate.toISOString().split('T')[0]
+    const existingData = dataMap.get(dateKey)
+    
+    result.push({
+      date: dateKey,
+      views: existingData?.views || 0,
+      visits: existingData?.visits || 0
+    })
+    
+    currentDate.setDate(currentDate.getDate() + 1)
+  }
+  
+  return result
+}
+
+export function ChartBarInteractive() {
+  const params = useParams()
+  const formId = params.formId as string
+  
+  const [analyticsData, setAnalyticsData] = React.useState<AnalyticsData | null>(null)
+  const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState<string | null>(null)
+  const [activeChart, setActiveChart] = React.useState<keyof typeof chartConfig>('views')
+
+  React.useEffect(() => {
+    if (!formId) return
+
+    const fetchAnalytics = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch(`/api/analytics/forms/${formId}/detailed`)
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch analytics data')
+        }
+        
+        const data = await response.json()
+        if (data.success) {
+          setAnalyticsData(data)
+        } else {
+          throw new Error(data.error || 'Failed to fetch analytics')
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error occurred')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchAnalytics()
+  }, [formId])
+
+  const chartData = React.useMemo(() => {
+    if (!analyticsData?.dailyViews) return []
+    return generateThreeMonthsData(analyticsData.dailyViews)
+  }, [analyticsData])
+
+  const total = React.useMemo(() => {
+    if (!analyticsData) return { views: 0, visits: 0 }
+    return {
+      views: analyticsData.analytics.views,
+      visits: analyticsData.analytics.visits,
+    }
+  }, [analyticsData])
+
+  if (loading) {
+    return (
+      <Card className="py-0">
+        <CardHeader className="flex flex-col items-stretch border-b !p-0 sm:flex-row">
+          <div className="flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3 sm:!py-0">
+            <CardTitle>Form Analytics</CardTitle>
+            <CardDescription>Loading analytics data...</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="px-2 sm:p-6">
+          <div className="flex items-center justify-center h-[250px]">
+            <div className="animate-pulse text-muted-foreground">Loading chart...</div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (error) {
+    return (
+      <Card className="py-0">
+        <CardHeader className="flex flex-col items-stretch border-b !p-0 sm:flex-row">
+          <div className="flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3 sm:!py-0">
+            <CardTitle>Form Analytics</CardTitle>
+            <CardDescription>Error loading analytics data</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="px-2 sm:p-6">
+          <div className="flex items-center justify-center h-[250px]">
+            <div className="text-red-500">Error: {error}</div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card className="py-0">
       <CardHeader className="flex flex-col items-stretch border-b !p-0 sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3 sm:!py-0">
-          <CardTitle>Bar Chart - Interactive</CardTitle>
+          <CardTitle>Form Analytics</CardTitle>
           <CardDescription>
-            Showing total visitors for the last 3 months
+            Daily views and visits for the last 3 months
           </CardDescription>
         </div>
         <div className="flex">
-          {['desktop', 'mobile'].map((key) => {
+          {['views', 'visits'].map((key) => {
             const chart = key as keyof typeof chartConfig
             return (
               <button
@@ -109,7 +228,7 @@ export function ChartBarInteractive() {
               content={
                 <ChartTooltipContent
                   className="w-[150px]"
-                  nameKey="views"
+                  nameKey={activeChart}
                   labelFormatter={(value) => {
                     return new Date(value).toLocaleDateString('en-US', {
                       month: 'short',
