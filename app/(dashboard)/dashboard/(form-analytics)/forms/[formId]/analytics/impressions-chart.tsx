@@ -80,7 +80,6 @@ export function ChartBarInteractive() {
   const [analyticsData, setAnalyticsData] = React.useState<AnalyticsData | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
-  const [activeChart, setActiveChart] = React.useState<keyof typeof chartConfig>('views')
 
   React.useEffect(() => {
     if (!formId) return
@@ -179,11 +178,9 @@ export function ChartBarInteractive() {
           {['views', 'visits'].map((key) => {
             const chart = key as keyof typeof chartConfig
             return (
-              <button
+              <div
                 key={chart}
-                data-active={activeChart === chart}
-                className="data-[active=true]:bg-muted/50 relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l sm:border-t-0 sm:border-l sm:px-8 sm:py-6"
-                onClick={() => setActiveChart(chart)}
+                className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l sm:border-t-0 sm:border-l sm:px-8 sm:py-6"
               >
                 <span className="text-muted-foreground text-xs">
                   {chartConfig[chart].label}
@@ -191,7 +188,7 @@ export function ChartBarInteractive() {
                 <span className="text-lg leading-none font-bold sm:text-3xl">
                   {total[key as keyof typeof total].toLocaleString()}
                 </span>
-              </button>
+              </div>
             )
           })}
         </div>
@@ -228,7 +225,6 @@ export function ChartBarInteractive() {
               content={
                 <ChartTooltipContent
                   className="w-[150px]"
-                  nameKey={activeChart}
                   labelFormatter={(value) => {
                     return new Date(value).toLocaleDateString('en-US', {
                       month: 'short',
@@ -239,7 +235,8 @@ export function ChartBarInteractive() {
                 />
               }
             />
-            <Bar dataKey={activeChart} fill={`var(--color-${activeChart})`} />
+            <Bar dataKey="visits" stackId="a" fill="var(--color-visits)" />
+            <Bar dataKey="views" stackId="a" fill="var(--color-views)" />
           </BarChart>
         </ChartContainer>
       </CardContent>
