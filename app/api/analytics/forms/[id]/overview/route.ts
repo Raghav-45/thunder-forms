@@ -24,7 +24,7 @@ export async function GET(
     // 1. Fetch raw logs
     // NOTE: If you need more fields for future calculations (e.g., user agent for unique users
     // based on IP/UA, ensure those are selected here. For now, session_id and visit_id are enough)
-    const rawLogs: Array<any> = await analyticsPrisma.$queryRaw`
+    const rawLogs: Array<unknown> = await analyticsPrisma.$queryRaw`
       SELECT
         "event_id",
         "session_id",
@@ -72,7 +72,7 @@ function calculateFormAnalytics(logs: Array<any>) {
 
   // Group events by visit_id and session_id
   const visitsMap = new Map<string, {
-    events: any[],
+    events: unknown[],
     startTime: Date,
     endTime: Date
   }>();
