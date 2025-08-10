@@ -38,13 +38,6 @@ interface DailyViewData {
 }
 
 interface AnalyticsData {
-  analytics: {
-    views: number
-    visits: number
-    visitors: number
-    bounceRate: number
-    visitDuration: number
-  }
   dailyViews: DailyViewData[]
 }
 
@@ -123,11 +116,18 @@ export function ChartBarInteractive() {
   }, [analyticsData])
 
   const total = React.useMemo(() => {
-    if (!analyticsData) return { views: 0, visits: 0 }
-    return {
-      views: analyticsData.analytics.views,
-      visits: analyticsData.analytics.visits,
-    }
+    if (!analyticsData?.dailyViews) return { views: 0, visits: 0 }
+    
+    // Calculate totals from dailyViews data
+    const totals = analyticsData.dailyViews.reduce(
+      (acc, day) => ({
+        views: acc.views + day.views,
+        visits: acc.visits + day.visits,
+      }),
+      { views: 0, visits: 0 }
+    )
+    
+    return totals
   }, [analyticsData])
 
   if (loading) {
