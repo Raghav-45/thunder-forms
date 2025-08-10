@@ -33,38 +33,6 @@ interface SessionData {
   created_at: Date
 }
 
-interface DailyViewData {
-  date: string
-  views: number
-  visits: number
-}
-
-interface PageData {
-  url_path: string
-  views: number
-}
-
-interface ReferrerData {
-  referrer_domain: string
-  visits: number
-}
-
-interface DeviceData {
-  device: string
-  count: number
-}
-
-interface BrowserData {
-  browser: string
-  count: number
-}
-
-interface LocationData {
-  country: string
-  city: string
-  count: number
-}
-
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
