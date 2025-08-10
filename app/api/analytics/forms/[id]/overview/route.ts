@@ -10,6 +10,30 @@ const analyticsPrisma = new PrismaClient({
   },
 })
 
+// Define interfaces for type safety
+interface WebsiteEventLog {
+  event_id: string;
+  session_id: string;
+  visit_id: string;
+  created_at: string;
+  url_path: string;
+  event_type: string;
+}
+
+interface VisitData {
+  events: WebsiteEventLog[];
+  startTime: Date;
+  endTime: Date;
+}
+
+interface AnalyticsResult {
+  views: number;
+  visits: number;
+  visitors: number;
+  bounceRate: number;
+  visitDuration: number;
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -24,7 +48,7 @@ export async function GET(
     // 1. Fetch raw logs
     // NOTE: If you need more fields for future calculations (e.g., user agent for unique users
     // based on IP/UA, ensure those are selected here. For now, session_id and visit_id are enough)
-    const rawLogs: Array<unknown> = await analyticsPrisma.$queryRaw`
+    const rawLogs: WebsiteEventLog[] = await analyticsPrisma.$queryRaw`
       SELECT
         "event_id",
         "session_id",
@@ -55,7 +79,7 @@ export async function GET(
 
 
 // --- Analytics Calculation Function ---
-function calculateFormAnalytics(logs: Array<any>) {
+function calculateFormAnalytics(logs: WebsiteEventLog[]): AnalyticsResult {
   // If no logs, return zeros
   if (!logs || logs.length === 0) {
     return {
@@ -64,18 +88,13 @@ function calculateFormAnalytics(logs: Array<any>) {
       visitors: 0,
       bounceRate: 0,
       visitDuration: 0,
-      rawLogs: [] // Optional: Include raw logs if needed for debugging or display
     };
   }
 
   const views = logs.length; // Total events/page views
 
   // Group events by visit_id and session_id
-  const visitsMap = new Map<string, {
-    events: unknown[],
-    startTime: Date,
-    endTime: Date
-  }>();
+  const visitsMap = new Map<string, VisitData>();
   const sessions = new Set<string>(); // To count unique visitors
 
   logs.forEach(log => {
@@ -133,7 +152,5 @@ function calculateFormAnalytics(logs: Array<any>) {
     visitors: visitors,
     bounceRate: parseFloat(bounceRate.toFixed(1)), // Round to one decimal place
     visitDuration: parseFloat(averageVisitDuration.toFixed(1)), // Round to one decimal place
-    // You might want to remove rawLogs from the final output if not needed on the client
-    // rawLogs: logs
   };
 }
