@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { useParams } from 'next/navigation'
 
 import {
@@ -202,9 +202,10 @@ export function ChartBarInteractive() {
             accessibilityLayer
             data={chartData}
             margin={{
-              left: 12,
+              left: 0,
               right: 12,
             }}
+            className='p-0'
           >
             <CartesianGrid vertical={false} />
             <XAxis
@@ -220,6 +221,12 @@ export function ChartBarInteractive() {
                   day: 'numeric',
                 })
               }}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={(value) => value.toLocaleString()}
             />
             <ChartTooltip
               content={
