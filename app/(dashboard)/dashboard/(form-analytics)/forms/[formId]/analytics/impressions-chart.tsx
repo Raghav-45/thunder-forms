@@ -341,20 +341,6 @@ export function ChartBarInteractive() {
               tickMargin={8}
               tickFormatter={(value) => value.toLocaleString()}
             />
-            {/* <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  className="w-[150px]"
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })
-                  }}
-                />
-              }
-            /> */}
             <ChartTooltip content={<OverlayTooltipContent />} defaultIndex={1} />
             {/* Single custom bar draws both series without summing */}
             <Bar dataKey="_max" fill="transparent" shape={<OverlayStackShape />} isAnimationActive={false} />
