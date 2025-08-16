@@ -314,8 +314,8 @@ export function ChartBarInteractive() {
             accessibilityLayer
             data={interactiveData}
             margin={{
-              left: 0,
-              right: 12,
+              left: -24,
+              right: 6,
             }}
             className="p-0"
             // Keep default grouping; custom shape draws both values
