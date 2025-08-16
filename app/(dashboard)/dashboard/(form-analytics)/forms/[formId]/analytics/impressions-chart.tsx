@@ -42,24 +42,61 @@ interface AnalyticsData {
 }
 
 // Custom bar shape to snap to whole pixels and reduce anti-aliasing gaps when overlapping
-type OverlayBarProps = {
+// Minimal typing for the custom shape to satisfy linting without pulling full Recharts types
+type ShapeProps = {
   x?: number
   y?: number
   width?: number
   height?: number
-  fill?: string
+  payload?: Record<string, unknown>
 }
 
-function OverlayBar(props: OverlayBarProps) {
-  const { x, y, width, height, fill } = props
-  const rx = Math.round(x ?? 0)
-  const ry = Math.round(y ?? 0)
-  const w = Math.round(width ?? 0)
-  const h = Math.round(height ?? 0)
-  // Use small corner radius similar to Bar's radius prop
+// Custom bar shape that draws both series starting from zero without summing
+function OverlayStackShape(props: ShapeProps) {
+  const { x = 0, y = 0, width = 0, height = 0, payload } = props
+  const rx = Math.round(x)
+  const ry = Math.round(y)
+  const w = Math.round(width)
+  const h = Math.round(height)
+
+  const maxVal = Math.max(1, Number(payload?._max ?? 0))
+  const visits = Number(payload?.visits ?? 0)
+  const views = Number(payload?.views ?? 0)
+
+  // Scale heights relative to max of the two
+  const visitsH = Math.round((h * visits) / maxVal)
+  const viewsH = Math.round((h * views) / maxVal)
+  const baseY = ry + h
+
   const corner = 2
+
   return (
-    <rect x={rx} y={ry} width={w} height={h} fill={fill} rx={corner} ry={corner} />
+    <g>
+      {/* Visits bar */}
+      {visits > 0 && (
+        <rect
+          x={rx}
+          y={baseY - visitsH}
+          width={w}
+          height={visitsH}
+          fill="var(--color-visits)"
+          rx={corner}
+          ry={corner}
+        />
+      )}
+      {/* Views bar (overlay) */}
+      {views > 0 && (
+        <rect
+          x={rx}
+          y={baseY - viewsH}
+          width={w}
+          height={viewsH}
+          fill="var(--color-views)"
+          rx={corner}
+          ry={corner}
+        />
+      )}
+    </g>
   )
 }
 
@@ -144,7 +181,7 @@ export function ChartBarInteractive() {
   }, [chartData])
 
   const interactiveData = React.useMemo(
-    () => chartData.map((d) => ({ ...d, _hit: maxY })),
+    () => chartData.map((d) => ({ ...d, _hit: maxY, _max: Math.max(d.views, d.visits) })),
     [chartData, maxY]
   )
 
@@ -242,8 +279,7 @@ export function ChartBarInteractive() {
               right: 12,
             }}
             className="p-0"
-            barCategoryGap="0%"
-            barGap={-12}
+            // Keep default grouping; custom shape draws both values
           >
             <CartesianGrid vertical={false} />
             <XAxis
@@ -292,37 +328,41 @@ export function ChartBarInteractive() {
                       year: 'numeric',
                     })
                   }}
-                  formatter={(value, name) => {
-                    // Ignore synthetic hover series
-                    if (!(name in chartConfig)) return null
+                  formatter={(_value, _name, item) => {
+                    const raw = (item as unknown as { payload?: { views?: number; visits?: number } }).payload
+                    const v = Number(raw?.views ?? 0)
+                    const vi = Number(raw?.visits ?? 0)
                     return (
-                      <>
-                        <div
-                          className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
-                          style={
-                            {
-                              '--color-bg': `var(--color-${name})`,
-                            } as React.CSSProperties
-                          }
-                        />
-                        {chartConfig[name as keyof typeof chartConfig]?.label ||
-                          name}
-                        <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                          {typeof value === 'number'
-                            ? value.toLocaleString()
-                            : value}
+                      <div className="flex w-full flex-col gap-1.5">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
+                            style={{ '--color-bg': 'var(--color-visits)' } as React.CSSProperties}
+                          />
+                          {chartConfig.visits.label}
+                          <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
+                            {vi.toLocaleString()}
+                          </div>
                         </div>
-                      </>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
+                            style={{ '--color-bg': 'var(--color-views)' } as React.CSSProperties}
+                          />
+                          {chartConfig.views.label}
+                          <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
+                            {v.toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
                     )
                   }}
                 />
               }
               defaultIndex={1}
             />
-            {/* Transparent bar to capture hover across the whole category */}
-            <Bar dataKey="_hit" fill="transparent" isAnimationActive={false} />
-            <Bar dataKey="visits" fill="var(--color-visits)" barSize={12} radius={[2, 2, 0, 0]} shape={<OverlayBar />} />
-            <Bar dataKey="views" fill="var(--color-views)" barSize={12} radius={[2, 2, 0, 0]} shape={<OverlayBar />} />
+            {/* Single custom bar draws both series without summing */}
+            <Bar dataKey="_max" fill="transparent" shape={<OverlayStackShape />} isAnimationActive={false} />
           </BarChart>
         </ChartContainer>
       </CardContent>
