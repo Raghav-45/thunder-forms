@@ -243,7 +243,7 @@ export function ChartBarInteractive() {
               }
             />
             <Bar dataKey="visits" stackId="a" fill="var(--color-visits)" />
-            <Bar dataKey="views" stackId="a" fill="var(--color-views)" />
+            <Bar dataKey="views" stackId="b" fill="var(--color-views)" />
           </BarChart>
         </ChartContainer>
       </CardContent>
