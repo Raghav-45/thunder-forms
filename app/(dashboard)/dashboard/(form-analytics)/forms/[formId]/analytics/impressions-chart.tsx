@@ -23,11 +23,11 @@ export const description = 'Form analytics chart showing daily views and visits'
 const chartConfig = {
   views: {
     label: 'Views',
-    color: 'var(--chart-1)',
+    color: 'oklch(0.488 0.243 264.376 / 0.4)',
   },
   visits: {
     label: 'Visits',
-    color: 'var(--chart-2)',
+    color: 'oklch(0.488 0.243 264.376)',
   },
 } satisfies ChartConfig
 
@@ -41,43 +41,66 @@ interface AnalyticsData {
   dailyViews: DailyViewData[]
 }
 
+// Custom bar shape to snap to whole pixels and reduce anti-aliasing gaps when overlapping
+type OverlayBarProps = {
+  x?: number
+  y?: number
+  width?: number
+  height?: number
+  fill?: string
+}
+
+function OverlayBar(props: OverlayBarProps) {
+  const { x, y, width, height, fill } = props
+  const rx = Math.round(x ?? 0)
+  const ry = Math.round(y ?? 0)
+  const w = Math.round(width ?? 0)
+  const h = Math.round(height ?? 0)
+  // Use small corner radius similar to Bar's radius prop
+  const corner = 2
+  return (
+    <rect x={rx} y={ry} width={w} height={h} fill={fill} rx={corner} ry={corner} />
+  )
+}
+
 // Function to generate 3 months of data with actual data points
 function generateThreeMonthsData(dailyViews: DailyViewData[]): DailyViewData[] {
   const result: DailyViewData[] = []
   const today = new Date()
   const threeMonthsAgo = new Date(today)
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
-  
+
   // Create a map of existing data for quick lookup
   const dataMap = new Map<string, DailyViewData>()
-  dailyViews.forEach(item => {
+  dailyViews.forEach((item) => {
     const dateKey = new Date(item.date).toISOString().split('T')[0]
     dataMap.set(dateKey, item)
   })
-  
+
   // Generate all days for 3 months
   const currentDate = new Date(threeMonthsAgo)
   while (currentDate <= today) {
     const dateKey = currentDate.toISOString().split('T')[0]
     const existingData = dataMap.get(dateKey)
-    
+
     result.push({
       date: dateKey,
       views: existingData?.views || 0,
-      visits: existingData?.visits || 0
+      visits: existingData?.visits || 0,
     })
-    
+
     currentDate.setDate(currentDate.getDate() + 1)
   }
-  
+
   return result
 }
 
 export function ChartBarInteractive() {
   const params = useParams()
   const formId = params.formId as string
-  
-  const [analyticsData, setAnalyticsData] = React.useState<AnalyticsData | null>(null)
+
+  const [analyticsData, setAnalyticsData] =
+    React.useState<AnalyticsData | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
 
@@ -88,11 +111,11 @@ export function ChartBarInteractive() {
       try {
         setLoading(true)
         const response = await fetch(`/api/analytics/forms/${formId}/detailed`)
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch analytics data')
         }
-        
+
         const data = await response.json()
         if (data.success) {
           setAnalyticsData(data)
@@ -114,9 +137,20 @@ export function ChartBarInteractive() {
     return generateThreeMonthsData(analyticsData.dailyViews)
   }, [analyticsData])
 
+  // Ensure hover works across the category by adding a transparent hit area
+  const maxY = React.useMemo(() => {
+    if (!chartData.length) return 1
+    return Math.max(1, ...chartData.map((d) => Math.max(d.views, d.visits)))
+  }, [chartData])
+
+  const interactiveData = React.useMemo(
+    () => chartData.map((d) => ({ ...d, _hit: maxY })),
+    [chartData, maxY]
+  )
+
   const total = React.useMemo(() => {
     if (!analyticsData?.dailyViews) return { views: 0, visits: 0 }
-    
+
     // Calculate totals from dailyViews data
     const totals = analyticsData.dailyViews.reduce(
       (acc, day) => ({
@@ -125,7 +159,7 @@ export function ChartBarInteractive() {
       }),
       { views: 0, visits: 0 }
     )
-    
+
     return totals
   }, [analyticsData])
 
@@ -140,7 +174,9 @@ export function ChartBarInteractive() {
         </CardHeader>
         <CardContent className="px-2 sm:p-6">
           <div className="flex items-center justify-center h-[250px]">
-            <div className="animate-pulse text-muted-foreground">Loading chart...</div>
+            <div className="animate-pulse text-muted-foreground">
+              Loading chart...
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -200,12 +236,14 @@ export function ChartBarInteractive() {
         >
           <BarChart
             accessibilityLayer
-            data={chartData}
+            data={interactiveData}
             margin={{
               left: 0,
               right: 12,
             }}
-            className='p-0'
+            className="p-0"
+            barCategoryGap="0%"
+            barGap={-12}
           >
             <CartesianGrid vertical={false} />
             <XAxis
@@ -228,7 +266,7 @@ export function ChartBarInteractive() {
               tickMargin={8}
               tickFormatter={(value) => value.toLocaleString()}
             />
-            <ChartTooltip
+            {/* <ChartTooltip
               content={
                 <ChartTooltipContent
                   className="w-[150px]"
@@ -241,9 +279,50 @@ export function ChartBarInteractive() {
                   }}
                 />
               }
+            /> */}
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  // hideLabel
+                  className="w-[150px]"
+                  labelFormatter={(value) => {
+                    return new Date(value).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })
+                  }}
+                  formatter={(value, name) => {
+                    // Ignore synthetic hover series
+                    if (!(name in chartConfig)) return null
+                    return (
+                      <>
+                        <div
+                          className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
+                          style={
+                            {
+                              '--color-bg': `var(--color-${name})`,
+                            } as React.CSSProperties
+                          }
+                        />
+                        {chartConfig[name as keyof typeof chartConfig]?.label ||
+                          name}
+                        <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
+                          {typeof value === 'number'
+                            ? value.toLocaleString()
+                            : value}
+                        </div>
+                      </>
+                    )
+                  }}
+                />
+              }
+              defaultIndex={1}
             />
-            <Bar dataKey="visits" stackId="a" fill="var(--color-visits)" />
-            <Bar dataKey="views" stackId="b" fill="var(--color-views)" />
+            {/* Transparent bar to capture hover across the whole category */}
+            <Bar dataKey="_hit" fill="transparent" isAnimationActive={false} />
+            <Bar dataKey="visits" fill="var(--color-visits)" barSize={12} radius={[2, 2, 0, 0]} shape={<OverlayBar />} />
+            <Bar dataKey="views" fill="var(--color-views)" barSize={12} radius={[2, 2, 0, 0]} shape={<OverlayBar />} />
           </BarChart>
         </ChartContainer>
       </CardContent>
