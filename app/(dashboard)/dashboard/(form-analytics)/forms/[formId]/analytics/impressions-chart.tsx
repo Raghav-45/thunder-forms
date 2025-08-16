@@ -15,7 +15,6 @@ import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
-  ChartTooltipContent,
 } from '@/components/ui/chart'
 
 export const description = 'Form analytics chart showing daily views and visits'
@@ -59,9 +58,9 @@ function OverlayStackShape(props: ShapeProps) {
   const w = Math.round(width)
   const h = Math.round(height)
 
-  const maxVal = Math.max(1, Number(payload?._max ?? 0))
   const visits = Number(payload?.visits ?? 0)
   const views = Number(payload?.views ?? 0)
+  const maxVal = Math.max(1, visits, views)
 
   // Scale heights relative to max of the two
   const visitsH = Math.round((h * visits) / maxVal)
@@ -97,6 +96,56 @@ function OverlayStackShape(props: ShapeProps) {
         />
       )}
     </g>
+  )
+}
+
+// Custom tooltip content to mimic the original UI and show Visits and Views rows
+type TooltipProps = { active?: boolean; payload?: Array<{ payload?: { date?: string; views?: number; visits?: number } }> }
+function OverlayTooltipContent(props: TooltipProps) {
+  const { active, payload } = props
+  if (!active || !payload?.length) return null
+
+  const raw = payload[0]?.payload as { date?: string; views?: number; visits?: number }
+  const date = raw?.date ? new Date(raw.date) : new Date()
+  const dateLabel = date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+
+  const visits = Number(raw?.visits ?? 0)
+  const views = Number(raw?.views ?? 0)
+
+  return (
+    <div className="border-border/50 bg-background grid min-w-[8rem] items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl w-[150px]">
+      <div className="font-medium">{dateLabel}</div>
+      <div className="grid gap-1.5">
+        <div className="[&>svg]:text-muted-foreground flex w-full flex-wrap gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 items-center">
+          <div
+            className="shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg) h-2.5 w-2.5"
+            style={{ '--color-bg': 'var(--color-visits)', '--color-border': 'var(--color-visits)' } as React.CSSProperties}
+          />
+          <div className="flex flex-1 justify-between leading-none items-center">
+            <div className="grid gap-1.5">
+              <span className="text-muted-foreground">Visits</span>
+            </div>
+            {visits.toLocaleString()}
+          </div>
+        </div>
+        <div className="[&>svg]:text-muted-foreground flex w-full flex-wrap gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 items-center">
+          <div
+            className="shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg) h-2.5 w-2.5"
+            style={{ '--color-bg': 'var(--color-views)', '--color-border': 'var(--color-views)' } as React.CSSProperties}
+          />
+          <div className="flex flex-1 justify-between leading-none items-center">
+            <div className="grid gap-1.5">
+              <span className="text-muted-foreground">Views</span>
+            </div>
+            {views.toLocaleString()}
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -174,21 +223,14 @@ export function ChartBarInteractive() {
     return generateThreeMonthsData(analyticsData.dailyViews)
   }, [analyticsData])
 
-  // Ensure hover works across the category by adding a transparent hit area
-  const maxY = React.useMemo(() => {
-    if (!chartData.length) return 1
-    return Math.max(1, ...chartData.map((d) => Math.max(d.views, d.visits)))
-  }, [chartData])
-
   const interactiveData = React.useMemo(
-    () => chartData.map((d) => ({ ...d, _hit: maxY, _max: Math.max(d.views, d.visits) })),
-    [chartData, maxY]
+    () => chartData.map((d) => ({ ...d, _max: Math.max(d.views, d.visits) })),
+    [chartData]
   )
 
   const total = React.useMemo(() => {
     if (!analyticsData?.dailyViews) return { views: 0, visits: 0 }
 
-    // Calculate totals from dailyViews data
     const totals = analyticsData.dailyViews.reduce(
       (acc, day) => ({
         views: acc.views + day.views,
@@ -211,9 +253,7 @@ export function ChartBarInteractive() {
         </CardHeader>
         <CardContent className="px-2 sm:p-6">
           <div className="flex items-center justify-center h-[250px]">
-            <div className="animate-pulse text-muted-foreground">
-              Loading chart...
-            </div>
+            <div className="animate-pulse text-muted-foreground">Loading chart...</div>
           </div>
         </CardContent>
       </Card>
@@ -237,7 +277,6 @@ export function ChartBarInteractive() {
       </Card>
     )
   }
-
   return (
     <Card className="py-0">
       <CardHeader className="flex flex-col items-stretch border-b !p-0 sm:flex-row">
@@ -316,51 +355,7 @@ export function ChartBarInteractive() {
                 />
               }
             /> */}
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  // hideLabel
-                  className="w-[150px]"
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })
-                  }}
-                  formatter={(_value, _name, item) => {
-                    const raw = (item as unknown as { payload?: { views?: number; visits?: number } }).payload
-                    const v = Number(raw?.views ?? 0)
-                    const vi = Number(raw?.visits ?? 0)
-                    return (
-                      <div className="flex w-full flex-col gap-1.5">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
-                            style={{ '--color-bg': 'var(--color-visits)' } as React.CSSProperties}
-                          />
-                          {chartConfig.visits.label}
-                          <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                            {vi.toLocaleString()}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-(--color-bg)"
-                            style={{ '--color-bg': 'var(--color-views)' } as React.CSSProperties}
-                          />
-                          {chartConfig.views.label}
-                          <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums">
-                            {v.toLocaleString()}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  }}
-                />
-              }
-              defaultIndex={1}
-            />
+            <ChartTooltip content={<OverlayTooltipContent />} defaultIndex={1} />
             {/* Single custom bar draws both series without summing */}
             <Bar dataKey="_max" fill="transparent" shape={<OverlayStackShape />} isAnimationActive={false} />
           </BarChart>
