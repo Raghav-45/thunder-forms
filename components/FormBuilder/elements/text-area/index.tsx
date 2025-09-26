@@ -44,8 +44,8 @@ const TextArea: React.FC<FieldProps<TextAreaConfig>> = ({
         onBlur={handleBlur}
         disabled={field.disabled}
         required={field.required}
-        minLength={field.minLength}
-        maxLength={field.maxLength}
+        // minLength={field.minLength}
+        // maxLength={field.maxLength}
         autoComplete={field.autoComplete}
         className={error ? 'border-red-500 focus:border-red-500' : ''}
       />
