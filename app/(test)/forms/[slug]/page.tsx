@@ -1,7 +1,7 @@
 'use client'
 
 import { FieldConfig } from '@/components/FormBuilder/elements'
-import { validateFormField, validateFormFields } from '@/components/FormBuilder/utils/formValidation'
+import { validateFormFields } from '@/components/FormBuilder/utils/formValidation'
 import { useFormStore } from '@/components/FormBuilder/store'
 import { getFieldComponent } from '@/components/FormBuilder/utils/helperFunctions'
 import { FormSubmittedPage } from '@/components/FormSubmittedPage'
@@ -30,32 +30,23 @@ export default function FormPage({ params }: FormPageProps) {
       [fieldId]: value
     }))
     
-    // Real-time validation for better UX
-    const field = fields.find(f => f.id === fieldId)
-    if (field) {
-      const error = validateFormField(field, value)
+    // Clear any existing errors for this field when user starts typing
+    if (errors[fieldId]) {
       setErrors(prev => {
         const newErrors = { ...prev }
-        if (error) {
-          newErrors[fieldId] = error
-        } else {
-          delete newErrors[fieldId]
-        }
+        delete newErrors[fieldId]
         return newErrors
       })
     }
   }
 
-  const validateForm = (): boolean => {
+  const handleSubmit = async () => {
     const newErrors = validateFormFields(fields, formData)
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = async () => {
-    if (!validateForm()) {
-      const errorCount = Object.keys(errors).length
-      const firstError = Object.values(errors)[0]
+    
+    if (Object.keys(newErrors).length > 0) {
+      const errorCount = Object.keys(newErrors).length
+      const firstError = Object.values(newErrors)[0]
       if (errorCount === 1) {
         toast.error(firstError)
       } else {
