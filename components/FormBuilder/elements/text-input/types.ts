@@ -17,9 +17,11 @@ export const getTextInputValidationSchema = (
 
   switch (field.inputType) {
     case 'email':
+      // Email validation - ignore minLength/maxLength as email format is more important
       schema = z.string().email('Invalid email address')
       break
     case 'url':
+      // URL validation - ignore minLength/maxLength as URL format is more important
       schema = z.string().url('Invalid URL format')
       break
     case 'tel':
@@ -30,26 +32,39 @@ export const getTextInputValidationSchema = (
           'Invalid phone number format'
         )
       }
+      // Apply length validation for phone numbers
+      if (field.minLength) {
+        schema = schema.min(
+          field.minLength,
+          `Must be at least ${field.minLength} characters`
+        )
+      }
+      if (field.maxLength) {
+        schema = schema.max(
+          field.maxLength,
+          `Must be at most ${field.maxLength} characters`
+        )
+      }
       break
     default:
       schema = z.string()
       if (field.pattern) {
         schema = schema.regex(new RegExp(field.pattern), 'Invalid format')
       }
+      // Apply length validation for text and password inputs
+      if (field.minLength) {
+        schema = schema.min(
+          field.minLength,
+          `Must be at least ${field.minLength} characters`
+        )
+      }
+      if (field.maxLength) {
+        schema = schema.max(
+          field.maxLength,
+          `Must be at most ${field.maxLength} characters`
+        )
+      }
       break
-  }
-
-  if (field.minLength) {
-    schema = schema.min(
-      field.minLength,
-      `Must be at least ${field.minLength} characters`
-    )
-  }
-  if (field.maxLength) {
-    schema = schema.max(
-      field.maxLength,
-      `Must be at most ${field.maxLength} characters`
-    )
   }
 
   return field.required ? schema : schema.optional()

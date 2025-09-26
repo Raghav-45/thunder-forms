@@ -5,13 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
   Sheet,
   SheetContent,
   SheetFooter,
@@ -119,29 +112,8 @@ export const TextAreaEditor: React.FC<TextAreaEditorProps> = ({
                 Validaton Properties
               </AccordionTrigger>
               <AccordionContent className="flex flex-col gap-y-4">
-                <div className="grid grid-cols-10 gap-4">
-                  <div className="space-y-2 w-full col-span-4">
-                    <Label htmlFor="input-type">Input Type</Label>
-                    <Select
-                      value={config.inputType || 'text'}
-                      onValueChange={(value) =>
-                        handleInputChange('inputType', value)
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select input type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="text">Text</SelectItem>
-                        <SelectItem value="email">Email</SelectItem>
-                        <SelectItem value="password">Password</SelectItem>
-                        <SelectItem value="tel">Phone</SelectItem>
-                        <SelectItem value="url">URL</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2 col-span-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
                     <Label htmlFor="min-length">Min Length</Label>
                     <Input
                       id="min-length"
@@ -158,7 +130,7 @@ export const TextAreaEditor: React.FC<TextAreaEditorProps> = ({
                     />
                   </div>
 
-                  <div className="space-y-2 col-span-3">
+                  <div className="space-y-2">
                     <Label htmlFor="max-length">Max Length</Label>
                     <Input
                       id="max-length"
@@ -171,7 +143,7 @@ export const TextAreaEditor: React.FC<TextAreaEditorProps> = ({
                           e.target.value ? parseInt(e.target.value) : undefined
                         )
                       }
-                      placeholder="100"
+                      placeholder="500"
                     />
                   </div>
                 </div>

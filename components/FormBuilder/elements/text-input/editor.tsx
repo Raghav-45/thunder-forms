@@ -53,10 +53,21 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
   }
 
   const handleInputChange = (key: keyof TextInputConfig, value: unknown) => {
-    setConfig((prev) => ({
-      ...prev,
-      [key]: value,
-    }))
+    setConfig((prev) => {
+      const newConfig = {
+        ...prev,
+        [key]: value,
+      }
+      
+      // Clear minLength and maxLength when switching to email or URL input types
+      // These input types use format validation instead of length validation
+      if (key === 'inputType' && (value === 'email' || value === 'url')) {
+        newConfig.minLength = undefined
+        newConfig.maxLength = undefined
+      }
+      
+      return newConfig
+    })
   }
 
   return (
@@ -142,7 +153,12 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
                   </div>
 
                   <div className="space-y-2 col-span-3">
-                    <Label htmlFor="min-length">Min Length</Label>
+                    <Label 
+                      htmlFor="min-length"
+                      className={config.inputType === 'email' || config.inputType === 'url' ? 'text-muted-foreground' : ''}
+                    >
+                      Min Length
+                    </Label>
                     <Input
                       id="min-length"
                       type="number"
@@ -155,11 +171,23 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
                         )
                       }
                       placeholder="0"
+                      disabled={config.inputType === 'email' || config.inputType === 'url'}
+                      className={config.inputType === 'email' || config.inputType === 'url' ? 'opacity-50 cursor-not-allowed' : ''}
                     />
+                    {(config.inputType === 'email' || config.inputType === 'url') && (
+                      <p className="text-xs text-muted-foreground">
+                        Length validation disabled for {config.inputType} format
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2 col-span-3">
-                    <Label htmlFor="max-length">Max Length</Label>
+                    <Label 
+                      htmlFor="max-length"
+                      className={config.inputType === 'email' || config.inputType === 'url' ? 'text-muted-foreground' : ''}
+                    >
+                      Max Length
+                    </Label>
                     <Input
                       id="max-length"
                       type="number"
@@ -172,7 +200,14 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
                         )
                       }
                       placeholder="100"
+                      disabled={config.inputType === 'email' || config.inputType === 'url'}
+                      className={config.inputType === 'email' || config.inputType === 'url' ? 'opacity-50 cursor-not-allowed' : ''}
                     />
+                    {(config.inputType === 'email' || config.inputType === 'url') && (
+                      <p className="text-xs text-muted-foreground">
+                        Length validation disabled for {config.inputType} format
+                      </p>
+                    )}
                   </div>
                 </div>
 
