@@ -2,7 +2,7 @@
  * This index file serves as the primary entry point for all form field components.
  * It re-exports [components, editors, and types] from their respective subdirectories.
  *
- * Additionally, this file holds the `FIELD_REGISTRY` variable, a variable of all available form field
+ * Additionally, this file holds the `FIELD_REGISTRY` variable, a registry of all available form fields.
  * This registry facilitates dynamic rendering, configuration, and management of form fields.
  */
 
@@ -116,6 +116,13 @@ export const FIELD_REGISTRY = {
       uncheckedLabel: 'Off',
     }),
   },
+  // TO ADD A NEW FIELD TYPE, JUST ADD IT HERE!
+  // 'date-picker': {
+  //   component: DatePicker,
+  //   editor: DatePickerEditor,
+  //   getValidationSchema: getDatePickerValidationSchema,
+  //   defaultConfig: (): DatePickerConfig => ({ ... }),
+  // },
 } as const
 
 type FieldRegistry = typeof FIELD_REGISTRY

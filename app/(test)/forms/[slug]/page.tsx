@@ -1,6 +1,7 @@
 'use client'
 
 import { FieldConfig } from '@/components/FormBuilder/elements'
+import { validateFormField, validateFormFields } from '@/components/FormBuilder/utils/formValidation'
 import { useFormStore } from '@/components/FormBuilder/store'
 import { getFieldComponent } from '@/components/FormBuilder/utils/helperFunctions'
 import { FormSubmittedPage } from '@/components/FormSubmittedPage'
@@ -19,6 +20,68 @@ export default function FormPage({ params }: FormPageProps) {
   const { slug: currentFormId } = use(params)
   const [fields, setFields] = useState<FieldConfig[]>([])
   const [isFormSubmitted, setIsFormSubmitted] = useState(false)
+  const [formData, setFormData] = useState<Record<string, unknown>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleFieldChange = (fieldId: string, value: unknown) => {
+    setFormData(prev => ({
+      ...prev,
+      [fieldId]: value
+    }))
+    
+    // Real-time validation for better UX
+    const field = fields.find(f => f.id === fieldId)
+    if (field) {
+      const error = validateFormField(field, value)
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        if (error) {
+          newErrors[fieldId] = error
+        } else {
+          delete newErrors[fieldId]
+        }
+        return newErrors
+      })
+    }
+  }
+
+  const validateForm = (): boolean => {
+    const newErrors = validateFormFields(fields, formData)
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      const errorCount = Object.keys(errors).length
+      const firstError = Object.values(errors)[0]
+      if (errorCount === 1) {
+        toast.error(firstError)
+      } else {
+        toast.error(`Please fix ${errorCount} field${errorCount > 1 ? 's' : ''} before submitting`)
+      }
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      await axios.post(`/api/forms/${currentFormId}/submit`, {
+        data: formData
+      })
+      setIsFormSubmitted(true)
+      toast.success('Form submitted successfully!')
+    } catch (error) {
+      console.error('Form submission error:', error)
+      if (axios.isAxiosError(error) && error.response?.data?.error) {
+        toast.error(error.response.data.error)
+      } else {
+        toast.error('Failed to submit form. Please try again.')
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const renderField = (field: FieldConfig) => {
     const FieldComponent = getFieldComponent(field.uniqueIdentifier)
@@ -29,9 +92,9 @@ export default function FormPage({ params }: FormPageProps) {
           <FieldComponent
             // @ts-expect-error field properties not guaranteed across all variants
             field={field}
-            // value={formData[field.id]}
-            onChange={(value) => console.log(field.id, value)}
-            // error={errors[field.id]}
+            value={formData[field.id]}
+            onChange={(value) => handleFieldChange(field.id, value)}
+            error={errors[field.id]}
           />
         </div>
       </div>
@@ -62,11 +125,26 @@ export default function FormPage({ params }: FormPageProps) {
       setFormSettings({
         title: form.data.title,
         description: form.data.description,
-        expiresAt: new Date(form.data.expiresAt),
+        expiresAt: form.data.expiresAt ? new Date(form.data.expiresAt) : undefined,
         maxSubmissions: form.data.maxSubmissions,
         redirectUrl: form.data.redirectUrl,
       })
       setFields(form.data.fields)
+      
+      // Initialize form data with default values
+      const initialFormData: Record<string, unknown> = {}
+      form.data.fields.forEach((field: FieldConfig) => {
+        if (field.uniqueIdentifier === 'switch-field') {
+          const switchField = field as { defaultValue?: boolean }
+          initialFormData[field.id] = switchField.defaultValue || false
+        } else if (field.uniqueIdentifier === 'multi-select') {
+          initialFormData[field.id] = []
+        } else {
+          initialFormData[field.id] = ''
+        }
+      })
+      setFormData(initialFormData)
+      
       console.log(form.data)
     }
   }, [form.isError, form.isSuccess, form.data, setFormSettings])
@@ -98,9 +176,10 @@ export default function FormPage({ params }: FormPageProps) {
       </div>
       <Button
         className="w-full md:w-auto"
-        onClick={() => setIsFormSubmitted(true)}
+        onClick={handleSubmit}
+        disabled={isSubmitting}
       >
-        Submit
+        {isSubmitting ? 'Submitting...' : 'Submit'}
       </Button>
     </div>
   )

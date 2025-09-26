@@ -1,6 +1,16 @@
 import { FIELD_REGISTRY, FieldConfig } from '@/components/FormBuilder/elements'
 import { avaliableFieldsType } from '@/components/FormBuilder/types/types'
 
+/**
+ * HELPER FUNCTIONS FOR FORM BUILDER
+ * 
+ * These functions provide utilities for working with the FIELD_REGISTRY and field configurations.
+ * 
+ * VALIDATION RESPONSIBILITIES:
+ * - This file: Field configuration validation (validateFieldConfig)
+ * - formValidation.ts: User data validation (validateFormField, validateFormFields) 
+ */
+
 // Get the component for a specific field type
 export const getFieldComponent = (uniqueIdentifier: avaliableFieldsType) => {
   const registry = FIELD_REGISTRY[uniqueIdentifier]
@@ -30,6 +40,10 @@ export const createDefaultFieldConfig = (
   return registry.defaultConfig()
 }
 
+/**
+ * Validates field configuration properties (not user data)
+ * This ensures the field definition itself is valid
+ */
 export const validateFieldConfig = (config: FieldConfig): string[] => {
   const errors: string[] = []
 
