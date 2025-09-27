@@ -193,15 +193,15 @@ export function FormTable({
   const filteredData = React.useMemo(() => {
     if (activeTab === 'all') return data
     if (activeTab === 'active') return data.filter(form => form.status.startsWith('Active'))
-    if (activeTab === 'archived') return data.filter(form => form.status.startsWith('Closed'))
+    if (activeTab === 'closed') return data.filter(form => form.status.startsWith('Closed'))
     return data
   }, [data, activeTab])
 
   // Count forms for each category
   const formCounts = React.useMemo(() => {
     const active = data.filter(form => form.status.startsWith('Active')).length
-    const archived = data.filter(form => form.status.startsWith('Closed')).length
-    return { active, archived }
+    const closed = data.filter(form => form.status.startsWith('Closed')).length
+    return { active, closed }
   }, [data])
 
   const columns: ColumnDef<z.infer<typeof schema>>[] = React.useMemo(
@@ -388,7 +388,7 @@ export function FormTable({
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
             <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="archived">Archived</SelectItem>
+            <SelectItem value="closed">Closed</SelectItem>
           </SelectContent>
         </Select>
         <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
@@ -396,8 +396,8 @@ export function FormTable({
           <TabsTrigger value="active">
             Active <Badge variant="secondary">{formCounts.active}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="archived">
-            Archived <Badge variant="secondary">{formCounts.archived}</Badge>
+          <TabsTrigger value="closed">
+            Closed <Badge variant="secondary">{formCounts.closed}</Badge>
           </TabsTrigger>
         </TabsList>
         <div className="flex items-center gap-2">
@@ -715,7 +715,7 @@ export function FormTable({
           </div>
         </div>
       </TabsContent>
-      <TabsContent value="archived" className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6">
+      <TabsContent value="closed" className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6">
         <div className="overflow-hidden rounded-lg border">
           <DndContext
             collisionDetection={closestCenter}
@@ -763,7 +763,7 @@ export function FormTable({
                       colSpan={columns.length}
                       className="h-24 text-center"
                     >
-                      No archived forms.
+                      No closed forms.
                     </TableCell>
                   </TableRow>
                 )}
