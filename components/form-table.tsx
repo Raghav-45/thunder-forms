@@ -25,11 +25,11 @@ import {
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
-  IconCircleCheckFilled,
   IconDotsVertical,
   // IconGripVertical,
   IconLayoutColumns,
   IconLoader,
+  IconArchive,
 } from '@tabler/icons-react'
 import {
   ColumnDef,
@@ -237,10 +237,10 @@ export function FormTable({
             <Skeleton key={row.index} className="h-4 w-[50px] rounded-sm" />
           ) : (
             <Badge variant="outline" className="text-muted-foreground px-1.5">
-              {row.original.status === 'Done' ? (
-                <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+              {row.original.status === 'Closed' ? (
+                <IconArchive className="text-gray-500 dark:text-gray-400" />
               ) : (
-                <IconLoader />
+                <IconLoader className="animate-spin" />
               )}
               {row.original.status}
             </Badge>

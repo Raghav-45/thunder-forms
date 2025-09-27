@@ -16,7 +16,7 @@ interface ApiFormData {
   title: string
   description: string
   createdAt: string
-  maxSubmissions: string
+  maxSubmissions: number | null
   _count: {
     responses: number
   }
@@ -31,6 +31,14 @@ const getForms = async (): Promise<ApiFormData[]> => {
   return response.data
 }
 
+function getFormStatus(responseCount: number, maxSubmissions: number | null): string {
+  if (maxSubmissions !== null && maxSubmissions > 0 && responseCount >= maxSubmissions) {
+    return 'Closed'
+  }
+  
+  return 'Active'
+}
+
 function transformFormsData(
   apiData: ApiFormData[]
 ): z.infer<typeof TableDataItemSchema>[] {
@@ -38,7 +46,7 @@ function transformFormsData(
     id: form.id,
     title: form.title,
     description: form.description,
-    status: form._count.responses > 0 ? 'Active' : 'Done',
+    status: getFormStatus(form._count.responses, form.maxSubmissions),
     responses: form._count.responses,
     createdAt: format(new Date(form.createdAt), 'PPP'),
   }))
