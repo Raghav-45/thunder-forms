@@ -82,9 +82,9 @@ export async function GET(
       LIMIT 50
     `
 
-    // 3. Get daily views for the last 30 days
+    // 3. Get daily views for the last 90 days
     const thirtyDaysAgo = new Date()
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30*3)
     
     const dailyViews = await analyticsPrisma.$queryRaw<Array<{date: string, views: bigint, visits: bigint}>>`
       SELECT 
