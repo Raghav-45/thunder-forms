@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
+import { validateFormFields } from '@/components/FormBuilder/utils/formValidation'
+import type { FieldConfig } from '@/components/FormBuilder/elements'
 
 const prisma = new PrismaClient()
 
@@ -12,18 +14,19 @@ export async function POST(
     const body = await request.json()
     const { data } = body
 
-    if (!data) {
+    if (!data || typeof data !== 'object') {
       return NextResponse.json(
-        { error: 'Form data is required' },
+        { error: 'Form data is required and must be an object' },
         { status: 400 }
       )
     }
 
-    // First, verify the form exists and get its settings
+    // First, verify the form exists and get its settings and fields
     const form = await prisma.forms.findUnique({
       where: { id: formId },
       select: {
         id: true,
+        fields: true, // Include fields for validation
         expiresAt: true,
         maxSubmissions: true,
         _count: {
@@ -57,11 +60,36 @@ export async function POST(
       )
     }
 
-    // Create the response
+    // Server-side validation using the same validation logic as client-side
+    const fields = form.fields as unknown as FieldConfig[]
+    const validationErrors = validateFormFields(fields, data)
+    
+    if (Object.keys(validationErrors).length > 0) {
+      return NextResponse.json(
+        { 
+          error: 'Validation failed',
+          validationErrors,
+          message: 'Please check your form data and try again'
+        },
+        { status: 422 }
+      )
+    }
+
+    // Security check: Only allow data for fields that exist in the form schema
+    const allowedFieldIds = new Set(fields.map(field => field.id))
+    const sanitizedData: Record<string, unknown> = {}
+    
+    for (const [key, value] of Object.entries(data)) {
+      if (allowedFieldIds.has(key)) {
+        sanitizedData[key] = value
+      }
+    }
+
+    // Create the response with sanitized data
     const response = await prisma.responses.create({
       data: {
         formsId: formId,
-        data: data,
+        data: JSON.parse(JSON.stringify(sanitizedData)), // Ensure proper JSON serialization
       },
     })
 

@@ -64,8 +64,18 @@ export default function FormPage({ params }: FormPageProps) {
       toast.success('Form submitted successfully!')
     } catch (error) {
       console.error('Form submission error:', error)
-      if (axios.isAxiosError(error) && error.response?.data?.error) {
-        toast.error(error.response.data.error)
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 422 && error.response?.data?.validationErrors) {
+          // Handle server-side validation errors
+          const serverErrors = error.response.data.validationErrors
+          setErrors(serverErrors)
+          const errorCount = Object.keys(serverErrors).length
+          toast.error(`Server validation failed: Please fix ${errorCount} field${errorCount > 1 ? 's' : ''} and try again`)
+        } else if (error.response?.data?.error) {
+          toast.error(error.response.data.error)
+        } else {
+          toast.error('Failed to submit form. Please try again.')
+        }
       } else {
         toast.error('Failed to submit form. Please try again.')
       }
