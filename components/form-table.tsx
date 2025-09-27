@@ -78,6 +78,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
 import {
   Table,
   TableBody,
@@ -233,16 +234,31 @@ export function FormTable({
         accessorKey: 'status',
         header: 'Status',
         cell: ({ row }) => {
-          return isLoading ? (
-            <Skeleton key={row.index} className="h-4 w-[50px] rounded-sm" />
-          ) : (
-            <Badge variant="outline" className="text-muted-foreground px-1.5">
-              {row.original.status.startsWith('Closed') ? (
-                <IconArchive className="text-gray-500 dark:text-gray-400" />
+          if (isLoading) {
+            return (
+              <Skeleton key={row.index} className="h-4 w-[50px] rounded-sm" />
+            )
+          }
+
+          const [state, reason] = row.original.status.split(' | ')
+          const isClosed = state === 'Closed'
+
+          return (
+            <Badge
+              variant="outline"
+              className="flex items-center space-x-0 text-muted-foreground"
+            >
+              {isClosed ? (
+                <IconArchive className="w-4 h-4" />
               ) : (
-                <IconLoader className="animate-spin" />
+                <IconLoader className="animate-spin w-4 h-4" />
               )}
-              {row.original.status}
+              <span>{state}</span>
+              <Separator
+                orientation="vertical"
+                className="!h-2.5 bg-neutral-500/80 dark:bg-neutral-400/80"
+              />
+              <span className="opacity-60">{reason}</span>
             </Badge>
           )
         },
@@ -572,7 +588,10 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   return (
     <Drawer direction={isMobile ? 'bottom' : 'right'}>
       <DrawerTrigger asChild>
-        <Button variant="link" className="text-foreground w-fit px-0 text-left cursor-pointer">
+        <Button
+          variant="link"
+          className="text-foreground w-fit px-0 text-left cursor-pointer"
+        >
           {item.title}
         </Button>
       </DrawerTrigger>
