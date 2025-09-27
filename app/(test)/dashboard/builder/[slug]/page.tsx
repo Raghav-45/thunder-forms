@@ -311,7 +311,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
               variant="secondary"
               onClick={handleSaveForm}
               disabled={isSaving}
-              className="text-xs"
+              className="text-xs cursor-pointer"
             >
               {isSaving ? (
                 <Loader2Icon className="animate-spin" />

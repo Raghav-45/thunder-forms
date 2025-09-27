@@ -51,7 +51,7 @@ const GenerateWithAiPrompt: FC<GenerateWithAiPromptProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full" variant="secondary">
+        <Button className="w-full cursor-pointer" variant="secondary">
           <Icons.Sparkles className="size-4 fill-white" />
           Generate with AI
         </Button>
