@@ -14,6 +14,7 @@ interface ApiFormData {
   title: string
   description: string
   createdAt: string
+  expiresAt: string | null
   maxSubmissions: number | null
   _count: {
     responses: number
@@ -29,12 +30,32 @@ const getForms = async (): Promise<ApiFormData[]> => {
   return response.data
 }
 
-function getFormStatus(responseCount: number, maxSubmissions: number | null): string {
-  if (maxSubmissions !== null && maxSubmissions > 0 && responseCount >= maxSubmissions) {
-    return 'Closed'
+function getFormStatus(responseCount: number, maxSubmissions: number | null, expiresAt: string | null): string {
+  const hasExpired = expiresAt && new Date(expiresAt) < new Date()
+  const hasReachedMaxSubmissions = maxSubmissions !== null && maxSubmissions > 0 && responseCount >= maxSubmissions
+  
+  // Determine status based on conditions
+  if (hasExpired && hasReachedMaxSubmissions) {
+    return 'Closed | Expired & Completed'
   }
   
-  return 'Active'
+  if (hasExpired) {
+    return 'Closed | Expired'
+  }
+  
+  if (hasReachedMaxSubmissions) {
+    return 'Closed | Completed'
+  }
+  
+  // Active status - different format based on whether form has max submissions
+  if (maxSubmissions !== null && maxSubmissions > 0) {
+    // Form has max submissions - show percentage
+    const completionPercentage = Math.min(Math.round((responseCount / maxSubmissions) * 100), 100)
+    return `Active | ${completionPercentage}% Completed`
+  } else {
+    // Form has no max submissions - show response count
+    return `Active | ${responseCount} Response${responseCount !== 1 ? 's' : ''}`
+  }
 }
 
 function transformFormsData(
@@ -44,7 +65,7 @@ function transformFormsData(
     id: form.id,
     title: form.title,
     description: form.description,
-    status: getFormStatus(form._count.responses, form.maxSubmissions),
+    status: getFormStatus(form._count.responses, form.maxSubmissions, form.expiresAt),
     responses: form._count.responses,
     createdAt: format(new Date(form.createdAt), 'PPP'),
   }))

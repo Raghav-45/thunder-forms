@@ -40,6 +40,7 @@ export async function GET() {
         title: true,
         description: true,
         createdAt: true,
+        expiresAt: true,
         maxSubmissions: true,
         _count: {
           select: {

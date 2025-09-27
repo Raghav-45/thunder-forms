@@ -237,7 +237,7 @@ export function FormTable({
             <Skeleton key={row.index} className="h-4 w-[50px] rounded-sm" />
           ) : (
             <Badge variant="outline" className="text-muted-foreground px-1.5">
-              {row.original.status === 'Closed' ? (
+              {row.original.status.startsWith('Closed') ? (
                 <IconArchive className="text-gray-500 dark:text-gray-400" />
               ) : (
                 <IconLoader className="animate-spin" />
