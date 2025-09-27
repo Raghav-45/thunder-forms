@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { ShineBorder } from '@/components/ui/shine-border'
 import { Textarea } from '@/components/ui/textarea'
 import { FC, useState } from 'react'
 import { toast } from 'sonner'
@@ -51,7 +52,11 @@ const GenerateWithAiPrompt: FC<GenerateWithAiPromptProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full cursor-pointer" variant="secondary">
+        <Button className="relative w-full cursor-pointer" variant="secondary">
+          <ShineBorder
+            shineColor={["#A07CFE", "#FE8FB5", "#FFBE7B"]}
+            className="rounded-md"
+          />
           <Icons.Sparkles className="size-4 fill-white" />
           Generate with AI
         </Button>
