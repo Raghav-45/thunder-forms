@@ -17,15 +17,15 @@ import {
   ChartTooltip,
 } from '@/components/ui/chart'
 
-export const description = 'Form analytics chart showing daily views and visits'
+export const description = 'Form analytics chart showing daily views and visitors'
 
 const chartConfig = {
   views: {
     label: 'Views',
     color: 'oklch(0.488 0.243 264.376 / 0.4)',
   },
-  visits: {
-    label: 'Visits',
+  visitors: {
+    label: 'Visitors',
     color: 'oklch(0.488 0.243 264.376)',
   },
 } satisfies ChartConfig
@@ -33,7 +33,7 @@ const chartConfig = {
 interface DailyViewData {
   date: string
   views: number
-  visits: number
+  visitors: number
 }
 
 interface AnalyticsData {
@@ -58,12 +58,12 @@ function OverlayStackShape(props: ShapeProps) {
   const w = Math.round(width)
   const h = Math.round(height)
 
-  const visits = Number(payload?.visits ?? 0)
+  const visitors = Number(payload?.visitors ?? 0)
   const views = Number(payload?.views ?? 0)
-  const maxVal = Math.max(1, visits, views)
+  const maxVal = Math.max(1, visitors, views)
 
   // Scale heights relative to max of the two
-  const visitsH = Math.round((h * visits) / maxVal)
+  const visitorsH = Math.round((h * visitors) / maxVal)
   const viewsH = Math.round((h * views) / maxVal)
   const baseY = ry + h
 
@@ -71,14 +71,14 @@ function OverlayStackShape(props: ShapeProps) {
 
   return (
     <g>
-      {/* Visits bar */}
-      {visits > 0 && (
+      {/* Visitors bar */}
+      {visitors > 0 && (
         <rect
           x={rx}
-          y={baseY - visitsH}
+          y={baseY - visitorsH}
           width={w}
-          height={visitsH}
-          fill="var(--color-visits)"
+          height={visitorsH}
+          fill="var(--color-visitors)"
           rx={corner}
           ry={corner}
         />
@@ -100,12 +100,11 @@ function OverlayStackShape(props: ShapeProps) {
 }
 
 // Custom tooltip content to mimic the original UI and show Visits and Views rows
-type TooltipProps = { active?: boolean; payload?: Array<{ payload?: { date?: string; views?: number; visits?: number } }> }
+type TooltipProps = { active?: boolean; payload?: Array<{ payload?: { date?: string; views?: number; visitors?: number } }> }
 function OverlayTooltipContent(props: TooltipProps) {
   const { active, payload } = props
   if (!active || !payload?.length) return null
-
-  const raw = payload[0]?.payload as { date?: string; views?: number; visits?: number }
+  const raw = payload[0]?.payload as { date?: string; views?: number; visitors?: number }
   const date = raw?.date ? new Date(raw.date) : new Date()
   const dateLabel = date.toLocaleDateString('en-US', {
     month: 'short',
@@ -113,7 +112,7 @@ function OverlayTooltipContent(props: TooltipProps) {
     year: 'numeric',
   })
 
-  const visits = Number(raw?.visits ?? 0)
+  const visitors = Number(raw?.visitors ?? 0)
   const views = Number(raw?.views ?? 0)
 
   return (
@@ -123,13 +122,13 @@ function OverlayTooltipContent(props: TooltipProps) {
         <div className="[&>svg]:text-muted-foreground flex w-full flex-wrap gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 items-center">
           <div
             className="shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg) h-2.5 w-2.5"
-            style={{ '--color-bg': 'var(--color-visits)', '--color-border': 'var(--color-visits)' } as React.CSSProperties}
+            style={{ '--color-bg': 'var(--color-visitors)', '--color-border': 'var(--color-visitors)' } as React.CSSProperties}
           />
           <div className="flex flex-1 justify-between leading-none items-center">
             <div className="grid gap-1.5">
-              <span className="text-muted-foreground">Visits</span>
+              <span className="text-muted-foreground">Visitors</span>
             </div>
-            {visits.toLocaleString()}
+            {visitors.toLocaleString()}
           </div>
         </div>
         <div className="[&>svg]:text-muted-foreground flex w-full flex-wrap gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 items-center">
@@ -172,7 +171,7 @@ function generateThreeMonthsData(dailyViews: DailyViewData[]): DailyViewData[] {
     result.push({
       date: dateKey,
       views: existingData?.views || 0,
-      visits: existingData?.visits || 0,
+      visitors: existingData?.visitors || 0,
     })
 
     currentDate.setDate(currentDate.getDate() + 1)
@@ -199,14 +198,29 @@ export function ChartBarInteractive() {
         const response = await fetch(`/api/analytics/forms/${formId}/detailed`)
 
         if (!response.ok) {
-          throw new Error('Failed to fetch analytics data')
+          // Try to parse and surface server error details
+          let serverError: unknown = null
+          try {
+            serverError = await response.json()
+          } catch {
+            // ignore parse errors
+          }
+          let msg = `HTTP ${response.status}`
+          if (serverError && typeof serverError === 'object') {
+            const obj = serverError as Record<string, unknown>
+            if (typeof obj.detail === 'string') msg = obj.detail
+            else if (typeof obj.error === 'string') msg = obj.error
+          }
+          throw new Error(msg)
         }
 
         const data = await response.json()
         if (data.success) {
           setAnalyticsData(data)
         } else {
-          throw new Error(data.error || 'Failed to fetch analytics')
+          // API may return a more descriptive 'detail' field now
+          const msg = data.detail || data.error || 'Failed to fetch analytics'
+          throw new Error(msg)
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error occurred')
@@ -224,19 +238,19 @@ export function ChartBarInteractive() {
   }, [analyticsData])
 
   const interactiveData = React.useMemo(
-    () => chartData.map((d) => ({ ...d, _max: Math.max(d.views, d.visits) })),
+    () => chartData.map((d) => ({ ...d, _max: Math.max(d.views, d.visitors) })),
     [chartData]
   )
 
   const total = React.useMemo(() => {
-    if (!analyticsData?.dailyViews) return { views: 0, visits: 0 }
+    if (!analyticsData?.dailyViews) return { views: 0, visitors: 0 }
 
     const totals = analyticsData.dailyViews.reduce(
       (acc, day) => ({
         views: acc.views + day.views,
-        visits: acc.visits + day.visits,
+        visitors: acc.visitors + day.visitors,
       }),
-      { views: 0, visits: 0 }
+      { views: 0, visitors: 0 }
     )
 
     return totals
@@ -280,14 +294,14 @@ export function ChartBarInteractive() {
   return (
     <Card className="py-0">
       <CardHeader className="flex flex-col items-stretch border-b !p-0 sm:flex-row">
-        <div className="flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3 sm:!py-0">
+          <div className="flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3 sm:!py-0">
           <CardTitle>Form Analytics</CardTitle>
           <CardDescription>
-            Daily views and visits for the last 3 months
+            Daily views and visitors for the last 3 months
           </CardDescription>
         </div>
         <div className="flex">
-          {['views', 'visits'].map((key) => {
+          {['views', 'visitors'].map((key) => {
             const chart = key as keyof typeof chartConfig
             return (
               <div

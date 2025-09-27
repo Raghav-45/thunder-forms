@@ -35,12 +35,17 @@ interface SessionData {
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params
+  const { id } = params
 
   if (!id) {
     return NextResponse.json({ error: 'Missing ID' }, { status: 400 })
+  }
+
+  if (!process.env.ANALYTICS_DATABASE_URL) {
+    console.error('ANALYTICS_DATABASE_URL is not set')
+    return NextResponse.json({ error: 'Analytics DB not configured' }, { status: 500 })
   }
 
   try {
@@ -86,16 +91,17 @@ export async function GET(
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30*3)
     
-    const dailyViews = await analyticsPrisma.$queryRaw<Array<{date: string, views: bigint, visits: bigint}>>`
+    const dailyViews = await analyticsPrisma.$queryRaw<Array<{date: string, views: bigint, visitors: bigint}>>`
       SELECT 
-        DATE("created_at") as date,
+        DATE(w."created_at") as date,
         COUNT(*) as views,
-        COUNT(DISTINCT "visit_id") as visits
-      FROM "website_event"
-      WHERE "url_path" ILIKE ${`/forms/${id}%`}
-      AND "created_at" >= ${thirtyDaysAgo}
-      GROUP BY DATE("created_at")
-      ORDER BY date ASC
+        COUNT(DISTINCT s."session_id") as visitors
+      FROM "website_event" w
+      LEFT JOIN "session" s ON w."session_id" = s."session_id"
+      WHERE w."url_path" ILIKE ${`/forms/${id}%`}
+      AND w."created_at" >= ${thirtyDaysAgo}
+      GROUP BY DATE(w."created_at")
+      ORDER BY DATE(w."created_at") ASC
     `
 
     // 4. Get top pages
@@ -165,17 +171,17 @@ export async function GET(
     `
 
     // Format daily views data
-    const formattedDailyViews = dailyViews.map(day => ({
+    const formattedDailyViews = dailyViews.map((day: {date: string, views: bigint, visitors: bigint}) => ({
       date: day.date,
       views: Number(day.views),
-      visits: Number(day.visits)
+      visitors: Number(day.visitors)
     }))
 
     return NextResponse.json({
       success: true,
       analytics: processedAnalytics,
       sessions: sessions,
-      dailyViews: formattedDailyViews,
+  dailyViews: formattedDailyViews,
       topPages: topPages.map(page => ({
         url_path: page.url_path,
         views: Number(page.views)
@@ -201,8 +207,9 @@ export async function GET(
 
   } catch (error) {
     console.error('Detailed analytics fetch error:', error)
+    const message = error instanceof Error ? error.message : String(error)
     return NextResponse.json(
-      { error: 'Failed to fetch detailed analytics' },
+      { error: 'Failed to fetch detailed analytics', detail: message },
       { status: 500 }
     )
   }
