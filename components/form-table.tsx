@@ -893,9 +893,15 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             </Link>
           </div>
           <DrawerClose asChild>
-            <Button variant="outline" className="w-full">
-              Done
-            </Button>
+            <Link
+              href={`/dashboard/forms/${item.id}/responses`}
+              className="flex-1"
+            >
+              <Button variant="outline" className="w-full cursor-pointer">
+                <ChartLineIcon />
+                View Responses
+              </Button>
+            </Link>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>
