@@ -43,7 +43,7 @@ export default function FormResponsesPage() {
             <div className="aspect-video w-full flex-1 rounded-lg border border-dashed">archived</div>
           </TabsContent>
         </div>
-        <div className="h-full w-full flex-1 rounded-lg border border-dashed col-span-3">
+        <div className="h-full w-full flex-1 col-span-3">
           <FormResponseViewerCard />
         </div>
       </div>
