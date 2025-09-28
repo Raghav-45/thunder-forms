@@ -19,7 +19,7 @@ export default function LoadingScreen() {
           clearInterval(interval)
           return 100
         }
-        return prevProgress + 10
+        return prevProgress + 8
       })
     }, 100)
 
