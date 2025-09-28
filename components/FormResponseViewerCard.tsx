@@ -27,7 +27,7 @@ import {
 import { FC } from 'react'
 
 const fakeResponse = {
-  id: 'TF123456',
+  id: 'cmc94ml0v000bybkgit97n0e0',
   formsId: 'form123',
   createdAt: '2024-11-26T10:15:00Z',
   data: {
@@ -56,10 +56,10 @@ const FormResponseViewerCard: FC = ({}) => {
       <CardHeader className="flex flex-row items-start gap-4 border-b">
         <div className="flex-1 space-y-1">
           <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-            Thunder Forms
+            Response Viewer
           </CardTitle>
           <CardDescription className="flex items-center gap-2 group text-xs">
-            {/* {selectedResponse?.id} */}sad
+            {fakeResponse?.id}
             <Button
               size="icon"
               variant="ghost"
