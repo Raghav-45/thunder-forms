@@ -29,6 +29,7 @@ import { useParams } from 'next/navigation'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 
+import LoadingScreen from '@/components/LoadingScreen'
 import NoResponsesYetCard from '@/components/NoResponsesYetCard'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -60,7 +61,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -628,17 +628,7 @@ export default function FormResponsesPage() {
   }, [formId])
 
   if (isLoading) {
-    return (
-      <div className="w-full flex-col justify-start gap-6">
-        <div className="flex items-center justify-between px-4 lg:px-6">
-          <Skeleton className="h-10 w-64" />
-          <Skeleton className="h-10 w-48" />
-        </div>
-        <div className="px-4 lg:px-6">
-          <Skeleton className="h-96 w-full" />
-        </div>
-      </div>
-    )
+    return <LoadingScreen />
   }
 
   if (error) {
