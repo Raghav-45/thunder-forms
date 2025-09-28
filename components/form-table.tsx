@@ -89,7 +89,7 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { ChartLineIcon, Edit2Icon } from 'lucide-react'
+import { ChartLineIcon, DatabaseIcon, Edit2Icon } from 'lucide-react'
 import Link from 'next/link'
 import AnalyticsGraph from './analyticsGraph'
 import { DeleteFormDialog } from './delete-form-dialog'
@@ -898,7 +898,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
               className="flex-1"
             >
               <Button variant="outline" className="w-full cursor-pointer">
-                <ChartLineIcon />
+                <DatabaseIcon />
                 View Responses
               </Button>
             </Link>
