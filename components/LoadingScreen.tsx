@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress'
 import { useEffect, useState } from 'react'
 
 export default function LoadingScreen() {
-  const [progress, setProgress] = useState(13)
+  const [progress, setProgress] = useState(12)
   const [showProgress, setShowProgress] = useState(false)
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function LoadingScreen() {
   }, [])
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md">
       <div className="text-3xl mb-6 font-semibold animate-pulse inline-flex align-center text-center">
         <Icons.Logo className="h-auto w-8 mr-2" />
         Thunder Forms
