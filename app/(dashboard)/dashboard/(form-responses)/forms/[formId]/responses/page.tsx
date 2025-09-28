@@ -129,15 +129,42 @@ function ResponseDetailsDrawer({ response }: { response: FormResponse }) {
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
           <div className="grid gap-4">
             {Object.entries(response.data).map(([key, value]) => (
-              <div key={key} className="flex flex-col gap-2">
-                <Label className="text-sm font-medium">
-                  {formatFieldName(key)}
-                </Label>
-                <div className="text-sm text-muted-foreground p-3 bg-muted rounded-md">
-                  {formatFieldValue(value)}
-                </div>
-              </div>
-            ))}
+  <div key={key} className="flex flex-col gap-2">
+    <Label className="text-sm font-medium">
+      {/* Use the Label component for accessibility */}
+      {formatFieldName(key)}
+    </Label>
+    <input
+      type="text" // Use 'text' type for standard data display
+      value={formatFieldValue(value)} // Display the value
+      disabled // This makes the input read-only and applies a disabled style
+      className="
+        flex 
+        h-10 
+        w-full 
+        rounded-md 
+        border 
+        border-input 
+        bg-background 
+        px-3 
+        py-2 
+        text-sm 
+        ring-offset-background 
+        file:border-0 
+        file:bg-transparent 
+        file:text-sm 
+        file:font-medium 
+        placeholder:text-muted-foreground 
+        focus-visible:outline-none 
+        focus-visible:ring-2 
+        focus-visible:ring-ring 
+        focus-visible:ring-offset-2 
+        disabled:cursor-not-allowed 
+        disabled:opacity-50
+      "
+    />
+  </div>
+))}
           </div>
         </div>
         <DrawerFooter>
