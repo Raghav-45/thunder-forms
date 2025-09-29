@@ -18,7 +18,7 @@ import {
   BrowserRadialChart,
   DeviceRadialChart,
   OSRadialChart,
-  ReferrerRadialChart,
+  ReferrerGraph,
 } from './breakdown-charts'
 import ImpressionsChart from './impressions-chart'
 
@@ -183,7 +183,7 @@ export default function FormAnalyticsPage() {
                 </Card>
               </div>
               <div className="md:col-span-2">
-                <ReferrerRadialChart data={analyticsData.topReferrers} />
+                <ReferrerGraph data={analyticsData.topReferrers} />
               </div>
             </div>
           </div>

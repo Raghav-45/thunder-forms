@@ -53,7 +53,7 @@ interface BreakdownChartsProps {
   data?: BreakdownData
 }
 
-interface ReferrerChartsProps {
+interface ReferrerGraphProps {
   data?: ReferrerDataItem[]
 }
 
@@ -174,7 +174,7 @@ export function DeviceRadialChart({ data }: BreakdownChartsProps) {
   )
 }
 
-export function ReferrerRadialChart({ data }: ReferrerChartsProps) {
+export function ReferrerGraph({ data }: ReferrerGraphProps) {
   const chartData = React.useMemo(() => {
     const realData = assignColorsToReferrers(data || [])
 
@@ -266,10 +266,10 @@ export function ReferrerRadialChart({ data }: ReferrerChartsProps) {
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
         <div className="flex gap-2 leading-none font-medium">
-          {totalVisits} total visits <TrendingUp className="h-4 w-4" />
+          {totalVisits} total visits from all traffic source <TrendingUp className="h-4 w-4" />
         </div>
         <div className="text-muted-foreground leading-none">
-          Showing traffic sources for the selected period
+          Showing traffic sources
         </div>
       </CardFooter>
     </Card>
