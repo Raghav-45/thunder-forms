@@ -115,20 +115,20 @@ export async function GET(
     `
 
     // 3. Get top pages
-    const topPages = await analyticsPrisma.$queryRaw<
-      Array<{ url_path: string; views: bigint }>
-    >`
-      SELECT 
-        "url_path",
-        COUNT(*) as views
-      FROM "website_event"
-      WHERE "url_path" ILIKE ${`/forms/${id}%`}
-      AND "created_at" >= ${startDate}
-      AND "created_at" <= NOW()
-      GROUP BY "url_path"
-      ORDER BY views DESC
-      LIMIT 10
-    `
+    // const topPages = await analyticsPrisma.$queryRaw<
+    //   Array<{ url_path: string; views: bigint }>
+    // >`
+    //   SELECT 
+    //     "url_path",
+    //     COUNT(*) as views
+    //   FROM "website_event"
+    //   WHERE "url_path" ILIKE ${`/forms/${id}%`}
+    //   AND "created_at" >= ${startDate}
+    //   AND "created_at" <= NOW()
+    //   GROUP BY "url_path"
+    //   ORDER BY views DESC
+    //   LIMIT 10
+    // `
 
     // 4. Get top referrers
     const topReferrers = await analyticsPrisma.$queryRaw<
@@ -252,10 +252,10 @@ export async function GET(
         startDate: startDate.toISOString(),
         analytics: processedAnalytics,
         dailyViews: formattedDailyViews,
-        topPages: topPages.map((page) => ({
-          url_path: page.url_path,
-          views: Number(page.views),
-        })),
+        // topPages: topPages.map((page) => ({
+        //   url_path: page.url_path,
+        //   views: Number(page.views),
+        // })),
         topReferrers: topReferrers.map((ref) => ({
           referrer_domain: ref.referrer_domain,
           visits: Number(ref.visits),
