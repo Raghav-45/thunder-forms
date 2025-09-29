@@ -20,18 +20,18 @@ interface LogData {
   page_title?: string
 }
 
-interface SessionData {
-  session_id: string
-  browser: string
-  os: string
-  device: string
-  screen: string
-  language: string
-  country: string
-  region: string
-  city: string
-  created_at: Date
-}
+// interface SessionData {
+//   session_id: string
+//   browser: string
+//   os: string
+//   device: string
+//   screen: string
+//   language: string
+//   country: string
+//   region: string
+//   city: string
+//   created_at: Date
+// }
 
 export async function GET(
   request: Request,
@@ -90,26 +90,26 @@ export async function GET(
     const processedAnalytics = calculateFormAnalytics(rawLogs)
 
     // 2. Get session data with device/browser/location info
-    const sessions = await analyticsPrisma.$queryRaw<SessionData[]>`
-      SELECT DISTINCT 
-        s."session_id",
-        s."browser",
-        s."os",
-        s."device",
-        s."screen",
-        s."language",
-        s."country",
-        s."region",
-        s."city",
-        s."created_at"
-      FROM "session" s
-      INNER JOIN "website_event" w ON s."session_id" = w."session_id"
-      WHERE w."url_path" ILIKE ${`/forms/${id}%`}
-      AND w."created_at" >= ${startDate}
-      AND w."created_at" <= NOW()
-      ORDER BY s."created_at" DESC
-      LIMIT 50
-    `
+    // const sessions = await analyticsPrisma.$queryRaw<SessionData[]>`
+    //   SELECT DISTINCT 
+    //     s."session_id",
+    //     s."browser",
+    //     s."os",
+    //     s."device",
+    //     s."screen",
+    //     s."language",
+    //     s."country",
+    //     s."region",
+    //     s."city",
+    //     s."created_at"
+    //   FROM "session" s
+    //   INNER JOIN "website_event" w ON s."session_id" = w."session_id"
+    //   WHERE w."url_path" ILIKE ${`/forms/${id}%`}
+    //   AND w."created_at" >= ${startDate}
+    //   AND w."created_at" <= NOW()
+    //   ORDER BY s."created_at" DESC
+    //   LIMIT 50
+    // `
 
     // 3. Get daily views
     const dailyViews = await analyticsPrisma.$queryRaw<Array<{date: string, views: bigint, visitors: bigint}>>`
@@ -214,7 +214,7 @@ export async function GET(
       days,
       startDate: startDate.toISOString(),
       analytics: processedAnalytics,
-      sessions: sessions,
+      // sessions: sessions,
       dailyViews: formattedDailyViews,
       topPages: topPages.map(page => ({
         url_path: page.url_path,
