@@ -1,13 +1,21 @@
 import { PrismaClient } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
-const analyticsPrisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.ANALYTICS_DATABASE_URL,
+// Singleton pattern for Prisma Client
+const globalForPrisma = global as unknown as { analyticsPrisma: PrismaClient }
+
+const analyticsPrisma =
+  globalForPrisma.analyticsPrisma ||
+  new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.ANALYTICS_DATABASE_URL,
+      },
     },
-  },
-})
+  })
+
+if (process.env.NODE_ENV !== 'production')
+  globalForPrisma.analyticsPrisma = analyticsPrisma
 
 interface LogData {
   event_id: string
@@ -20,11 +28,37 @@ interface LogData {
   page_title?: string
 }
 
+interface BreakdownItem {
+  [key: string]: string | bigint
+  count: bigint
+}
+
+interface DailyViewResult {
+  date: string
+  views: bigint
+  visitors: bigint
+}
+
+interface ReferrerResult {
+  referrer_domain: string
+  visits: bigint
+}
+
+interface AnalyticsResult {
+  views: number
+  visits: number
+  visitors: number
+  bounces: number
+  totalTime: number
+  bounceRate: number
+  visitDuration: number
+}
+
 // Helper function to format breakdown data for radial charts
 function formatBreakdownData(
-  data: Array<{ [key: string]: string | bigint }>,
+  data: BreakdownItem[],
   labelKey: string
-) {
+): Array<{ name: string; value: number; country_code?: string }> {
   return data.map((item) => {
     const base = {
       name: item[labelKey] as string,
@@ -77,173 +111,156 @@ export async function GET(
     startDate.setDate(startDate.getDate() - (days - 1))
     startDate.setHours(0, 0, 0, 0)
 
-    // 1. Get basic analytics logs
-    const rawLogs = await analyticsPrisma.$queryRaw<LogData[]>`
-      SELECT
-        "event_id",
-        "session_id",
-        "visit_id",
-        "created_at",
-        "url_path",
-        "event_type",
-        "referrer_domain",
-        "page_title"
-      FROM "website_event"
-      WHERE "url_path" ILIKE ${`/forms/${id}%`}
-      AND "created_at" >= ${startDate}
-      AND "created_at" <= NOW()
-      ORDER BY "created_at" ASC
-    `
+    const urlPattern = `/forms/${id}%`
 
+    // Execute all queries in parallel for maximum performance
+    const [
+      rawLogs,
+      dailyViews,
+      topReferrers,
+      browserBreakdown,
+      osBreakdown,
+      deviceBreakdown,
+      countryBreakdown,
+      stateBreakdown,
+    ] = await Promise.all([
+      // 1. Get basic analytics logs
+      analyticsPrisma.$queryRaw<LogData[]>`
+        SELECT
+          "event_id",
+          "session_id",
+          "visit_id",
+          "created_at",
+          "url_path",
+          "event_type",
+          "referrer_domain",
+          "page_title"
+        FROM "website_event"
+        WHERE "url_path" ILIKE ${urlPattern}
+        AND "created_at" >= ${startDate}
+        AND "created_at" <= NOW()
+        ORDER BY "created_at" ASC
+      `,
+
+      // 2. Get daily views
+      analyticsPrisma.$queryRaw<DailyViewResult[]>`
+        SELECT 
+          DATE(w."created_at") as date,
+          COUNT(*) as views,
+          COUNT(DISTINCT s."session_id") as visitors
+        FROM "website_event" w
+        LEFT JOIN "session" s ON w."session_id" = s."session_id"
+        WHERE w."url_path" ILIKE ${urlPattern}
+        AND w."created_at" >= ${startDate}
+        AND w."created_at" <= NOW()
+        GROUP BY DATE(w."created_at")
+        ORDER BY DATE(w."created_at") ASC
+      `,
+
+      // 3. Get top referrers
+      analyticsPrisma.$queryRaw<ReferrerResult[]>`
+        SELECT 
+          COALESCE("referrer_domain", 'Direct') as referrer_domain,
+          COUNT(DISTINCT "visit_id") as visits
+        FROM "website_event"
+        WHERE "url_path" ILIKE ${urlPattern}
+        AND "created_at" >= ${startDate}
+        AND "created_at" <= NOW()
+        GROUP BY "referrer_domain"
+        ORDER BY visits DESC
+        LIMIT 10
+      `,
+
+      // 4. Get browser breakdown
+      analyticsPrisma.$queryRaw<BreakdownItem[]>`
+        SELECT 
+          s."browser",
+          COUNT(DISTINCT s."session_id") as count
+        FROM "session" s
+        INNER JOIN "website_event" w ON s."session_id" = w."session_id"
+        WHERE w."url_path" ILIKE ${urlPattern}
+        AND w."created_at" >= ${startDate}
+        AND w."created_at" <= NOW()
+        AND s."browser" IS NOT NULL AND s."browser" != ''
+        GROUP BY s."browser"
+        ORDER BY count DESC
+        LIMIT 8
+      `,
+
+      // 5. Get OS breakdown
+      analyticsPrisma.$queryRaw<BreakdownItem[]>`
+        SELECT 
+          s."os",
+          COUNT(DISTINCT s."session_id") as count
+        FROM "session" s
+        INNER JOIN "website_event" w ON s."session_id" = w."session_id"
+        WHERE w."url_path" ILIKE ${urlPattern}
+        AND w."created_at" >= ${startDate}
+        AND w."created_at" <= NOW()
+        AND s."os" IS NOT NULL AND s."os" != ''
+        GROUP BY s."os"
+        ORDER BY count DESC
+        LIMIT 8
+      `,
+
+      // 6. Get device breakdown
+      analyticsPrisma.$queryRaw<BreakdownItem[]>`
+        SELECT 
+          s."device",
+          COUNT(DISTINCT s."session_id") as count
+        FROM "session" s
+        INNER JOIN "website_event" w ON s."session_id" = w."session_id"
+        WHERE w."url_path" ILIKE ${urlPattern}
+        AND w."created_at" >= ${startDate}
+        AND w."created_at" <= NOW()
+        AND s."device" IS NOT NULL AND s."device" != ''
+        GROUP BY s."device"
+        ORDER BY count DESC
+        LIMIT 8
+      `,
+
+      // 7. Get country breakdown
+      analyticsPrisma.$queryRaw<BreakdownItem[]>`
+        SELECT 
+          s."country",
+          COUNT(DISTINCT s."session_id") as count
+        FROM "session" s
+        INNER JOIN "website_event" w ON s."session_id" = w."session_id"
+        WHERE w."url_path" ILIKE ${urlPattern}
+        AND w."created_at" >= ${startDate}
+        AND w."created_at" <= NOW()
+        AND s."country" IS NOT NULL AND s."country" != ''
+        GROUP BY s."country"
+        ORDER BY count DESC
+        LIMIT 6
+      `,
+
+      // 8. Get state/region breakdown
+      analyticsPrisma.$queryRaw<BreakdownItem[]>`
+        SELECT 
+          s."region",
+          COUNT(DISTINCT s."session_id") as count
+        FROM "session" s
+        INNER JOIN "website_event" w ON s."session_id" = w."session_id"
+        WHERE w."url_path" ILIKE ${urlPattern}
+        AND w."created_at" >= ${startDate}
+        AND w."created_at" <= NOW()
+        AND s."region" IS NOT NULL AND s."region" != ''
+        GROUP BY s."region"
+        ORDER BY count DESC
+        LIMIT 6
+      `,
+    ])
+
+    // Process analytics with optimized single-pass algorithm
     const processedAnalytics = calculateFormAnalytics(rawLogs)
 
-    // 2. Get daily views
-    const dailyViews = await analyticsPrisma.$queryRaw<
-      Array<{ date: string; views: bigint; visitors: bigint }>
-    >`
-      SELECT 
-        DATE(w."created_at") as date,
-        COUNT(*) as views,
-        COUNT(DISTINCT s."session_id") as visitors
-      FROM "website_event" w
-      LEFT JOIN "session" s ON w."session_id" = s."session_id"
-      WHERE w."url_path" ILIKE ${`/forms/${id}%`}
-      AND w."created_at" >= ${startDate}
-      AND w."created_at" <= NOW()
-      GROUP BY DATE(w."created_at")
-      ORDER BY DATE(w."created_at") ASC
-    `
-
-    // 3. Get top pages
-    // const topPages = await analyticsPrisma.$queryRaw<
-    //   Array<{ url_path: string; views: bigint }>
-    // >`
-    //   SELECT 
-    //     "url_path",
-    //     COUNT(*) as views
-    //   FROM "website_event"
-    //   WHERE "url_path" ILIKE ${`/forms/${id}%`}
-    //   AND "created_at" >= ${startDate}
-    //   AND "created_at" <= NOW()
-    //   GROUP BY "url_path"
-    //   ORDER BY views DESC
-    //   LIMIT 10
-    // `
-
-    // 4. Get top referrers
-    const topReferrers = await analyticsPrisma.$queryRaw<
-      Array<{ referrer_domain: string; visits: bigint }>
-    >`
-      SELECT 
-        COALESCE("referrer_domain", 'Direct') as referrer_domain,
-        COUNT(DISTINCT "visit_id") as visits
-      FROM "website_event"
-      WHERE "url_path" ILIKE ${`/forms/${id}%`}
-      AND "created_at" >= ${startDate}
-      AND "created_at" <= NOW()
-      GROUP BY "referrer_domain"
-      ORDER BY visits DESC
-      LIMIT 10
-    `
-
-    // 5. Get browser breakdown
-    const browserBreakdown = await analyticsPrisma.$queryRaw<
-      Array<{ browser: string; count: bigint }>
-    >`
-      SELECT 
-        s."browser",
-        COUNT(DISTINCT s."session_id") as count
-      FROM "session" s
-      INNER JOIN "website_event" w ON s."session_id" = w."session_id"
-      WHERE w."url_path" ILIKE ${`/forms/${id}%`}
-      AND w."created_at" >= ${startDate}
-      AND w."created_at" <= NOW()
-      AND s."browser" IS NOT NULL AND s."browser" != ''
-      GROUP BY s."browser"
-      ORDER BY count DESC
-      LIMIT 8
-    `
-
-    // 6. Get OS breakdown
-    const osBreakdown = await analyticsPrisma.$queryRaw<
-      Array<{ os: string; count: bigint }>
-    >`
-      SELECT 
-        s."os",
-        COUNT(DISTINCT s."session_id") as count
-      FROM "session" s
-      INNER JOIN "website_event" w ON s."session_id" = w."session_id"
-      WHERE w."url_path" ILIKE ${`/forms/${id}%`}
-      AND w."created_at" >= ${startDate}
-      AND w."created_at" <= NOW()
-      AND s."os" IS NOT NULL AND s."os" != ''
-      GROUP BY s."os"
-      ORDER BY count DESC
-      LIMIT 8
-    `
-
-    // 7. Get device breakdown
-    const deviceBreakdown = await analyticsPrisma.$queryRaw<
-      Array<{ device: string; count: bigint }>
-    >`
-      SELECT 
-        s."device",
-        COUNT(DISTINCT s."session_id") as count
-      FROM "session" s
-      INNER JOIN "website_event" w ON s."session_id" = w."session_id"
-      WHERE w."url_path" ILIKE ${`/forms/${id}%`}
-      AND w."created_at" >= ${startDate}
-      AND w."created_at" <= NOW()
-      AND s."device" IS NOT NULL AND s."device" != ''
-      GROUP BY s."device"
-      ORDER BY count DESC
-      LIMIT 8
-    `
-
-    // 8. Get country breakdown
-    const countryBreakdown = await analyticsPrisma.$queryRaw<
-      Array<{ country: string; count: bigint }>
-    >`
-      SELECT 
-        s."country",
-        COUNT(DISTINCT s."session_id") as count
-      FROM "session" s
-      INNER JOIN "website_event" w ON s."session_id" = w."session_id"
-      WHERE w."url_path" ILIKE ${`/forms/${id}%`}
-      AND w."created_at" >= ${startDate}
-      AND w."created_at" <= NOW()
-      AND s."country" IS NOT NULL AND s."country" != ''
-      GROUP BY s."country"
-      ORDER BY count DESC
-      LIMIT 6
-    `
-
-    // 9. Get state/region breakdown
-    const stateBreakdown = await analyticsPrisma.$queryRaw<
-      Array<{ region: string; count: bigint }>
-    >`
-      SELECT 
-        s."region",
-        COUNT(DISTINCT s."session_id") as count
-      FROM "session" s
-      INNER JOIN "website_event" w ON s."session_id" = w."session_id"
-      WHERE w."url_path" ILIKE ${`/forms/${id}%`}
-      AND w."created_at" >= ${startDate}
-      AND w."created_at" <= NOW()
-      AND s."region" IS NOT NULL AND s."region" != ''
-      GROUP BY s."region"
-      ORDER BY count DESC
-      LIMIT 6
-    `
-
     // Format daily views data
-    const formattedDailyViews = dailyViews.map(
-      (day: { date: string; views: bigint; visitors: bigint }) => ({
-        date: day.date,
-        views: Number(day.views),
-        visitors: Number(day.visitors),
-      })
-    )
+    const formattedDailyViews = dailyViews.map((day) => ({
+      date: day.date,
+      views: Number(day.views),
+      visitors: Number(day.visitors),
+    }))
 
     return NextResponse.json(
       {
@@ -252,10 +269,6 @@ export async function GET(
         startDate: startDate.toISOString(),
         analytics: processedAnalytics,
         dailyViews: formattedDailyViews,
-        // topPages: topPages.map((page) => ({
-        //   url_path: page.url_path,
-        //   views: Number(page.views),
-        // })),
         topReferrers: topReferrers.map((ref) => ({
           referrer_domain: ref.referrer_domain,
           visits: Number(ref.visits),
@@ -272,19 +285,41 @@ export async function GET(
     )
   } catch (error) {
     console.error(`Analytics fetch error for last ${days} days:`, error)
-    const message = error instanceof Error ? error.message : String(error)
+
+    // Improved error handling with specific cases
+    if (error instanceof Error) {
+      // Check for common Prisma errors
+      if (error.message.includes('connect')) {
+        return NextResponse.json(
+          {
+            error: 'Database connection failed',
+            detail: 'Unable to connect to analytics database',
+          },
+          { status: 503 }
+        )
+      }
+
+      return NextResponse.json(
+        {
+          error: `Failed to fetch analytics for last ${days} days`,
+          detail: error.message,
+        },
+        { status: 500 }
+      )
+    }
+
     return NextResponse.json(
       {
         error: `Failed to fetch analytics for last ${days} days`,
-        detail: message,
+        detail: String(error),
       },
       { status: 500 }
     )
   }
 }
 
-// Calculate form analytics from logs
-function calculateFormAnalytics(logs: LogData[]) {
+// Optimized single-pass analytics calculation
+function calculateFormAnalytics(logs: LogData[]): AnalyticsResult {
   if (!logs || logs.length === 0) {
     return {
       views: 0,
@@ -298,70 +333,66 @@ function calculateFormAnalytics(logs: LogData[]) {
   }
 
   const views = logs.length
-
+  const sessions = new Set<string>()
   const visitsMap = new Map<
     string,
     {
-      events: LogData[]
-      startTime: Date
-      endTime: Date
+      eventCount: number
+      startTime: number
+      endTime: number
     }
   >()
-  const sessions = new Set<string>()
 
-  logs.forEach((log) => {
+  // Single-pass calculation for maximum efficiency
+  for (const log of logs) {
+    sessions.add(log.session_id)
+
     const visitId = log.visit_id
-    const sessionId = log.session_id
+    const eventTime = new Date(log.created_at).getTime()
 
-    sessions.add(sessionId)
-
-    if (!visitsMap.has(visitId)) {
+    const visit = visitsMap.get(visitId)
+    if (!visit) {
       visitsMap.set(visitId, {
-        events: [],
-        startTime: new Date(log.created_at),
-        endTime: new Date(log.created_at),
+        eventCount: 1,
+        startTime: eventTime,
+        endTime: eventTime,
       })
+    } else {
+      visit.eventCount++
+      if (eventTime < visit.startTime) {
+        visit.startTime = eventTime
+      }
+      if (eventTime > visit.endTime) {
+        visit.endTime = eventTime
+      }
     }
-
-    const visit = visitsMap.get(visitId)!
-    visit.events.push(log)
-    const currentEventTime = new Date(log.created_at)
-    if (currentEventTime < visit.startTime) {
-      visit.startTime = currentEventTime
-    }
-    if (currentEventTime > visit.endTime) {
-      visit.endTime = currentEventTime
-    }
-  })
+  }
 
   const visits = visitsMap.size
   const visitors = sessions.size
-
   let bounces = 0
   let totalTimeSeconds = 0
 
-  visitsMap.forEach((visit) => {
-    const durationMs = visit.endTime.getTime() - visit.startTime.getTime()
-    const durationSeconds = Math.floor(durationMs / 1000)
-
-    if (visit.events.length === 1) {
+  // Calculate bounces and total time
+  for (const visit of visitsMap.values()) {
+    if (visit.eventCount === 1) {
       bounces++
     }
-
+    const durationSeconds = Math.floor((visit.endTime - visit.startTime) / 1000)
     totalTimeSeconds += durationSeconds
-  })
+  }
 
   const bounceRate = visits > 0 ? Math.round((bounces / visits) * 100) : 0
   const averageVisitDuration =
     visits > 0 ? Math.floor(totalTimeSeconds / visits) : 0
 
   return {
-    views: views,
-    visits: visits,
-    visitors: visitors,
-    bounces: bounces,
+    views,
+    visits,
+    visitors,
+    bounces,
     totalTime: totalTimeSeconds,
-    bounceRate: bounceRate,
+    bounceRate,
     visitDuration: averageVisitDuration,
   }
 }
