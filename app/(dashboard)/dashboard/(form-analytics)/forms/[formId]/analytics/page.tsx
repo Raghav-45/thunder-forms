@@ -1,5 +1,7 @@
 'use client'
 
+// TODO: Refactor this file & its Imported components to use a common data fetching hook
+
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import ImpressionsChart from './impressions-chart'

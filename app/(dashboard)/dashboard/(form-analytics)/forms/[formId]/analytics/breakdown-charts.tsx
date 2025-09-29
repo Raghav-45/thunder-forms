@@ -1,5 +1,7 @@
 'use client'
 
+// TODO: Refactor this file
+
 import { TrendingUp } from 'lucide-react'
 import * as React from 'react'
 import { LabelList, RadialBar, RadialBarChart } from 'recharts'

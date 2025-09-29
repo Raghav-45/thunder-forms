@@ -1,5 +1,7 @@
 'use client'
 
+// TODO: Refactor this file
+
 import * as React from 'react'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
