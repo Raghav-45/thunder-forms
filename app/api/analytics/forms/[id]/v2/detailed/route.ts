@@ -278,6 +278,8 @@ function calculateFormAnalytics(logs: LogData[]) {
       views: 0,
       visits: 0,
       visitors: 0,
+      bounces: 0,
+      totalTime: 0,
       bounceRate: 0,
       visitDuration: 0,
     }
@@ -323,31 +325,31 @@ function calculateFormAnalytics(logs: LogData[]) {
   const visits = visitsMap.size
   const visitors = sessions.size
 
-  let singlePageVisits = 0
-  let totalDurationSeconds = 0
-  let visitsWithDuration = 0
+  let bounces = 0
+  let totalTimeSeconds = 0
 
   visitsMap.forEach((visit) => {
+    const durationMs = visit.endTime.getTime() - visit.startTime.getTime()
+    const durationSeconds = Math.floor(durationMs / 1000)
+
     if (visit.events.length === 1) {
-      singlePageVisits++
+      bounces++
     }
 
-    const durationMs = visit.endTime.getTime() - visit.startTime.getTime()
-    if (durationMs > 0) {
-      totalDurationSeconds += durationMs / 1000
-      visitsWithDuration++
-    }
+    totalTimeSeconds += durationSeconds
   })
 
-  const bounceRate = visits > 0 ? (singlePageVisits / visits) * 100 : 0
+  const bounceRate = visits > 0 ? Math.round((bounces / visits) * 100) : 0
   const averageVisitDuration =
-    visitsWithDuration > 0 ? totalDurationSeconds / visitsWithDuration : 0
+    visits > 0 ? Math.floor(totalTimeSeconds / visits) : 0
 
   return {
     views: views,
     visits: visits,
     visitors: visitors,
-    bounceRate: parseFloat(bounceRate.toFixed(1)),
-    visitDuration: parseFloat(averageVisitDuration.toFixed(1)),
+    bounces: bounces,
+    totalTime: totalTimeSeconds,
+    bounceRate: bounceRate,
+    visitDuration: averageVisitDuration,
   }
 }
