@@ -1,9 +1,6 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
 import { TrendingUp } from 'lucide-react'
-import { useParams } from 'next/navigation'
 import * as React from 'react'
 import { LabelList, RadialBar, RadialBarChart } from 'recharts'
 
@@ -22,27 +19,22 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart'
 
-interface BreakdownData {
+interface BreakdownDataItem {
   name: string
   value: number
-  fill: string
   country_code?: string
 }
 
-interface AnalyticsResponse {
-  success: boolean
-  browser: BreakdownData[]
-  os: BreakdownData[]
-  device: BreakdownData[]
-  country: BreakdownData[]
-  state: BreakdownData[]
+interface BreakdownData {
+  browser: BreakdownDataItem[]
+  os: BreakdownDataItem[]
+  device: BreakdownDataItem[]
+  country: BreakdownDataItem[]
+  state: BreakdownDataItem[]
 }
 
-const fetchBreakdownAnalytics = async (
-  formId: string
-): Promise<AnalyticsResponse> => {
-  const response = await axios.get(`/api/analytics/forms/${formId}/breakdown`)
-  return response.data
+interface BreakdownChartsProps {
+  data?: BreakdownData
 }
 
 const chartConfig = {
@@ -60,57 +52,25 @@ const chartConfig = {
   ),
 } satisfies ChartConfig
 
-// Simplified loading component
-const ChartLoading: React.FC<{ title: string }> = ({ title }) => (
-  <Card>
-    <CardHeader>
-      <CardTitle>{title}</CardTitle>
-      <CardDescription>Loading...</CardDescription>
-    </CardHeader>
-    <CardContent>
-      <div className="h-[200px] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
-      </div>
-    </CardContent>
-  </Card>
-)
-
-// Simplified error component
-const ChartError: React.FC<{ title: string; message: string }> = ({
-  title,
-  message,
-}) => (
-  <Card>
-    <CardHeader>
-      <CardTitle>{title}</CardTitle>
-      <CardDescription>Error loading data</CardDescription>
-    </CardHeader>
-    <CardContent>
-      <div className="h-[200px] flex items-center justify-center text-muted-foreground">
-        {message}
-      </div>
-    </CardContent>
-  </Card>
-)
+// Function to assign colors to data items
+const assignColors = (data: BreakdownDataItem[]): Array<BreakdownDataItem & { fill: string }> => {
+  return data.map((item, index) => ({
+    ...item,
+    fill: `var(--chart-${(index % 8) + 1})`,
+  }))
+}
 
 // Simplified radial chart component
 const RadialChart: React.FC<{
   title: string
   description: string
-  data: BreakdownData[]
-  isLoading: boolean
-  error: unknown
-  errorMessage: string
-}> = ({ title, description, data, isLoading, error, errorMessage }) => {
-  if (isLoading) {
-    return <ChartLoading title={title} />
-  }
-
-  if (error) {
-    return <ChartError title={title} message={errorMessage} />
-  }
-
-  const totalVisitors = data.reduce((sum, item) => sum + item.value, 0)
+  data: BreakdownDataItem[]
+}> = ({ title, description, data }) => {
+  const chartData = React.useMemo(() => assignColors(data), [data])
+  const totalVisitors = React.useMemo(
+    () => chartData.reduce((sum, item) => sum + item.value, 0),
+    [chartData]
+  )
 
   return (
     <Card>
@@ -121,7 +81,7 @@ const RadialChart: React.FC<{
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[200px] w-full">
           <RadialBarChart
-            data={data}
+            data={chartData}
             startAngle={-90}
             endAngle={380}
             innerRadius={30}
@@ -151,59 +111,32 @@ const RadialChart: React.FC<{
   )
 }
 
-// Hook for fetching analytics data
-const useAnalyticsData = () => {
-  const params = useParams()
-  const formId = params?.formId as string
-
-  return useQuery({
-    queryKey: ['breakdown-analytics', formId],
-    queryFn: () => fetchBreakdownAnalytics(formId),
-    enabled: !!formId,
-  })
-}
-
-export function BrowserRadialChart() {
-  const { data, isLoading, error } = useAnalyticsData()
-
+export function BrowserRadialChart({ data }: BreakdownChartsProps) {
   return (
     <RadialChart
       title="Browser Analytics"
       description="Visitor breakdown by browser"
       data={data?.browser || []}
-      isLoading={isLoading}
-      error={error || !data?.success}
-      errorMessage="Failed to load browser data"
     />
   )
 }
 
-export function OSRadialChart() {
-  const { data, isLoading, error } = useAnalyticsData()
-
+export function OSRadialChart({ data }: BreakdownChartsProps) {
   return (
     <RadialChart
       title="Operating System"
       description="Visitor breakdown by OS"
       data={data?.os || []}
-      isLoading={isLoading}
-      error={error || !data?.success}
-      errorMessage="Failed to load OS data"
     />
   )
 }
 
-export function DeviceRadialChart() {
-  const { data, isLoading, error } = useAnalyticsData()
-
+export function DeviceRadialChart({ data }: BreakdownChartsProps) {
   return (
     <RadialChart
       title="Device Analytics"
       description="Visitor breakdown by device"
       data={data?.device || []}
-      isLoading={isLoading}
-      error={error || !data?.success}
-      errorMessage="Failed to load device data"
     />
   )
 }

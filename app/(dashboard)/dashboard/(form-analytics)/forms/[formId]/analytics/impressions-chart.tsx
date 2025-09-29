@@ -2,7 +2,6 @@
 
 import * as React from 'react'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import { useParams } from 'next/navigation'
 
 import {
   Card,
@@ -34,10 +33,6 @@ interface DailyViewData {
   date: string
   views: number
   visitors: number
-}
-
-interface AnalyticsData {
-  dailyViews: DailyViewData[]
 }
 
 // Custom bar shape to snap to whole pixels and reduce anti-aliasing gaps when overlapping
@@ -180,62 +175,16 @@ function generateThreeMonthsData(dailyViews: DailyViewData[]): DailyViewData[] {
   return result
 }
 
-export function ChartBarInteractive() {
-  const params = useParams()
-  const formId = params.formId as string
+interface ImpressionsChartProps {
+  data: { dailyViews: DailyViewData[] } | undefined
+  loading: boolean
+}
 
-  const [analyticsData, setAnalyticsData] =
-    React.useState<AnalyticsData | null>(null)
-  const [loading, setLoading] = React.useState(true)
-  const [error, setError] = React.useState<string | null>(null)
-
-  React.useEffect(() => {
-    if (!formId) return
-
-    const fetchAnalytics = async () => {
-      try {
-        setLoading(true)
-        const response = await fetch(`/api/analytics/forms/${formId}/v2/detailed?days=90`)
-
-        if (!response.ok) {
-          // Try to parse and surface server error details
-          let serverError: unknown = null
-          try {
-            serverError = await response.json()
-          } catch {
-            // ignore parse errors
-          }
-          let msg = `HTTP ${response.status}`
-          if (serverError && typeof serverError === 'object') {
-            const obj = serverError as Record<string, unknown>
-            if (typeof obj.detail === 'string') msg = obj.detail
-            else if (typeof obj.error === 'string') msg = obj.error
-          }
-          throw new Error(msg)
-        }
-
-        const data = await response.json()
-        if (data.success) {
-          setAnalyticsData(data)
-        } else {
-          // API may return a more descriptive 'detail' field now
-          const msg = data.detail || data.error || 'Failed to fetch analytics'
-          throw new Error(msg)
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error occurred')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchAnalytics()
-  }, [formId])
-
+const ImpressionsChart: React.FC<ImpressionsChartProps> = ({ data, loading }) => {
   const chartData = React.useMemo(() => {
-    if (!analyticsData?.dailyViews) return []
-    return generateThreeMonthsData(analyticsData.dailyViews)
-  }, [analyticsData])
+    if (!data?.dailyViews) return []
+    return generateThreeMonthsData(data.dailyViews)
+  }, [data])
 
   const interactiveData = React.useMemo(
     () => chartData.map((d) => ({ ...d, _max: Math.max(d.views, d.visitors) })),
@@ -243,10 +192,10 @@ export function ChartBarInteractive() {
   )
 
   const total = React.useMemo(() => {
-    if (!analyticsData?.dailyViews) return { views: 0, visitors: 0 }
+    if (!data?.dailyViews) return { views: 0, visitors: 0 }
 
-    const totals = analyticsData.dailyViews.reduce(
-      (acc, day) => ({
+    const totals = data.dailyViews.reduce(
+      (acc: { views: number; visitors: number }, day: DailyViewData) => ({
         views: acc.views + day.views,
         visitors: acc.visitors + day.visitors,
       }),
@@ -254,7 +203,7 @@ export function ChartBarInteractive() {
     )
 
     return totals
-  }, [analyticsData])
+  }, [data])
 
   if (loading) {
     return (
@@ -292,23 +241,6 @@ export function ChartBarInteractive() {
     )
   }
 
-  if (error) {
-    return (
-      <Card className="py-0">
-        <CardHeader className="flex flex-col items-stretch border-b !p-0 sm:flex-row">
-          <div className="flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3 sm:!py-0">
-            <CardTitle>Form Analytics</CardTitle>
-            <CardDescription>Error loading analytics data</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent className="px-2 sm:p-6">
-          <div className="flex items-center justify-center h-[250px]">
-            <div className="text-red-500">Error: {error}</div>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
   return (
     <Card className="py-0">
       <CardHeader className="flex flex-col items-stretch border-b !p-0 sm:flex-row">
@@ -382,3 +314,5 @@ export function ChartBarInteractive() {
     </Card>
   )
 }
+
+export default ImpressionsChart
