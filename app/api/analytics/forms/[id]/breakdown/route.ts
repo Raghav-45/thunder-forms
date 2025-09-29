@@ -21,7 +21,9 @@ export async function GET(
 
   try {
     // Get browser breakdown
-    const browserBreakdown = await analyticsPrisma.$queryRaw<Array<{browser: string, count: bigint}>>`
+    const browserBreakdown = await analyticsPrisma.$queryRaw<
+      Array<{ browser: string; count: bigint }>
+    >`
       SELECT 
         s."browser",
         COUNT(DISTINCT s."session_id") as count
@@ -35,7 +37,9 @@ export async function GET(
     `
 
     // Get OS breakdown
-    const osBreakdown = await analyticsPrisma.$queryRaw<Array<{os: string, count: bigint}>>`
+    const osBreakdown = await analyticsPrisma.$queryRaw<
+      Array<{ os: string; count: bigint }>
+    >`
       SELECT 
         s."os",
         COUNT(DISTINCT s."session_id") as count
@@ -49,7 +53,9 @@ export async function GET(
     `
 
     // Get device breakdown
-    const deviceBreakdown = await analyticsPrisma.$queryRaw<Array<{device: string, count: bigint}>>`
+    const deviceBreakdown = await analyticsPrisma.$queryRaw<
+      Array<{ device: string; count: bigint }>
+    >`
       SELECT 
         s."device",
         COUNT(DISTINCT s."session_id") as count
@@ -63,7 +69,9 @@ export async function GET(
     `
 
     // Get country breakdown
-    const countryBreakdown = await analyticsPrisma.$queryRaw<Array<{country: string, count: bigint}>>` 
+    const countryBreakdown = await analyticsPrisma.$queryRaw<
+      Array<{ country: string; count: bigint }>
+    >` 
       SELECT 
         s."country",
         COUNT(DISTINCT s."session_id") as count
@@ -77,7 +85,9 @@ export async function GET(
     `
 
     // Get state/region breakdown
-    const stateBreakdown = await analyticsPrisma.$queryRaw<Array<{region: string, count: bigint}>>` 
+    const stateBreakdown = await analyticsPrisma.$queryRaw<
+      Array<{ region: string; count: bigint }>
+    >` 
       SELECT 
         s."region",
         COUNT(DISTINCT s."session_id") as count
@@ -88,13 +98,16 @@ export async function GET(
       GROUP BY s."region"
       ORDER BY count DESC
       LIMIT 6
-    `    // Format the data for radial charts
-    const formatBreakdownData = (data: Array<{[key: string]: string | bigint}>, labelKey: string) => {
+    ` // Format the data for radial charts
+    const formatBreakdownData = (
+      data: Array<{ [key: string]: string | bigint }>,
+      labelKey: string
+    ) => {
       return data.map((item, index) => {
         const base = {
           name: item[labelKey] as string,
           value: Number(item.count),
-          fill: `var(--color-${index + 1})`
+          fill: `var(--color-${index + 1})`,
         }
         // For country data, use the country field as country_code since it contains ISO codes
         if (labelKey === 'country') {
@@ -104,15 +117,17 @@ export async function GET(
       })
     }
 
-    return NextResponse.json({
-      success: true,
-      browser: formatBreakdownData(browserBreakdown, 'browser'),
-      os: formatBreakdownData(osBreakdown, 'os'),
-      device: formatBreakdownData(deviceBreakdown, 'device'),
-      country: formatBreakdownData(countryBreakdown, 'country'),
-      state: formatBreakdownData(stateBreakdown, 'region')
-    }, { status: 200 })
-
+    return NextResponse.json(
+      {
+        success: true,
+        browser: formatBreakdownData(browserBreakdown, 'browser'),
+        os: formatBreakdownData(osBreakdown, 'os'),
+        device: formatBreakdownData(deviceBreakdown, 'device'),
+        country: formatBreakdownData(countryBreakdown, 'country'),
+        state: formatBreakdownData(stateBreakdown, 'region'),
+      },
+      { status: 200 }
+    )
   } catch (error) {
     console.error('Breakdown analytics fetch error:', error)
     return NextResponse.json(
