@@ -2,15 +2,25 @@
 
 // TODO: Refactor this file & its Imported components to use a common data fetching hook
 
-import { useState, useEffect } from 'react'
+import LoadingScreen from '@/components/LoadingScreen'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Bell } from 'lucide-react'
 import { useParams } from 'next/navigation'
-import ImpressionsChart from './impressions-chart'
+import { useEffect, useState } from 'react'
 import {
   BrowserRadialChart,
-  OSRadialChart,
   DeviceRadialChart,
+  OSRadialChart,
+  ReferrerRadialChart,
 } from './breakdown-charts'
-import LoadingScreen from '@/components/LoadingScreen'
+import ImpressionsChart from './impressions-chart'
 
 // Define your data types
 interface DailyViewData {
@@ -25,6 +35,11 @@ interface BreakdownDataItem {
   country_code?: string
 }
 
+interface ReferrerDataItem {
+  referrer_domain: string
+  visits: number
+}
+
 interface BreakdownData {
   browser: BreakdownDataItem[]
   os: BreakdownDataItem[]
@@ -36,6 +51,7 @@ interface BreakdownData {
 interface FormAnalyticsData {
   dailyViews: DailyViewData[]
   breakdown: BreakdownData
+  topReferrers: ReferrerDataItem[]
 }
 
 // Error component
@@ -82,6 +98,7 @@ export default function FormAnalyticsPage() {
               country: [],
               state: [],
             },
+            topReferrers: data.topReferrers || [],
           })
         } else {
           throw new Error(
@@ -127,11 +144,47 @@ export default function FormAnalyticsPage() {
               Visitor Analytics
             </h2>
 
-            {/* Top row - 3 equal columns */}
+            {/* First row - 3 equal columns */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <BrowserRadialChart data={analyticsData.breakdown} />
               <OSRadialChart data={analyticsData.breakdown} />
               <DeviceRadialChart data={analyticsData.breakdown} />
+            </div>
+
+            {/* Second row - Referrer chart */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="md:col-span-2">
+                <Card className="aspect-[5/2]">
+                  <CardHeader>
+                    <CardTitle>Coming Soon</CardTitle>
+                    <CardDescription>More breakdowns</CardDescription>
+                  </CardHeader>
+                  <CardContent className="h-full w-full flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-4 text-center py-8">
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-semibold">Coming Soon</h3>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Bell className="h-3.5 w-3.5" />
+                        <span>
+                          You&apos;ll be notified when this feature is available
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex-col items-start gap-2 text-sm">
+                    <div className="flex gap-2 leading-none font-medium text-muted-foreground">
+                      Feature in development
+                    </div>
+                    <div className="text-muted-foreground leading-none">
+                      Track more
+                    </div>
+                  </CardFooter>
+                </Card>
+              </div>
+              <div className="md:col-span-2">
+                <ReferrerRadialChart data={analyticsData.topReferrers} />
+              </div>
             </div>
           </div>
         </div>

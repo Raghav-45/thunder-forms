@@ -4,7 +4,16 @@
 
 import { TrendingUp } from 'lucide-react'
 import * as React from 'react'
-import { LabelList, RadialBar, RadialBarChart } from 'recharts'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  RadialBar,
+  RadialBarChart,
+  XAxis,
+  YAxis,
+} from 'recharts'
 
 import {
   Card,
@@ -35,8 +44,17 @@ interface BreakdownData {
   state: BreakdownDataItem[]
 }
 
+interface ReferrerDataItem {
+  referrer_domain: string
+  visits: number
+}
+
 interface BreakdownChartsProps {
   data?: BreakdownData
+}
+
+interface ReferrerChartsProps {
+  data?: ReferrerDataItem[]
 }
 
 const chartConfig = {
@@ -55,9 +73,22 @@ const chartConfig = {
 } satisfies ChartConfig
 
 // Function to assign colors to data items
-const assignColors = (data: BreakdownDataItem[]): Array<BreakdownDataItem & { fill: string }> => {
+const assignColors = (
+  data: BreakdownDataItem[]
+): Array<BreakdownDataItem & { fill: string }> => {
   return data.map((item, index) => ({
     ...item,
+    fill: `var(--chart-${(index % 8) + 1})`,
+  }))
+}
+
+// Function to assign colors to referrer data items
+const assignColorsToReferrers = (
+  data: ReferrerDataItem[]
+): Array<{ name: string; value: number; fill: string }> => {
+  return data.map((item, index) => ({
+    name: item.referrer_domain,
+    value: item.visits,
     fill: `var(--chart-${(index % 8) + 1})`,
   }))
 }
@@ -140,5 +171,107 @@ export function DeviceRadialChart({ data }: BreakdownChartsProps) {
       description="Visitor breakdown by device"
       data={data?.device || []}
     />
+  )
+}
+
+export function ReferrerRadialChart({ data }: ReferrerChartsProps) {
+  const chartData = React.useMemo(() => {
+    const realData = assignColorsToReferrers(data || [])
+
+    // Add pseudo elements to ensure minimum 7 items for proper sizing
+    const minItems = 7
+    const pseudoItemsNeeded = Math.max(0, minItems - realData.length)
+
+    const pseudoData = Array.from({ length: pseudoItemsNeeded }, () => ({
+      name: '',
+      value: 0,
+      fill: 'transparent',
+    }))
+
+    return [...realData, ...pseudoData]
+  }, [data])
+
+  const totalVisits = React.useMemo(
+    () =>
+      chartData
+        .filter((item) => item.value > 0)
+        .reduce((sum, item) => sum + item.value, 0),
+    [chartData]
+  )
+
+  const referrerChartConfig = {
+    value: {
+      label: 'Visits',
+      color: 'var(--chart-2)',
+    },
+    label: {
+      color: 'var(--background)',
+    },
+  } satisfies ChartConfig
+
+  return (
+    <Card className="aspect-[5/2]">
+      <CardHeader>
+        <CardTitle>Referrer Sources</CardTitle>
+        <CardDescription>Traffic sources breakdown</CardDescription>
+      </CardHeader>
+      <CardContent className="h-full w-full">
+        <ChartContainer className="h-full w-full" config={referrerChartConfig}>
+          <BarChart
+            accessibilityLayer
+            data={chartData}
+            layout="vertical"
+            margin={{
+              right: 8,
+            }}
+          >
+            <CartesianGrid horizontal={false} />
+            <YAxis
+              dataKey="name"
+              type="category"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              hide
+            />
+            <XAxis dataKey="value" type="number" hide />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent indicator="line" />}
+            />
+            <Bar
+              dataKey="value"
+              layout="vertical"
+              fill="var(--color-value)"
+              radius={4}
+            >
+              <LabelList
+                dataKey="name"
+                position="insideLeft"
+                offset={8}
+                className="fill-[var(--foreground)] font-medium"
+                fontSize={12}
+              />
+              <LabelList
+                dataKey="value"
+                position="right"
+                offset={8}
+                className="fill-foreground"
+                fontSize={12}
+                formatter={(value: number) => (value > 0 ? value : '')}
+              />
+            </Bar>
+          </BarChart>
+        </ChartContainer>
+      </CardContent>
+      <CardFooter className="flex-col items-start gap-2 text-sm">
+        <div className="flex gap-2 leading-none font-medium">
+          {totalVisits} total visits <TrendingUp className="h-4 w-4" />
+        </div>
+        <div className="text-muted-foreground leading-none">
+          Showing traffic sources for the selected period
+        </div>
+      </CardFooter>
+    </Card>
   )
 }
