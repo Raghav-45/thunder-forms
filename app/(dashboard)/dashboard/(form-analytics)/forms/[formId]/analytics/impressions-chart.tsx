@@ -195,7 +195,7 @@ export function ChartBarInteractive() {
     const fetchAnalytics = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`/api/analytics/forms/${formId}/detailed`)
+        const response = await fetch(`/api/analytics/forms/${formId}/v2/detailed?days=90`)
 
         if (!response.ok) {
           // Try to parse and surface server error details

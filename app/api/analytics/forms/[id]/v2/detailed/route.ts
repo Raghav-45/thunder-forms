@@ -53,8 +53,8 @@ export async function GET(
     )
   }
 
-  // Parse days parameter, default to 7 if not provided
-  let days = 7
+  // Parse days parameter, default to 90 if not provided
+  let days = 90
   if (daysParam) {
     const parsed = parseInt(daysParam, 10)
     if (isNaN(parsed) || parsed < 1) {
