@@ -20,18 +20,23 @@ interface LogData {
   page_title?: string
 }
 
-// interface SessionData {
-//   session_id: string
-//   browser: string
-//   os: string
-//   device: string
-//   screen: string
-//   language: string
-//   country: string
-//   region: string
-//   city: string
-//   created_at: Date
-// }
+// Helper function to format breakdown data for radial charts
+function formatBreakdownData(
+  data: Array<{ [key: string]: string | bigint }>,
+  labelKey: string
+) {
+  return data.map((item) => {
+    const base = {
+      name: item[labelKey] as string,
+      value: Number(item.count),
+    }
+    // For country data, use the country field as country_code since it contains ISO codes
+    if (labelKey === 'country') {
+      return { ...base, country_code: item[labelKey] as string }
+    }
+    return base
+  })
+}
 
 export async function GET(
   request: Request,
@@ -92,29 +97,7 @@ export async function GET(
 
     const processedAnalytics = calculateFormAnalytics(rawLogs)
 
-    // 2. Get session data with device/browser/location info
-    // const sessions = await analyticsPrisma.$queryRaw<SessionData[]>`
-    //   SELECT DISTINCT
-    //     s."session_id",
-    //     s."browser",
-    //     s."os",
-    //     s."device",
-    //     s."screen",
-    //     s."language",
-    //     s."country",
-    //     s."region",
-    //     s."city",
-    //     s."created_at"
-    //   FROM "session" s
-    //   INNER JOIN "website_event" w ON s."session_id" = w."session_id"
-    //   WHERE w."url_path" ILIKE ${`/forms/${id}%`}
-    //   AND w."created_at" >= ${startDate}
-    //   AND w."created_at" <= NOW()
-    //   ORDER BY s."created_at" DESC
-    //   LIMIT 50
-    // `
-
-    // 3. Get daily views
+    // 2. Get daily views
     const dailyViews = await analyticsPrisma.$queryRaw<
       Array<{ date: string; views: bigint; visitors: bigint }>
     >`
@@ -131,7 +114,7 @@ export async function GET(
       ORDER BY DATE(w."created_at") ASC
     `
 
-    // 4. Get top pages
+    // 3. Get top pages
     const topPages = await analyticsPrisma.$queryRaw<
       Array<{ url_path: string; views: bigint }>
     >`
@@ -147,7 +130,7 @@ export async function GET(
       LIMIT 10
     `
 
-    // 5. Get top referrers
+    // 4. Get top referrers
     const topReferrers = await analyticsPrisma.$queryRaw<
       Array<{ referrer_domain: string; visits: bigint }>
     >`
@@ -163,24 +146,7 @@ export async function GET(
       LIMIT 10
     `
 
-    // 6. Get device breakdown
-    const deviceBreakdown = await analyticsPrisma.$queryRaw<
-      Array<{ device: string; count: bigint }>
-    >`
-      SELECT 
-        s."device",
-        COUNT(DISTINCT s."session_id") as count
-      FROM "session" s
-      INNER JOIN "website_event" w ON s."session_id" = w."session_id"
-      WHERE w."url_path" ILIKE ${`/forms/${id}%`}
-      AND w."created_at" >= ${startDate}
-      AND w."created_at" <= NOW()
-      AND s."device" IS NOT NULL
-      GROUP BY s."device"
-      ORDER BY count DESC
-    `
-
-    // 7. Get browser breakdown
+    // 5. Get browser breakdown
     const browserBreakdown = await analyticsPrisma.$queryRaw<
       Array<{ browser: string; count: bigint }>
     >`
@@ -192,29 +158,82 @@ export async function GET(
       WHERE w."url_path" ILIKE ${`/forms/${id}%`}
       AND w."created_at" >= ${startDate}
       AND w."created_at" <= NOW()
-      AND s."browser" IS NOT NULL
+      AND s."browser" IS NOT NULL AND s."browser" != ''
       GROUP BY s."browser"
       ORDER BY count DESC
-      LIMIT 10
+      LIMIT 8
     `
 
-    // 8. Get location breakdown
-    const locationBreakdown = await analyticsPrisma.$queryRaw<
-      Array<{ country: string; city: string; count: bigint }>
+    // 6. Get OS breakdown
+    const osBreakdown = await analyticsPrisma.$queryRaw<
+      Array<{ os: string; count: bigint }>
     >`
       SELECT 
-        s."country",
-        s."city",
+        s."os",
         COUNT(DISTINCT s."session_id") as count
       FROM "session" s
       INNER JOIN "website_event" w ON s."session_id" = w."session_id"
       WHERE w."url_path" ILIKE ${`/forms/${id}%`}
       AND w."created_at" >= ${startDate}
       AND w."created_at" <= NOW()
-      AND s."country" IS NOT NULL
-      GROUP BY s."country", s."city"
+      AND s."os" IS NOT NULL AND s."os" != ''
+      GROUP BY s."os"
       ORDER BY count DESC
-      LIMIT 20
+      LIMIT 8
+    `
+
+    // 7. Get device breakdown
+    const deviceBreakdown = await analyticsPrisma.$queryRaw<
+      Array<{ device: string; count: bigint }>
+    >`
+      SELECT 
+        s."device",
+        COUNT(DISTINCT s."session_id") as count
+      FROM "session" s
+      INNER JOIN "website_event" w ON s."session_id" = w."session_id"
+      WHERE w."url_path" ILIKE ${`/forms/${id}%`}
+      AND w."created_at" >= ${startDate}
+      AND w."created_at" <= NOW()
+      AND s."device" IS NOT NULL AND s."device" != ''
+      GROUP BY s."device"
+      ORDER BY count DESC
+      LIMIT 8
+    `
+
+    // 8. Get country breakdown
+    const countryBreakdown = await analyticsPrisma.$queryRaw<
+      Array<{ country: string; count: bigint }>
+    >`
+      SELECT 
+        s."country",
+        COUNT(DISTINCT s."session_id") as count
+      FROM "session" s
+      INNER JOIN "website_event" w ON s."session_id" = w."session_id"
+      WHERE w."url_path" ILIKE ${`/forms/${id}%`}
+      AND w."created_at" >= ${startDate}
+      AND w."created_at" <= NOW()
+      AND s."country" IS NOT NULL AND s."country" != ''
+      GROUP BY s."country"
+      ORDER BY count DESC
+      LIMIT 6
+    `
+
+    // 9. Get state/region breakdown
+    const stateBreakdown = await analyticsPrisma.$queryRaw<
+      Array<{ region: string; count: bigint }>
+    >`
+      SELECT 
+        s."region",
+        COUNT(DISTINCT s."session_id") as count
+      FROM "session" s
+      INNER JOIN "website_event" w ON s."session_id" = w."session_id"
+      WHERE w."url_path" ILIKE ${`/forms/${id}%`}
+      AND w."created_at" >= ${startDate}
+      AND w."created_at" <= NOW()
+      AND s."region" IS NOT NULL AND s."region" != ''
+      GROUP BY s."region"
+      ORDER BY count DESC
+      LIMIT 6
     `
 
     // Format daily views data
@@ -232,7 +251,6 @@ export async function GET(
         days,
         startDate: startDate.toISOString(),
         analytics: processedAnalytics,
-        // sessions: sessions,
         dailyViews: formattedDailyViews,
         topPages: topPages.map((page) => ({
           url_path: page.url_path,
@@ -242,19 +260,13 @@ export async function GET(
           referrer_domain: ref.referrer_domain,
           visits: Number(ref.visits),
         })),
-        deviceBreakdown: deviceBreakdown.map((device) => ({
-          device: device.device,
-          count: Number(device.count),
-        })),
-        browserBreakdown: browserBreakdown.map((browser) => ({
-          browser: browser.browser,
-          count: Number(browser.count),
-        })),
-        locationBreakdown: locationBreakdown.map((location) => ({
-          country: location.country,
-          city: location.city,
-          count: Number(location.count),
-        })),
+        breakdown: {
+          browser: formatBreakdownData(browserBreakdown, 'browser'),
+          os: formatBreakdownData(osBreakdown, 'os'),
+          device: formatBreakdownData(deviceBreakdown, 'device'),
+          country: formatBreakdownData(countryBreakdown, 'country'),
+          state: formatBreakdownData(stateBreakdown, 'region'),
+        },
       },
       { status: 200 }
     )
