@@ -47,7 +47,10 @@ export async function GET(
 
   if (!process.env.ANALYTICS_DATABASE_URL) {
     console.error('ANALYTICS_DATABASE_URL is not set')
-    return NextResponse.json({ error: 'Analytics DB not configured' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Analytics DB not configured' },
+      { status: 500 }
+    )
   }
 
   // Parse days parameter, default to 7 if not provided
@@ -91,7 +94,7 @@ export async function GET(
 
     // 2. Get session data with device/browser/location info
     // const sessions = await analyticsPrisma.$queryRaw<SessionData[]>`
-    //   SELECT DISTINCT 
+    //   SELECT DISTINCT
     //     s."session_id",
     //     s."browser",
     //     s."os",
@@ -112,7 +115,9 @@ export async function GET(
     // `
 
     // 3. Get daily views
-    const dailyViews = await analyticsPrisma.$queryRaw<Array<{date: string, views: bigint, visitors: bigint}>>`
+    const dailyViews = await analyticsPrisma.$queryRaw<
+      Array<{ date: string; views: bigint; visitors: bigint }>
+    >`
       SELECT 
         DATE(w."created_at") as date,
         COUNT(*) as views,
@@ -127,7 +132,9 @@ export async function GET(
     `
 
     // 4. Get top pages
-    const topPages = await analyticsPrisma.$queryRaw<Array<{url_path: string, views: bigint}>>`
+    const topPages = await analyticsPrisma.$queryRaw<
+      Array<{ url_path: string; views: bigint }>
+    >`
       SELECT 
         "url_path",
         COUNT(*) as views
@@ -141,7 +148,9 @@ export async function GET(
     `
 
     // 5. Get top referrers
-    const topReferrers = await analyticsPrisma.$queryRaw<Array<{referrer_domain: string, visits: bigint}>>`
+    const topReferrers = await analyticsPrisma.$queryRaw<
+      Array<{ referrer_domain: string; visits: bigint }>
+    >`
       SELECT 
         COALESCE("referrer_domain", 'Direct') as referrer_domain,
         COUNT(DISTINCT "visit_id") as visits
@@ -155,7 +164,9 @@ export async function GET(
     `
 
     // 6. Get device breakdown
-    const deviceBreakdown = await analyticsPrisma.$queryRaw<Array<{device: string, count: bigint}>>`
+    const deviceBreakdown = await analyticsPrisma.$queryRaw<
+      Array<{ device: string; count: bigint }>
+    >`
       SELECT 
         s."device",
         COUNT(DISTINCT s."session_id") as count
@@ -170,7 +181,9 @@ export async function GET(
     `
 
     // 7. Get browser breakdown
-    const browserBreakdown = await analyticsPrisma.$queryRaw<Array<{browser: string, count: bigint}>>`
+    const browserBreakdown = await analyticsPrisma.$queryRaw<
+      Array<{ browser: string; count: bigint }>
+    >`
       SELECT 
         s."browser",
         COUNT(DISTINCT s."session_id") as count
@@ -186,7 +199,9 @@ export async function GET(
     `
 
     // 8. Get location breakdown
-    const locationBreakdown = await analyticsPrisma.$queryRaw<Array<{country: string, city: string, count: bigint}>>`
+    const locationBreakdown = await analyticsPrisma.$queryRaw<
+      Array<{ country: string; city: string; count: bigint }>
+    >`
       SELECT 
         s."country",
         s."city",
@@ -203,47 +218,54 @@ export async function GET(
     `
 
     // Format daily views data
-    const formattedDailyViews = dailyViews.map((day: {date: string, views: bigint, visitors: bigint}) => ({
-      date: day.date,
-      views: Number(day.views),
-      visitors: Number(day.visitors)
-    }))
+    const formattedDailyViews = dailyViews.map(
+      (day: { date: string; views: bigint; visitors: bigint }) => ({
+        date: day.date,
+        views: Number(day.views),
+        visitors: Number(day.visitors),
+      })
+    )
 
-    return NextResponse.json({
-      success: true,
-      days,
-      startDate: startDate.toISOString(),
-      analytics: processedAnalytics,
-      // sessions: sessions,
-      dailyViews: formattedDailyViews,
-      topPages: topPages.map(page => ({
-        url_path: page.url_path,
-        views: Number(page.views)
-      })),
-      topReferrers: topReferrers.map(ref => ({
-        referrer_domain: ref.referrer_domain,
-        visits: Number(ref.visits)
-      })),
-      deviceBreakdown: deviceBreakdown.map(device => ({
-        device: device.device,
-        count: Number(device.count)
-      })),
-      browserBreakdown: browserBreakdown.map(browser => ({
-        browser: browser.browser,
-        count: Number(browser.count)
-      })),
-      locationBreakdown: locationBreakdown.map(location => ({
-        country: location.country,
-        city: location.city,
-        count: Number(location.count)
-      }))
-    }, { status: 200 })
-
+    return NextResponse.json(
+      {
+        success: true,
+        days,
+        startDate: startDate.toISOString(),
+        analytics: processedAnalytics,
+        // sessions: sessions,
+        dailyViews: formattedDailyViews,
+        topPages: topPages.map((page) => ({
+          url_path: page.url_path,
+          views: Number(page.views),
+        })),
+        topReferrers: topReferrers.map((ref) => ({
+          referrer_domain: ref.referrer_domain,
+          visits: Number(ref.visits),
+        })),
+        deviceBreakdown: deviceBreakdown.map((device) => ({
+          device: device.device,
+          count: Number(device.count),
+        })),
+        browserBreakdown: browserBreakdown.map((browser) => ({
+          browser: browser.browser,
+          count: Number(browser.count),
+        })),
+        locationBreakdown: locationBreakdown.map((location) => ({
+          country: location.country,
+          city: location.city,
+          count: Number(location.count),
+        })),
+      },
+      { status: 200 }
+    )
   } catch (error) {
     console.error(`Analytics fetch error for last ${days} days:`, error)
     const message = error instanceof Error ? error.message : String(error)
     return NextResponse.json(
-      { error: `Failed to fetch analytics for last ${days} days`, detail: message },
+      {
+        error: `Failed to fetch analytics for last ${days} days`,
+        detail: message,
+      },
       { status: 500 }
     )
   }
@@ -258,64 +280,68 @@ function calculateFormAnalytics(logs: LogData[]) {
       visitors: 0,
       bounceRate: 0,
       visitDuration: 0,
-    };
+    }
   }
 
-  const views = logs.length;
+  const views = logs.length
 
-  const visitsMap = new Map<string, {
-    events: LogData[],
-    startTime: Date,
-    endTime: Date
-  }>();
-  const sessions = new Set<string>();
+  const visitsMap = new Map<
+    string,
+    {
+      events: LogData[]
+      startTime: Date
+      endTime: Date
+    }
+  >()
+  const sessions = new Set<string>()
 
-  logs.forEach(log => {
-    const visitId = log.visit_id;
-    const sessionId = log.session_id;
+  logs.forEach((log) => {
+    const visitId = log.visit_id
+    const sessionId = log.session_id
 
-    sessions.add(sessionId);
+    sessions.add(sessionId)
 
     if (!visitsMap.has(visitId)) {
       visitsMap.set(visitId, {
         events: [],
         startTime: new Date(log.created_at),
-        endTime: new Date(log.created_at)
-      });
+        endTime: new Date(log.created_at),
+      })
     }
 
-    const visit = visitsMap.get(visitId)!;
-    visit.events.push(log);
-    const currentEventTime = new Date(log.created_at);
+    const visit = visitsMap.get(visitId)!
+    visit.events.push(log)
+    const currentEventTime = new Date(log.created_at)
     if (currentEventTime < visit.startTime) {
-      visit.startTime = currentEventTime;
+      visit.startTime = currentEventTime
     }
     if (currentEventTime > visit.endTime) {
-      visit.endTime = currentEventTime;
+      visit.endTime = currentEventTime
     }
-  });
+  })
 
-  const visits = visitsMap.size;
-  const visitors = sessions.size;
+  const visits = visitsMap.size
+  const visitors = sessions.size
 
-  let singlePageVisits = 0;
-  let totalDurationSeconds = 0;
-  let visitsWithDuration = 0;
+  let singlePageVisits = 0
+  let totalDurationSeconds = 0
+  let visitsWithDuration = 0
 
-  visitsMap.forEach(visit => {
+  visitsMap.forEach((visit) => {
     if (visit.events.length === 1) {
-      singlePageVisits++;
+      singlePageVisits++
     }
 
-    const durationMs = visit.endTime.getTime() - visit.startTime.getTime();
+    const durationMs = visit.endTime.getTime() - visit.startTime.getTime()
     if (durationMs > 0) {
-      totalDurationSeconds += durationMs / 1000;
-      visitsWithDuration++;
+      totalDurationSeconds += durationMs / 1000
+      visitsWithDuration++
     }
-  });
+  })
 
-  const bounceRate = visits > 0 ? (singlePageVisits / visits) * 100 : 0;
-  const averageVisitDuration = visitsWithDuration > 0 ? totalDurationSeconds / visitsWithDuration : 0;
+  const bounceRate = visits > 0 ? (singlePageVisits / visits) * 100 : 0
+  const averageVisitDuration =
+    visitsWithDuration > 0 ? totalDurationSeconds / visitsWithDuration : 0
 
   return {
     views: views,
@@ -323,5 +349,5 @@ function calculateFormAnalytics(logs: LogData[]) {
     visitors: visitors,
     bounceRate: parseFloat(bounceRate.toFixed(1)),
     visitDuration: parseFloat(averageVisitDuration.toFixed(1)),
-  };
+  }
 }
