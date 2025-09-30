@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress'
 import { useEffect, useState } from 'react'
 
 export default function LoadingScreen() {
-  const [progress, setProgress] = useState(12)
+  const [progress, setProgress] = useState(8)
   const [showProgress, setShowProgress] = useState(false)
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export default function LoadingScreen() {
           clearInterval(interval)
           return 100
         }
-        return prevProgress + 8
+        return prevProgress + 4
       })
     }, 100)
 
