@@ -61,6 +61,76 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
+/**
+ * Generate empty time series data for when no analytics exist
+ */
+function generateEmptyTimeSeriesData(timeRange: string) {
+  const result = []
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  let days = 90
+  if (timeRange === '30d') {
+    days = 30
+  } else if (timeRange === '7d') {
+    days = 7
+  }
+
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(today)
+    date.setDate(date.getDate() - i)
+    result.push({
+      date: date.toISOString().split('T')[0],
+      visits: 0,
+      views: 0,
+    })
+  }
+
+  return result
+}
+
+/**
+ * Fill in missing dates with zero values for continuous chart display
+ */
+function fillMissingDatesInRange(data: TimeSeriesData[], days: number) {
+  if (data.length === 0) {
+    return generateEmptyTimeSeriesData(days === 7 ? '7d' : days === 30 ? '30d' : '90d')
+  }
+
+  // Create a map for quick lookup
+  const dataMap = new Map<string, TimeSeriesData>()
+  data.forEach((item) => {
+    dataMap.set(item.date, item)
+  })
+
+  // Generate all dates for the range
+  const result = []
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(today)
+    date.setDate(date.getDate() - i)
+    const dateKey = date.toISOString().split('T')[0]
+
+    if (dataMap.has(dateKey)) {
+      result.push({
+        date: dateKey,
+        visits: dataMap.get(dateKey)!.visits,
+        views: dataMap.get(dateKey)!.views,
+      })
+    } else {
+      result.push({
+        date: dateKey,
+        visits: 0,
+        views: 0,
+      })
+    }
+  }
+
+  return result
+}
+
 export function ChartAreaInteractive() {
   const [timeRange, setTimeRange] = React.useState('90d')
 
@@ -71,7 +141,8 @@ export function ChartAreaInteractive() {
 
   const filteredData = React.useMemo(() => {
     if (!analytics?.timeSeriesData || analytics.timeSeriesData.length === 0) {
-      return []
+      // Generate empty data for the selected time range
+      return generateEmptyTimeSeriesData(timeRange)
     }
 
     const now = new Date()
@@ -84,17 +155,17 @@ export function ChartAreaInteractive() {
 
     const startDate = new Date(now)
     startDate.setDate(startDate.getDate() - daysToSubtract)
+    startDate.setHours(0, 0, 0, 0)
 
-    return analytics.timeSeriesData
+    // Filter data within the time range
+    const filteredItems = analytics.timeSeriesData
       .filter((item) => {
         const itemDate = new Date(item.date)
         return itemDate >= startDate
       })
-      .map((item) => ({
-        date: item.date,
-        visits: item.visits,
-        views: item.views,
-      }))
+
+    // Fill in any missing dates within the filtered range
+    return fillMissingDatesInRange(filteredItems, daysToSubtract)
   }, [analytics, timeRange])
 
   if (isLoading) {
@@ -218,14 +289,14 @@ export function ChartAreaInteractive() {
               />
               <Area
                 dataKey="views"
-                type="monotoneX"
+                type="monotone"
                 fill="url(#fillViews)"
                 stroke="var(--color-views)"
                 stackId="a"
               />
               <Area
                 dataKey="visits"
-                type="monotoneX"
+                type="monotone"
                 fill="url(#fillVisits)"
                 stroke="var(--color-visits)"
                 stackId="b"

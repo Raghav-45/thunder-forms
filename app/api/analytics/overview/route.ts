@@ -205,6 +205,9 @@ function calculateOverallAnalytics(
     }))
     .sort((a, b) => a.date.localeCompare(b.date))
 
+  // Fill in missing dates with zero values for the last 90 days
+  const filledTimeSeriesData = fillMissingDates(timeSeriesData, 90)
+
   return {
     totalViews,
     totalVisits: visits.size,
@@ -213,6 +216,73 @@ function calculateOverallAnalytics(
     totalResponses: forms.reduce((sum, form) => sum + form._count.responses, 0),
     averageBounceRate: Math.round(bounceRate * 10) / 10,
     averageVisitDuration: Math.round(averageVisitDuration),
-    timeSeriesData,
+    timeSeriesData: filledTimeSeriesData,
   }
+}
+
+/**
+ * Fill in missing dates with zero values for continuous chart display
+ * @param data - Existing time series data (may have gaps)
+ * @param days - Number of days to generate (7, 30, or 90)
+ * @returns Complete time series with all dates filled
+ */
+function fillMissingDates(data: TimeSeriesData[], days: number): TimeSeriesData[] {
+  if (data.length === 0) {
+    // If no data at all, generate empty data for the last N days
+    const result: TimeSeriesData[] = []
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(today)
+      date.setDate(date.getDate() - i)
+      result.push({
+        date: date.toISOString().split('T')[0],
+        views: 0,
+        visits: 0,
+        visitors: 0,
+      })
+    }
+    return result
+  }
+
+  // Create a map for quick lookup
+  const dataMap = new Map<string, TimeSeriesData>()
+  data.forEach((item) => {
+    dataMap.set(item.date, item)
+  })
+
+  // Find the date range
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  // Start from either the earliest data point or N days ago, whichever is more recent
+  const earliestDataDate = new Date(data[0].date)
+  const nDaysAgo = new Date(today)
+  nDaysAgo.setDate(nDaysAgo.getDate() - (days - 1))
+  
+  const startDate = earliestDataDate < nDaysAgo ? nDaysAgo : earliestDataDate
+
+  // Generate all dates from start to today
+  const result: TimeSeriesData[] = []
+  const currentDate = new Date(startDate)
+
+  while (currentDate <= today) {
+    const dateKey = currentDate.toISOString().split('T')[0]
+    
+    if (dataMap.has(dateKey)) {
+      result.push(dataMap.get(dateKey)!)
+    } else {
+      result.push({
+        date: dateKey,
+        views: 0,
+        visits: 0,
+        visitors: 0,
+      })
+    }
+
+    currentDate.setDate(currentDate.getDate() + 1)
+  }
+
+  return result
 }
