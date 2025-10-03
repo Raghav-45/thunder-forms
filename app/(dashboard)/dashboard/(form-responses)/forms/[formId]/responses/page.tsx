@@ -108,7 +108,7 @@ function ResponseDetailsDrawer({ response }: { response: FormResponse }) {
   return (
     <Drawer direction={isMobile ? 'bottom' : 'right'}>
       <DrawerTrigger asChild>
-        <Button variant="link" className="text-foreground w-fit px-0 text-left">
+        <Button variant="link" className="text-foreground w-fit px-0 text-left cursor-pointer">
           #{response.id}
         </Button>
       </DrawerTrigger>
