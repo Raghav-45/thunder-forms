@@ -1,21 +1,5 @@
-import { PrismaClient } from '@prisma/client'
+import { analyticsPrisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
-
-// Singleton pattern for Prisma Client
-const globalForPrisma = global as unknown as { analyticsPrisma: PrismaClient }
-
-const analyticsPrisma =
-  globalForPrisma.analyticsPrisma ||
-  new PrismaClient({
-    datasources: {
-      db: {
-        url: process.env.ANALYTICS_DATABASE_URL,
-      },
-    },
-  })
-
-if (process.env.NODE_ENV !== 'production')
-  globalForPrisma.analyticsPrisma = analyticsPrisma
 
 interface LogData {
   event_id: string

@@ -1,13 +1,5 @@
-import { PrismaClient } from '@prisma/client'
+import { analyticsPrisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
-
-const analyticsPrisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.ANALYTICS_DATABASE_URL,
-    },
-  },
-})
 
 export async function GET(
   request: Request,

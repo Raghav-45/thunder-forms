@@ -1,10 +1,8 @@
 import { FormValidator } from '@/lib/validators/form'
 import { createClient } from '@/utils/supabase/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-
-const prisma = new PrismaClient()
 
 export async function POST(request: Request) {
   try {
