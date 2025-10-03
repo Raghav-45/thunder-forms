@@ -5,6 +5,7 @@ import {
   FormTable,
   schema as TableDataItemSchema,
 } from '@/components/form-table'
+import LoadingScreen from '@/components/LoadingScreen'
 import { SectionCards } from '@/components/section-cards'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
@@ -95,6 +96,11 @@ export default function TestPage() {
   // Transform data when available, or use skeleton data when loading
   const transformedData = apiData ? transformFormsData(apiData) : []
   const displayData = isLoading ? createSkeletonData(5) : transformedData
+
+  if (isLoading) {
+    return <LoadingScreen />
+  }
+
   return (
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-2">
