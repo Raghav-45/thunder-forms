@@ -87,7 +87,7 @@ export async function GET() {
 
     // Fetch analytics data for all user forms by combining conditions
     let rawLogs: WebsiteEventLog[] = []
-    
+
     if (formIds.length > 0) {
       // Build dynamic where clause for multiple forms
       const whereConditions = formIds
@@ -111,10 +111,7 @@ export async function GET() {
     // Calculate overall analytics
     const analytics = calculateOverallAnalytics(rawLogs, userForms)
 
-    return NextResponse.json(
-      { success: true, analytics },
-      { status: 200 }
-    )
+    return NextResponse.json({ success: true, analytics }, { status: 200 })
   } catch (error) {
     console.error('Overall analytics fetch error:', error)
     return NextResponse.json(
@@ -134,7 +131,10 @@ function calculateOverallAnalytics(
       totalVisits: 0,
       totalVisitors: 0,
       totalForms: forms.length,
-      totalResponses: forms.reduce((sum, form) => sum + form._count.responses, 0),
+      totalResponses: forms.reduce(
+        (sum, form) => sum + form._count.responses,
+        0
+      ),
       averageBounceRate: 0,
       averageVisitDuration: 0,
       timeSeriesData: [],
@@ -145,7 +145,10 @@ function calculateOverallAnalytics(
   const sessions = new Set<string>()
   const visits = new Set<string>()
   const visitsMap = new Map<string, VisitData>()
-  const dailyData = new Map<string, { views: Set<string>; visits: Set<string>; visitors: Set<string> }>()
+  const dailyData = new Map<
+    string,
+    { views: Set<string>; visits: Set<string>; visitors: Set<string> }
+  >()
 
   // Process logs
   logs.forEach((log) => {
@@ -226,7 +229,10 @@ function calculateOverallAnalytics(
  * @param days - Number of days to generate (7, 30, or 90)
  * @returns Complete time series with all dates filled
  */
-function fillMissingDates(data: TimeSeriesData[], days: number): TimeSeriesData[] {
+function fillMissingDates(
+  data: TimeSeriesData[],
+  days: number
+): TimeSeriesData[] {
   if (data.length === 0) {
     // If no data at all, generate empty data for the last N days
     const result: TimeSeriesData[] = []
@@ -255,12 +261,12 @@ function fillMissingDates(data: TimeSeriesData[], days: number): TimeSeriesData[
   // Find the date range
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  
+
   // Start from either the earliest data point or N days ago, whichever is more recent
   const earliestDataDate = new Date(data[0].date)
   const nDaysAgo = new Date(today)
   nDaysAgo.setDate(nDaysAgo.getDate() - (days - 1))
-  
+
   const startDate = earliestDataDate < nDaysAgo ? nDaysAgo : earliestDataDate
 
   // Generate all dates from start to today
@@ -269,7 +275,7 @@ function fillMissingDates(data: TimeSeriesData[], days: number): TimeSeriesData[
 
   while (currentDate <= today) {
     const dateKey = currentDate.toISOString().split('T')[0]
-    
+
     if (dataMap.has(dateKey)) {
       result.push(dataMap.get(dateKey)!)
     } else {

@@ -25,11 +25,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
-import { Skeleton } from '@/components/ui/skeleton'
 
-export const description = 'An interactive area chart showing analytics for all forms'
+export const description =
+  'An interactive area chart showing analytics for all forms'
 
 interface TimeSeriesData {
   date: string
@@ -68,7 +69,7 @@ function generateEmptyTimeSeriesData(timeRange: string) {
   const result = []
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  
+
   let days = 90
   if (timeRange === '30d') {
     days = 30
@@ -94,7 +95,9 @@ function generateEmptyTimeSeriesData(timeRange: string) {
  */
 function fillMissingDatesInRange(data: TimeSeriesData[], days: number) {
   if (data.length === 0) {
-    return generateEmptyTimeSeriesData(days === 7 ? '7d' : days === 30 ? '30d' : '90d')
+    return generateEmptyTimeSeriesData(
+      days === 7 ? '7d' : days === 30 ? '30d' : '90d'
+    )
   }
 
   // Create a map for quick lookup
@@ -158,11 +161,10 @@ export function ChartAreaInteractive() {
     startDate.setHours(0, 0, 0, 0)
 
     // Filter data within the time range
-    const filteredItems = analytics.timeSeriesData
-      .filter((item) => {
-        const itemDate = new Date(item.date)
-        return itemDate >= startDate
-      })
+    const filteredItems = analytics.timeSeriesData.filter((item) => {
+      const itemDate = new Date(item.date)
+      return itemDate >= startDate
+    })
 
     // Fill in any missing dates within the filtered range
     return fillMissingDatesInRange(filteredItems, daysToSubtract)
@@ -185,11 +187,12 @@ export function ChartAreaInteractive() {
     )
   }
 
-  const timeRangeLabel = timeRange === '90d' 
-    ? 'Last 3 months' 
-    : timeRange === '30d' 
-    ? 'Last 30 days' 
-    : 'Last 7 days'
+  const timeRangeLabel =
+    timeRange === '90d'
+      ? 'Last 3 months'
+      : timeRange === '30d'
+      ? 'Last 30 days'
+      : 'Last 7 days'
 
   return (
     <Card className="pt-0">
