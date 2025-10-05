@@ -33,6 +33,25 @@ import { CreateFormPayload } from '@/lib/validators/form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import axios, { AxiosError } from 'axios'
 import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import {
   GripVerticalIcon,
   Loader2Icon,
   PencilIcon,
@@ -42,11 +61,6 @@ import {
 import { use, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-// interface FormBuilderElementType {
-//   editor: any
-//   fieldConfig: FieldConfig
-// }
-
 interface FormBuilderProps {
   params: Promise<{ slug: string }>
 }
@@ -54,65 +68,121 @@ interface FormBuilderProps {
 export default function FormBuilderPage({ params }: FormBuilderProps) {
   const { formSettings, setFormSettings } = useFormStore()
   const { slug: paramFormId } = use(params)
-  // Add local state for currentFormId that can be updated
   const [currentFormId, setCurrentFormId] = useState<string>(paramFormId)
   const [fields, setFields] = useState<FieldConfig[]>([])
   const [editingField, setEditingField] = useState<FieldConfig | null>(null)
+  const [activeId, setActiveId] = useState<string | null>(null)
 
-  // Update currentFormId when params change
   useEffect(() => {
     setCurrentFormId(paramFormId)
   }, [paramFormId])
 
-  // BASIC FORM PROPERTIES CALCULATIONS
-  const isExistingForm = currentFormId && currentFormId !== 'new-form' // Means Form Id is provided
-  const isNewForm = !isExistingForm && currentFormId === 'new-form' // Means we are creating a new form
-  // const isGoingToUseTemplate = isNewForm && templateUniqueName // Means we are creating a new form with a template
+  const isExistingForm = currentFormId && currentFormId !== 'new-form'
+  const isNewForm = !isExistingForm && currentFormId === 'new-form'
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   const handleAddField = (uniqueIdentifier: avaliableFieldsType) => {
     const newField = createDefaultFieldConfig(uniqueIdentifier)
     setFields((prev) => [...prev, newField])
   }
 
-  const renderField = (field: FieldConfig) => {
-    const FieldComponent = getFieldComponent(field.uniqueIdentifier)
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
+  }
 
-    const handleRemoveField = (id: string) => {
-      setFields((prev) => prev.filter((field) => field.id !== id))
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (over && active.id !== over.id) {
+      setFields((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id)
+        const newIndex = items.findIndex((item) => item.id === over.id)
+        return arrayMove(items, oldIndex, newIndex)
+      })
     }
 
-    return (
-      <div key={field.id} className="relative group">
-        <div className="w-full pr-28">
-          <FieldComponent
-            // @ts-expect-error field properties not guaranteed across all variants
-            field={field}
-            // value={formData[field.id]}
-            onChange={(value) => console.log(field.id, value)}
-            // error={errors[field.id]}
-          />
-        </div>
+    setActiveId(null)
+  }
 
-        <div className="absolute right-0 bottom-0 space-x-2 mr-4 transition-opacity">
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              type="button"
-              className="cursor-pointer bg-neutral-900! hover:bg-neutral-800!"
-              onClick={() => setEditingField(field)}
-            >
-              <PencilIcon />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              type="button"
-              className="cursor-pointer bg-neutral-900! hover:bg-neutral-800!"
-              onClick={() => handleRemoveField(field.id)}
-            >
-              <Trash2Icon />
-            </Button>
+  const handleRemoveField = (id: string) => {
+    setFields((prev) => prev.filter((field) => field.id !== id))
+  }
+
+  const SortableFieldItem = ({ field }: { field: FieldConfig }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: field.id })
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+    }
+
+    const FieldComponent = getFieldComponent(field.uniqueIdentifier)
+
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="mb-4 group"
+      >
+        <div 
+          {...attributes}
+          {...listeners}
+          className="relative flex items-start gap-2 bg-card rounded-lg border-2 border-dashed border-border p-3 transition-all duration-200 hover:border-primary/50 hover:shadow-sm cursor-grab active:cursor-grabbing"
+        >
+          {/* Drag Handle - Visual indicator only */}
+          {/* <div className="pt-2 opacity-0 group-hover:opacity-70 pointer-events-none transition-opacity flex-shrink-0">
+            <GripVerticalIcon className="size-5 text-muted-foreground" />
+          </div> */}
+
+          {/* Field Content */}
+          <div className="flex-1 pr-2 pointer-events-none">
+            <FieldComponent
+              // @ts-expect-error field properties not guaranteed across all variants
+              field={field}
+              onChange={(value) => console.log(field.id, value)}
+            />
+          </div>
+
+          {/* Action Buttons - Only visible on hover */}
+          <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-auto">
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                className="cursor-pointer h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary border border-border/50"
+                onClick={() => setEditingField(field)}
+              >
+                <PencilIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                className="cursor-pointer h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-destructive/10 hover:text-destructive border border-border/50"
+                onClick={() => handleRemoveField(field.id)}
+              >
+                <Trash2Icon className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -169,10 +239,9 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     retryOnMount: false,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    enabled: !!isExistingForm, // Only fetch when condition met
+    enabled: !!isExistingForm,
   })
 
-  // Use useEffect to set state when form data is successfully loaded
   useEffect(() => {
     if (isExistingForm) {
       if (form.isError) {
@@ -194,17 +263,14 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExistingForm, currentFormId, form.isSuccess, form.isError, form.data])
 
-  // Mutation for creating new forms
   const createFormMutation = useMutation({
     mutationFn: async (payload: CreateFormPayload) => {
       const { data } = await axios.post('/api/forms/new', payload)
       return data
     },
     onError: (error) => {
-      // TODO: Handle errors related to Authentication
       if (error instanceof AxiosError) {
         if (error.response?.status === 422) {
-          // Handle validation errors in realtime instead of this fallback serverside error
           toast.error('Validation error')
           return
         }
@@ -212,21 +278,13 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
       }
     },
     onSuccess: (data) => {
-      // Update local state with new form ID
       setCurrentFormId(data.id)
-
-      // Update the URL without refreshing the page
       const newUrl = `/dashboard/builder/${data.id}`
       window.history.replaceState(null, '', newUrl)
-
-      // Invalidate queries to refresh data
-      // queryClient.invalidateQueries({ queryKey: ['forms'] })
-
       toast.success('New Form created successfully!')
     },
   })
 
-  // Mutation for updating existing forms
   const updateFormMutation = useMutation({
     mutationFn: async (payload: CreateFormPayload & { formId: string }) => {
       const { formId, ...updateData } = payload
@@ -243,10 +301,8 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
       return data
     },
     onError: (error) => {
-      // TODO: Handle errors related to Authentication
       if (error instanceof AxiosError) {
         if (error.response?.status === 422) {
-          // Handle validation errors in realtime instead of this fallback serverside error
           toast.error('Validation error')
           return
         }
@@ -254,18 +310,10 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
       }
     },
     onSuccess: () => {
-      // Update store
-      // updateForm(currentFormId!, data)
-
-      // Invalidate queries to refresh data
-      // queryClient.invalidateQueries({ queryKey: ['form', currentFormId] })
-      // queryClient.invalidateQueries({ queryKey: ['forms'] })
-
       toast.success('Form updated successfully!')
     },
   })
 
-  // Handle save form (create or update)
   const handleSaveForm = () => {
     if (!formSettings.title.trim()) {
       toast.error('Form name is required')
@@ -295,7 +343,6 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     }
   }
 
-  // Check if any mutation is loading
   const isSaving = createFormMutation.isPending || updateFormMutation.isPending
 
   return (
@@ -404,10 +451,8 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
             />
           </div>
 
-          {/* This div will push the content below it to the bottom */}
           <div className="flex-grow"></div>
 
-          {/* This will now be at the bottom */}
           <GenerateWithAiPrompt
             onGeneratedFields={(title, description, fields) => {
               setFormSettings({
@@ -421,11 +466,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         </CardContent>
       </Card>
 
-      <ScrollArea
-        className="flex-1 p-4 md:p-4 pt-6 overflow-auto"
-        // onDragOver={(e) => e.preventDefault()}
-        // onDrop={handleDrop}
-      >
+      <ScrollArea className="flex-1 p-4 md:p-4 pt-6 overflow-auto">
         <div className="flex flex-row justify-between">
           <h2 className="mb-6 font-bold text-3xl">Builder</h2>
 
@@ -438,26 +479,45 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         <Card
           className={cn(
             'min-h-[600px] border-2 border-dashed !p-0 border-muted mb-1',
-            !(fields.length > 0) && 'content-center'
+            !(fields.length > 0) && 'flex items-center justify-center'
           )}
         >
-          <CardContent className="p-3 md:p-4">
+          <CardContent className={cn(
+            'p-3 md:p-4',
+            !(fields.length > 0) && 'flex items-center justify-center w-full h-full'
+          )}>
             {fields.length > 0 ? (
-              <div>
-                <div className="space-y-6 w-full">
-                  {fields.map((field) => renderField(field))}
-                </div>
-                {/* <h4 className="font-medium mt-8 mb-2">Form Configuration:</h4>
-                <pre className="text-xs bg-muted p-3 rounded overflow-auto">
-                  {JSON.stringify(fields, null, 2)}
-                </pre> */}
-              </div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={fields.map((f) => f.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {fields.map((field) => (
+                    <SortableFieldItem key={field.id} field={field} />
+                  ))}
+                </SortableContext>
+                <DragOverlay>
+                  {activeId ? (
+                    <div className="opacity-50">
+                      {fields.find((f) => f.id === activeId) && (
+                        <SortableFieldItem
+                          field={fields.find((f) => f.id === activeId)!}
+                        />
+                      )}
+                    </div>
+                  ) : null}
+                </DragOverlay>
+              </DndContext>
             ) : (
               <div className="flex justify-center items-center h-full text-muted-foreground text-center">
                 <p>Drag elements here to build your form or Generate with AI</p>
               </div>
             )}
-            {/* )} */}
           </CardContent>
         </Card>
       </ScrollArea>
@@ -508,14 +568,6 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           </CardContent>
         </Card>
         {renderEditor()}
-        {/* <EditFieldForm
-            isOpen={isEditingWindowOpen}
-            onClose={() => setIsEditingWindowOpen(false)}
-            field={selectedField}
-            onEditingField={(editedField) => {
-              handleSaveField(editedField!)
-            }}
-          /> */}
       </>
     </div>
   )
