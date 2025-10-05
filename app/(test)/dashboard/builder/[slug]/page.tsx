@@ -466,7 +466,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         </CardContent>
       </Card>
 
-      <ScrollArea className="flex-1 p-4 md:p-4 pt-6 overflow-auto">
+      <ScrollArea className="flex-1 p-4 md:p-4 pt-6 overflow-auto sticky">
         <div className="flex flex-row justify-between">
           <h2 className="mb-6 font-bold text-3xl">Builder</h2>
 
@@ -478,7 +478,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         </div>
         <Card
           className={cn(
-            'min-h-[600px] border-2 border-dashed !p-0 border-muted mb-1',
+            'h-[calc(100vh-100px)] overflow-y-scroll border-2 border-dashed !p-0 border-muted mb-1',
             !(fields.length > 0) && 'flex items-center justify-center'
           )}
         >
