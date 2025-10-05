@@ -23,6 +23,25 @@ import { Textarea } from '@/components/ui/textarea'
 import { GripVerticalIcon, PlusIcon, Trash2Icon } from 'lucide-react'
 import React, { useState } from 'react'
 import { MultiSelectConfig, SelectOption } from './types'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface MultiSelectEditorProps extends EditorProps<MultiSelectConfig> {
   isOpen: boolean
@@ -35,6 +54,18 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
   isOpen,
 }) => {
   const [config, setConfig] = useState<MultiSelectConfig>(field)
+  const [activeId, setActiveId] = useState<string | null>(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   const handleSave = () => {
     onUpdate(config)
@@ -85,17 +116,109 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
     }))
   }
 
-  const handleMoveOption = (fromIndex: number, toIndex: number) => {
-    if (toIndex < 0 || toIndex >= config.options.length) return
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
+  }
 
-    const newOptions = [...config.options]
-    const [movedOption] = newOptions.splice(fromIndex, 1)
-    newOptions.splice(toIndex, 0, movedOption)
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
 
-    setConfig((prev) => ({
-      ...prev,
-      options: newOptions,
-    }))
+    if (over && active.id !== over.id) {
+      setConfig((prev) => {
+        const oldIndex = prev.options.findIndex(
+          (option) => option.value === active.id
+        )
+        const newIndex = prev.options.findIndex(
+          (option) => option.value === over.id
+        )
+        return {
+          ...prev,
+          options: arrayMove(prev.options, oldIndex, newIndex),
+        }
+      })
+    }
+
+    setActiveId(null)
+  }
+
+  const SortableOptionItem = ({
+    option,
+    index,
+  }: {
+    option: SelectOption
+    index: number
+  }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: option.value })
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+    }
+
+    return (
+      <div ref={setNodeRef} style={style} className="flex items-center gap-3 p-2 border rounded-md">
+        <button
+          type="button"
+          className="cursor-grab hover:cursor-grabbing p-1"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVerticalIcon className="h-4 w-4 text-muted-foreground" />
+        </button>
+
+        {/* <div className="flex-1 grid grid-cols-2 gap-2"> */}
+          <Input
+            value={option.label}
+            onChange={(e) =>
+              handleUpdateOption(index, {
+                label: e.target.value,
+              })
+            }
+            placeholder="Option label"
+            className="text-sm"
+          />
+          <Input
+            value={option.value}
+            onChange={(e) =>
+              handleUpdateOption(index, {
+                value: e.target.value,
+              })
+            }
+            placeholder="Option value"
+            className="text-sm"
+          />
+        {/* </div> */}
+
+        {/* <div className="flex items-center gap-4"> */}
+          <Switch
+            checked={!option.disabled}
+            onCheckedChange={(checked) =>
+              handleUpdateOption(index, { disabled: !checked })
+            }
+            aria-label={`Toggle ${option.label}`}
+          />
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => handleRemoveOption(index)}
+            className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+            aria-label={`Remove ${option.label}`}
+          >
+            <Trash2Icon className="h-4 w-4" />
+          </Button>
+        {/* </div> */}
+      </div>
+    )
   }
 
   return (
@@ -168,91 +291,41 @@ export const MultiSelectEditor: React.FC<MultiSelectEditorProps> = ({
                   </div>
 
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {config.options.map((option, index) => (
-                      <div
-                        key={`${option.value}-${index}`}
-                        className="flex items-center gap-2 p-2 border rounded-md"
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragStart={handleDragStart}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <SortableContext
+                        items={config.options.map((o) => o.value)}
+                        strategy={verticalListSortingStrategy}
                       >
-                        <button
-                          type="button"
-                          className="cursor-grab hover:cursor-grabbing p-1"
-                          onMouseDown={(e) => {
-                            // Simple drag functionality could be implemented here
-                            e.preventDefault()
-                          }}
-                        >
-                          <GripVerticalIcon className="h-4 w-4 text-muted-foreground" />
-                        </button>
-
-                        <div className="flex-1 grid grid-cols-2 gap-2">
-                          <Input
-                            value={option.label}
-                            onChange={(e) =>
-                              handleUpdateOption(index, {
-                                label: e.target.value,
-                              })
-                            }
-                            placeholder="Option label"
-                            className="text-sm"
+                        {config.options.map((option, index) => (
+                          <SortableOptionItem
+                            key={option.value}
+                            option={option}
+                            index={index}
                           />
-                          <Input
-                            value={option.value}
-                            onChange={(e) =>
-                              handleUpdateOption(index, {
-                                value: e.target.value,
-                              })
-                            }
-                            placeholder="Option value"
-                            className="text-sm"
-                          />
-                        </div>
-
-                        <div className="flex items-center gap-1">
-                          <Switch
-                            checked={!option.disabled}
-                            onCheckedChange={(checked) =>
-                              handleUpdateOption(index, { disabled: !checked })
-                            }
-                            aria-label={`Toggle ${option.label}`}
-                          />
-
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleMoveOption(index, index - 1)}
-                            disabled={index === 0}
-                            className="h-8 w-8 p-0"
-                            aria-label="Move up"
-                          >
-                            ↑
-                          </Button>
-
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleMoveOption(index, index + 1)}
-                            disabled={index === config.options.length - 1}
-                            className="h-8 w-8 p-0"
-                            aria-label="Move down"
-                          >
-                            ↓
-                          </Button>
-
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleRemoveOption(index)}
-                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                            aria-label={`Remove ${option.label}`}
-                          >
-                            <Trash2Icon className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                        ))}
+                      </SortableContext>
+                      <DragOverlay>
+                        {activeId ? (
+                          <div className="opacity-50">
+                            {config.options.find((o) => o.value === activeId) && (
+                              <SortableOptionItem
+                                option={
+                                  config.options.find((o) => o.value === activeId)!
+                                }
+                                index={config.options.findIndex(
+                                  (o) => o.value === activeId
+                                )}
+                              />
+                            )}
+                          </div>
+                        ) : null}
+                      </DragOverlay>
+                    </DndContext>
                   </div>
                 </div>
               </AccordionContent>
