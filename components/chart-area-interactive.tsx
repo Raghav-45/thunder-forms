@@ -54,11 +54,11 @@ const chartConfig = {
   },
   visits: {
     label: 'Visits',
-    color: 'var(--chart-1)',
+    color: 'var(--primary)',
   },
   views: {
     label: 'Views',
-    color: 'var(--chart-2)',
+    color: '#ff822d',
   },
 } satisfies ChartConfig
 
