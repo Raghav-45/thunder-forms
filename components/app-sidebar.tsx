@@ -18,12 +18,8 @@ import { createClient } from '@/utils/supabase/client'
 import {
   IconDashboard,
   IconDatabase,
-  IconFileWord,
-  IconHelp,
   IconListDetails,
-  IconReport,
-  IconSearch,
-  IconSettings,
+  IconSettings
 } from '@tabler/icons-react'
 import Link from 'next/link'
 import * as React from 'react'
@@ -53,16 +49,16 @@ const data = {
       url: '/dashboard/templates',
       icon: IconDatabase,
     },
-    {
-      name: 'Reports',
-      url: '#',
-      icon: IconReport,
-    },
-    {
-      name: 'Word Assistant',
-      url: '#',
-      icon: IconFileWord,
-    },
+    // {
+    //   name: 'Reports',
+    //   url: '#',
+    //   icon: IconReport,
+    // },
+    // {
+    //   name: 'Word Assistant',
+    //   url: '#',
+    //   icon: IconFileWord,
+    // },
   ],
   navOther: [
     {
@@ -70,16 +66,16 @@ const data = {
       url: '#',
       icon: IconSettings,
     },
-    {
-      title: 'Get Help',
-      url: '#',
-      icon: IconHelp,
-    },
-    {
-      title: 'Search',
-      url: '#',
-      icon: IconSearch,
-    },
+    // {
+    //   title: 'Get Help',
+    //   url: '#',
+    //   icon: IconHelp,
+    // },
+    // {
+    //   title: 'Search',
+    //   url: '#',
+    //   icon: IconSearch,
+    // },
   ],
 }
 
