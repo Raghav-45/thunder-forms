@@ -1,7 +1,7 @@
 'use client'
 
 import { CopyButton } from '@/components/copy-button'
-import { DatePickerWithPresets } from '@/components/date-picker-with-presets'
+import { DatePickerWithPresets, IMMORTAL_SENTINEL_DATE } from '@/components/date-picker-with-presets'
 import GenerateWithAiPrompt from '@/components/FormBuilder/core/generate-with-ai'
 import {
   FieldConfig,
@@ -253,7 +253,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           ...formSettings,
           title: form.data.title,
           description: form.data.description,
-          expiresAt: new Date(form.data.expiresAt),
+          expiresAt: form.data.expiresAt ? new Date(form.data.expiresAt) : IMMORTAL_SENTINEL_DATE,
           maxSubmissions: form.data.maxSubmissions,
           redirectUrl: form.data.redirectUrl,
         })

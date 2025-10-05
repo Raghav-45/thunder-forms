@@ -20,6 +20,10 @@ import { addDays, format, setHours, setMinutes } from 'date-fns'
 import { CalendarIcon } from 'lucide-react'
 import { useState } from 'react'
 
+// Sentinel date system: 2075+ is considered immortal, 3025 is the actual sentinel
+export const IMMORTAL_THRESHOLD_YEAR = 2075
+export const IMMORTAL_SENTINEL_DATE = new Date(3025, 0, 1) // January 1st, 3025
+
 interface DatePickerWithPresetsProps {
   date: Date | null
   setDate: (date: Date | null) => void
@@ -32,10 +36,6 @@ export function DatePickerWithPresets({
   className = '',
 }: DatePickerWithPresetsProps) {
   const [selectedTime, setSelectedTime] = useState<string>('09:00')
-
-  // Sentinel date system: 2075+ is considered immortal, 3025 is the actual sentinel
-  const IMMORTAL_THRESHOLD_YEAR = 2075
-  const IMMORTAL_SENTINEL_DATE = new Date(3025, 0, 1) // January 1st, 3025
 
   // Helper function to check if a date is considered "immortal"
   const isImmortalDate = (checkDate: Date | null): boolean => {
