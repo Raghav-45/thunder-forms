@@ -31,7 +31,7 @@ const MetricCard: FC<{ data: MetricCardProps }> = ({ data }) => {
     data.trend.direction === 'up' ? IconTrendingUp : IconTrendingDown
 
   return (
-    <Card className="@container/card">
+    <Card className="@container/card gap-3">
       <CardHeader>
         <CardDescription>{data.description}</CardDescription>
         <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
