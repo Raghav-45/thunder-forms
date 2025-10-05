@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { SettingsDialog } from "./settings-dialog"
+// import { SettingsDialog } from "./settings-dialog"
 
 export function NavOther({
   items,
@@ -26,7 +26,8 @@ export function NavOther({
     <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
-          <SettingsDialog />
+          {/* TODO: Uncomment this when settings dialog is ready */}
+          {/* <SettingsDialog /> */}
 
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
