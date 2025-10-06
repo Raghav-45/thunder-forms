@@ -18,11 +18,11 @@ export const BrowserMockup = ({
 }) => (
   <div
     className={cn(
-      'relative w-full overflow-hidden rounded-4xl border',
+      'relative w-full overflow-hidden rounded-2xl border',
       className
     )}
   >
-    <div className="flex items-center justify-between gap-10 bg-muted px-8 py-4 lg:gap-25">
+    <div className="flex items-center justify-between gap-10 bg-muted px-5 py-2 lg:gap-25">
       <div className="flex items-center gap-2">
         <div className="size-3 rounded-full bg-red-500" />
         <div className="size-3 rounded-full bg-yellow-500" />
