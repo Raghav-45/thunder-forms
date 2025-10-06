@@ -31,7 +31,7 @@ export default function Home() {
       </div>
       <section>
         {/* TODO: Add a background image and make it perfect, now im adding 3 elements everytime */}
-        <div className="relative container py-32">
+        <div className="relative container py-32 pt-46">
           <header className="mx-auto max-w-3xl text-center flex flex-col">
             <div className="relative">
               <h1 className="font-anton text-5xl font-normal tracking-tight text-foreground md:text-7xl opacity-0">
