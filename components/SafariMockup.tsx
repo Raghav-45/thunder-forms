@@ -24,9 +24,9 @@ export const BrowserMockup = ({
   >
     <div className="flex items-center justify-between gap-10 bg-muted px-5 py-2 lg:gap-25">
       <div className="flex items-center gap-2">
-        <div className="size-3 rounded-full bg-red-500" />
-        <div className="size-3 rounded-full bg-yellow-500" />
-        <div className="size-3 rounded-full bg-green-500" />
+        <div className="size-3 rounded-full bg-[#e24b41]" />
+        <div className="size-3 rounded-full bg-[#e1a73e]" />
+        <div className="size-3 rounded-full bg-[#2dac2f]" />
         <div className="ml-6 hidden items-center gap-2 opacity-40 lg:flex">
           <ChevronLeft className="size-5" />
           <ChevronRight className="size-5" />
