@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { getFormStatus } from '../../utils'
 
 export async function GET(
   request: Request,
@@ -13,10 +14,34 @@ export async function GET(
       where: {
         id,
       },
+      include: {
+        _count: {
+          select: {
+            responses: true,
+          },
+        },
+      },
     })
 
     if (!form) {
       return NextResponse.json({ error: 'Form not found' }, { status: 404 })
+    }
+
+    // Calculate status using _count but exclude it from response
+    const status = getFormStatus(
+      form._count.responses,
+      form.maxSubmissions,
+      form.expiresAt ? form.expiresAt.toISOString() : null
+    )
+
+    // Destructure to exclude _count from the response (users shouldn't see internal response count)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { _count, ...formWithoutCount } = form
+
+    // Add status to form response (without _count)
+    const formWithStatus = {
+      ...formWithoutCount,
+      status,
     }
 
     // // Check if the form has expired
@@ -29,7 +54,7 @@ export async function GET(
     //   )
     // }
 
-    return NextResponse.json(form)
+    return NextResponse.json(formWithStatus)
   } catch (error) {
     // Unknown errors
     return NextResponse.json(
