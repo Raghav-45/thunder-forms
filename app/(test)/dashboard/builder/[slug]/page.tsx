@@ -73,6 +73,21 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   const [editingField, setEditingField] = useState<FieldConfig | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
 
+  const [draggedElement, setDraggedElement] = useState<avaliableFieldsType | null>(null)
+  
+  const handleElementDragStart = (draggedElement: avaliableFieldsType) => {
+    setDraggedElement(draggedElement)
+  }
+
+  const handleElementDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    if (draggedElement) {
+      const newField = createDefaultFieldConfig(draggedElement)
+      setFields((prev) => [...prev, newField])
+      setDraggedElement(null)
+    }
+  }
+
   useEffect(() => {
     setCurrentFormId(paramFormId)
   }, [paramFormId])
@@ -90,11 +105,6 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   )
-
-  const handleAddField = (uniqueIdentifier: avaliableFieldsType) => {
-    const newField = createDefaultFieldConfig(uniqueIdentifier)
-    setFields((prev) => [...prev, newField])
-  }
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string)
@@ -481,11 +491,14 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
             'h-[calc(100vh-100px)] overflow-y-scroll border-2 border-dashed !p-0 border-muted mb-1',
             !(fields.length > 0) && 'flex items-center justify-center'
           )}
+          onDragOver={(e: React.DragEvent) => e.preventDefault()}
+          onDrop={handleElementDrop}
         >
           <CardContent className={cn(
             'p-3 md:p-4',
             !(fields.length > 0) && 'flex items-center justify-center w-full h-full'
-          )}>
+          )}
+          >
             {fields.length > 0 ? (
               <DndContext
                 sensors={sensors}
@@ -537,11 +550,10 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
                     (fieldType) => (
                       <Button
                         key={fieldType}
-                        onClick={() =>
-                          handleAddField(fieldType as avaliableFieldsType)
-                        }
+                        draggable={AVAILABLE_FIELDS.includes(fieldType)}
+                        onDragStart={() => handleElementDragStart(fieldType as avaliableFieldsType)}
                         variant="outline"
-                        className="rounded-lg w-full px-2 md:pl-3 bg-neutral-900!"
+                        className="rounded-lg w-full px-2 md:pl-3 bg-neutral-900! cursor-grab"
                         size="sm"
                         disabled={!AVAILABLE_FIELDS.includes(fieldType)}
                       >
