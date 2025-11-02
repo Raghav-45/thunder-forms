@@ -15,7 +15,6 @@ import {
   DrawerDescription,
   DrawerFooter,
   DrawerHeader,
-  DrawerTitle,
 } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
 import { CalendarX2, CheckCircle2 } from 'lucide-react'
@@ -47,17 +46,18 @@ export function FormExpiredDialog({
           </div>
           <div className="text-center space-y-2">
             <p className="text-sm">
-              This form has reached its maximum submission limit and is now closed.
+              This form has reached its maximum submission limit and is now
+              closed.
             </p>
             <p className="text-sm pt-2">
               Submissions are no longer being accepted. Please contact the form
-              owner if you need to submit a response.
+              owner if you believe this is an error.
             </p>
           </div>
         </>
       )
     }
-    
+
     if (reason === 'both' && expiresAt) {
       return (
         <>
@@ -69,8 +69,8 @@ export function FormExpiredDialog({
               This form expired on{' '}
               <span className="font-semibold text-foreground">
                 {format(expiresAt, 'PPP')} at {format(expiresAt, 'p')}
-              </span>
-              {' '}and has also reached its maximum submission limit.
+              </span>{' '}
+              and has also reached its maximum submission limit.
             </p>
             <p className="text-sm pt-2">
               Submissions are no longer being accepted. Please contact the form
@@ -80,7 +80,7 @@ export function FormExpiredDialog({
         </>
       )
     }
-    
+
     // Default: expired
     return (
       <>
@@ -91,7 +91,8 @@ export function FormExpiredDialog({
           <p className="text-sm">
             This form expired on{' '}
             <span className="font-semibold text-foreground">
-              {expiresAt ? format(expiresAt, 'PPP') : 'N/A'} at {expiresAt ? format(expiresAt, 'p') : 'N/A'}
+              {expiresAt ? format(expiresAt, 'PPP') : 'N/A'} at{' '}
+              {expiresAt ? format(expiresAt, 'p') : 'N/A'}
             </span>
           </p>
           <p className="text-sm pt-2">
@@ -105,7 +106,7 @@ export function FormExpiredDialog({
 
   const getTitle = () => {
     if (reason === 'max-submissions') {
-      return 'Form Is Closed'
+      return 'Form Is Closessssd'
     }
     return 'Form Has Expired'
   }
@@ -119,9 +120,6 @@ export function FormExpiredDialog({
         <DrawerContent>
           <DrawerHeader>
             {content}
-            <DrawerTitle className="text-center text-xl">
-              {title}
-            </DrawerTitle>
             <DrawerDescription className="sr-only">
               This form is no longer accepting submissions
             </DrawerDescription>
@@ -142,9 +140,7 @@ export function FormExpiredDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center text-xl">
-            {title}
-          </DialogTitle>
+          <DialogTitle className="text-center text-xl">{title}</DialogTitle>
           <DialogDescription className="text-center space-y-2">
             {content}
           </DialogDescription>

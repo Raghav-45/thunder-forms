@@ -185,24 +185,33 @@ export default function FormPage({ params }: FormPageProps) {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-4 pt-16 md:p-10 pb-16">
-      <div className="space-y-0.5 md:space-y-1">
-        <h2 className="text-2xl md:text-5xl font-bold tracking-tight">
-          {formSettings.title}
-        </h2>
-        <p className="text-muted-foreground">{formSettings.description}</p>
+    <>
+      <FormExpiredDialog
+        isOpen={showClosedDialog}
+        onClose={() => setShowClosedDialog(false)}
+        expiresAt={formSettings.expiresAt}
+        formTitle={formSettings.title}
+        reason={formStatus === 'Closed | Completed' ? 'max-submissions' : formStatus === 'Closed | Expired' ? 'expired' : 'both'}
+      />
+      <div className="mx-auto max-w-6xl space-y-6 p-4 pt-16 md:p-10 pb-16">
+        <div className="space-y-0.5 md:space-y-1">
+          <h2 className="text-2xl md:text-5xl font-bold tracking-tight">
+            {formSettings.title}
+          </h2>
+          <p className="text-muted-foreground">{formSettings.description}</p>
+        </div>
+        <div className="space-y-4 w-full">
+          {fields.map((field) => renderField(field))}
+        </div>
+        <Button
+          className="w-full md:w-auto"
+          onClick={handleSubmit}
+          disabled={isSubmitting || checkIsFormClosed(formStatus)}
+        >
+          {isSubmitting ? 'Submitting...' : 'Submit'}
+        </Button>
       </div>
-      <div className="space-y-4 w-full">
-        {fields.map((field) => renderField(field))}
-      </div>
-      <Button
-        className="w-full md:w-auto"
-        onClick={handleSubmit}
-        disabled={isSubmitting || checkIsFormClosed(formStatus)}
-      >
-        {isSubmitting ? 'Submitting...' : 'Submit'}
-      </Button>
-    </div>
+    </>
   )
 }
 
