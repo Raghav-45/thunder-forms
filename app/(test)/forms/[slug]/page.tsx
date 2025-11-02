@@ -91,8 +91,7 @@ export default function FormPage({ params }: FormPageProps) {
       <div key={field.id} className="relative group">
         <div className="w-full">
           <FieldComponent
-            // @ts-expect-error field properties not guaranteed across all variants
-            field={field}
+            field={field as never}
             value={formData[field.id]}
             onChange={(value) => handleFieldChange(field.id, value)}
             error={errors[field.id]}

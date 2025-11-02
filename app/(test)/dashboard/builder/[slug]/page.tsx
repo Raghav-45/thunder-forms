@@ -9,6 +9,10 @@ import {
   SwitchEditor,
   TextAreaEditor,
   TextInputEditor,
+  TextInputConfig,
+  MultiSelectConfig,
+  TextAreaConfig,
+  SwitchConfig,
 } from '@/components/FormBuilder/elements'
 import { useFormStore } from '@/components/FormBuilder/store'
 import {
@@ -165,8 +169,8 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           {/* Field Content */}
           <div className="flex-1 pr-2 pointer-events-none">
             <FieldComponent
-              // @ts-expect-error field properties not guaranteed across all variants
-              field={field}
+              field={field as never}
+              value={undefined}
               onChange={(value) => console.log(field.id, value)}
             />
           </div>
@@ -223,17 +227,13 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
     switch (field.uniqueIdentifier) {
       case 'text-input':
-        // @ts-expect-error field properties not guaranteed across all variants
-        return <TextInputEditor {...baseProps} />
+        return <TextInputEditor {...baseProps} field={field as TextInputConfig} onUpdate={(f) => handleUpdateField(f)} />
       case 'multi-select':
-        // @ts-expect-error field properties not guaranteed across all variants
-        return <MultiSelectEditor {...baseProps} />
+        return <MultiSelectEditor {...baseProps} field={field as MultiSelectConfig} onUpdate={(f) => handleUpdateField(f)} />
       case 'text-area':
-        // @ts-expect-error field properties not guaranteed across all variants
-        return <TextAreaEditor {...baseProps} />
+        return <TextAreaEditor {...baseProps} field={field as TextAreaConfig} onUpdate={(f) => handleUpdateField(f)} />
       case 'switch-field':
-        // @ts-expect-error field properties not guaranteed across all variants
-        return <SwitchEditor {...baseProps} />
+        return <SwitchEditor {...baseProps} field={field as SwitchConfig} onUpdate={(f) => handleUpdateField(f)} />
       default:
         return null
     }
