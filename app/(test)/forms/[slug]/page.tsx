@@ -5,6 +5,7 @@ import { validateFormFields } from '@/components/FormBuilder/utils/formValidatio
 import { useFormStore } from '@/components/FormBuilder/store'
 import { getFieldComponent } from '@/components/FormBuilder/utils/helperFunctions'
 import { FormSubmittedPage } from '@/components/FormSubmittedPage'
+import { FormExpiredDialog } from '@/components/FormExpiredDialog'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
@@ -23,6 +24,13 @@ export default function FormPage({ params }: FormPageProps) {
   const [formData, setFormData] = useState<Record<string, unknown>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formStatus, setFormStatus] = useState<string>("Active")
+  const [showClosedDialog, setShowClosedDialog] = useState(false)
+
+  // Check if form is closed based on status
+  const checkIsFormClosed = (status: string) => {
+    return status.startsWith('Closed')
+  }
 
   const handleFieldChange = (fieldId: string, value: unknown) => {
     setFormData(prev => ({
@@ -87,12 +95,14 @@ export default function FormPage({ params }: FormPageProps) {
   const renderField = (field: FieldConfig) => {
     const FieldComponent = getFieldComponent(field.uniqueIdentifier)
 
+    // Create a disabled version of the field config when form is closed
+    const fieldConfig = checkIsFormClosed(formStatus) ? { ...field, disabled: true } as FieldConfig : field
+
     return (
       <div key={field.id} className="relative group">
         <div className="w-full">
           <FieldComponent
-            // @ts-expect-error field properties not guaranteed across all variants
-            field={field}
+            field={fieldConfig as never}
             value={formData[field.id]}
             onChange={(value) => handleFieldChange(field.id, value)}
             error={errors[field.id]}
@@ -123,14 +133,24 @@ export default function FormPage({ params }: FormPageProps) {
     }
 
     if (form.isSuccess && form.data) {
+      const expiresAt = form.data.expiresAt ? new Date(form.data.expiresAt) : undefined
+      
       setFormSettings({
         title: form.data.title,
         description: form.data.description,
-        expiresAt: form.data.expiresAt ? new Date(form.data.expiresAt) : undefined,
+        expiresAt,
         maxSubmissions: form.data.maxSubmissions,
         redirectUrl: form.data.redirectUrl,
       })
       setFields(form.data.fields)
+
+      // Check if form is closed based on status from API
+      const isClosed = checkIsFormClosed(form.data.status)
+      setFormStatus(form.data.status)
+      
+      if (isClosed) {
+        setShowClosedDialog(true)
+      }
       
       // Initialize form data with default values
       const initialFormData: Record<string, unknown> = {}
@@ -178,7 +198,7 @@ export default function FormPage({ params }: FormPageProps) {
       <Button
         className="w-full md:w-auto"
         onClick={handleSubmit}
-        disabled={isSubmitting}
+        disabled={isSubmitting || checkIsFormClosed(formStatus)}
       >
         {isSubmitting ? 'Submitting...' : 'Submit'}
       </Button>
