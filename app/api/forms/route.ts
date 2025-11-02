@@ -1,7 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
-import { getFormStatus } from './utils'
 
 export async function GET() {
   try {
@@ -49,17 +48,7 @@ export async function GET() {
       },
     })
 
-    // Add status to each form
-    const formsWithStatus = forms.map((form) => ({
-      ...form,
-      status: getFormStatus(
-        form._count.responses,
-        form.maxSubmissions,
-        form.expiresAt ? form.expiresAt.toISOString() : null
-      ),
-    }))
-
-    return NextResponse.json(formsWithStatus)
+    return NextResponse.json(forms)
   } catch (error) {
     console.error('API Error:', error)
 

@@ -16,7 +16,6 @@ interface ApiFormData {
   createdAt: string
   expiresAt: string | null
   maxSubmissions: number | null
-  status: string
   _count: {
     responses: number
   }
