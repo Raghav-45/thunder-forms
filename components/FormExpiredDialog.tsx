@@ -106,7 +106,7 @@ export function FormExpiredDialog({
 
   const getTitle = () => {
     if (reason === 'max-submissions') {
-      return 'Form Is Closessssd'
+      return 'Form Is Closed'
     }
     return 'Form Has Expired'
   }
