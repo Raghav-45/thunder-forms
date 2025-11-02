@@ -5,7 +5,7 @@ import { validateFormFields } from '@/components/FormBuilder/utils/formValidatio
 import { useFormStore } from '@/components/FormBuilder/store'
 import { getFieldComponent } from '@/components/FormBuilder/utils/helperFunctions'
 import { FormSubmittedPage } from '@/components/FormSubmittedPage'
-import { FormExpiredDialog } from '@/components/FormExpiredDialog'
+import { FormClosedDialog } from '@/components/FormClosedDialog'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
@@ -186,7 +186,7 @@ export default function FormPage({ params }: FormPageProps) {
 
   return (
     <>
-      <FormExpiredDialog
+      <FormClosedDialog
         isOpen={showClosedDialog}
         onClose={() => setShowClosedDialog(false)}
         expiresAt={formSettings.expiresAt}

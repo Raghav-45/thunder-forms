@@ -21,7 +21,7 @@ import { CalendarX2, CheckCircle2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { useIsMobile } from '@/hooks/use-mobile'
 
-interface FormExpiredDialogProps {
+interface FormClosedDialogProps {
   isOpen: boolean
   onClose: () => void
   expiresAt?: Date
@@ -29,12 +29,12 @@ interface FormExpiredDialogProps {
   reason: 'expired' | 'max-submissions' | 'both'
 }
 
-export function FormExpiredDialog({
+export function FormClosedDialog({
   isOpen,
   onClose,
   expiresAt,
   reason,
-}: FormExpiredDialogProps) {
+}: FormClosedDialogProps) {
   const isMobile = useIsMobile()
 
   const getContent = () => {
