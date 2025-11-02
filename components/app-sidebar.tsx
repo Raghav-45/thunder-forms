@@ -29,7 +29,7 @@ const data = {
   user: {
     name: 'Raghav',
     email: 'raghav@thunderforms.com',
-    avatar: 'https://github.com/raghav-45.png',
+    avatar: '',
   },
   navMain: [
     {
@@ -88,10 +88,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       const { data: userData } = await supabase.auth.getUser()
       if (userData?.user) {
         console.log(userData)
+        const dicebearAvatar = `https://api.dicebear.com/9.x/lorelei/svg?seed=${userData.user.id}&gesture[]`
         setUser({
           name: userData.user.user_metadata?.full_name,
           email: userData.user.email || '',
-          avatar: userData.user.user_metadata?.avatar_url || data.user.avatar,
+          avatar: userData.user.user_metadata?.avatar_url || dicebearAvatar,
         })
       }
     }
