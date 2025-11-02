@@ -5,11 +5,14 @@ import { validateFormFields } from '@/components/FormBuilder/utils/formValidatio
 import { useFormStore } from '@/components/FormBuilder/store'
 import { getFieldComponent } from '@/components/FormBuilder/utils/helperFunctions'
 import { FormSubmittedPage } from '@/components/FormSubmittedPage'
+import { FormExpiredDialog } from '@/components/FormExpiredDialog'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { use, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { IMMORTAL_THRESHOLD_YEAR } from '@/components/date-picker-with-presets'
+import { AlertCircle } from 'lucide-react'
 
 interface FormPageProps {
   params: Promise<{ slug: string }>
@@ -23,8 +26,24 @@ export default function FormPage({ params }: FormPageProps) {
   const [formData, setFormData] = useState<Record<string, unknown>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isExpired, setIsExpired] = useState(false)
+  const [showExpiryDialog, setShowExpiryDialog] = useState(false)
+
+  // Check if form is expired
+  const checkFormExpiry = (expiresAt: Date | undefined) => {
+    if (!expiresAt) return false
+    
+    // Check if it's not an immortal date (year < 2075) and if it's past expiry
+    const isImmortal = expiresAt.getFullYear() >= IMMORTAL_THRESHOLD_YEAR
+    if (isImmortal) return false
+    
+    return new Date() > expiresAt
+  }
 
   const handleFieldChange = (fieldId: string, value: unknown) => {
+    // Prevent changes if form is expired
+    if (isExpired) return
+    
     setFormData(prev => ({
       ...prev,
       [fieldId]: value
@@ -41,6 +60,12 @@ export default function FormPage({ params }: FormPageProps) {
   }
 
   const handleSubmit = async () => {
+    // Check if form is expired before submission
+    if (isExpired) {
+      setShowExpiryDialog(true)
+      return
+    }
+    
     const newErrors = validateFormFields(fields, formData)
     setErrors(newErrors)
     
@@ -87,11 +112,16 @@ export default function FormPage({ params }: FormPageProps) {
   const renderField = (field: FieldConfig) => {
     const FieldComponent = getFieldComponent(field.uniqueIdentifier)
 
+    // Create a disabled version of the field config when form is expired
+    const fieldConfig = isExpired 
+      ? { ...field, disabled: true } as FieldConfig
+      : field
+
     return (
       <div key={field.id} className="relative group">
         <div className="w-full">
           <FieldComponent
-            field={field as never}
+            field={fieldConfig as never}
             value={formData[field.id]}
             onChange={(value) => handleFieldChange(field.id, value)}
             error={errors[field.id]}
@@ -122,14 +152,23 @@ export default function FormPage({ params }: FormPageProps) {
     }
 
     if (form.isSuccess && form.data) {
+      const expiresAt = form.data.expiresAt ? new Date(form.data.expiresAt) : undefined
+      
       setFormSettings({
         title: form.data.title,
         description: form.data.description,
-        expiresAt: form.data.expiresAt ? new Date(form.data.expiresAt) : undefined,
+        expiresAt,
         maxSubmissions: form.data.maxSubmissions,
         redirectUrl: form.data.redirectUrl,
       })
       setFields(form.data.fields)
+      
+      // Check if form is expired and show dialog
+      const expired = checkFormExpiry(expiresAt)
+      setIsExpired(expired)
+      if (expired) {
+        setShowExpiryDialog(true)
+      }
       
       // Initialize form data with default values
       const initialFormData: Record<string, unknown> = {}
@@ -164,24 +203,47 @@ export default function FormPage({ params }: FormPageProps) {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-4 pt-16 md:p-10 pb-16">
-      <div className="space-y-0.5 md:space-y-1">
-        <h2 className="text-2xl md:text-5xl font-bold tracking-tight">
-          {formSettings.title}
-        </h2>
-        <p className="text-muted-foreground">{formSettings.description}</p>
+    <>
+      <FormExpiredDialog
+        isOpen={showExpiryDialog}
+        onClose={() => setShowExpiryDialog(false)}
+        expiresAt={formSettings.expiresAt!}
+        formTitle={formSettings.title}
+      />
+      <div className="mx-auto max-w-6xl space-y-6 p-4 pt-16 md:p-10 pb-16">
+        <div className="space-y-0.5 md:space-y-1">
+          <h2 className="text-2xl md:text-5xl font-bold tracking-tight">
+            {formSettings.title}
+          </h2>
+          <p className="text-muted-foreground">{formSettings.description}</p>
+          {isExpired && (
+            <div className="pt-3">
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-destructive">
+                    This form has expired
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    You can view the form but cannot submit responses.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="space-y-4 w-full">
+          {fields.map((field) => renderField(field))}
+        </div>
+        <Button
+          className="w-full md:w-auto"
+          onClick={handleSubmit}
+          disabled={isSubmitting || isExpired}
+        >
+          {isSubmitting ? 'Submitting...' : 'Submit'}
+        </Button>
       </div>
-      <div className="space-y-4 w-full">
-        {fields.map((field) => renderField(field))}
-      </div>
-      <Button
-        className="w-full md:w-auto"
-        onClick={handleSubmit}
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? 'Submitting...' : 'Submit'}
-      </Button>
-    </div>
+    </>
   )
 }
 
