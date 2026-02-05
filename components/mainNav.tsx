@@ -1,13 +1,11 @@
 'use client'
 
-import * as React from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-
-import { cn } from '@/lib/utils'
+import { Icons } from '@/components/Icons'
 import { Badge } from '@/components/ui/badge'
 import { siteConfig } from '@/config/site'
-import { Icons } from './Icons'
+import { cn } from '@/lib/utils'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 export function MainNav() {
   const pathname = usePathname()
@@ -15,7 +13,7 @@ export function MainNav() {
   return (
     <div className="mr-4 hidden md:flex">
       <Link href="/" className="mr-6 flex items-center space-x-2">
-        <Icons.ThunderFormsLogo className="h-7 w-7 mr-1" />
+        <Icons.Logo className="h-7 w-7 mr-1" />
         <span className="font-semibold text-lg">{siteConfig.name}</span>
       </Link>
       <nav className="ml-6 flex items-center gap-4 text-sm lg:gap-6">
@@ -43,18 +41,13 @@ export function MainNav() {
           {!pathname?.startsWith('/templates') && (
             <Badge
               variant="outline"
-              className="ml-1 bg-blue-500 px-1.5 py-0.5 text-blue-100 align-middle text-xs leading-none"
+              className="ml-1 h-full bg-blue-500 px-1.5 py-0.5 text-blue-100 align-middle text-xs leading-none"
             >
               new
             </Badge>
           )}
-          {/* {!pathname?.startsWith('/templates') && (
-            <span className="ml-2 rounded-md bg-[#FFBD7A] px-1.5 font-semibold text-xs leading-none text-black">
-              new
-            </span>
-          )} */}
         </Link>
-        <Link
+        {/* <Link
           href="/pricing"
           className={cn(
             'transition-colors hover:text-foreground/80',
@@ -64,7 +57,7 @@ export function MainNav() {
           )}
         >
           Pricing
-        </Link>
+        </Link> */}
       </nav>
     </div>
   )

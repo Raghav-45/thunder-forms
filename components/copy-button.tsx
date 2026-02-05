@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { CheckIcon, ClipboardIcon } from 'lucide-react'
+import { CheckIcon, LinkIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface CopyButtonProps {
@@ -33,7 +33,7 @@ export function CopyButton({ value }: CopyButtonProps) {
         </>
       ) : (
         <>
-          <ClipboardIcon className="h-4 w-4" /> Copy Link
+          <LinkIcon className="h-4 w-4" /> Copy Link
         </>
       )}
     </Button>

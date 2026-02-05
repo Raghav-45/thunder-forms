@@ -1,7 +1,7 @@
-import { FC } from 'react'
-import Link from 'next/link'
-import { ArrowRightIcon } from '@radix-ui/react-icons'
+import { IconArrowRight } from '@tabler/icons-react'
 import { LayoutPanelTopIcon } from 'lucide-react'
+import Link from 'next/link'
+import { FC } from 'react'
 
 import { Separator } from '@/components/ui/separator'
 
@@ -28,7 +28,7 @@ export const Announcement: FC<AnnouncementProps> = ({
         </>
       )}
       <span>{text ?? 'Introducing New Feedback Template'}</span>
-      <ArrowRightIcon className="ml-2 h-4 w-4 -translate-x-0.5 transition-transform group-hover:translate-x-0.5" />
+      <IconArrowRight className="ml-2 h-4 w-4 -translate-x-0.5 transition-transform group-hover:translate-x-0.5" />
     </Link>
   )
 }

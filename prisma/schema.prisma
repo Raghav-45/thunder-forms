@@ -3,39 +3,55 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-model forms {
-  id          String     @id @default(cuid())
-  title       String // Title of the form
-  description String // Form description
-  fields      Json // Form fields stored as JSON
-  createdAt   DateTime   @default(now())
-  // updatedAt   DateTime @updatedAt
-  responses   response[] // List of responses linked to this form
-  maxSubmissions Int? // Maximum number of submissions allowed (optional)
-  expiresAt      DateTime? // Expiration time and date (optional)
-  redirectUrl    String? // URL to redirect users after submission (optional)
+/// User profiles containing authentication and basic user information
+model profiles {
+  id           String  @id @db.Uuid // UUID from auth provider
+  email        String  @db.VarChar(256) // User's email address
+  display_name String? @db.VarChar(256) // User's chosen display name
+
+  forms forms[] // One-to-many: A user can create multiple forms
 }
 
-model response {
-  id        String   @id @default(cuid())
-  data      Json // Submitted form responses as JSON
-  createdAt DateTime @default(now()) // Timestamp of submission
-  forms     forms?   @relation(fields: [formsId], references: [id])
-  formsId   String?
+model forms {
+  id             String    @id @default(cuid()) // Unique form identifier
+  title          String // Form title
+  description    String? // Form description
+  fields         Json // Dynamic form fields stored as JSON
+  createdAt      DateTime  @default(now()) // Form creation timestamp
+  expiresAt      DateTime? // Expiration date for the form, null for unlimited
+  maxSubmissions Int? // Maximum number of submissions allowed, null for unlimited
+  redirectUrl    String? // URL to redirect after form submission, null for default behavior
+
+  profiles profiles @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  userId   String   @db.Uuid // References profiles.id
+
+  responses responses[] // One-to-many: A form can have multiple responses
+  template  templates? // One-to-one: A form can have at most one template
+}
+
+model responses {
+  id        String   @id @default(cuid()) // Unique response identifier
+  data      Json // Form submission data stored as JSON ( matching the form fields structure )
+  createdAt DateTime @default(now()) // Response submission timestamp
+
+  forms   forms  @relation(fields: [formsId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  formsId String // References forms.id
 }
 
 model templates {
-  id           String   @id @default(cuid()) // Unique identifier for the template
-  slug         String   @unique // Slug for the template
-  title        String   // Display title for the template
-  description  String   // Short description of the template
-  fields       Json     // Form fields included in the template
-  createdBy    String   // Creator's name
-  createdAt    DateTime @default(now()) // Timestamp
-  thumbnailUrl String   // URL to an image preview of the template
+  id           String   @id @default(cuid()) // Unique template identifier
+  slug         String   @unique // URL-friendly unique identifier for template access
+  title        String // Template name
+  description  String // Template description
+  createdBy    String // Creator identifier (could be user ID or system)
+  createdAt    DateTime @default(now()) // Template creation timestamp
+  thumbnailUrl String // Preview image URL for template gallery
+
+  form   forms  @relation(fields: [formId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  formId String @unique // References forms.id - UNIQUE constraint ensures one-to-one
 }

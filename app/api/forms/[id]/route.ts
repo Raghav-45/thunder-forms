@@ -1,35 +1,75 @@
+import { createClient } from '@/utils/supabase/server'
+import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id
+    // Initialize Supabase client
+    const supabase = await createClient()
 
+    // Get the current session
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession()
+
+    // Handle session retrieval errors
+    if (sessionError) {
+      console.error('Session error:', sessionError)
+      return NextResponse.json(
+        { error: 'Authentication error' },
+        { status: 401 }
+      )
+    }
+
+    // Check if user is authenticated
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id } = await params
+
+    // Fetch form with user authorization check
     const form = await prisma.forms.findUnique({
-      where: { id },
+      where: {
+        id,
+        userId: session.user.id, // Ensure user can only access their own forms
+      },
     })
 
     if (!form) {
       return NextResponse.json({ error: 'Form not found' }, { status: 404 })
     }
 
-    if (form.expiresAt && new Date(form.expiresAt) < new Date()) {
-      return NextResponse.json(
-        {
-          error: 'Form has expired',
-        },
-        { status: 410 }
-      )
-    }
+    // // Check if the form has expired
+    // if (form.expiresAt && new Date(form.expiresAt) < new Date()) {
+    //   return NextResponse.json(
+    //     {
+    //       error: 'Form has expired',
+    //     },
+    //     { status: 410 }
+    //   )
+    // }
 
     return NextResponse.json(form)
   } catch (error) {
-    console.error('Get form error:', error)
-    return NextResponse.json({ error: 'Failed to fetch form' }, { status: 500 })
+    // Unknown errors
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development' && error instanceof Error
+            ? error.message
+            : undefined,
+      },
+      { status: 500 }
+    )
+  } finally {
+    // No need to disconnect when using shared Prisma instance
+    // The singleton handles connection management
   }
 }

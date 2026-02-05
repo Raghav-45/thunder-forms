@@ -1,69 +1,206 @@
-import * as React from 'react'
-import Link from 'next/link'
-import { buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { Announcement } from '@/components/Announcement'
-import { DemoReportAnIssue } from '@/components/report-an-issue'
-import Testimonials from '@/components/testimonials'
-import WhyUsSection from '@/components/why-us-section'
+import Dither from '@/components/background_Dither'
+import { BrowserMockup } from '@/components/SafariMockup'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { siteConfig } from '@/config/site'
 
-export default function Page() {
+export default function Home() {
   return (
-    <div className="container relative">
-      <div className="mx-auto grid grid-cols-12 gap-8 space-y-0 py-28 px-8">
-        <section className="space-y-4 col-span-6 mt-8">
-          <div className="space-y-2">
-            <Announcement />
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-yellow-400 to-pink-600 bg-clip-text text-transparent">
-              Thunder Forms
-            </h1>
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight">
-              Unleash the Power of Forms
-            </h2>
-          </div>
-          <p className="text-base text-gray-200 max-w-2xl mt-4">
-            Thunder Forms is a next-gen form builder that combines speed,
-            flexibility, and powerful customization for all your data collection
-            needs. From surveys to custom workflows, create, share, and analyze
-            with ease.
-          </p>
-          <div className="flex w-full space-x-4 pt-2">
-            <Link
-              href="/dashboard/builder/new-form"
-              className={cn(buttonVariants())}
-            >
-              Get started
-            </Link>
-            <Link
-              href="/pricing"
-              className={cn(buttonVariants({ variant: 'outline' }))}
-            >
-              How it works
-            </Link>
-          </div>
-        </section>
-        <section className="col-span-5 col-start-8">
-          <DemoReportAnIssue />
-        </section>
+    <div className="flex items-center justify-center relative">
+      <div className="absolute top-0 left-0 w-full h-full">
+        <div
+          style={{
+            width: '100%',
+            height: '60%',
+            position: 'relative',
+            opacity: 0.35,
+          }}
+        >
+          <Dither
+            waveColor={[0.5, 0.5, 0.5]}
+            disableAnimation={false}
+            enableMouseInteraction={true}
+            mouseRadius={0}
+            colorNum={4}
+            waveAmplitude={0.3}
+            waveFrequency={3}
+            waveSpeed={0.05}
+          />
+          <div className="absolute bottom-0 h-1/3 w-full bg-linear-to-b from-transparent to-background" />
+        </div>
       </div>
+      <section>
+        {/* TODO: Add a background image and make it perfect, now im adding 3 elements everytime */}
+        <div className="relative container py-32 pt-46">
+          <header className="mx-auto max-w-3xl text-center flex flex-col">
+            <div className="relative">
+              <h1 
+              className="font-anton text-5xl font-normal tracking-tight text-foreground md:text-7xl"
+              style={{
+                textShadow: '0 0 40px rgba(0, 0, 0, 0.8), 0 0 80px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)',
+                // WebkitTextStroke: '1px rgba(0, 0, 0, 0.3)',
+              }}
+            >
+              Thunder Forms <br /> Unleash the Power of Forms
+            </h1>
+            </div>
 
-      <WhyUsSection />
-      <Testimonials />
+            <div>
+              <p
+                className="my-7 max-w-3xl tracking-tight text-muted-foreground md:text-xl z-20 text-shadow-[0px_0px_9px_rgb(0_0_0_/_1)]"
+              >
+                Thunder Forms is a next-gen form builder that combines speed,
+                flexibility, and powerful customization for all your data
+                collection needs.
+              </p>
+            </div>
+          </header>
+          <Badge
+            variant="outline"
+            className="mx-auto mt-3 flex w-fit cursor-pointer items-center justify-center rounded-full border py-1 pr-3 pl-2 font-normal transition-all ease-in-out hover:gap-3 shadow-[0_0_50px_rgba(32,32,32,1)] bg-black/60"
+          >
+            <Avatar className="relative -mr-5 overflow-hidden rounded-full border md:size-10">
+              <AvatarImage
+                src="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/avatar-2.webp"
+                alt=""
+              />
+              <AvatarFallback>AB</AvatarFallback>
+            </Avatar>
+            <Avatar className="relative -mr-5 overflow-hidden rounded-full border md:size-10">
+              <AvatarImage
+                src="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/avatar-5.webp"
+                alt=""
+              />
+              <AvatarFallback>AB</AvatarFallback>
+            </Avatar>
+            <Avatar className="relative -mr-5 overflow-hidden rounded-full border md:size-10">
+              <AvatarImage
+                src="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/avatar-6.webp"
+                alt=""
+              />
+              <AvatarFallback>AB</AvatarFallback>
+            </Avatar>
+            <p className="ml-6 tracking-tight capitalize md:text-lg">
+              {' '}
+              Trusted by <span className="font-bold text-foreground">
+                10k+
+              </span>{' '}
+              users.
+            </p>
+          </Badge>
 
-      {/* <section className="pt-40">
-        <div className="flex flex-col gap-y-2">
-          <div className="flex flex-row items-center">
-            <h1 className="text-4xl">As simple as</h1>
-            <span className="translate-y-1 mx-3 h-full cursor-default content-center rounded-lg border border-gray-200 bg-gray-100 px-1.5 py-1 text-sm font-semibold text-gray-800 transition-transform hover:translate-y-1.5 dark:border-white/50 dark:bg-black dark:text-gray-200">
-              DRAG
-            </span>
-            <h1 className="text-4xl">and</h1>
-            <span className="translate-y-1 mx-3 h-full cursor-default content-center rounded-lg border border-gray-200 bg-gray-100 px-1.5 py-1 text-sm font-semibold text-gray-800 transition-transform hover:translate-y-1.5 dark:border-white/50 dark:bg-black dark:text-gray-200">
-              DROP
-            </span>
+          <div className="relative mt-12 flex h-full w-full flex-col items-center justify-center">
+            <BrowserMockup
+              className="w-full"
+              url={siteConfig.url.replace('https://', '')}
+              DahboardUrlDesktop="https://ui.shadcn.com/r/styles/new-york-v4/dashboard-01-dark.png"
+              DahboardUrlMobile="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/dashboard/dashboard-mobile-1.png"
+            />
+            <div className="absolute bottom-0 h-2/3 w-full bg-linear-to-b from-transparent to-background" />
           </div>
         </div>
-      </section> */}
+      </section>
     </div>
   )
 }
+
+// OLD SIMPLER VERSION FOR REFERENCE
+
+// import Dither from '@/components/background_Dither'
+// import { BrowserMockup } from '@/components/SafariMockup'
+// import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+// import { Badge } from '@/components/ui/badge'
+// import { siteConfig } from '@/config/site'
+
+// export default function Home() {
+//   return (
+//     <div className="flex items-center justify-center relative">
+//       <div className="absolute top-0 left-0 w-full h-full">
+//         <div
+//           style={{
+//             width: '100%',
+//             height: '60%',
+//             position: 'relative',
+//             opacity: 0.35,
+//           }}
+//         >
+//           <Dither
+//             waveColor={[0.5, 0.5, 0.5]}
+//             disableAnimation={false}
+//             enableMouseInteraction={true}
+//             mouseRadius={0}
+//             colorNum={4}
+//             waveAmplitude={0.3}
+//             waveFrequency={3}
+//             waveSpeed={0.05}
+//           />
+//         </div>
+//       </div>
+//       <section>
+//         <div className="relative container py-32">
+//           <header className="mx-auto max-w-3xl text-center">
+//             <h1
+//               className="font-anton text-5xl font-normal tracking-tight text-foreground md:text-7xl opacity-0"
+//               style={{
+//                 // textShadow: '0 0 10px 50px rgba(235,179,8,1)',
+//                 textShadow:
+//                   '0px 0px 150px black, 0px 0px 150px black, 0px 0px 150px black, 0px 0px 150px black, 0px 0px 150px black, 0px 0px 150px black, 0px 0px 150px black',
+//               }}
+//             >
+//               Thunder Forms <br /> Unleash the Power of Forms
+//             </h1>
+//             <p className="my-7 max-w-3xl tracking-tight text-muted-foreground md:text-xl">
+//               Thunder Forms is a next-gen form builder that combines speed,
+//               flexibility, and powerful customization for all your data
+//               collection needs.
+//             </p>
+//           </header>
+
+//           <Badge
+//             variant="outline"
+//             className="mx-auto mt-10 flex w-fit cursor-pointer items-center justify-center rounded-full border py-1 pr-3 pl-2 font-normal transition-all ease-in-out hover:gap-3"
+//           >
+//             <Avatar className="relative -mr-5 overflow-hidden rounded-full border md:size-10">
+//               <AvatarImage
+//                 src="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/avatar-2.webp"
+//                 alt=""
+//               />
+//               <AvatarFallback>AB</AvatarFallback>
+//             </Avatar>
+//             <Avatar className="relative -mr-5 overflow-hidden rounded-full border md:size-10">
+//               <AvatarImage
+//                 src="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/avatar-5.webp"
+//                 alt=""
+//               />
+//               <AvatarFallback>AB</AvatarFallback>
+//             </Avatar>
+//             <Avatar className="relative -mr-5 overflow-hidden rounded-full border md:size-10">
+//               <AvatarImage
+//                 src="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/avatar-6.webp"
+//                 alt=""
+//               />
+//               <AvatarFallback>AB</AvatarFallback>
+//             </Avatar>
+//             <p className="ml-6 tracking-tight capitalize md:text-lg">
+//               {' '}
+//               Trusted by <span className="font-bold text-foreground">
+//                 10k+
+//               </span>{' '}
+//               users.
+//             </p>
+//           </Badge>
+
+//           <div className="relative mt-12 flex h-full w-full flex-col items-center justify-center">
+//             <BrowserMockup
+//               className="w-full"
+//               url={siteConfig.url.replace('https://', '')}
+//               DahboardUrlDesktop="https://ui.shadcn.com/r/styles/new-york-v4/dashboard-01-dark.png"
+//               DahboardUrlMobile="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/dashboard/dashboard-mobile-1.png"
+//             />
+//             <div className="absolute bottom-0 h-2/3 w-full bg-linear-to-b from-transparent to-background" />
+//           </div>
+//         </div>
+//       </section>
+//     </div>
+//   )
+// }

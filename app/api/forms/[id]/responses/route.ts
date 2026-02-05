@@ -1,14 +1,36 @@
+import { createClient } from '@/utils/supabase/server'
+import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id
+    // Initialize Supabase client
+    const supabase = await createClient()
+
+    // Get the current session
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession()
+
+    // Handle session retrieval errors
+    if (sessionError) {
+      console.error('Session error:', sessionError)
+      return NextResponse.json(
+        { error: 'Authentication error' },
+        { status: 401 }
+      )
+    }
+
+    // Check if user is authenticated
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id } = await params
 
     // Fetch form with its responses
     const formWithResponses = await prisma.forms.findUnique({
@@ -26,6 +48,10 @@ export async function GET(
       return NextResponse.json({ error: 'Form not found' }, { status: 404 })
     }
 
+    if (formWithResponses.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    }
+
     return NextResponse.json({
       formId: formWithResponses.id,
       title: formWithResponses.title,
@@ -33,66 +59,27 @@ export async function GET(
     })
   } catch (error) {
     console.error('Get form responses error:', error)
+
+    // Handle different types of errors
+    if (error instanceof Error) {
+      // Prisma or other known errors
+      return NextResponse.json(
+        {
+          error: 'Database error occurred',
+          message:
+            process.env.NODE_ENV === 'development' ? error.message : undefined,
+        },
+        { status: 500 }
+      )
+    }
+
+    // Unknown errors
     return NextResponse.json(
-      { error: 'Failed to fetch form responses' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
+  } finally {
+    // No need to disconnect when using shared Prisma instance
+    // The singleton handles connection management
   }
 }
-
-// Optional: Add pagination support
-// export async function GET_WITH_PAGINATION(
-//   request: Request,
-//   { params }: { params: { id: string } }
-// ) {
-//   try {
-//     const id = params.id
-//     const { searchParams } = new URL(request.url)
-
-//     // Pagination parameters
-//     const page = parseInt(searchParams.get('page') ?? '1')
-//     const limit = parseInt(searchParams.get('limit') ?? '10')
-//     const skip = (page - 1) * limit
-
-//     // Get total count of responses
-//     const totalResponses = await prisma.response.count({
-//       where: { formsId: id },
-//     })
-
-//     // Fetch paginated responses
-//     const formWithResponses = await prisma.forms.findUnique({
-//       where: { id },
-//       include: {
-//         responses: {
-//           orderBy: {
-//             createdAt: 'desc',
-//           },
-//           skip,
-//           take: limit,
-//         },
-//       },
-//     })
-
-//     if (!formWithResponses) {
-//       return NextResponse.json({ error: 'Form not found' }, { status: 404 })
-//     }
-
-//     return NextResponse.json({
-//       formId: formWithResponses.id,
-//       title: formWithResponses.title,
-//       responses: formWithResponses.responses,
-//       pagination: {
-//         total: totalResponses,
-//         pages: Math.ceil(totalResponses / limit),
-//         currentPage: page,
-//         pageSize: limit,
-//       },
-//     })
-//   } catch (error) {
-//     console.error('Get form responses error:', error)
-//     return NextResponse.json(
-//       { error: 'Failed to fetch form responses' },
-//       { status: 500 }
-//     )
-//   }
-// }

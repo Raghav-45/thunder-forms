@@ -1,82 +1,52 @@
+import { GoogleGenAI } from '@google/genai'
 import { NextResponse } from 'next/server'
-import { fieldTypes } from '@/constants'
+import { SYSTEM_PROMPT } from './prompt'
 
-const availableFieldNames = fieldTypes
-  .filter((field) => field.isAvaliable === true)
-  .map((field) => field.name)
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const aiPrompt = searchParams.get('prompt') || 'generate a feedback form'
+  const aiPrompt = searchParams.get('prompt')
 
-  const templatePrompt = `User Input: ${aiPrompt}
+  if (!aiPrompt) {
+    return NextResponse.json(
+      { error: 'Prompt parameter is required' },
+      { status: 400 }
+    )
+  }
 
-    Instructions = Generate a JSON object for a single form template. The form should have the following structure:
+  const startTime = Date.now()
 
-{
-  [
-    {
-      "variant": "Input",
-      "type": "text",
-      "required": true,
-      "label": "Your Name",
-      "placeholder": "e.g., John Doe"
-      "description": "Provide your name for identification.",
-    },
-    {
-      "variant": "Input",
-      "type": "email",
-      "required": true,
-      "label": "Your Email",
-      "placeholder": "Enter your email"
-      "description": "The user's email address for follow-up.",
-    },
-    {
-      "variant": "Textarea",
-      "type": "textarea",
-      "required": false,
-      "label": "Feedback",
-      "placeholder": "Write your feedback here"
-      "description": "Detailed feedback from the user.",
-    }
-  ]
-}
-
-make sure to Strictly follow these Properties:
-
-title: The name of the form.
-description: A short description of the form's purpose.
-fields: An array containing field definitions with the following:
-{
-  type: Field type (text, email, number are supported currently).
-  label: Field label visible to users.
-  variant: Indicates input type ({${availableFieldNames.join(
-    ', '
-  )}} are only supported currently).
-  required: Boolean (true or false) for mandatory fields.
-  description: A short explanation of the field.
-  placeholder: Placeholder text inside the field.
-}
-
-remember just give JSON, no extra TEXTS`
-
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: aiPrompt,
+    config: {
+      systemInstruction: SYSTEM_PROMPT,
+      thinkingConfig: {
+        thinkingBudget: 0, // Disables thinking
       },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: templatePrompt }],
-          },
-        ],
-      }),
-    }
-  )
+      temperature: 0.1,
+    },
+  })
 
-  const data = await response.json()
-  return NextResponse.json(data)
+  const endTime = Date.now()
+  const responseTimeMs = endTime - startTime
+
+  const generatedText =
+    response.candidates?.[0]?.content?.parts?.[0]?.text || ''
+
+  const cleanedJson = generatedText
+    .replace(/```json\n?/g, '')
+    .replace(/```\n?/g, '')
+    .trim()
+
+  const parsedJson = JSON.parse(cleanedJson)
+
+  return NextResponse.json({
+    ...parsedJson,
+    meta: {
+      responseTime: `${responseTimeMs}ms`,
+      responseTimeSeconds: `${(responseTimeMs / 1000).toFixed(2)}s`,
+    },
+  })
 }

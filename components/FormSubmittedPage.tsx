@@ -1,14 +1,13 @@
 'use client'
 
-import { FC } from 'react'
-import { motion } from 'framer-motion'
-import { Card, CardContent } from '@/components/ui/card'
+import { Icons } from '@/components/Icons'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { FileIcon, HomeIcon } from 'lucide-react'
+import { motion } from 'motion/react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
-import { Icons } from '@/components/Icons'
-import { FileIcon, HomeIcon } from 'lucide-react'
+import { FC, useEffect, useState } from 'react'
 
 interface CheckmarkProps {
   size?: number
@@ -17,7 +16,8 @@ interface CheckmarkProps {
   className?: string
 }
 
-const draw = {
+// Define variants for the Checkmark SVG elements
+const checkmarkVariants = {
   hidden: { pathLength: 0, opacity: 0 },
   visible: (i: number) => ({
     pathLength: 1,
@@ -25,10 +25,9 @@ const draw = {
     transition: {
       pathLength: {
         delay: i * 0.2,
-        type: 'spring',
+        type: 'spring' as const,
         duration: 1.5,
         bounce: 0.2,
-        ease: 'easeInOut',
       },
       opacity: { delay: i * 0.2, duration: 0.2 },
     },
@@ -58,7 +57,7 @@ function Checkmark({
         cy="50"
         r="40"
         stroke={color}
-        variants={draw}
+        variants={checkmarkVariants}
         custom={0}
         style={{
           strokeWidth,
@@ -69,7 +68,7 @@ function Checkmark({
       <motion.path
         d="M30 50L45 65L70 35"
         stroke={color}
-        variants={draw}
+        variants={checkmarkVariants}
         custom={1}
         style={{
           strokeWidth,
@@ -82,21 +81,32 @@ function Checkmark({
   )
 }
 
-interface FormSubmittedPageProps {
-  redirectUrl?: string | null
+const DEFAULT_REDIRECT_URL =
+  (process.env.NEXT_PUBLIC_ALWAYS_REDIRECT_TO_DEFAULT_URL === 'true' &&
+    process.env.NEXT_PUBLIC_DEFAULT_REDIRECT_URL) ||
+  null
+
+interface FormSubmittedContentProps {
+  redirectUrl?: string
 }
 
-const FormSubmittedPage: FC<FormSubmittedPageProps> = ({ redirectUrl }) => {
+export const FormSubmittedPage: FC<FormSubmittedContentProps> = ({
+  redirectUrl,
+}) => {
   const pathname = usePathname()
   const router = useRouter()
   const formPath = pathname.replace('/submitted', '')
   const [countdown, setCountdown] = useState(4)
 
+  // Get redirectUrl from search params or use default
+  const finalRedirectUrlFromProps = redirectUrl || DEFAULT_REDIRECT_URL
+
   // Determine the final redirect URL with validation
-  const finalRedirectUrl = redirectUrl
-    ? redirectUrl.startsWith('http://') || redirectUrl.startsWith('https://')
-      ? redirectUrl
-      : `https://${redirectUrl}`
+  const finalRedirectUrl = finalRedirectUrlFromProps
+    ? finalRedirectUrlFromProps.startsWith('http://') ||
+      finalRedirectUrlFromProps.startsWith('https://')
+      ? finalRedirectUrlFromProps
+      : `https://${finalRedirectUrlFromProps}`
     : null
 
   useEffect(() => {
@@ -114,7 +124,7 @@ const FormSubmittedPage: FC<FormSubmittedPageProps> = ({ redirectUrl }) => {
     <div className="flex flex-col min-h-svh bg-neutral-950">
       <div className="flex flex-col flex-1 p-6 md:p-10">
         <div className="flex items-center justify-center text-2xl font-medium text-white mb-8">
-          <Icons.ThunderFormsLogo className="h-8 w-8 mr-2" />
+          <Icons.Logo className="h-8 w-8 mr-2" />
           Thunder Forms
         </div>
 
@@ -248,5 +258,3 @@ const FormSubmittedPage: FC<FormSubmittedPageProps> = ({ redirectUrl }) => {
     </div>
   )
 }
-
-export default FormSubmittedPage
