@@ -1,6 +1,6 @@
 export const siteConfig = {
   name: 'Thunder Forms',
-  url: 'https://thunder-forms-reborn.vercel.app',
+  url: 'https://thunderforms.in/',
   ogImage: "/og.png",
   description:
     'With Thunder Forms, you’re ready to create, customize, and capture insights in a snap.',
