@@ -73,6 +73,10 @@ export async function POST(request: Request) {
         {
           success: false,
           error: 'Validation error',
+          issues: error.issues.map((issue) => ({
+            field: issue.path.join('.'),
+            message: issue.message,
+          })),
         },
         { status: 422 }
       )

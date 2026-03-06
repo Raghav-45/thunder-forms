@@ -317,7 +317,13 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     onError: (error) => {
       if (error instanceof AxiosError) {
         if (error.response?.status === 422) {
-          toast.error('Validation error')
+          const issues = error.response.data?.issues as { field: string; message: string }[] | undefined
+          toast.error('Validation error', {
+            description: issues?.length
+              ? issues.map((issue) => `• ${issue.field}: ${issue.message}`).join('\n')
+              : 'Please check your form fields and try again.',
+            style: { whiteSpace: 'pre-line' },
+          })
           return
         }
         toast.error('Failed to create form')
@@ -349,7 +355,13 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     onError: (error) => {
       if (error instanceof AxiosError) {
         if (error.response?.status === 422) {
-          toast.error('Validation error')
+          const issues = error.response.data?.issues as { field: string; message: string }[] | undefined
+          toast.error('Validation error', {
+            description: issues?.length
+              ? issues.map((issue) => `• ${issue.field}: ${issue.message}`).join('\n')
+              : 'Please check your form fields and try again.',
+            style: { whiteSpace: 'pre-line' },
+          })
           return
         }
         toast.error('Failed to update form')
