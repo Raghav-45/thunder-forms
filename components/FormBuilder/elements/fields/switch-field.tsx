@@ -31,12 +31,7 @@ import { Textarea } from '@/components/ui/textarea'
 // ─── Config ──────────────────────────────────────────────
 
 export interface SwitchConfig extends BaseFieldConfig {
-  type: 'switch'
   uniqueIdentifier: 'switch-field'
-  label: string
-  description?: string
-  required?: boolean
-  disabled?: boolean
   defaultValue?: boolean
   checkedLabel?: string
   uncheckedLabel?: string
@@ -209,11 +204,10 @@ export class SwitchFieldDefinition extends FormFieldDefinition<SwitchConfig> {
   defaultConfig(): SwitchConfig {
     return {
       id: `switch_${Date.now()}`,
-      type: 'switch',
       uniqueIdentifier: 'switch-field',
-      label: 'Your Message',
-      placeholder: 'Type your message here.',
-      description: 'Your message will be copied to the support team.',
+      label: 'Toggle option',
+      placeholder: '',
+      description: '',
       required: false,
       disabled: false,
       defaultValue: false,

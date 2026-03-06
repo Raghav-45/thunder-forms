@@ -47,12 +47,7 @@ import { Textarea } from '@/components/ui/textarea'
 // ─── Config ──────────────────────────────────────────────
 
 export interface DatePickerConfig extends BaseFieldConfig {
-  type: 'date-picker'
   uniqueIdentifier: 'date-picker'
-  label: string
-  description?: string
-  required?: boolean
-  disabled?: boolean
   /** Date format string for display (date-fns format) */
   dateFormat?: string
   /** Minimum selectable date (ISO string) */
@@ -399,7 +394,6 @@ export class DatePickerFieldDefinition extends FormFieldDefinition<DatePickerCon
   defaultConfig(): DatePickerConfig {
     return {
       id: `datepicker_${Date.now()}`,
-      type: 'date-picker',
       uniqueIdentifier: 'date-picker',
       label: 'Select Date',
       placeholder: 'Pick a date',

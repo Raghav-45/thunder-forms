@@ -55,12 +55,7 @@ export interface MultiSelectConfig extends BaseFieldConfig {
 
 // --- Types from switch/types.ts ---
 export interface SwitchConfig extends BaseFieldConfig {
-  type: 'switch'
   uniqueIdentifier: 'switch-field'
-  label: string
-  description?: string
-  required?: boolean
-  disabled?: boolean
   defaultValue?: boolean
   checkedLabel?: string
   uncheckedLabel?: string
@@ -141,11 +136,10 @@ export interface TextInputConfig extends BaseFieldConfig {
   },
   {
     "id": "switch_1750680547128",
-    "type": "switch",
     "uniqueIdentifier": "switch-field",
-    "label": "Your Message",
-    "placeholder": "Type your message here.",
-    "description": "Your message will be copied to the support team.",
+    "label": "Toggle option",
+    "placeholder": "",
+    "description": "",
     "required": false,
     "disabled": false,
     "defaultValue": false,
