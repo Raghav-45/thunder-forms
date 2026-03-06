@@ -11,30 +11,6 @@ type FormStore = {
     expiresAt?: Date
     maxSubmissions?: number
     redirectUrl?: string
-    // Access & Control
-    password?: string
-    isSpamProtectionEnabled?: boolean
-    isIpLimitEnabled?: boolean
-    // Integrations
-    webhooks?: string[]
-    // Notifications
-    emailNotifications?: {
-      enabled: boolean
-      notifyRespondent: boolean
-    }
-    // Branding
-    branding?: {
-      showPoweredBy: boolean
-      logoUrl?: string
-      primaryColor?: string
-    }
-    thunderMode?: boolean
-    // SEO
-    seo?: {
-      ogTitle?: string
-      ogDescription?: string
-      ogImage?: string
-    }
   }
   // Actions
   setFields: (fields: FieldConfig[]) => void
@@ -48,25 +24,6 @@ const initialFormSettings = {
   expiresAt: undefined,
   maxSubmissions: undefined,
   redirectUrl: undefined,
-  password: undefined,
-  isSpamProtectionEnabled: false,
-  isIpLimitEnabled: false,
-  webhooks: [],
-  emailNotifications: {
-    enabled: false,
-    notifyRespondent: false,
-  },
-  branding: {
-    showPoweredBy: true,
-    logoUrl: undefined,
-    primaryColor: undefined,
-  },
-  thunderMode: false,
-  seo: {
-    ogTitle: undefined,
-    ogDescription: undefined,
-    ogImage: undefined,
-  },
 }
 
 export const useFormStore = create<FormStore>()((set) => ({
