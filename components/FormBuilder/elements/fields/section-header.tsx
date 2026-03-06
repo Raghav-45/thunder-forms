@@ -9,6 +9,7 @@ import {
 import { Label } from '@/components/ui/label'
 import React, { useState } from 'react'
 import { z } from 'zod'
+import AccordionWithSwitch from '@/components/accordion-with-switch'
 import {
   Accordion,
   AccordionContent,
@@ -114,8 +115,10 @@ const SectionHeaderEditorComponent: React.FC<
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="field-description">Description</Label>
+                <AccordionWithSwitch
+                  text="Description"
+                  defaultOpen={!!config.description}
+                >
                   <Textarea
                     id="field-description"
                     value={config.description || ''}
@@ -125,7 +128,7 @@ const SectionHeaderEditorComponent: React.FC<
                     placeholder="Enter description text (optional)"
                     rows={3}
                   />
-                </div>
+                </AccordionWithSwitch>
 
                 <div className="space-y-2">
                   <Label htmlFor="heading-level">Heading Size</Label>

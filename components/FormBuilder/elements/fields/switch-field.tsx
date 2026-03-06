@@ -196,7 +196,7 @@ const SwitchEditorComponent: React.FC<
                 </div>
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="validaton">
+            <AccordionItem value="validation">
               <AccordionTrigger className="text-base">
                 Validation Properties
               </AccordionTrigger>

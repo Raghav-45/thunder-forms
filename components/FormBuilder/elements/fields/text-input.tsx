@@ -201,7 +201,7 @@ const TextInputEditorComponent: React.FC<
                 </AccordionWithSwitch>
               </AccordionContent>
             </AccordionItem>
-            <AccordionItem value="validaton">
+            <AccordionItem value="validation">
               <AccordionTrigger className="text-base">
                 Validation Properties
               </AccordionTrigger>
