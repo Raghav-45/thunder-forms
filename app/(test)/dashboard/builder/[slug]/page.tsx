@@ -16,6 +16,9 @@ import {
   SectionHeaderEditor,
   CheckboxEditor,
   NumberInputEditor,
+  SingleSelectEditor,
+  RadioGroupEditor,
+  SliderEditor,
   TextInputConfig,
   MultiSelectConfig,
   TextAreaConfig,
@@ -24,6 +27,9 @@ import {
   SectionHeaderConfig,
   CheckboxConfig,
   NumberInputConfig,
+  SingleSelectConfig,
+  RadioGroupConfig,
+  SliderConfig,
 } from '@/components/FormBuilder/elements'
 import { useFormStore } from '@/components/FormBuilder/store'
 import {
@@ -295,6 +301,30 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           <NumberInputEditor
             {...baseProps}
             field={field as NumberInputConfig}
+            onUpdate={(f) => handleUpdateField(f)}
+          />
+        )
+      case 'single-select':
+        return (
+          <SingleSelectEditor
+            {...baseProps}
+            field={field as SingleSelectConfig}
+            onUpdate={(f) => handleUpdateField(f)}
+          />
+        )
+      case 'radio-group':
+        return (
+          <RadioGroupEditor
+            {...baseProps}
+            field={field as RadioGroupConfig}
+            onUpdate={(f) => handleUpdateField(f)}
+          />
+        )
+      case 'slider':
+        return (
+          <SliderEditor
+            {...baseProps}
+            field={field as SliderConfig}
             onUpdate={(f) => handleUpdateField(f)}
           />
         )
@@ -671,17 +701,13 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
 const comingSoonElements = [
   'Combobox',
-  'Date Picker',
   'Datetime Picker',
   'File Input',
   'Input OTP',
   'Location Input',
-  'Multi Select',
   'Password',
   'Phone',
-  'Select',
   'Signature Input',
-  'Slider',
   'Smart Datetime Input',
   'Tags Input',
 ]

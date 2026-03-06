@@ -34,6 +34,9 @@ import { DatePickerFieldDefinition } from './fields/date-picker'
 import { SectionHeaderFieldDefinition } from './fields/section-header'
 import { CheckboxFieldDefinition } from './fields/checkbox'
 import { NumberInputFieldDefinition } from './fields/number-input'
+import { SingleSelectFieldDefinition } from './fields/single-select'
+import { RadioGroupFieldDefinition } from './fields/radio-group'
+import { SliderFieldDefinition } from './fields/slider'
 
 // ─── Re-export Types (backward compat) ───────────────────
 export type { TextInputConfig } from './fields/text-input'
@@ -44,6 +47,9 @@ export type { DatePickerConfig } from './fields/date-picker'
 export type { SectionHeaderConfig } from './fields/section-header'
 export type { CheckboxConfig } from './fields/checkbox'
 export type { NumberInputConfig } from './fields/number-input'
+export type { SingleSelectConfig, SingleSelectOption } from './fields/single-select'
+export type { RadioGroupConfig, RadioOption } from './fields/radio-group'
+export type { SliderConfig } from './fields/slider'
 
 // ─── Singleton Instances ─────────────────────────────────
 // Used for both backward-compat re-exports AND FIELD_REGISTRY
@@ -55,6 +61,9 @@ const _datePicker = new DatePickerFieldDefinition()
 const _sectionHeader = new SectionHeaderFieldDefinition()
 const _checkbox = new CheckboxFieldDefinition()
 const _numberInput = new NumberInputFieldDefinition()
+const _singleSelect = new SingleSelectFieldDefinition()
+const _radioGroup = new RadioGroupFieldDefinition()
+const _slider = new SliderFieldDefinition()
 
 // ─── Re-export Components & Editors (backward compat) ────
 export const TextInput = _textInput.component
@@ -73,6 +82,12 @@ export const CheckboxField = _checkbox.component
 export const CheckboxEditor = _checkbox.editor
 export const NumberInput = _numberInput.component
 export const NumberInputEditor = _numberInput.editor
+export const SingleSelect = _singleSelect.component
+export const SingleSelectEditor = _singleSelect.editor
+export const RadioGroupField = _radioGroup.component
+export const RadioGroupEditor = _radioGroup.editor
+export const SliderField = _slider.component
+export const SliderEditor = _slider.editor
 
 // ─── Field Definitions Array ─────────────────────────────
 const FIELD_DEFINITIONS = [
@@ -84,6 +99,9 @@ const FIELD_DEFINITIONS = [
   _sectionHeader,
   _checkbox,
   _numberInput,
+  _singleSelect,
+  _radioGroup,
+  _slider,
 ] as const
 
 /**
