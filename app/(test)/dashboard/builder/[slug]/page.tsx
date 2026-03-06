@@ -19,6 +19,7 @@ import {
   SingleSelectEditor,
   RadioGroupEditor,
   SliderEditor,
+  DateTimePickerEditor,
   TextInputConfig,
   MultiSelectConfig,
   TextAreaConfig,
@@ -30,6 +31,7 @@ import {
   SingleSelectConfig,
   RadioGroupConfig,
   SliderConfig,
+  DateTimePickerConfig,
 } from '@/components/FormBuilder/elements'
 import { useFormStore } from '@/components/FormBuilder/store'
 import {
@@ -325,6 +327,14 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           <SliderEditor
             {...baseProps}
             field={field as SliderConfig}
+            onUpdate={(f) => handleUpdateField(f)}
+          />
+        )
+      case 'datetime-picker':
+        return (
+          <DateTimePickerEditor
+            {...baseProps}
+            field={field as DateTimePickerConfig}
             onUpdate={(f) => handleUpdateField(f)}
           />
         )
@@ -701,7 +711,6 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
 const comingSoonElements = [
   'Combobox',
-  'Datetime Picker',
   'File Input',
   'Input OTP',
   'Location Input',

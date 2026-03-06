@@ -37,6 +37,7 @@ import { NumberInputFieldDefinition } from './fields/number-input'
 import { SingleSelectFieldDefinition } from './fields/single-select'
 import { RadioGroupFieldDefinition } from './fields/radio-group'
 import { SliderFieldDefinition } from './fields/slider'
+import { DateTimePickerFieldDefinition } from './fields/datetime-picker'
 
 // ─── Re-export Types (backward compat) ───────────────────
 export type { TextInputConfig } from './fields/text-input'
@@ -50,6 +51,7 @@ export type { NumberInputConfig } from './fields/number-input'
 export type { SingleSelectConfig, SingleSelectOption } from './fields/single-select'
 export type { RadioGroupConfig, RadioOption } from './fields/radio-group'
 export type { SliderConfig } from './fields/slider'
+export type { DateTimePickerConfig } from './fields/datetime-picker'
 
 // ─── Singleton Instances ─────────────────────────────────
 // Used for both backward-compat re-exports AND FIELD_REGISTRY
@@ -64,6 +66,7 @@ const _numberInput = new NumberInputFieldDefinition()
 const _singleSelect = new SingleSelectFieldDefinition()
 const _radioGroup = new RadioGroupFieldDefinition()
 const _slider = new SliderFieldDefinition()
+const _dateTimePicker = new DateTimePickerFieldDefinition()
 
 // ─── Re-export Components & Editors (backward compat) ────
 export const TextInput = _textInput.component
@@ -88,6 +91,8 @@ export const RadioGroupField = _radioGroup.component
 export const RadioGroupEditor = _radioGroup.editor
 export const SliderField = _slider.component
 export const SliderEditor = _slider.editor
+export const DateTimePicker = _dateTimePicker.component
+export const DateTimePickerEditor = _dateTimePicker.editor
 
 // ─── Field Definitions Array ─────────────────────────────
 const FIELD_DEFINITIONS = [
@@ -102,6 +107,7 @@ const FIELD_DEFINITIONS = [
   _singleSelect,
   _radioGroup,
   _slider,
+  _dateTimePicker,
 ] as const
 
 /**
