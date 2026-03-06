@@ -83,6 +83,7 @@ import {
 } from 'lucide-react'
 import { use, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { SettingsDialog } from '@/components/settings-dialog'
 
 interface FormBuilderProps {
   params: Promise<{ slug: string }>
@@ -527,59 +528,12 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
             />
           </div>
 
-          <div className="py-2">
-            <Separator />
-          </div>
 
-          <div className="items-center gap-1.5 grid w-full">
-            <Label htmlFor="expiresAt">Expiration Date</Label>
-            <DatePickerWithPresets
-              date={formSettings.expiresAt || null}
-              setDate={(e) =>
-                setFormSettings({
-                  ...formSettings,
-                  expiresAt: e || undefined,
-                })
-              }
-              className="bg-neutral-900!"
-            />
-          </div>
-
-          <div className="items-center gap-1.5 grid w-full">
-            <Label htmlFor="maxSubmission">Max Submission Limit</Label>
-            <Input
-              id="maxSubmission"
-              type="number"
-              placeholder="Enter max value (optional)"
-              value={formSettings.maxSubmissions}
-              onChange={(e) =>
-                setFormSettings({
-                  ...formSettings,
-                  maxSubmissions: parseInt(e.target.value),
-                })
-              }
-              className="bg-neutral-900!"
-            />
-          </div>
-
-          <div className="items-center gap-1.5 grid w-full">
-            <Label htmlFor="redirectUrl">Redirect URL</Label>
-            <Input
-              id="redirectUrl"
-              type="url"
-              placeholder="https://example.com (optional)"
-              value={formSettings.redirectUrl}
-              onChange={(e) =>
-                setFormSettings({
-                  ...formSettings,
-                  redirectUrl: e.target.value,
-                })
-              }
-              className="bg-neutral-900!"
-            />
-          </div>
 
           <div className="flex-grow"></div>
+
+
+          <SettingsDialog />
 
           <GenerateWithAiPrompt
             onGeneratedFields={(title, description, fields) => {

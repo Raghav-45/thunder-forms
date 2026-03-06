@@ -11,6 +11,30 @@ type FormStore = {
     expiresAt?: Date
     maxSubmissions?: number
     redirectUrl?: string
+    // Access & Control
+    password?: string
+    isSpamProtectionEnabled?: boolean
+    isIpLimitEnabled?: boolean
+    // Integrations
+    webhooks?: string[]
+    // Notifications
+    emailNotifications?: {
+      enabled: boolean
+      notifyRespondent: boolean
+    }
+    // Branding
+    branding?: {
+      showPoweredBy: boolean
+      logoUrl?: string
+      primaryColor?: string
+    }
+    thunderMode?: boolean
+    // SEO
+    seo?: {
+      ogTitle?: string
+      ogDescription?: string
+      ogImage?: string
+    }
   }
   // Actions
   setFields: (fields: FieldConfig[]) => void
@@ -24,6 +48,25 @@ const initialFormSettings = {
   expiresAt: undefined,
   maxSubmissions: undefined,
   redirectUrl: undefined,
+  password: undefined,
+  isSpamProtectionEnabled: false,
+  isIpLimitEnabled: false,
+  webhooks: [],
+  emailNotifications: {
+    enabled: false,
+    notifyRespondent: false,
+  },
+  branding: {
+    showPoweredBy: true,
+    logoUrl: undefined,
+    primaryColor: undefined,
+  },
+  thunderMode: false,
+  seo: {
+    ogTitle: undefined,
+    ogDescription: undefined,
+    ogImage: undefined,
+  },
 }
 
 export const useFormStore = create<FormStore>()((set) => ({
@@ -45,26 +88,3 @@ export const useFormStore = create<FormStore>()((set) => ({
       formSettings: initialFormSettings,
     })),
 }))
-
-// function FormBuilder() {
-//   const { fields, formSettings, setFields, setFormSettings } = useFormStore()
-//
-//   const handleAddField = (newField: FieldConfig) => {
-//     setFields([...fields, newField])
-//   }
-//
-//   const handleRemoveField = (fieldId: string) => {
-//     setFields(fields.filter(f => f.id !== fieldId))
-//   }
-//
-//   return (
-//     <div>
-//       <h1>{formSettings.title}</h1>
-//       {fields.map(field => (
-//         <div key={field.id}>
-//           {/* Render field */}
-//         </div>
-//       ))}
-//     </div>
-//   )
-// }
