@@ -295,46 +295,66 @@ const DatePickerEditorComponent: React.FC<
                   text="Minimum Date"
                   defaultOpen={!!config.minDate}
                 >
-                  <Input
-                    id="min-date"
-                    type="date"
-                    value={
-                      config.minDate
-                        ? format(new Date(config.minDate), 'yyyy-MM-dd')
-                        : ''
-                    }
-                    onChange={(e) =>
-                      handleInputChange(
-                        'minDate',
-                        e.target.value
-                          ? new Date(e.target.value).toISOString()
-                          : undefined,
-                      )
-                    }
-                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        id="min-date"
+                        variant="outline"
+                        className={cn(
+                          'w-full justify-start text-left font-normal',
+                          !config.minDate && 'text-muted-foreground',
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {config.minDate
+                          ? format(new Date(config.minDate), 'PPP')
+                          : 'Pick a date'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={config.minDate ? new Date(config.minDate) : undefined}
+                        onSelect={(date) =>
+                          handleInputChange('minDate', date ? date.toISOString() : undefined)
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </AccordionWithSwitch>
 
                 <AccordionWithSwitch
                   text="Maximum Date"
                   defaultOpen={!!config.maxDate}
                 >
-                  <Input
-                    id="max-date"
-                    type="date"
-                    value={
-                      config.maxDate
-                        ? format(new Date(config.maxDate), 'yyyy-MM-dd')
-                        : ''
-                    }
-                    onChange={(e) =>
-                      handleInputChange(
-                        'maxDate',
-                        e.target.value
-                          ? new Date(e.target.value).toISOString()
-                          : undefined,
-                      )
-                    }
-                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        id="max-date"
+                        variant="outline"
+                        className={cn(
+                          'w-full justify-start text-left font-normal',
+                          !config.maxDate && 'text-muted-foreground',
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {config.maxDate
+                          ? format(new Date(config.maxDate), 'PPP')
+                          : 'Pick a date'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={config.maxDate ? new Date(config.maxDate) : undefined}
+                        onSelect={(date) =>
+                          handleInputChange('maxDate', date ? date.toISOString() : undefined)
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </AccordionWithSwitch>
               </AccordionContent>
             </AccordionItem>
