@@ -56,7 +56,6 @@ export interface MultiSelectConfig extends BaseFieldConfig {
 // --- Types from switch/types.ts ---
 export interface SwitchConfig extends BaseFieldConfig {
   uniqueIdentifier: 'switch-field'
-  defaultValue?: boolean
   checkedLabel?: string
   uncheckedLabel?: string
 }
@@ -142,7 +141,6 @@ export interface TextInputConfig extends BaseFieldConfig {
     "description": "",
     "required": false,
     "disabled": false,
-    "defaultValue": false,
     "checkedLabel": "On",
     "uncheckedLabel": "Off"
   }

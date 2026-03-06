@@ -156,8 +156,8 @@ export default function FormPage({ params }: FormPageProps) {
       const initialFormData: Record<string, unknown> = {}
       form.data.fields.forEach((field: FieldConfig) => {
         if (field.uniqueIdentifier === 'switch-field') {
-          const switchField = field as { defaultValue?: boolean }
-          initialFormData[field.id] = switchField.defaultValue || false
+          // Start as undefined (unanswered) so required validation can detect no interaction
+          initialFormData[field.id] = undefined
         } else if (field.uniqueIdentifier === 'multi-select') {
           initialFormData[field.id] = []
         } else {

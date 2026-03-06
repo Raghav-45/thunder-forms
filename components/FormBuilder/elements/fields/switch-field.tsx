@@ -20,6 +20,13 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Sheet,
   SheetContent,
   SheetFooter,
@@ -32,9 +39,10 @@ import { Textarea } from '@/components/ui/textarea'
 
 export interface SwitchConfig extends BaseFieldConfig {
   uniqueIdentifier: 'switch-field'
-  defaultValue?: boolean
   checkedLabel?: string
   uncheckedLabel?: string
+  /** When required, optionally enforce a specific answer: true (must accept), false (must decline), or undefined (any answer) */
+  requiredValue?: boolean
 }
 
 // ─── Render Component ────────────────────────────────────
@@ -45,13 +53,18 @@ const SwitchFieldComponent: React.FC<FieldProps<SwitchConfig>> = ({
   onChange,
   error,
 }) => {
+  const isAnswered = typeof value === 'boolean'
+  const isChecked = value === true
+
   const handleSwitchChange = (checked: boolean) => {
     onChange?.(checked)
   }
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+      <div className={`flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm ${
+        error ? 'border-red-500' : ''
+      }`}>
         <div className="space-y-0.5">
           <Label
             htmlFor={field.id}
@@ -63,24 +76,29 @@ const SwitchFieldComponent: React.FC<FieldProps<SwitchConfig>> = ({
             {field.required && <span className="text-red-500 ml-1">*</span>}
           </Label>
           {field.description && <p className="text-sm text-muted-foreground">{field.description}</p>}
-          {error && (
-            <p className="text-sm text-red-500 ml-6" role="alert">
-              {error}
-            </p>
-          )}
         </div>
-        <div>
+        <div className="flex items-center gap-2">
+          {isAnswered && (
+            <span className="text-xs text-muted-foreground">
+              {isChecked ? (field.checkedLabel || 'On') : (field.uncheckedLabel || 'Off')}
+            </span>
+          )}
           <Switch
-            value={value == true ? 'on' : 'off'}
             id={field.id}
-            checked={(value as boolean) || false}
+            checked={isChecked}
             onCheckedChange={handleSwitchChange}
             disabled={field.disabled}
             aria-label={field.label}
             tabIndex={0}
+            className={!isAnswered ? 'opacity-50' : ''}
           />
         </div>
       </div>
+      {error && (
+        <p className="text-sm text-red-500" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   )
 }
@@ -102,10 +120,14 @@ const SwitchEditorComponent: React.FC<
   }
 
   const handleInputChange = (key: keyof SwitchConfig, value: unknown) => {
-    setConfig((prev) => ({
-      ...prev,
-      [key]: value,
-    }))
+    setConfig((prev) => {
+      const updated = { ...prev, [key]: value }
+      // Clear requiredValue when required is turned off
+      if (key === 'required' && !value) {
+        updated.requiredValue = undefined
+      }
+      return updated
+    })
   }
 
   return (
@@ -165,6 +187,32 @@ const SwitchEditorComponent: React.FC<
                   />
                 </div>
 
+                {config.required && (
+                  <div className="space-y-2">
+                    <Label htmlFor="required-value">Enforce Specific Answer</Label>
+                    <Select
+                      value={config.requiredValue === true ? 'true' : config.requiredValue === false ? 'false' : 'any'}
+                      onValueChange={(val) =>
+                        handleInputChange('requiredValue', val === 'any' ? undefined : val === 'true')
+                      }
+                    >
+                      <SelectTrigger id="required-value" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="any">Any answer (user must interact)</SelectItem>
+                        <SelectItem value="true">Must accept ({config.checkedLabel || 'On'})</SelectItem>
+                        <SelectItem value="false">Must decline ({config.uncheckedLabel || 'Off'})</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      {config.requiredValue === undefined && 'User must toggle the switch, but either answer is accepted.'}
+                      {config.requiredValue === true && `User must select "${config.checkedLabel || 'On'}" to submit.`}
+                      {config.requiredValue === false && `User must select "${config.uncheckedLabel || 'Off'}" to submit.`}
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between">
                   <Label htmlFor="disabled-switch">Disabled</Label>
                   <Switch
@@ -210,14 +258,27 @@ export class SwitchFieldDefinition extends FormFieldDefinition<SwitchConfig> {
       description: '',
       required: false,
       disabled: false,
-      defaultValue: false,
       checkedLabel: 'On',
       uncheckedLabel: 'Off',
     }
   }
 
   getValidationSchema(field: SwitchConfig): z.ZodTypeAny {
-    const schema = z.boolean()
-    return field.required ? schema : schema.optional()
+    if (field.required) {
+      let schema: z.ZodTypeAny = z.boolean({ required_error: `${field.label} is required` })
+
+      if (field.requiredValue === true) {
+        schema = schema.refine((val) => val === true, {
+          message: `${field.label} must be ${field.checkedLabel || 'On'}`,
+        })
+      } else if (field.requiredValue === false) {
+        schema = schema.refine((val) => val === false, {
+          message: `${field.label} must be ${field.uncheckedLabel || 'Off'}`,
+        })
+      }
+
+      return schema
+    }
+    return z.boolean().optional()
   }
 }

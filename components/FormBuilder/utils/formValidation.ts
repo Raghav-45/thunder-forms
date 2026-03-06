@@ -61,9 +61,17 @@ export const validateFormFields = (
     const value = formData[field.id]
     
     // Basic required validation
-    if (field.required && (!value || value === '' || (Array.isArray(value) && value.length === 0))) {
-      errors[field.id] = `${field.label} is required`
-      return
+    if (field.required) {
+      // Boolean fields (e.g., switch): undefined/null means unanswered, true/false are both valid
+      if (field.uniqueIdentifier === 'switch-field') {
+        if (typeof value !== 'boolean') {
+          errors[field.id] = `${field.label} is required`
+          return
+        }
+      } else if (!value || value === '' || (Array.isArray(value) && value.length === 0)) {
+        errors[field.id] = `${field.label} is required`
+        return
+      }
     }
 
     // Field-specific validation
