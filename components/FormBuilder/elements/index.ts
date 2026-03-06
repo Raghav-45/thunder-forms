@@ -1,134 +1,102 @@
+'use client'
+
 /**
- * This index file serves as the primary entry point for all form field components.
- * It re-exports [components, editors, and types] from their respective subdirectories.
+ * FIELD ELEMENT REGISTRY
  *
- * Additionally, this file holds the `FIELD_REGISTRY` variable, a registry of all available form fields.
- * This registry facilitates dynamic rendering, configuration, and management of form fields.
+ * This module is the single entry point for all form field types.
+ * Each field type is defined as a class extending FormFieldDefinition,
+ * co-locating its config, component, editor, validation, and defaults
+ * all in one file.
+ *
+ * ┌─────────────────────────────────────────────────────────────────┐
+ * │  TO ADD A NEW FIELD TYPE:                                      │
+ * │                                                                │
+ * │  1. Create a new file in `elements/fields/your-field.tsx`      │
+ * │  2. Extend `FormFieldDefinition<YourConfig>`                   │
+ * │  3. Implement all abstract members (the compiler will tell     │
+ * │     you if you miss any!)                                      │
+ * │  4. Import and instantiate it below in FIELD_DEFINITIONS       │
+ * │                                                                │
+ * │  That's it — validation, rendering, editing all work           │
+ * │  automatically everywhere in the app.                          │
+ * └─────────────────────────────────────────────────────────────────┘
  */
 
-import MultiSelect from './multi-select'
-import { MultiSelectEditor } from './multi-select/editor'
-import type { MultiSelectConfig } from './multi-select/types'
-import SwitchField from './switch'
-import { SwitchEditor } from './switch/editor'
-import type { SwitchConfig } from './switch/types'
-import TextArea from './text-area'
-import { TextAreaEditor } from './text-area/editor'
-import type { TextAreaConfig } from './text-area/types'
-import TextInput from './text-input'
-import { TextInputEditor } from './text-input/editor'
-import type { TextInputConfig } from './text-input/types'
+// ─── Base Class ──────────────────────────────────────────
+export { FormFieldDefinition } from './base'
 
-import { getMultiSelectValidationSchema } from './multi-select/types'
-import { getSwitchValidationSchema } from './switch/types'
-import { getTextAreaValidationSchema } from './text-area/types'
-import { getTextInputValidationSchema } from './text-input/types'
+// ─── Field Definitions (class instances) ─────────────────
+import { TextInputFieldDefinition } from './fields/text-input'
+import { MultiSelectFieldDefinition } from './fields/multi-select'
+import { TextAreaFieldDefinition } from './fields/text-area'
+import { SwitchFieldDefinition } from './fields/switch-field'
+import { DatePickerFieldDefinition } from './fields/date-picker'
 
-// Text Input
-export { default as TextInput } from './text-input'
-export { TextInputEditor } from './text-input/editor'
-export type { TextInputConfig } from './text-input/types'
+// ─── Re-export Types (backward compat) ───────────────────
+export type { TextInputConfig } from './fields/text-input'
+export type { MultiSelectConfig, SelectOption } from './fields/multi-select'
+export type { TextAreaConfig } from './fields/text-area'
+export type { SwitchConfig } from './fields/switch-field'
+export type { DatePickerConfig } from './fields/date-picker'
 
-// Multi Select
-export { default as MultiSelect } from './multi-select'
-export { MultiSelectEditor } from './multi-select/editor'
-export type { MultiSelectConfig, SelectOption } from './multi-select/types'
+// ─── Singleton Instances ─────────────────────────────────
+// Used for both backward-compat re-exports AND FIELD_REGISTRY
+const _textInput = new TextInputFieldDefinition()
+const _multiSelect = new MultiSelectFieldDefinition()
+const _textArea = new TextAreaFieldDefinition()
+const _switchField = new SwitchFieldDefinition()
+const _datePicker = new DatePickerFieldDefinition()
 
-// Text Area
-export { default as TextArea } from './text-area'
-export { TextAreaEditor } from './text-area/editor'
-export type { TextAreaConfig } from './text-area/types'
+// ─── Re-export Components & Editors (backward compat) ────
+export const TextInput = _textInput.component
+export const TextInputEditor = _textInput.editor
+export const MultiSelect = _multiSelect.component
+export const MultiSelectEditor = _multiSelect.editor
+export const TextArea = _textArea.component
+export const TextAreaEditor = _textArea.editor
+export const SwitchField = _switchField.component
+export const SwitchEditor = _switchField.editor
+export const DatePicker = _datePicker.component
+export const DatePickerEditor = _datePicker.editor
 
-// Switch Field
-export { default as SwitchField } from './switch'
-export { SwitchEditor } from './switch/editor'
-export type { SwitchConfig } from './switch/types'
+// ─── Field Definitions Array ─────────────────────────────
+const FIELD_DEFINITIONS = [
+  _textInput,
+  _multiSelect,
+  _textArea,
+  _switchField,
+  _datePicker,
+] as const
 
-// Field Registry
-export const FIELD_REGISTRY = {
-  'text-input': {
-    component: TextInput,
-    editor: TextInputEditor,
-    getValidationSchema: getTextInputValidationSchema,
-    defaultConfig: (): TextInputConfig => ({
-      id: `text_${Date.now()}`,
-      uniqueIdentifier: 'text-input',
-      label: 'Your Name',
-      placeholder: 'e.g., John Doe',
-      description: 'Provide your name for identification.',
-      required: false,
-      disabled: false,
-      inputType: 'text',
-    }),
-  },
-  'multi-select': {
-    component: MultiSelect,
-    editor: MultiSelectEditor,
-    getValidationSchema: getMultiSelectValidationSchema,
-    defaultConfig: (): MultiSelectConfig => ({
-      id: `multiselect_${Date.now()}`,
-      uniqueIdentifier: 'multi-select',
-      label: 'Select your framework',
-      placeholder: 'Select multiple options',
-      required: false,
-      disabled: false,
-      options: [
-        { label: 'Apple', value: 'apple' },
-        { label: 'Banana', value: 'banana' },
-        { label: 'Blueberry', value: 'blueberry' },
-        { label: 'Grapes', value: 'grapes' },
-        { label: 'Pineapple', value: 'pineapple' },
-      ],
-      searchable: true,
-      allowCustomValues: false,
-    }),
-  },
-  'text-area': {
-    component: TextArea,
-    editor: TextAreaEditor,
-    getValidationSchema: getTextAreaValidationSchema,
-    defaultConfig: (): TextAreaConfig => ({
-      id: `textarea_${Date.now()}`,
-      uniqueIdentifier: 'text-area',
-      label: 'Your Message',
-      placeholder: 'Type your message here.',
-      description: 'Your message will be copied to the support team.',
-      required: false,
-      disabled: false,
-      maxLength: undefined,
-    }),
-  },
-  'switch-field': {
-    component: SwitchField,
-    editor: SwitchEditor,
-    getValidationSchema: getSwitchValidationSchema,
-    defaultConfig: (): SwitchConfig => ({
-      id: `switch_${Date.now()}`,
-      type: 'switch',
-      uniqueIdentifier: 'switch-field',
-      label: 'Your Message',
-      placeholder: 'Type your message here.',
-      description: 'Your message will be copied to the support team.',
-      required: false,
-      disabled: false,
-      defaultValue: false,
-      checkedLabel: 'On',
-      uncheckedLabel: 'Off',
-    }),
-  },
-  // TO ADD A NEW FIELD TYPE, JUST ADD IT HERE!
-  // 'date-picker': {
-  //   component: DatePicker,
-  //   editor: DatePickerEditor,
-  //   getValidationSchema: getDatePickerValidationSchema,
-  //   defaultConfig: (): DatePickerConfig => ({ ... }),
-  // },
-} as const
+/**
+ * FIELD_REGISTRY — The runtime lookup table.
+ *
+ * Built automatically from the class instances above.
+ * Consumers access it as: FIELD_REGISTRY['text-input'].component
+ *
+ * This maintains full backward compatibility with the previous
+ * folder-based registry.
+ */
+export const FIELD_REGISTRY = Object.fromEntries(
+  FIELD_DEFINITIONS.map((def) => [
+    def.identifier,
+    {
+      component: def.component,
+      editor: def.editor,
+      getValidationSchema: def.getValidationSchema.bind(def),
+      defaultConfig: def.defaultConfig.bind(def),
+    },
+  ]),
+) as {
+  [K in (typeof FIELD_DEFINITIONS)[number]['identifier']]: {
+    component: (typeof FIELD_DEFINITIONS)[number]['component']
+    editor: (typeof FIELD_DEFINITIONS)[number]['editor']
+    getValidationSchema: (typeof FIELD_DEFINITIONS)[number]['getValidationSchema']
+    defaultConfig: (typeof FIELD_DEFINITIONS)[number]['defaultConfig']
+  }
+}
 
-type FieldRegistry = typeof FIELD_REGISTRY
-type ExtractFieldConfig<T> = T extends { defaultConfig: () => infer U }
-  ? U
-  : never
-
-// Union type for all field configs
-export type FieldConfig = ExtractFieldConfig<FieldRegistry[keyof FieldRegistry]>
+// ─── Union type for all field configs ────────────────────
+export type FieldConfig = ReturnType<
+  (typeof FIELD_DEFINITIONS)[number]['defaultConfig']
+>

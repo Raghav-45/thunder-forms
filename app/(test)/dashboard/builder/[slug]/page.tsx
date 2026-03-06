@@ -1,10 +1,14 @@
 'use client'
 
 import { CopyButton } from '@/components/copy-button'
-import { DatePickerWithPresets, IMMORTAL_SENTINEL_DATE } from '@/components/date-picker-with-presets'
+import {
+  DatePickerWithPresets,
+  IMMORTAL_SENTINEL_DATE,
+} from '@/components/date-picker-with-presets'
 import GenerateWithAiPrompt from '@/components/FormBuilder/core/generate-with-ai'
 import {
   FieldConfig,
+  DatePickerEditor,
   MultiSelectEditor,
   SwitchEditor,
   TextAreaEditor,
@@ -13,6 +17,7 @@ import {
   MultiSelectConfig,
   TextAreaConfig,
   SwitchConfig,
+  DatePickerConfig,
 } from '@/components/FormBuilder/elements'
 import { useFormStore } from '@/components/FormBuilder/store'
 import {
@@ -77,8 +82,9 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   const [editingField, setEditingField] = useState<FieldConfig | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
 
-  const [draggedElement, setDraggedElement] = useState<avaliableFieldsType | null>(null)
-  
+  const [draggedElement, setDraggedElement] =
+    useState<avaliableFieldsType | null>(null)
+
   const handleElementDragStart = (draggedElement: avaliableFieldsType) => {
     setDraggedElement(draggedElement)
   }
@@ -107,7 +113,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   )
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -151,12 +157,8 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     const FieldComponent = getFieldComponent(field.uniqueIdentifier)
 
     return (
-      <div
-        ref={setNodeRef}
-        style={style}
-        className="mb-4 group"
-      >
-        <div 
+      <div ref={setNodeRef} style={style} className="mb-4 group">
+        <div
           {...attributes}
           {...listeners}
           className="relative flex items-start gap-2 bg-card rounded-lg border-2 border-dashed border-border p-3 transition-all duration-200 hover:border-primary/50 hover:shadow-sm cursor-grab active:cursor-grabbing"
@@ -210,8 +212,8 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     const handleUpdateField = (updatedField: FieldConfig) => {
       setFields((prev) =>
         prev.map((field) =>
-          field.id === updatedField.id ? { ...field, ...updatedField } : field
-        )
+          field.id === updatedField.id ? { ...field, ...updatedField } : field,
+        ),
       )
       setEditingField(null)
     }
@@ -227,13 +229,45 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
     switch (field.uniqueIdentifier) {
       case 'text-input':
-        return <TextInputEditor {...baseProps} field={field as TextInputConfig} onUpdate={(f) => handleUpdateField(f)} />
+        return (
+          <TextInputEditor
+            {...baseProps}
+            field={field as TextInputConfig}
+            onUpdate={(f) => handleUpdateField(f)}
+          />
+        )
       case 'multi-select':
-        return <MultiSelectEditor {...baseProps} field={field as MultiSelectConfig} onUpdate={(f) => handleUpdateField(f)} />
+        return (
+          <MultiSelectEditor
+            {...baseProps}
+            field={field as MultiSelectConfig}
+            onUpdate={(f) => handleUpdateField(f)}
+          />
+        )
       case 'text-area':
-        return <TextAreaEditor {...baseProps} field={field as TextAreaConfig} onUpdate={(f) => handleUpdateField(f)} />
+        return (
+          <TextAreaEditor
+            {...baseProps}
+            field={field as TextAreaConfig}
+            onUpdate={(f) => handleUpdateField(f)}
+          />
+        )
       case 'switch-field':
-        return <SwitchEditor {...baseProps} field={field as SwitchConfig} onUpdate={(f) => handleUpdateField(f)} />
+        return (
+          <SwitchEditor
+            {...baseProps}
+            field={field as SwitchConfig}
+            onUpdate={(f) => handleUpdateField(f)}
+          />
+        )
+      case 'date-picker':
+        return (
+          <DatePickerEditor
+            {...baseProps}
+            field={field as DatePickerConfig}
+            onUpdate={(f) => handleUpdateField(f)}
+          />
+        )
       default:
         return null
     }
@@ -263,7 +297,9 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           ...formSettings,
           title: form.data.title,
           description: form.data.description,
-          expiresAt: form.data.expiresAt ? new Date(form.data.expiresAt) : IMMORTAL_SENTINEL_DATE,
+          expiresAt: form.data.expiresAt
+            ? new Date(form.data.expiresAt)
+            : IMMORTAL_SENTINEL_DATE,
           maxSubmissions: form.data.maxSubmissions,
           redirectUrl: form.data.redirectUrl,
         })
@@ -489,15 +525,17 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         <Card
           className={cn(
             'h-[calc(100vh-100px)] overflow-y-scroll border-2 border-dashed !p-0 border-muted mb-1',
-            !(fields.length > 0) && 'flex items-center justify-center'
+            !(fields.length > 0) && 'flex items-center justify-center',
           )}
           onDragOver={(e: React.DragEvent) => e.preventDefault()}
           onDrop={handleElementDrop}
         >
-          <CardContent className={cn(
-            'p-3 md:p-4',
-            !(fields.length > 0) && 'flex items-center justify-center w-full h-full'
-          )}
+          <CardContent
+            className={cn(
+              'p-3 md:p-4',
+              !(fields.length > 0) &&
+                'flex items-center justify-center w-full h-full',
+            )}
           >
             {fields.length > 0 ? (
               <DndContext
@@ -551,7 +589,11 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
                       <Button
                         key={fieldType}
                         draggable={AVAILABLE_FIELDS.includes(fieldType)}
-                        onDragStart={() => handleElementDragStart(fieldType as avaliableFieldsType)}
+                        onDragStart={() =>
+                          handleElementDragStart(
+                            fieldType as avaliableFieldsType,
+                          )
+                        }
                         variant="outline"
                         className="rounded-lg w-full px-2 md:pl-3 bg-neutral-900! cursor-grab"
                         size="sm"
@@ -572,7 +614,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
                           <GripVerticalIcon className="size-4" />
                         </div>
                       </Button>
-                    )
+                    ),
                   )}
                 </div>
               </div>

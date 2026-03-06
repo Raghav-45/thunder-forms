@@ -1,7 +1,16 @@
 'use client'
 
+import { FormFieldDefinition } from '@/components/FormBuilder/elements/base'
+import {
+  BaseFieldConfig,
+  EditorProps,
+  FieldProps,
+} from '@/components/FormBuilder/types/types'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import React, { useState } from 'react'
+import { z } from 'zod'
 import AccordionWithSwitch from '@/components/accordion-with-switch'
-import { EditorProps } from '@/components/FormBuilder/types/types'
 import {
   Accordion,
   AccordionContent,
@@ -9,8 +18,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -27,19 +34,88 @@ import {
 } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
-import React, { useState } from 'react'
-import { TextInputConfig } from './types'
 
-interface TextInputEditorProps extends EditorProps<TextInputConfig> {
-  isOpen: boolean
+// ─── Config ──────────────────────────────────────────────
+
+export interface TextInputConfig extends BaseFieldConfig {
+  uniqueIdentifier: 'text-input'
+  inputType?: 'text' | 'email' | 'password' | 'tel' | 'url'
+  minLength?: number
+  maxLength?: number
+  pattern?: string
+  autoComplete?: string
 }
 
-export const TextInputEditor: React.FC<TextInputEditorProps> = ({
+// ─── Render Component ────────────────────────────────────
+
+const TextInputComponent: React.FC<FieldProps<TextInputConfig>> = ({
   field,
-  onUpdate,
-  onClose,
-  isOpen,
+  value,
+  onChange,
+  onBlur,
+  error,
 }) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.value)
+  }
+
+  const handleBlur = () => {
+    if (onBlur) {
+      onBlur()
+    }
+  }
+
+  const inputId = `field-${field.id}`
+
+  return (
+    <div className="space-y-2">
+      <Label
+        htmlFor={inputId}
+        className={`text-sm font-medium ${
+          field.required
+            ? "after:content-['*'] after:text-red-500 after:ml-1"
+            : ''
+        }`}
+      >
+        {field.label}
+      </Label>
+
+      <Input
+        id={inputId}
+        type={field.inputType || 'text'}
+        placeholder={field.placeholder}
+        value={(value || '') as string}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        disabled={field.disabled}
+        required={field.required}
+        pattern={field.pattern}
+        autoComplete={field.autoComplete}
+        className={error ? 'border-red-500 focus:border-red-500' : ''}
+      />
+
+      {field.description && (
+        <p className="text-sm text-muted-foreground">{field.description}</p>
+      )}
+
+      {error && (
+        <p
+          id={`${inputId}-error`}
+          className="text-sm text-red-500"
+          role="alert"
+        >
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
+// ─── Editor Component ────────────────────────────────────
+
+const TextInputEditorComponent: React.FC<
+  EditorProps<TextInputConfig> & { isOpen: boolean }
+> = ({ field, onUpdate, onClose, isOpen }) => {
   const [config, setConfig] = useState<TextInputConfig>(field)
 
   const handleSave = () => {
@@ -58,14 +134,14 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
         ...prev,
         [key]: value,
       }
-      
+
       // Clear minLength and maxLength when switching to email or URL input types
       // These input types use format validation instead of length validation
       if (key === 'inputType' && (value === 'email' || value === 'url')) {
         newConfig.minLength = undefined
         newConfig.maxLength = undefined
       }
-      
+
       return newConfig
     })
   }
@@ -153,9 +229,14 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
                   </div>
 
                   <div className="space-y-2 col-span-3">
-                    <Label 
+                    <Label
                       htmlFor="min-length"
-                      className={config.inputType === 'email' || config.inputType === 'url' ? 'text-muted-foreground' : ''}
+                      className={
+                        config.inputType === 'email' ||
+                        config.inputType === 'url'
+                          ? 'text-muted-foreground'
+                          : ''
+                      }
                     >
                       Min Length
                     </Label>
@@ -167,14 +248,23 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
                       onChange={(e) =>
                         handleInputChange(
                           'minLength',
-                          e.target.value ? parseInt(e.target.value) : undefined
+                          e.target.value ? parseInt(e.target.value) : undefined,
                         )
                       }
                       placeholder="0"
-                      disabled={config.inputType === 'email' || config.inputType === 'url'}
-                      className={config.inputType === 'email' || config.inputType === 'url' ? 'opacity-50 cursor-not-allowed' : ''}
+                      disabled={
+                        config.inputType === 'email' ||
+                        config.inputType === 'url'
+                      }
+                      className={
+                        config.inputType === 'email' ||
+                        config.inputType === 'url'
+                          ? 'opacity-50 cursor-not-allowed'
+                          : ''
+                      }
                     />
-                    {(config.inputType === 'email' || config.inputType === 'url') && (
+                    {(config.inputType === 'email' ||
+                      config.inputType === 'url') && (
                       <p className="text-xs text-muted-foreground">
                         Length validation disabled for {config.inputType} format
                       </p>
@@ -182,9 +272,14 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
                   </div>
 
                   <div className="space-y-2 col-span-3">
-                    <Label 
+                    <Label
                       htmlFor="max-length"
-                      className={config.inputType === 'email' || config.inputType === 'url' ? 'text-muted-foreground' : ''}
+                      className={
+                        config.inputType === 'email' ||
+                        config.inputType === 'url'
+                          ? 'text-muted-foreground'
+                          : ''
+                      }
                     >
                       Max Length
                     </Label>
@@ -196,44 +291,29 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
                       onChange={(e) =>
                         handleInputChange(
                           'maxLength',
-                          e.target.value ? parseInt(e.target.value) : undefined
+                          e.target.value ? parseInt(e.target.value) : undefined,
                         )
                       }
                       placeholder="100"
-                      disabled={config.inputType === 'email' || config.inputType === 'url'}
-                      className={config.inputType === 'email' || config.inputType === 'url' ? 'opacity-50 cursor-not-allowed' : ''}
+                      disabled={
+                        config.inputType === 'email' ||
+                        config.inputType === 'url'
+                      }
+                      className={
+                        config.inputType === 'email' ||
+                        config.inputType === 'url'
+                          ? 'opacity-50 cursor-not-allowed'
+                          : ''
+                      }
                     />
-                    {(config.inputType === 'email' || config.inputType === 'url') && (
+                    {(config.inputType === 'email' ||
+                      config.inputType === 'url') && (
                       <p className="text-xs text-muted-foreground">
                         Length validation disabled for {config.inputType} format
                       </p>
                     )}
                   </div>
                 </div>
-
-                {/* <div className="space-y-2">
-                  <Label htmlFor="pattern">Pattern (Regex)</Label>
-                  <Input
-                    id="pattern"
-                    value={config.pattern || ''}
-                    onChange={(e) =>
-                      handleInputChange('pattern', e.target.value)
-                    }
-                    placeholder="^[a-zA-Z0-9]+$"
-                  />
-                </div> */}
-
-                {/* <div className="space-y-2">
-                  <Label htmlFor="autocomplete">Autocomplete</Label>
-                  <Input
-                    id="autocomplete"
-                    value={config.autoComplete || ''}
-                    onChange={(e) =>
-                      handleInputChange('autoComplete', e.target.value)
-                    }
-                    placeholder="name, email, etc."
-                  />
-                </div> */}
 
                 <div className="flex items-center justify-between">
                   <Label htmlFor="required-switch">Required Field</Label>
@@ -272,4 +352,80 @@ export const TextInputEditor: React.FC<TextInputEditorProps> = ({
       </SheetContent>
     </Sheet>
   )
+}
+
+// ─── Field Definition ────────────────────────────────────
+
+export class TextInputFieldDefinition extends FormFieldDefinition<TextInputConfig> {
+  readonly identifier = 'text-input' as const
+
+  readonly component = TextInputComponent
+  readonly editor = TextInputEditorComponent
+
+  defaultConfig(): TextInputConfig {
+    return {
+      id: `text_${Date.now()}`,
+      uniqueIdentifier: 'text-input',
+      label: 'Your Name',
+      placeholder: 'e.g., John Doe',
+      description: 'Provide your name for identification.',
+      required: false,
+      disabled: false,
+      inputType: 'text',
+    }
+  }
+
+  getValidationSchema(field: TextInputConfig): z.ZodTypeAny {
+    let schema: z.ZodString
+
+    switch (field.inputType) {
+      case 'email':
+        schema = z.string().email('Invalid email address')
+        break
+      case 'url':
+        schema = z.string().url('Invalid URL format')
+        break
+      case 'tel':
+        schema = z.string()
+        if (field.pattern) {
+          schema = schema.regex(
+            new RegExp(field.pattern),
+            'Invalid phone number format',
+          )
+        }
+        if (field.minLength) {
+          schema = schema.min(
+            field.minLength,
+            `Must be at least ${field.minLength} characters`,
+          )
+        }
+        if (field.maxLength) {
+          schema = schema.max(
+            field.maxLength,
+            `Must be at most ${field.maxLength} characters`,
+          )
+        }
+        break
+      default:
+        schema = z.string()
+        if (field.pattern) {
+          schema = schema.regex(new RegExp(field.pattern), 'Invalid format')
+        }
+        if (field.minLength) {
+          schema = schema.min(
+            field.minLength,
+            `Must be at least ${field.minLength} characters`,
+          )
+        }
+        if (field.maxLength) {
+          schema = schema.max(
+            field.maxLength,
+            `Must be at most ${field.maxLength} characters`,
+          )
+        }
+        break
+    }
+
+    return field.required ? schema : schema.optional()
+  }
 }

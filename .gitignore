@@ -42,3 +42,29 @@ next-env.d.ts
 /.github
 
 /lib/generated/prisma
+
+# GSD session files
+.gsd/STATE.md
+.gsd/JOURNAL.md
+.gsd/TODO.md
+/.agent
+/.gsd
+/adapters
+/docs
+scripts/search_repo.ps1
+scripts/search_repo.sh
+scripts/setup_search.ps1
+scripts/setup_search.sh
+scripts/validate-all.ps1
+scripts/validate-all.sh
+scripts/validate-skills.ps1
+scripts/validate-skills.sh
+scripts/validate-templates.ps1
+scripts/validate-templates.sh
+scripts/validate-workflows.ps1
+scripts/validate-workflows.sh
+PROJECT_RULES.md
+model_capabilities.yaml
+gsd-template/
+GSD-STYLE.md
+.gemini/GEMINI.md

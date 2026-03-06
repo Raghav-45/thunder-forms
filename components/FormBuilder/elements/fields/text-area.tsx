@@ -1,9 +1,24 @@
 'use client'
 
-import { EditorProps } from '@/components/FormBuilder/types/types'
+import { FormFieldDefinition } from '@/components/FormBuilder/elements/base'
+import {
+  BaseFieldConfig,
+  EditorProps,
+  FieldProps,
+} from '@/components/FormBuilder/types/types'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import React, { useState } from 'react'
+import { z } from 'zod'
+import AccordionWithSwitch from '@/components/accordion-with-switch'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Sheet,
   SheetContent,
@@ -12,27 +27,85 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
-import { Textarea } from '@/components/ui/textarea'
-import React, { useState } from 'react'
-import { TextAreaConfig } from './types'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
-import AccordionWithSwitch from '@/components/accordion-with-switch'
 
-interface TextAreaEditorProps extends EditorProps<TextAreaConfig> {
-  isOpen: boolean
+// ─── Config ──────────────────────────────────────────────
+
+export interface TextAreaConfig extends BaseFieldConfig {
+  uniqueIdentifier: 'text-area'
+  minLength?: number
+  maxLength?: number
+  pattern?: string
+  autoComplete?: string
 }
 
-export const TextAreaEditor: React.FC<TextAreaEditorProps> = ({
+// ─── Render Component ────────────────────────────────────
+
+const TextAreaComponent: React.FC<FieldProps<TextAreaConfig>> = ({
   field,
-  onUpdate,
-  onClose,
-  isOpen,
+  value,
+  onChange,
+  onBlur,
+  error,
 }) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onChange(e.target.value)
+  }
+
+  const handleBlur = () => {
+    if (onBlur) {
+      onBlur()
+    }
+  }
+
+  const inputId = `field-${field.id}`
+
+  return (
+    <div className="space-y-2">
+      <Label
+        htmlFor={inputId}
+        className={`text-sm font-medium ${
+          field.required
+            ? "after:content-['*'] after:text-red-500 after:ml-1"
+            : ''
+        }`}
+      >
+        {field.label}
+      </Label>
+
+      <Textarea
+        id={inputId}
+        placeholder={field.placeholder}
+        value={(value || '') as string}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        disabled={field.disabled}
+        required={field.required}
+        autoComplete={field.autoComplete}
+        className={error ? 'border-red-500 focus:border-red-500' : ''}
+      />
+
+      {field.description && (
+        <p className="text-sm text-muted-foreground">{field.description}</p>
+      )}
+
+      {error && (
+        <p
+          id={`${inputId}-error`}
+          className="text-sm text-red-500"
+          role="alert"
+        >
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
+// ─── Editor Component ────────────────────────────────────
+
+const TextAreaEditorComponent: React.FC<
+  EditorProps<TextAreaConfig> & { isOpen: boolean }
+> = ({ field, onUpdate, onClose, isOpen }) => {
   const [config, setConfig] = useState<TextAreaConfig>(field)
 
   const handleSave = () => {
@@ -123,7 +196,7 @@ export const TextAreaEditor: React.FC<TextAreaEditorProps> = ({
                       onChange={(e) =>
                         handleInputChange(
                           'minLength',
-                          e.target.value ? parseInt(e.target.value) : undefined
+                          e.target.value ? parseInt(e.target.value) : undefined,
                         )
                       }
                       placeholder="0"
@@ -140,37 +213,13 @@ export const TextAreaEditor: React.FC<TextAreaEditorProps> = ({
                       onChange={(e) =>
                         handleInputChange(
                           'maxLength',
-                          e.target.value ? parseInt(e.target.value) : undefined
+                          e.target.value ? parseInt(e.target.value) : undefined,
                         )
                       }
                       placeholder="500"
                     />
                   </div>
                 </div>
-
-                {/* <div className="space-y-2">
-                  <Label htmlFor="pattern">Pattern (Regex)</Label>
-                  <Input
-                    id="pattern"
-                    value={config.pattern || ''}
-                    onChange={(e) =>
-                      handleInputChange('pattern', e.target.value)
-                    }
-                    placeholder="^[a-zA-Z0-9]+$"
-                  />
-                </div> */}
-
-                {/* <div className="space-y-2">
-                  <Label htmlFor="autocomplete">Autocomplete</Label>
-                  <Input
-                    id="autocomplete"
-                    value={config.autoComplete || ''}
-                    onChange={(e) =>
-                      handleInputChange('autoComplete', e.target.value)
-                    }
-                    placeholder="name, email, etc."
-                  />
-                </div> */}
 
                 <div className="flex items-center justify-between">
                   <Label htmlFor="required-switch">Required Field</Label>
@@ -209,4 +258,48 @@ export const TextAreaEditor: React.FC<TextAreaEditorProps> = ({
       </SheetContent>
     </Sheet>
   )
+}
+
+// ─── Field Definition ────────────────────────────────────
+
+export class TextAreaFieldDefinition extends FormFieldDefinition<TextAreaConfig> {
+  readonly identifier = 'text-area' as const
+
+  readonly component = TextAreaComponent
+  readonly editor = TextAreaEditorComponent
+
+  defaultConfig(): TextAreaConfig {
+    return {
+      id: `textarea_${Date.now()}`,
+      uniqueIdentifier: 'text-area',
+      label: 'Your Message',
+      placeholder: 'Type your message here.',
+      description: 'Your message will be copied to the support team.',
+      required: false,
+      disabled: false,
+      maxLength: undefined,
+    }
+  }
+
+  getValidationSchema(field: TextAreaConfig): z.ZodTypeAny {
+    let schema = z.string()
+
+    if (field.minLength) {
+      schema = schema.min(
+        field.minLength,
+        `Must be at least ${field.minLength} characters`,
+      )
+    }
+    if (field.maxLength) {
+      schema = schema.max(
+        field.maxLength,
+        `Must be at most ${field.maxLength} characters`,
+      )
+    }
+    if (field.pattern) {
+      schema = schema.regex(new RegExp(field.pattern), 'Invalid format')
+    }
+
+    return field.required ? schema : schema.optional()
+  }
 }

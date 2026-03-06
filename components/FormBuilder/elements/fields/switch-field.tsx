@@ -1,7 +1,16 @@
 'use client'
 
+import { FormFieldDefinition } from '@/components/FormBuilder/elements/base'
+import {
+  BaseFieldConfig,
+  EditorProps,
+  FieldProps,
+} from '@/components/FormBuilder/types/types'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import React, { useState } from 'react'
+import { z } from 'zod'
 import AccordionWithSwitch from '@/components/accordion-with-switch'
-import { EditorProps } from '@/components/FormBuilder/types/types'
 import {
   Accordion,
   AccordionContent,
@@ -10,7 +19,6 @@ import {
 } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Sheet,
   SheetContent,
@@ -18,21 +26,75 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
-import React, { useState } from 'react'
-import { SwitchConfig } from './types'
 
-interface SwitchEditorProps extends EditorProps<SwitchConfig> {
-  isOpen: boolean
+// ─── Config ──────────────────────────────────────────────
+
+export interface SwitchConfig extends BaseFieldConfig {
+  type: 'switch'
+  uniqueIdentifier: 'switch-field'
+  label: string
+  description?: string
+  required?: boolean
+  disabled?: boolean
+  defaultValue?: boolean
+  checkedLabel?: string
+  uncheckedLabel?: string
 }
 
-export const SwitchEditor: React.FC<SwitchEditorProps> = ({
+// ─── Render Component ────────────────────────────────────
+
+const SwitchFieldComponent: React.FC<FieldProps<SwitchConfig>> = ({
   field,
-  onUpdate,
-  onClose,
-  isOpen,
+  value,
+  onChange,
+  error,
 }) => {
+  const handleSwitchChange = (checked: boolean) => {
+    onChange?.(checked)
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+        <div className="space-y-0.5">
+          <Label
+            htmlFor={field.id}
+            className={`flex items-center gap-2 text-sm leading-none font-medium select-none ${
+              field.disabled ? 'opacity-50' : 'cursor-pointer'
+            }`}
+          >
+            {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+          <p className="text-sm text-muted-foreground">{field.description}</p>
+          {error && (
+            <p className="text-sm text-red-500 ml-6" role="alert">
+              {error}
+            </p>
+          )}
+        </div>
+        <div>
+          <Switch
+            value={value == true ? 'on' : 'off'}
+            id={field.id}
+            checked={(value as boolean) || false}
+            onCheckedChange={handleSwitchChange}
+            disabled={field.disabled}
+            aria-label={field.label}
+            tabIndex={0}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Editor Component ────────────────────────────────────
+
+const SwitchEditorComponent: React.FC<
+  EditorProps<SwitchConfig> & { isOpen: boolean }
+> = ({ field, onUpdate, onClose, isOpen }) => {
   const [config, setConfig] = useState<SwitchConfig>(field)
   const handleSave = () => {
     onUpdate(config)
@@ -134,4 +196,34 @@ export const SwitchEditor: React.FC<SwitchEditorProps> = ({
       </SheetContent>
     </Sheet>
   )
+}
+
+// ─── Field Definition ────────────────────────────────────
+
+export class SwitchFieldDefinition extends FormFieldDefinition<SwitchConfig> {
+  readonly identifier = 'switch-field' as const
+
+  readonly component = SwitchFieldComponent
+  readonly editor = SwitchEditorComponent
+
+  defaultConfig(): SwitchConfig {
+    return {
+      id: `switch_${Date.now()}`,
+      type: 'switch',
+      uniqueIdentifier: 'switch-field',
+      label: 'Your Message',
+      placeholder: 'Type your message here.',
+      description: 'Your message will be copied to the support team.',
+      required: false,
+      disabled: false,
+      defaultValue: false,
+      checkedLabel: 'On',
+      uncheckedLabel: 'Off',
+    }
+  }
+
+  getValidationSchema(field: SwitchConfig): z.ZodTypeAny {
+    const schema = z.boolean()
+    return field.required ? schema : schema.optional()
+  }
 }
