@@ -62,7 +62,7 @@ const SwitchFieldComponent: React.FC<FieldProps<SwitchConfig>> = ({
             {field.label}
             {field.required && <span className="text-red-500 ml-1">*</span>}
           </Label>
-          <p className="text-sm text-muted-foreground">{field.description}</p>
+          {field.description && <p className="text-sm text-muted-foreground">{field.description}</p>}
           {error && (
             <p className="text-sm text-red-500 ml-6" role="alert">
               {error}
@@ -151,7 +151,7 @@ const SwitchEditorComponent: React.FC<
             </AccordionItem>
             <AccordionItem value="validaton">
               <AccordionTrigger className="text-base">
-                Validaton Properties
+                Validation Properties
               </AccordionTrigger>
               <AccordionContent className="flex flex-col gap-y-4">
                 <div className="flex items-center justify-between">

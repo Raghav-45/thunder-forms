@@ -182,7 +182,7 @@ const TextAreaEditorComponent: React.FC<
             </AccordionItem>
             <AccordionItem value="validaton">
               <AccordionTrigger className="text-base">
-                Validaton Properties
+                Validation Properties
               </AccordionTrigger>
               <AccordionContent className="flex flex-col gap-y-4">
                 <div className="grid grid-cols-2 gap-4">

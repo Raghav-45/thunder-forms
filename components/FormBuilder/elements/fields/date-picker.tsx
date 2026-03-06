@@ -407,11 +407,7 @@ export class DatePickerFieldDefinition extends FormFieldDefinition<DatePickerCon
   }
 
   getValidationSchema(field: DatePickerConfig): z.ZodTypeAny {
-    if (!field.required) {
-      return z.string().optional()
-    }
-
-    return z.string().superRefine((val, ctx) => {
+    const baseSchema = z.string().superRefine((val, ctx) => {
       const date = new Date(val)
       if (isNaN(date.getTime())) {
         ctx.addIssue({
@@ -457,5 +453,7 @@ export class DatePickerFieldDefinition extends FormFieldDefinition<DatePickerCon
         }
       }
     })
+
+    return field.required ? baseSchema : baseSchema.optional()
   }
 }

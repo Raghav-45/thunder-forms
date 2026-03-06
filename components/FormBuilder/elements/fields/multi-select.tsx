@@ -562,12 +562,12 @@ const MultiSelectEditorComponent: React.FC<
             </AccordionItem>
             <AccordionItem value="validaton">
               <AccordionTrigger className="text-base">
-                Validaton Properties
+                Validation Properties
               </AccordionTrigger>
               <AccordionContent className="flex flex-col gap-y-4">
                 <div className="grid grid-cols-10 gap-4">
                   <div className="space-y-2 col-span-5">
-                    <Label htmlFor="min-length">Min Selections</Label>
+                    <Label htmlFor="min-selections">Min Selections</Label>
                     <Input
                       id="min-selections"
                       type="number"
@@ -584,7 +584,7 @@ const MultiSelectEditorComponent: React.FC<
                   </div>
 
                   <div className="space-y-2 col-span-5">
-                    <Label htmlFor="max-length">Max Selections</Label>
+                    <Label htmlFor="max-selections">Max Selections</Label>
                     <Input
                       id="max-selections"
                       type="number"
