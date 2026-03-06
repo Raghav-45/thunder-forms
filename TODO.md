@@ -1,0 +1,1 @@
+The AI prompt file doesn't include date-picker as a supported field type yet — only text-input, multi-select, text-area, and switch-field. You may want to add it separately if you want AI generation to support date pickers.
