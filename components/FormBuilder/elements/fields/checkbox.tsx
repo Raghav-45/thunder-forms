@@ -55,10 +55,17 @@ const CheckboxComponent: React.FC<FieldProps<CheckboxConfig>> = ({
   error,
 }) => {
   const isAnswered = typeof value === 'boolean'
-  const isChecked = value === true
+  const checkedState: boolean | 'indeterminate' = !isAnswered ? 'indeterminate' : (value as boolean)
 
-  const handleChange = (checked: boolean) => {
-    onChange?.(checked)
+  const handleChange = (checked: boolean | 'indeterminate') => {
+    // When clicking from indeterminate, treat as checking (true)
+    // When clicking from checked, uncheck (false)
+    // When clicking from unchecked, check (true)
+    if (checked === 'indeterminate') {
+      onChange?.(true)
+    } else {
+      onChange?.(checked)
+    }
   }
 
   const inputId = `field-${field.id}`
@@ -72,11 +79,11 @@ const CheckboxComponent: React.FC<FieldProps<CheckboxConfig>> = ({
       >
         <Checkbox
           id={inputId}
-          checked={isChecked}
+          checked={checkedState}
           onCheckedChange={handleChange}
           disabled={field.disabled}
           aria-label={field.label}
-          className={`mt-0.5 ${!isAnswered ? 'opacity-50' : ''}`}
+          className="mt-0.5"
         />
         <div className="space-y-0.5">
           <Label
