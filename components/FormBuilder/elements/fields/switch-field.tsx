@@ -90,7 +90,7 @@ const SwitchFieldComponent: React.FC<FieldProps<SwitchConfig>> = ({
             disabled={field.disabled}
             aria-label={field.label}
             tabIndex={0}
-            className={!isAnswered ? 'opacity-50' : ''}
+            indeterminate={!isAnswered}
           />
         </div>
       </div>
