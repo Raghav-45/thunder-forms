@@ -169,6 +169,31 @@ const SwitchEditorComponent: React.FC<
                     rows={3}
                   />
                 </AccordionWithSwitch>
+
+                <div className="grid grid-cols-10 gap-4">
+                  <div className="space-y-2 col-span-5">
+                    <Label htmlFor="checked-label">On Label</Label>
+                    <Input
+                      id="checked-label"
+                      value={config.checkedLabel || ''}
+                      onChange={(e) =>
+                        handleInputChange('checkedLabel', e.target.value)
+                      }
+                      placeholder="On"
+                    />
+                  </div>
+                  <div className="space-y-2 col-span-5">
+                    <Label htmlFor="unchecked-label">Off Label</Label>
+                    <Input
+                      id="unchecked-label"
+                      value={config.uncheckedLabel || ''}
+                      onChange={(e) =>
+                        handleInputChange('uncheckedLabel', e.target.value)
+                      }
+                      placeholder="Off"
+                    />
+                  </div>
+                </div>
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="validaton">
