@@ -46,7 +46,7 @@ export function SettingsDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full mt-4 bg-lime-400 text-black hover:bg-lime-500 hover:text-black border-none font-medium">
+        <Button variant="outline" className="w-full mt-4 font-medium">
           <Settings className="mr-2 h-4 w-4" />
           Advanced Settings
         </Button>
@@ -123,6 +123,9 @@ export function SettingsDialog() {
                           })
                         }
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Limit total responses. Leave empty for unlimited.
+                      </p>
                     </div>
 
                   </div>
@@ -139,7 +142,7 @@ export function SettingsDialog() {
                     </p>
                   </div>
 
-                  <div className="grid gap-4 py-4">
+                  <div className="grid gap-6">
                     <div className="grid gap-2">
                       <Label htmlFor="redirectUrl">Redirect URL</Label>
                       <div className="relative">
