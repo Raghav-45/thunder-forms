@@ -373,6 +373,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
             : IMMORTAL_SENTINEL_DATE,
           maxSubmissions: form.data.maxSubmissions,
           redirectUrl: form.data.redirectUrl,
+          submitButtonText: form.data.submitButtonText,
         })
         setFields(form.data.fields)
       }
@@ -420,6 +421,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         maxSubmissions: updateData.maxSubmissions,
         expiresAt: updateData.expiresAt,
         redirectUrl: updateData.redirectUrl,
+        submitButtonText: updateData.submitButtonText,
       })
       return data
     },
@@ -460,6 +462,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         : null,
       expiresAt: formSettings.expiresAt,
       redirectUrl: formSettings.redirectUrl?.trim() || null,
+      submitButtonText: formSettings.submitButtonText?.trim() || null,
     }
 
     if (isNewForm) {

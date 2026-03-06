@@ -141,6 +141,7 @@ export default function FormPage({ params }: FormPageProps) {
         expiresAt,
         maxSubmissions: form.data.maxSubmissions,
         redirectUrl: form.data.redirectUrl,
+        submitButtonText: form.data.submitButtonText,
       })
       setFields(form.data.fields)
 
@@ -214,7 +215,7 @@ export default function FormPage({ params }: FormPageProps) {
           onClick={handleSubmit}
           disabled={isSubmitting || checkIsFormClosed(formStatus)}
         >
-          {isSubmitting ? 'Submitting...' : 'Submit'}
+          {isSubmitting ? 'Submitting...' : (formSettings.submitButtonText || 'Submit')}
         </Button>
       </div>
     </>

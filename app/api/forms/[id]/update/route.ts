@@ -44,6 +44,7 @@ export async function POST(
       maxSubmissions,
       expiresAt,
       redirectUrl,
+      submitButtonText,
     } = FormValidator.parse(body)
 
     // Check if form exists and user has permission
@@ -80,7 +81,7 @@ export async function POST(
         maxSubmissions: maxSubmissions,
         expiresAt: expiresAt,
         redirectUrl: redirectUrl,
-        // Add any other things you want to update here.
+        submitButtonText: submitButtonText,
       },
     })
 

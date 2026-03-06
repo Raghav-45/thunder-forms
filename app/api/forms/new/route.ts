@@ -39,6 +39,7 @@ export async function POST(request: Request) {
       maxSubmissions,
       expiresAt,
       redirectUrl,
+      submitButtonText,
     } = FormValidator.parse(body)
 
     // Create the form in the database
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
         maxSubmissions: maxSubmissions,
         expiresAt: expiresAt,
         redirectUrl: redirectUrl,
+        submitButtonText: submitButtonText,
       },
     })
 

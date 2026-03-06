@@ -11,6 +11,7 @@ type FormStore = {
     expiresAt?: Date
     maxSubmissions?: number
     redirectUrl?: string
+    submitButtonText?: string
   }
   // Actions
   setFields: (fields: FieldConfig[]) => void
@@ -24,6 +25,7 @@ const initialFormSettings = {
   expiresAt: undefined,
   maxSubmissions: undefined,
   redirectUrl: undefined,
+  submitButtonText: undefined,
 }
 
 export const useFormStore = create<FormStore>()((set) => ({
