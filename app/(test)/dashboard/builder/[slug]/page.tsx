@@ -13,11 +13,17 @@ import {
   SwitchEditor,
   TextAreaEditor,
   TextInputEditor,
+  SectionHeaderEditor,
+  CheckboxEditor,
+  NumberInputEditor,
   TextInputConfig,
   MultiSelectConfig,
   TextAreaConfig,
   SwitchConfig,
   DatePickerConfig,
+  SectionHeaderConfig,
+  CheckboxConfig,
+  NumberInputConfig,
 } from '@/components/FormBuilder/elements'
 import { useFormStore } from '@/components/FormBuilder/store'
 import {
@@ -265,6 +271,30 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           <DatePickerEditor
             {...baseProps}
             field={field as DatePickerConfig}
+            onUpdate={(f) => handleUpdateField(f)}
+          />
+        )
+      case 'section-header':
+        return (
+          <SectionHeaderEditor
+            {...baseProps}
+            field={field as SectionHeaderConfig}
+            onUpdate={(f) => handleUpdateField(f)}
+          />
+        )
+      case 'checkbox':
+        return (
+          <CheckboxEditor
+            {...baseProps}
+            field={field as CheckboxConfig}
+            onUpdate={(f) => handleUpdateField(f)}
+          />
+        )
+      case 'number-input':
+        return (
+          <NumberInputEditor
+            {...baseProps}
+            field={field as NumberInputConfig}
             onUpdate={(f) => handleUpdateField(f)}
           />
         )

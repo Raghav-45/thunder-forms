@@ -155,11 +155,15 @@ export default function FormPage({ params }: FormPageProps) {
       // Initialize form data with default values
       const initialFormData: Record<string, unknown> = {}
       form.data.fields.forEach((field: FieldConfig) => {
-        if (field.uniqueIdentifier === 'switch-field') {
+        if (field.uniqueIdentifier === 'switch-field' || field.uniqueIdentifier === 'checkbox') {
           // Start as undefined (unanswered) so required validation can detect no interaction
           initialFormData[field.id] = undefined
         } else if (field.uniqueIdentifier === 'multi-select') {
           initialFormData[field.id] = []
+        } else if (field.uniqueIdentifier === 'section-header') {
+          // Section headers are display-only, no value needed
+        } else if (field.uniqueIdentifier === 'number-input') {
+          initialFormData[field.id] = ''
         } else {
           initialFormData[field.id] = ''
         }

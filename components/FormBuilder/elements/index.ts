@@ -31,6 +31,9 @@ import { MultiSelectFieldDefinition } from './fields/multi-select'
 import { TextAreaFieldDefinition } from './fields/text-area'
 import { SwitchFieldDefinition } from './fields/switch-field'
 import { DatePickerFieldDefinition } from './fields/date-picker'
+import { SectionHeaderFieldDefinition } from './fields/section-header'
+import { CheckboxFieldDefinition } from './fields/checkbox'
+import { NumberInputFieldDefinition } from './fields/number-input'
 
 // ─── Re-export Types (backward compat) ───────────────────
 export type { TextInputConfig } from './fields/text-input'
@@ -38,6 +41,9 @@ export type { MultiSelectConfig, SelectOption } from './fields/multi-select'
 export type { TextAreaConfig } from './fields/text-area'
 export type { SwitchConfig } from './fields/switch-field'
 export type { DatePickerConfig } from './fields/date-picker'
+export type { SectionHeaderConfig } from './fields/section-header'
+export type { CheckboxConfig } from './fields/checkbox'
+export type { NumberInputConfig } from './fields/number-input'
 
 // ─── Singleton Instances ─────────────────────────────────
 // Used for both backward-compat re-exports AND FIELD_REGISTRY
@@ -46,6 +52,9 @@ const _multiSelect = new MultiSelectFieldDefinition()
 const _textArea = new TextAreaFieldDefinition()
 const _switchField = new SwitchFieldDefinition()
 const _datePicker = new DatePickerFieldDefinition()
+const _sectionHeader = new SectionHeaderFieldDefinition()
+const _checkbox = new CheckboxFieldDefinition()
+const _numberInput = new NumberInputFieldDefinition()
 
 // ─── Re-export Components & Editors (backward compat) ────
 export const TextInput = _textInput.component
@@ -58,6 +67,12 @@ export const SwitchField = _switchField.component
 export const SwitchEditor = _switchField.editor
 export const DatePicker = _datePicker.component
 export const DatePickerEditor = _datePicker.editor
+export const SectionHeader = _sectionHeader.component
+export const SectionHeaderEditor = _sectionHeader.editor
+export const CheckboxField = _checkbox.component
+export const CheckboxEditor = _checkbox.editor
+export const NumberInput = _numberInput.component
+export const NumberInputEditor = _numberInput.editor
 
 // ─── Field Definitions Array ─────────────────────────────
 const FIELD_DEFINITIONS = [
@@ -66,6 +81,9 @@ const FIELD_DEFINITIONS = [
   _textArea,
   _switchField,
   _datePicker,
+  _sectionHeader,
+  _checkbox,
+  _numberInput,
 ] as const
 
 /**

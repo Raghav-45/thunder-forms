@@ -60,10 +60,13 @@ export const validateFormFields = (
   fields.forEach(field => {
     const value = formData[field.id]
     
+    // Section headers are display-only — skip validation entirely
+    if (field.uniqueIdentifier === 'section-header') return
+
     // Basic required validation
     if (field.required) {
-      // Boolean fields (e.g., switch): undefined/null means unanswered, true/false are both valid
-      if (field.uniqueIdentifier === 'switch-field') {
+      // Boolean fields (switch, checkbox): undefined/null means unanswered, true/false are both valid
+      if (field.uniqueIdentifier === 'switch-field' || field.uniqueIdentifier === 'checkbox') {
         if (typeof value !== 'boolean') {
           errors[field.id] = `${field.label} is required`
           return
