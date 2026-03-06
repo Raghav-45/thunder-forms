@@ -464,7 +464,7 @@ export class DateTimePickerFieldDefinition extends FormFieldDefinition<DateTimeP
       uniqueIdentifier: 'datetime-picker',
       label: 'Select Date & Time',
       placeholder: 'Pick a date & time',
-      description: '',
+      description: 'Choose a date and time from the calendar.',
       required: false,
       disabled: false,
       disablePastDates: false,

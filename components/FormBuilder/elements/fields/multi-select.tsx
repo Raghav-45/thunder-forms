@@ -678,6 +678,7 @@ export class MultiSelectFieldDefinition extends FormFieldDefinition<MultiSelectC
       uniqueIdentifier: 'multi-select',
       label: 'Select your framework',
       placeholder: 'Select multiple options',
+      description: '',
       required: false,
       disabled: false,
       options: [

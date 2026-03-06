@@ -459,6 +459,7 @@ export class SingleSelectFieldDefinition extends FormFieldDefinition<SingleSelec
       uniqueIdentifier: 'single-select',
       label: 'Select an option',
       placeholder: 'Choose one...',
+      description: '',
       required: false,
       disabled: false,
       options: [
