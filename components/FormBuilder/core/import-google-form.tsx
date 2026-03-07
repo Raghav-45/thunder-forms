@@ -11,7 +11,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Separator } from '@/components/ui/separator'
 import {
   Copy,
   FileDown,
@@ -23,13 +22,14 @@ import {
 import { FC, useState } from 'react'
 import { toast } from 'sonner'
 
-const GOOGLE_SERVICE_ACCOUNT_EMAIL = process.env.NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_EMAIL
+const GOOGLE_SERVICE_ACCOUNT_EMAIL =
+  process.env.NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_EMAIL
 
 interface ImportGoogleFormProps {
   onImported: (
     title: string,
     description: string,
-    fields: FieldConfig[]
+    fields: FieldConfig[],
   ) => void
 }
 
@@ -67,65 +67,93 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
       }
 
       const data = await res.json()
-      onImported(data.title, data.description || '', data.fields as FieldConfig[])
+      onImported(
+        data.title,
+        data.description || '',
+        data.fields as FieldConfig[],
+      )
 
       if (data.skippedItems?.length > 0) {
-        toast.warning(`Imported with ${data.skippedItems.length} skipped item(s)`, {
-          description: data.skippedItems.join('\n'),
-          style: { whiteSpace: 'pre-line' },
-          duration: 8000,
-        })
+        toast.warning(
+          `Imported with ${data.skippedItems.length} skipped item(s)`,
+          {
+            description: data.skippedItems.join('\n'),
+            style: { whiteSpace: 'pre-line' },
+            duration: 8000,
+          },
+        )
       } else {
-        toast.success(`Imported "${data.title}" with ${data.fields.length} field(s)`)
+        toast.success(
+          `Imported "${data.title}" with ${data.fields.length} field(s)`,
+        )
       }
 
       setIsOpen(false)
       setUrl('')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to import form')
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to import form',
+      )
     } finally {
       setIsLoading(false)
     }
   }
 
+  const stepNumber = (n: number) => (
+    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background text-xs font-bold shrink-0">
+      {n}
+    </div>
+  )
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-      setIsOpen(open)
-      if (!open) { setUrl(''); setCopied(false) }
-    }}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open)
+        if (!open) {
+          setUrl('')
+          setCopied(false)
+        }
+      }}
+    >
       <DialogTrigger asChild>
         <Button className="w-full cursor-pointer" variant="outline">
           <FileDown className="size-4" />
           Import from Google Forms
         </Button>
       </DialogTrigger>
-      <DialogContent className="p-0 gap-0 overflow-hidden sm:max-w-[580px]">
-        <DialogHeader className="px-6 pt-6 pb-4">
-          <DialogTitle className="text-xl">Import from Google Forms</DialogTitle>
+      <DialogContent
+        className="overflow-hidden p-0 gap-0 sm:max-w-[540px]"
+        overlayClassName="bg-black/60 backdrop-blur-md"
+      >
+        <DialogHeader className="px-6 pt-6 pb-1 gap-0">
+          <DialogTitle className="text-lg font-semibold">
+            Import from Google Forms
+          </DialogTitle>
           <DialogDescription>
             Migrate your existing Google Form to ThunderForms in seconds.
           </DialogDescription>
         </DialogHeader>
 
-        <Separator />
-
         <div className="px-6 py-5 space-y-5">
-          {/* Step 1 */}
+          {/* Step 1: Share access */}
           {GOOGLE_SERVICE_ACCOUNT_EMAIL && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
-                  1
-                </div>
-                <p className="text-sm font-medium">Share access with ThunderForms</p>
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-2.5">
+                {stepNumber(1)}
+                <p className="text-sm font-medium">
+                  Share access with ThunderForms
+                </p>
               </div>
 
-              <div className="ml-8 space-y-2.5">
+              <div className="ml-8 space-y-2">
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Open your Google Form → <strong>three dots menu</strong> → <strong>Add collaborators</strong> → paste the email below and send.
+                  Open your Google Form &rarr; <strong>three dots menu</strong>{' '}
+                  &rarr; <strong>Add collaborators</strong> &rarr; paste the
+                  email below and send.
                 </p>
-                <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 min-w-0">
-                  <code className="text-xs flex-1 break-all select-all min-w-0">
+                <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 min-w-0">
+                  <code className="text-xs font-mono flex-1 break-all select-all min-w-0">
                     {GOOGLE_SERVICE_ACCOUNT_EMAIL}
                   </code>
                   <Button
@@ -145,18 +173,18 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
             </div>
           )}
 
-          {/* Step 2 */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
-                {GOOGLE_SERVICE_ACCOUNT_EMAIL ? '2' : '1'}
-              </div>
-              <p className="text-sm font-medium">Paste the form&apos;s edit link</p>
+          {/* Step 2: Paste URL */}
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-2.5">
+              {stepNumber(GOOGLE_SERVICE_ACCOUNT_EMAIL ? 2 : 1)}
+              <p className="text-sm font-medium">
+                Paste the form&apos;s edit link
+              </p>
             </div>
 
-            <div className="ml-8">
+            <div className="ml-8 space-y-1.5">
               <div className="relative">
-                <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
                   type="url"
                   placeholder="https://docs.google.com/forms/d/.../edit"
@@ -172,20 +200,21 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
                   disabled={isLoading}
                 />
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1.5">
-                Use the edit link from your browser address bar, not the sharing link.
+              <p className="text-xs text-muted-foreground">
+                Use the edit link from your browser address bar, not the sharing
+                link.
               </p>
             </div>
           </div>
         </div>
 
-        <Separator />
-
-        <div className="p-4 flex justify-end">
+        {/* Footer */}
+        <div className="border-t bg-muted/30 px-6 py-4 flex items-center justify-end">
           <Button
             onClick={handleImport}
             disabled={isLoading || !url.trim()}
-            className="h-8 cursor-pointer"
+            className="text-xs cursor-pointer"
+            size="sm"
           >
             {isLoading ? (
               <>
