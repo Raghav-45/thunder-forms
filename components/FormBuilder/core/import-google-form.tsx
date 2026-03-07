@@ -138,40 +138,42 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
         <div className="px-6 py-5 space-y-5">
           {/* Step 1: Share access */}
           {GOOGLE_SERVICE_ACCOUNT_EMAIL && (
-            <div className="space-y-2.5">
-              <div className="flex items-center gap-2.5">
-                {stepNumber(1)}
-                <p className="text-sm font-medium">
-                  Share access with ThunderForms
-                </p>
-              </div>
+  <div className="space-y-2.5">
+    <div className="flex items-center gap-2.5">
+      {stepNumber(1)}
+      <p className="text-sm font-medium">
+        Share access with ThunderForms
+      </p>
+    </div>
 
-              <div className="ml-8 space-y-2">
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Open your Google Form &rarr; <strong>three dots menu</strong>{' '}
-                  &rarr; <strong>Add collaborators</strong> &rarr; paste the
-                  email below and send.
-                </p>
-                <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 min-w-0">
-                  <code className="text-xs font-mono flex-1 break-all select-all min-w-0">
-                    {GOOGLE_SERVICE_ACCOUNT_EMAIL}
-                  </code>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 shrink-0 cursor-pointer"
-                    onClick={handleCopy}
-                  >
-                    {copied ? (
-                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-                    ) : (
-                      <Copy className="h-3.5 w-3.5" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
+    <div className="ml-8 space-y-2">
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        Open your Google Form &rarr; click <strong>Share</strong> (top right)
+        &rarr; under <strong>Add collaborators</strong> paste the email below
+        &rarr; set the role to <strong>Editor</strong> &rarr; click
+        <strong> Send</strong>.
+      </p>
+
+      <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 min-w-0">
+        <code className="text-xs font-mono flex-1 break-all select-all min-w-0">
+          {GOOGLE_SERVICE_ACCOUNT_EMAIL}
+        </code>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 shrink-0 cursor-pointer"
+          onClick={handleCopy}
+        >
+          {copied ? (
+            <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" />
           )}
+        </Button>
+      </div>
+    </div>
+  </div>
+)}
 
           {/* Step 2: Paste URL */}
           <div className="space-y-2.5">
