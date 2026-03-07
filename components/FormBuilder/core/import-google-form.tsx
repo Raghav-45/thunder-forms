@@ -4,7 +4,6 @@ import { FieldConfig } from '@/components/FormBuilder/elements'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -12,8 +11,15 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Copy, FileDown, AlertCircle } from 'lucide-react'
+import { Separator } from '@/components/ui/separator'
+import {
+  Copy,
+  FileDown,
+  Link,
+  Loader2,
+  CheckCircle2,
+  ArrowRight,
+} from 'lucide-react'
 import { FC, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -31,6 +37,15 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
   const [url, setUrl] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  function handleCopy() {
+    if (!GOOGLE_SERVICE_ACCOUNT_EMAIL) return
+    navigator.clipboard.writeText(GOOGLE_SERVICE_ACCOUNT_EMAIL)
+    setCopied(true)
+    toast.success('Email copied!')
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   async function handleImport() {
     if (!url.trim()) {
@@ -74,82 +89,116 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      setIsOpen(open)
+      if (!open) { setUrl(''); setCopied(false) }
+    }}>
       <DialogTrigger asChild>
         <Button className="w-full cursor-pointer" variant="outline">
           <FileDown className="size-4" />
           Import from Google Forms
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg p-6">
-        <DialogHeader>
-          <DialogTitle>Import from Google Forms</DialogTitle>
+      <DialogContent className="p-0 gap-0 overflow-hidden sm:max-w-[580px]">
+        <DialogHeader className="px-6 pt-6 pb-4">
+          <DialogTitle className="text-xl">Import from Google Forms</DialogTitle>
           <DialogDescription>
-            Paste a Google Forms URL to import all questions into ThunderForms.
+            Migrate your existing Google Form to ThunderForms in seconds.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <Separator />
+
+        <div className="px-6 py-5 space-y-5">
+          {/* Step 1 */}
           {GOOGLE_SERVICE_ACCOUNT_EMAIL && (
-            <div className="rounded-md bg-muted/50 p-3 space-y-2">
-              <div className="flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
-                <div className="text-xs text-muted-foreground">
-                  <p className="font-medium text-foreground mb-1">First, share the form with this email:</p>
-                  <div className="flex items-center gap-2">
-                    <code className="text-xs bg-background rounded px-2 py-1 break-all">
-                      {GOOGLE_SERVICE_ACCOUNT_EMAIL}
-                    </code>
-                    <button
-                      type="button"
-                      className="shrink-0 hover:text-foreground transition-colors cursor-pointer"
-                      onClick={() => {
-                        navigator.clipboard.writeText(GOOGLE_SERVICE_ACCOUNT_EMAIL)
-                        toast.success('Email copied to clipboard')
-                      }}
-                    >
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
+                  1
+                </div>
+                <p className="text-sm font-medium">Share access with ThunderForms</p>
+              </div>
+
+              <div className="ml-8 space-y-2.5">
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Open your Google Form → <strong>three dots menu</strong> → <strong>Add collaborators</strong> → paste the email below and send.
+                </p>
+                <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 min-w-0">
+                  <code className="text-xs flex-1 break-all select-all min-w-0">
+                    {GOOGLE_SERVICE_ACCOUNT_EMAIL}
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0 cursor-pointer"
+                    onClick={handleCopy}
+                  >
+                    {copied ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                    ) : (
                       <Copy className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                  <p className="mt-1.5">
-                    Open your Google Form, click the <strong>three dots menu</strong> → <strong>Add collaborators</strong> → paste this email.
-                  </p>
+                    )}
+                  </Button>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="grid gap-2">
-            <Label htmlFor="googleFormUrl">Google Form URL</Label>
-            <Input
-              id="googleFormUrl"
-              type="url"
-              placeholder="https://docs.google.com/forms/d/..."
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  handleImport()
-                }
-              }}
-            />
-          </div>
+          {/* Step 2 */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
+                {GOOGLE_SERVICE_ACCOUNT_EMAIL ? '2' : '1'}
+              </div>
+              <p className="text-sm font-medium">Paste the form&apos;s edit link</p>
+            </div>
 
-          <div className="flex justify-end gap-2">
-            <DialogClose asChild>
-              <Button variant="outline" disabled={isLoading}>
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button
-              onClick={handleImport}
-              disabled={isLoading || !url.trim()}
-              className="cursor-pointer"
-            >
-              {isLoading ? 'Importing...' : 'Import Form'}
-            </Button>
+            <div className="ml-8">
+              <div className="relative">
+                <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="url"
+                  placeholder="https://docs.google.com/forms/d/.../edit"
+                  className="pl-9 h-10"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleImport()
+                    }
+                  }}
+                  disabled={isLoading}
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                Use the edit link from your browser address bar, not the sharing link.
+              </p>
+            </div>
           </div>
+        </div>
+
+        <Separator />
+
+        <div className="p-4 flex justify-end">
+          <Button
+            onClick={handleImport}
+            disabled={isLoading || !url.trim()}
+            className="h-8 cursor-pointer"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Importing...
+              </>
+            ) : (
+              <>
+                Import Form
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
