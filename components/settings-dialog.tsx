@@ -47,7 +47,7 @@ export function SettingsDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full mt-4 font-medium">
+        <Button variant="outline" className="w-full mt-2 font-medium">
           <Settings className="mr-2 h-4 w-4" />
           Advanced Settings
         </Button>

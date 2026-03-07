@@ -84,6 +84,7 @@ import {
 import { use, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { SettingsDialog } from '@/components/settings-dialog'
+import ImportGoogleForm from '@/components/FormBuilder/core/import-google-form'
 
 interface FormBuilderProps {
   params: Promise<{ slug: string }>
@@ -484,7 +485,6 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         <CardContent className="flex flex-col space-y-4 p-4 py-0 h-full">
           <div className="flex flex-row justify-between mb-8">
             <h2 className="font-bold text-2xl">Settings</h2>
-
             <Button
               size="sm"
               variant="secondary"
@@ -530,13 +530,20 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
               }
             />
           </div>
-
-
+          <SettingsDialog />
 
           <div className="flex-grow"></div>
 
-
-          <SettingsDialog />
+          <ImportGoogleForm
+            onImported={(title, description, fields) => {
+              setFormSettings({
+                ...formSettings,
+                title,
+                description,
+              })
+              setFields(fields)
+            }}
+          />
 
           <GenerateWithAiPrompt
             onGeneratedFields={(title, description, fields) => {

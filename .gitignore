@@ -68,3 +68,4 @@ model_capabilities.yaml
 gsd-template/
 GSD-STYLE.md
 .gemini/GEMINI.md
+.env
