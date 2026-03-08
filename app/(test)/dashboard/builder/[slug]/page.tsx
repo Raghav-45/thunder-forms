@@ -6,33 +6,7 @@ import {
   IMMORTAL_SENTINEL_DATE,
 } from '@/components/date-picker-with-presets'
 import GenerateWithAiPrompt from '@/components/FormBuilder/core/generate-with-ai'
-import {
-  FieldConfig,
-  DatePickerEditor,
-  MultiSelectEditor,
-  SwitchEditor,
-  TextAreaEditor,
-  TextInputEditor,
-  SectionHeaderEditor,
-  CheckboxEditor,
-  NumberInputEditor,
-  SingleSelectEditor,
-  RadioGroupEditor,
-  SliderEditor,
-  DateTimePickerEditor,
-  TextInputConfig,
-  MultiSelectConfig,
-  TextAreaConfig,
-  SwitchConfig,
-  DatePickerConfig,
-  SectionHeaderConfig,
-  CheckboxConfig,
-  NumberInputConfig,
-  SingleSelectConfig,
-  RadioGroupConfig,
-  SliderConfig,
-  DateTimePickerConfig,
-} from '@/components/FormBuilder/elements'
+import { FieldConfig } from '@/components/FormBuilder/elements'
 import { useFormStore } from '@/components/FormBuilder/store'
 import {
   AVAILABLE_FIELDS,
@@ -41,6 +15,7 @@ import {
 import {
   createDefaultFieldConfig,
   getFieldComponent,
+  getFieldEditor,
 } from '@/components/FormBuilder/utils/helperFunctions'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -222,127 +197,32 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   }
 
   const renderEditor = () => {
-    const field = editingField
-    if (!field) return null
+    if (!editingField) return null
 
-    const handleUpdateField = (updatedField: FieldConfig) => {
-      setFields((prev) =>
-        prev.map((field) =>
-          field.id === updatedField.id ? { ...field, ...updatedField } : field,
-        ),
-      )
-      setEditingField(null)
-    }
+    const EditorComponent = getFieldEditor(
+      editingField.uniqueIdentifier,
+    ) as React.FC<{
+      field: FieldConfig
+      onUpdate: (field: FieldConfig) => void
+      onClose: () => void
+      isOpen: boolean
+    }>
 
-    const baseProps = {
-      field,
-      onUpdate: handleUpdateField,
-      onClose: () => {
-        setEditingField(null)
-      },
-      isOpen: true,
-    }
-
-    switch (field.uniqueIdentifier) {
-      case 'text-input':
-        return (
-          <TextInputEditor
-            {...baseProps}
-            field={field as TextInputConfig}
-            onUpdate={(f) => handleUpdateField(f)}
-          />
-        )
-      case 'multi-select':
-        return (
-          <MultiSelectEditor
-            {...baseProps}
-            field={field as MultiSelectConfig}
-            onUpdate={(f) => handleUpdateField(f)}
-          />
-        )
-      case 'text-area':
-        return (
-          <TextAreaEditor
-            {...baseProps}
-            field={field as TextAreaConfig}
-            onUpdate={(f) => handleUpdateField(f)}
-          />
-        )
-      case 'switch-field':
-        return (
-          <SwitchEditor
-            {...baseProps}
-            field={field as SwitchConfig}
-            onUpdate={(f) => handleUpdateField(f)}
-          />
-        )
-      case 'date-picker':
-        return (
-          <DatePickerEditor
-            {...baseProps}
-            field={field as DatePickerConfig}
-            onUpdate={(f) => handleUpdateField(f)}
-          />
-        )
-      case 'section-header':
-        return (
-          <SectionHeaderEditor
-            {...baseProps}
-            field={field as SectionHeaderConfig}
-            onUpdate={(f) => handleUpdateField(f)}
-          />
-        )
-      case 'checkbox':
-        return (
-          <CheckboxEditor
-            {...baseProps}
-            field={field as CheckboxConfig}
-            onUpdate={(f) => handleUpdateField(f)}
-          />
-        )
-      case 'number-input':
-        return (
-          <NumberInputEditor
-            {...baseProps}
-            field={field as NumberInputConfig}
-            onUpdate={(f) => handleUpdateField(f)}
-          />
-        )
-      case 'single-select':
-        return (
-          <SingleSelectEditor
-            {...baseProps}
-            field={field as SingleSelectConfig}
-            onUpdate={(f) => handleUpdateField(f)}
-          />
-        )
-      case 'radio-group':
-        return (
-          <RadioGroupEditor
-            {...baseProps}
-            field={field as RadioGroupConfig}
-            onUpdate={(f) => handleUpdateField(f)}
-          />
-        )
-      case 'slider':
-        return (
-          <SliderEditor
-            {...baseProps}
-            field={field as SliderConfig}
-            onUpdate={(f) => handleUpdateField(f)}
-          />
-        )
-      case 'datetime-picker':
-        return (
-          <DateTimePickerEditor
-            {...baseProps}
-            field={field as DateTimePickerConfig}
-            onUpdate={(f) => handleUpdateField(f)}
-          />
-        )
-      default:
-        return null
-    }
+    return (
+      <EditorComponent
+        field={editingField}
+        onUpdate={(updatedField) => {
+          setFields((prev) =>
+            prev.map((f) =>
+              f.id === updatedField.id ? { ...f, ...updatedField } : f,
+            ),
+          )
+          setEditingField(null)
+        }}
+        onClose={() => setEditingField(null)}
+        isOpen={true}
+      />
+    )
   }
 
   const form = useQuery({
