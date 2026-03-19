@@ -91,6 +91,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { ChartLineIcon, DatabaseIcon, Edit2Icon } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import AnalyticsGraph from './analyticsGraph'
 import { DeleteFormDialog } from './delete-form-dialog'
 import { Skeleton } from './ui/skeleton'
@@ -183,6 +184,27 @@ export function FormTable({
   )
 
   const [deleteFormId, setDeleteFormId] = React.useState<string | null>(null)
+  const [duplicatingFormId, setDuplicatingFormId] = React.useState<string | null>(null)
+
+  async function handleDuplicateForm(formId: string) {
+    setDuplicatingFormId(formId)
+    try {
+      const res = await fetch(`/api/forms/${formId}/duplicate`, {
+        method: 'POST',
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        toast.error(json.error || 'Failed to duplicate form')
+        return
+      }
+      toast.success('Form duplicated')
+      window.location.reload()
+    } catch {
+      toast.error('Failed to duplicate form')
+    } finally {
+      setDuplicatingFormId(null)
+    }
+  }
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
     () => data?.map(({ id }) => id) || [],
@@ -317,7 +339,13 @@ export function FormTable({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-32">
               <DropdownMenuItem>Edit</DropdownMenuItem>
-              <DropdownMenuItem>Make a copy</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleDuplicateForm(row.original.id)}
+                disabled={duplicatingFormId === row.original.id}
+                className="cursor-pointer"
+              >
+                {duplicatingFormId === row.original.id ? 'Copying...' : 'Make a copy'}
+              </DropdownMenuItem>
               <DropdownMenuItem>Favorite</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -332,7 +360,7 @@ export function FormTable({
         ),
       },
     ],
-    [isLoading]
+    [isLoading, duplicatingFormId]
   )
 
   const table = useReactTable({
