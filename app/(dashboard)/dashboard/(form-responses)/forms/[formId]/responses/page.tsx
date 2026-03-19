@@ -9,6 +9,7 @@ import {
   IconChevronsLeft,
   IconChevronsRight,
   IconDotsVertical,
+  IconDownload,
   IconLayoutColumns,
 } from '@tabler/icons-react'
 import {
@@ -336,6 +337,38 @@ function ResponsesDataTable({ data: responses }: { data: FormResponse[] }) {
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
+  const downloadCSV = React.useCallback(() => {
+    const headers = ['Response ID', ...allFields.map(formatFieldName), 'Submitted']
+    const rows = responses.map((response) => [
+      response.id,
+      ...allFields.map((field) => {
+        const value = response.data[field]
+        if (value == null) return ''
+        if (Array.isArray(value)) return value.join('; ')
+        const str = String(value)
+        // Escape quotes and wrap in quotes if it contains commas, quotes, or newlines
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+          return `"${str.replace(/"/g, '""')}"`
+        }
+        return str
+      }),
+      new Date(response.createdAt).toISOString(),
+    ])
+
+    const csvContent = [
+      headers.map((h) => (h.includes(',') ? `"${h}"` : h)).join(','),
+      ...rows.map((row) => row.join(',')),
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `form-responses-${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  }, [responses, allFields])
+
   const totalResponses = responses.length
   const recentResponses = responses.filter((response) => {
     const responseDate = new Date(response.createdAt)
@@ -356,6 +389,11 @@ function ResponsesDataTable({ data: responses }: { data: FormResponse[] }) {
           </TabsTrigger>
         </TabsList>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={downloadCSV}>
+            <IconDownload />
+            <span className="hidden lg:inline">Download CSV</span>
+            <span className="lg:hidden">CSV</span>
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
