@@ -57,9 +57,11 @@ import {
   Trash2Icon,
 } from 'lucide-react'
 import { use, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { SettingsDialog } from '@/components/settings-dialog'
 import ImportGoogleForm from '@/components/FormBuilder/core/import-google-form'
+import { getTemplateById } from '@/lib/templates'
 
 interface FormBuilderProps {
   params: Promise<{ slug: string }>
@@ -68,6 +70,7 @@ interface FormBuilderProps {
 export default function FormBuilderPage({ params }: FormBuilderProps) {
   const { formSettings, setFormSettings } = useFormStore()
   const { slug: paramFormId } = use(params)
+  const searchParams = useSearchParams()
   const [currentFormId, setCurrentFormId] = useState<string>(paramFormId)
   const [fields, setFields] = useState<FieldConfig[]>([])
   const [editingField, setEditingField] = useState<FieldConfig | null>(null)
@@ -92,6 +95,29 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   useEffect(() => {
     setCurrentFormId(paramFormId)
   }, [paramFormId])
+
+  // Load template fields when ?template=<id> is present
+  useEffect(() => {
+    const templateId = searchParams.get('template')
+    if (templateId && paramFormId === 'new-form') {
+      const template = getTemplateById(templateId)
+      if (template) {
+        // Generate fresh IDs so each use of a template gets unique field IDs
+        const fieldsWithFreshIds = template.fields.map((field) => ({
+          ...field,
+          id: `${field.uniqueIdentifier}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        })) as FieldConfig[]
+        setFields(fieldsWithFreshIds)
+        setFormSettings({
+          ...formSettings,
+          title: template.title,
+          description: template.description,
+        })
+        toast.success(`Template "${template.title}" loaded`)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, paramFormId])
 
   const isExistingForm = currentFormId && currentFormId !== 'new-form'
   const isNewForm = !isExistingForm && currentFormId === 'new-form'

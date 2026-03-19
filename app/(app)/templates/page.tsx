@@ -1,140 +1,227 @@
-// import { TrendingUpIcon } from 'lucide-react'
-import { Announcement } from '@/components/Announcement'
-import { Icons } from '@/components/Icons'
+'use client'
 
-// const baseUrl =
-//   process.env.NODE_ENV === 'development'
-//     ? 'http://localhost:3000'
-//     : siteConfig.url
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Separator } from '@/components/ui/separator'
+import {
+  TEMPLATES,
+  TEMPLATE_CATEGORIES,
+  FormTemplate,
+  TemplateCategory,
+} from '@/lib/templates'
+import {
+  ArrowRightIcon,
+  LayoutTemplateIcon,
+  SearchIcon,
+  SparklesIcon,
+} from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useMemo, useState } from 'react'
 
-// async function getTemplates() {
-//   try {
-//     const response = await fetch(`${baseUrl}/api/forms/templates`, {
-//       method: 'GET',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       cache: 'no-store', // for dynamic data
-//     })
+export default function TemplatesPage() {
+  const router = useRouter()
+  const [search, setSearch] = useState('')
+  const [activeCategory, setActiveCategory] = useState<
+    TemplateCategory | 'All'
+  >('All')
 
-//     if (!response.ok) {
-//       throw new Error('Failed to fetch templates')
-//     }
+  const filtered = useMemo(() => {
+    let results = TEMPLATES
+    if (activeCategory !== 'All') {
+      results = results.filter((t) => t.category === activeCategory)
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      results = results.filter(
+        (t) =>
+          t.title.toLowerCase().includes(q) ||
+          t.description.toLowerCase().includes(q) ||
+          t.category.toLowerCase().includes(q),
+      )
+    }
+    return results
+  }, [search, activeCategory])
 
-//     return response.json()
-//   } catch (error) {
-//     console.error('Error fetching templates:', error)
-//     return []
-//   }
-// }
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { All: TEMPLATES.length }
+    for (const t of TEMPLATES) {
+      counts[t.category] = (counts[t.category] || 0) + 1
+    }
+    return counts
+  }, [])
 
-export default async function TemplatesPage() {
-  // const templates: TemplateType[] = await getTemplates()
+  const handleUseTemplate = (template: FormTemplate) => {
+    router.push(`/dashboard/builder/new-form?template=${template.id}`)
+  }
+
   return (
-    <section className="py-32">
-      <div className="container">
-        <div className="mb-14">
-          <Announcement
-            text="✨ New Feedback Template"
-            href="#template-1"
-            withoutIcon
-          />
-
-          <h1 className="flex mb-3 mt-1 text-balance text-3xl font-semibold md:text-4xl">
-            Choose a Template <Icons.Logo className="h-auto w-10 mx-3" />
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            Select a template and start creating your form instantly.
+    <section className="py-16 md:py-24">
+      <div className="container max-w-6xl mx-auto px-4">
+        {/* Header */}
+        <div className="mb-10">
+          <div className="flex items-center gap-3 mb-2">
+            <LayoutTemplateIcon className="size-8 text-primary" />
+            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+              Template Library
+            </h1>
+            <Badge variant="secondary" className="text-xs font-medium">
+              {TEMPLATES.length} templates
+            </Badge>
+          </div>
+          <p className="text-lg text-muted-foreground max-w-2xl">
+            Pick a template and start collecting responses in seconds. Every
+            template is fully customizable in the builder.
           </p>
         </div>
-        <div className="w-full">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-            {/* {templates.map((template) => (
-              <TemplateDialog key={template.id} template={template} />
-            ))} */}
+
+        {/* Search + filters */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center mb-6">
+          <div className="relative flex-1 max-w-md">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              placeholder="Search templates..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 bg-background"
+            />
           </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={activeCategory === 'All' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveCategory('All')}
+              className="cursor-pointer"
+            >
+              All
+              <Badge
+                variant="secondary"
+                className="ml-1.5 text-[10px] px-1.5 py-0 h-4"
+              >
+                {categoryCounts['All']}
+              </Badge>
+            </Button>
+            {TEMPLATE_CATEGORIES.map((cat) => (
+              <Button
+                key={cat.name}
+                variant={activeCategory === cat.name ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setActiveCategory(cat.name)}
+                className="cursor-pointer"
+              >
+                {cat.label}
+                <Badge
+                  variant="secondary"
+                  className="ml-1.5 text-[10px] px-1.5 py-0 h-4"
+                >
+                  {categoryCounts[cat.name] || 0}
+                </Badge>
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <Separator className="mb-6" />
+
+        {/* Templates grid */}
+        {filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <SearchIcon className="size-10 text-muted-foreground/50 mb-3" />
+            <p className="text-muted-foreground text-lg font-medium">
+              No templates found
+            </p>
+            <p className="text-muted-foreground/70 text-sm mt-1">
+              Try adjusting your search or filter.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((template) => (
+              <TemplateCard
+                key={template.id}
+                template={template}
+                onUse={handleUseTemplate}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Bottom CTA */}
+        <div className="mt-10 rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center">
+          <SparklesIcon className="mx-auto mb-2 size-6 text-primary" />
+          <p className="font-medium text-lg">Need something custom?</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            Start from scratch or let AI generate a form for you.
+          </p>
+          <Button
+            variant="outline"
+            className="cursor-pointer"
+            onClick={() => router.push('/dashboard/builder/new-form')}
+          >
+            Create Blank Form
+            <ArrowRightIcon className="ml-1 size-4" />
+          </Button>
         </div>
       </div>
     </section>
   )
 }
 
-// interface TemplateDialogProps {
-//   template: TemplateType
-// }
+// ────────────────────────────────────────────────────────────
 
-// const TemplateDialog: FC<TemplateDialogProps> = ({ template }) => {
-//   return (
-//     <Dialog>
-//       <DialogTrigger asChild>
-//         <div
-//           id={template.id}
-//           className="flex flex-col text-clip rounded-xl border border-border transition-all overflow-hidden cursor-pointer"
-//         >
-//           <div className="relative">
-//             <Image
-//               src={template.thumbnailUrl}
-//               alt={template.title}
-//               className="aspect-video size-full object-cover object-center"
-//               height={90}
-//               width={160}
-//             />
-//             <div className="absolute top-0 right-0 px-2 py-1 z-100 flex justify-between text-xs">
-//               {/* {template.isNew && (
-//                 <Badge
-//                   variant={'destructive'}
-//                   className="text-white rounded-full bg-red-500 hover:bg-red-500/70"
-//                 >
-//                   <TrendingUpIcon className="size-4 mr-1" /> New
-//                 </Badge>
-//               )} */}
-//             </div>
-//           </div>
-//           <div className="px-3 py-8 md:px-8 md:py-8 lg:px-6 lg:py-4">
-//             <h3 className="mb-2 text-lg font-semibold md:mb-3 md:text-xl lg:mb-4">
-//               {template.title}
-//             </h3>
-//             <p className="mb-4 text-muted-foreground">{template.description}</p>
-//           </div>
-//         </div>
-//       </DialogTrigger>
-//       <DialogContent className="sm:max-w-[900px] p-0 overflow-hidden">
-//         <div className="flex h-[500px]">
-//           <div className="w-1/2 relative">
-//             <Image
-//               src={template.thumbnailUrl || '/placeholder.svg'}
-//               alt={template.title}
-//               className="w-full h-full"
-//               layout="fill"
-//               objectFit="cover"
-//             />
-//             {/* <iframe
-//               src="http://localhost:3000/forms/cm66uzewn000jybb8ln3094lf"
-//               className="absolute w-full h-full -top-10"
-//               frameBorder="0"
-//               scrolling="no"
-//             /> */}
-//             <div className="absolute pointer-events-none -right-0.5 w-full h-[1000px] bg-gradient-to-r from-transparent via-background/30 to-background" />
-//           </div>
-//           <div className="w-1/2 p-6 pl-2 flex flex-col">
-//             <h2 className="text-2xl font-bold mb-4">{template.title}</h2>
-//             <p className="text-muted-foreground mb-6">{template.description}</p>
-//             <div className="flex gap-2 mb-6 flex-wrap">
-//               <Badge variant="secondary">#{template.createdBy}</Badge>
-//               <Badge variant="secondary">#{template.slug}</Badge>
-//               <Badge variant="secondary">#Template</Badge>
-//             </div>
-//             <div className="mt-auto">
-//               <Link
-//                 href={`/dashboard/builder/new-form?template=${template.slug}`}
-//                 className={cn(buttonVariants(), 'w-full')}
-//               >
-//                 Continue with this template
-//               </Link>
-//             </div>
-//           </div>
-//         </div>
-//       </DialogContent>
-//     </Dialog>
-//   )
-// }
+function TemplateCard({
+  template,
+  onUse,
+}: {
+  template: FormTemplate
+  onUse: (t: FormTemplate) => void
+}) {
+  return (
+    <Card className="group relative overflow-hidden transition-all hover:shadow-md hover:border-primary/40 cursor-pointer p-0">
+      <CardContent className="flex flex-col h-full p-0">
+        {/* Top color band */}
+        <div className="h-1.5 w-full bg-gradient-to-r from-primary/60 to-primary/20" />
+
+        <div className="p-5 pb-3 flex-1 flex flex-col">
+          {/* Icon + category */}
+          <div className="flex items-start justify-between mb-3">
+            <span className="text-2xl leading-none">{template.icon}</span>
+            <Badge variant="outline" className="text-[10px] font-medium">
+              {template.category}
+            </Badge>
+          </div>
+
+          {/* Title */}
+          <h3 className="font-semibold text-base leading-snug mb-1.5">
+            {template.title}
+          </h3>
+
+          {/* Description */}
+          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 mb-4">
+            {template.description}
+          </p>
+
+          {/* Meta */}
+          <div className="mt-auto flex items-center gap-2 text-xs text-muted-foreground/70">
+            <span>{template.fieldCount} fields</span>
+            <span className="inline-block size-0.5 rounded-full bg-muted-foreground/40" />
+            <span>Ready to use</span>
+          </div>
+        </div>
+
+        {/* Action */}
+        <div className="px-5 pb-5 pt-0">
+          <Button
+            size="sm"
+            className="w-full cursor-pointer"
+            onClick={() => onUse(template)}
+          >
+            Use Template
+            <ArrowRightIcon className="ml-1 size-3.5" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
