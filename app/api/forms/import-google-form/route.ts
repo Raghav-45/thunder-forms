@@ -1,16 +1,14 @@
-import { createClient } from '@/utils/supabase/server'
+import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
 import { importGoogleForm, extractFormId, isResponderLink } from '@/lib/google-forms-import'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
-
-    if (sessionError || !session?.user?.id) {
+    const session = await auth.api.getSession({
+      headers: await headers()
+    })
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

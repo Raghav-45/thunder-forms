@@ -8,51 +8,108 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-/// User profiles containing authentication and basic user information
-model profiles {
-  id           String  @id @db.Uuid // UUID from auth provider
-  email        String  @db.VarChar(256) // User's email address
-  display_name String? @db.VarChar(256) // User's chosen display name
+enum UserRole {
+  user
+  admin
+}
 
-  forms forms[] // One-to-many: A user can create multiple forms
+model user {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  displayName   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions     session[]
+  accounts     account[]
+  forms        forms[]
+}
+
+model session {
+  id         String   @id @default(cuid())
+  userId     String
+  token      String   @unique
+  expiresAt  DateTime
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model account {
+  id                    String   @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?
+  password              String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model profiles {
+  id           String  @id
+  email        String  @db.VarChar(256)
+  display_name String? @db.VarChar(256)
 }
 
 model forms {
-  id             String    @id @default(cuid()) // Unique form identifier
-  title          String // Form title
-  description    String? // Form description
-  fields         Json // Dynamic form fields stored as JSON
-  createdAt      DateTime  @default(now()) // Form creation timestamp
-  expiresAt      DateTime? // Expiration date for the form, null for unlimited
-  maxSubmissions Int? // Maximum number of submissions allowed, null for unlimited
-  redirectUrl    String? // URL to redirect after form submission, null for default behavior
-  submitButtonText String? // Custom submit button text, defaults to "Submit"
+  id                String    @id @default(cuid())
+  title             String
+  description       String?
+  fields            Json
+  createdAt         DateTime  @default(now())
+  expiresAt         DateTime?
+  maxSubmissions    Int?
+  redirectUrl       String?
+  submitButtonText  String?
 
-  profiles profiles @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  userId   String   @db.Uuid // References profiles.id
+  user    user    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String
 
-  responses responses[] // One-to-many: A form can have multiple responses
-  template  templates? // One-to-one: A form can have at most one template
+  responses responses[]
+  template  templates?
 }
 
 model responses {
-  id        String   @id @default(cuid()) // Unique response identifier
-  data      Json // Form submission data stored as JSON ( matching the form fields structure )
-  createdAt DateTime @default(now()) // Response submission timestamp
+  id        String   @id @default(cuid())
+  data      Json
+  createdAt DateTime @default(now())
 
-  forms   forms  @relation(fields: [formsId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  formsId String // References forms.id
+  forms   forms  @relation(fields: [formsId], references: [id], onDelete: Cascade)
+  formsId String
 }
 
 model templates {
-  id           String   @id @default(cuid()) // Unique template identifier
-  slug         String   @unique // URL-friendly unique identifier for template access
-  title        String // Template name
-  description  String // Template description
-  createdBy    String // Creator identifier (could be user ID or system)
-  createdAt    DateTime @default(now()) // Template creation timestamp
-  thumbnailUrl String // Preview image URL for template gallery
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  description  String
+  createdBy    String
+  createdAt    DateTime @default(now())
+  thumbnailUrl String
 
-  form   forms  @relation(fields: [formId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  formId String @unique // References forms.id - UNIQUE constraint ensures one-to-one
+  form   forms  @relation(fields: [formId], references: [id], onDelete: Cascade)
+  formId String @unique
 }

@@ -1,4 +1,5 @@
-import { createClient } from '@/utils/supabase/server'
+import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
@@ -7,25 +8,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Initialize Supabase client
-    const supabase = await createClient()
-
-    // Get the current session
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
-
-    // Handle session retrieval errors
-    if (sessionError) {
-      console.error('Session error:', sessionError)
-      return NextResponse.json(
-        { error: 'Authentication error' },
-        { status: 401 }
-      )
-    }
-
-    // Check if user is authenticated
+    const session = await auth.api.getSession({
+      headers: await headers()
+    })
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

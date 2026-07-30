@@ -1,5 +1,6 @@
 import { analyticsPrisma, prisma } from '@/lib/prisma'
-import { createClient } from '@/utils/supabase/server'
+import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 interface WebsiteEventLog {
@@ -37,16 +38,10 @@ interface OverallAnalytics {
 
 export async function GET() {
   try {
-    // Initialize Supabase client
-    const supabase = await createClient()
-
-    // Get the current session
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
-
-    if (sessionError || !session?.user?.id) {
+    const session = await auth.api.getSession({
+      headers: await headers()
+    })
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Authentication error' },
         { status: 401 }

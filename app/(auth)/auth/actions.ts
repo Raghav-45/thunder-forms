@@ -1,32 +1,38 @@
-'use server'
+"use server"
 
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-
-import { createClient } from '@/utils/supabase/server'
-import { headers } from 'next/headers'
+import { auth } from "@/lib/auth"
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
 
 export async function login(data: { email: string; password: string }) {
-  const supabase = await createClient()
+  const { email, password } = data
 
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
+  try {
+    const result = await auth.api.signInEmail({
+      body: {
+        email,
+        password,
+      },
+      headers: await headers(),
+    })
 
-  const { error } = await supabase.auth.signInWithPassword(data)
+    if (!result) {
+      return {
+        success: false,
+        error: { message: "Invalid login credentials", type: "Error" },
+      }
+    }
 
-  if (error) {
-    // Return the error instead of throwing
+    redirect("/")
+  } catch (error: any) {
     return {
       success: false,
       error: {
-        message: error.message,
-        type: error.constructor.name,
+        message: error?.message || "Invalid login credentials",
+        type: "Error",
       },
     }
   }
-
-  revalidatePath('/', 'layout')
-  redirect('/')
 }
 
 export async function signup(data: {
@@ -34,52 +40,38 @@ export async function signup(data: {
   email: string
   password: string
 }) {
-  const supabase = await createClient()
+  const { displayName, email, password } = data
 
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
-
-  const { error } = await supabase.auth.signUp({
-    email: data.email,
-    password: data.password,
-    options: {
-      data: {
-        full_name: data.displayName,
+  try {
+    const result = await auth.api.signUpEmail({
+      body: {
+        name: displayName,
+        email,
+        password,
+        displayName,
       },
-    },
-  })
+      headers: await headers(),
+    })
 
-  if (error) {
-    // Return the error instead of throwing
+    if (!result) {
+      return {
+        success: false,
+        error: { message: "Signup failed. Please try again.", type: "Error" },
+      }
+    }
+
+    redirect("/")
+  } catch (error: any) {
+    const message = error?.message || "Signup failed. Please try again."
+    if (message.includes("already")) {
+      return {
+        success: false,
+        error: { message: "User already registered", type: "Error" },
+      }
+    }
     return {
       success: false,
-      error: {
-        message: error.message,
-        type: error.constructor.name,
-      },
+      error: { message, type: "Error" },
     }
-  }
-
-  revalidatePath('/', 'layout')
-  redirect('/')
-}
-
-export async function signInWithGithub() {
-  const supabase = await createClient()
-  const origin = (await headers()).get('origin')
-
-  const { error, data } = await supabase.auth.signInWithOAuth({
-    provider: 'github',
-    options: {
-      redirectTo: `${origin}/auth/callback`,
-    },
-  })
-
-  if (error) {
-    redirect('/error')
-  }
-
-  if (data.url) {
-    redirect(data.url) // use the redirect API for your server framework
   }
 }
