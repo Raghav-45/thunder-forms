@@ -65,13 +65,69 @@ interface FormBuilderProps {
   params: Promise<{ slug: string }>
 }
 
+interface IFormStructure {
+  pages: {
+    sections: {
+      fields: FieldConfig[];
+    }[];
+  }[];
+}
+
 export default function FormBuilderPage({ params }: FormBuilderProps) {
   const { formSettings, setFormSettings } = useFormStore()
   const { slug: paramFormId } = use(params)
   const [currentFormId, setCurrentFormId] = useState<string>(paramFormId)
+  const [formStructure, setFormStructure] = useState<IFormStructure>({
+    pages: [
+      {
+        sections: [
+          {
+            fields: [],
+          },
+        ],
+      },
+    ],
+  })
+  const [currentPageIndex, setCurrentPageIndex] = useState(0)
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
+  const currentFields =
+  formStructure.pages[currentPageIndex]?.sections[currentSectionIndex]?.fields ?? []
   const [fields, setFields] = useState<FieldConfig[]>([])
   const [editingField, setEditingField] = useState<FieldConfig | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
+
+  const updateCurrentFields = (
+    updater: (fields: FieldConfig[]) => FieldConfig[],
+  ) => {
+    setFormStructure((prev) => {
+      if (!prev) return prev
+
+      return {
+        ...prev,
+
+        pages: prev.pages.map((page, pageIndex) => {
+          if (pageIndex !== currentPageIndex) {
+            return page
+          }
+
+          return {
+            ...page,
+
+            sections: page.sections.map((section, sectionIndex) => {
+              if (sectionIndex !== currentSectionIndex) {
+                return section
+              }
+
+              return {
+                ...section,
+                fields: updater(section.fields),
+              }
+            }),
+          }
+        }),
+      }
+    })
+  }
 
   const [draggedElement, setDraggedElement] =
     useState<avaliableFieldsType | null>(null)
@@ -84,7 +140,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     e.preventDefault()
     if (draggedElement) {
       const newField = createDefaultFieldConfig(draggedElement)
-      setFields((prev) => [...prev, newField])
+      updateCurrentFields((prev) => [...prev, newField])
       setDraggedElement(null)
     }
   }
@@ -115,9 +171,15 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     const { active, over } = event
 
     if (over && active.id !== over.id) {
-      setFields((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id)
-        const newIndex = items.findIndex((item) => item.id === over.id)
+      updateCurrentFields((items) => {
+        const oldIndex = items.findIndex(
+          (item) => item.id === active.id,
+        )
+
+        const newIndex = items.findIndex(
+          (item) => item.id === over.id,
+        )
+
         return arrayMove(items, oldIndex, newIndex)
       })
     }
@@ -126,7 +188,9 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   }
 
   const handleRemoveField = (id: string) => {
-    setFields((prev) => prev.filter((field) => field.id !== id))
+    updateCurrentFields((prev) =>
+      prev.filter((field) => field.id !== id),
+    )
   }
 
   const SortableFieldItem = ({ field }: { field: FieldConfig }) => {
@@ -212,9 +276,11 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
       <EditorComponent
         field={editingField}
         onUpdate={(updatedField) => {
-          setFields((prev) =>
+          updateCurrentFields((prev) =>
             prev.map((f) =>
-              f.id === updatedField.id ? { ...f, ...updatedField } : f,
+              f.id === updatedField.id
+                ? { ...f, ...updatedField }
+                : f,
             ),
           )
           setEditingField(null)
@@ -335,7 +401,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     const payload: CreateFormPayload = {
       title: formSettings.title,
       description: formSettings.description?.trim() || null,
-      fields: fields,
+      fields: formStructure || [],
       maxSubmissions: formSettings.maxSubmissions
         ? isNaN(formSettings.maxSubmissions)
           ? null
@@ -448,10 +514,52 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
             )}
           </div>
         </div>
+        {/* Page Tabs */}
+        <div className="flex items-center gap-1 mb-3 border-b">
+          {formStructure.pages.map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={() => setCurrentPageIndex(index)}
+              className={cn(
+                'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
+                currentPageIndex === index
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground',
+              )}
+            >
+              Page {index + 1}
+            </button>
+          ))}
+
+          <button
+            type="button"
+            onClick={() => {
+              setFormStructure((prev) => ({
+                ...prev,
+                pages: [
+                  ...prev.pages,
+                  {
+                    sections: [
+                      {
+                        fields: [],
+                      },
+                    ],
+                  },
+                ],
+              }))
+
+              setCurrentPageIndex(formStructure.pages.length)
+            }}
+            className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+          >
+            + Add Page
+          </button>
+        </div>
         <Card
           className={cn(
             'h-[calc(100vh-100px)] overflow-y-scroll border-2 border-dashed !p-0 border-muted mb-1',
-            !(fields.length > 0) && 'flex items-center justify-center',
+            !((formStructure.pages[currentPageIndex]?.sections.map((s) => s.fields).flat() ?? []).length > 0) && 'flex items-center justify-center',
           )}
           onDragOver={(e: React.DragEvent) => e.preventDefault()}
           onDrop={handleElementDrop}
@@ -459,11 +567,11 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           <CardContent
             className={cn(
               'p-3 md:p-4',
-              !(fields.length > 0) &&
+              !((formStructure.pages[currentPageIndex]?.sections.map((s) => s.fields).flat() ?? []).length > 0) &&
                 'flex items-center justify-center w-full h-full',
             )}
           >
-            {fields.length > 0 ? (
+            {((formStructure.pages[currentPageIndex]?.sections.map((s) => s.fields).flat() ?? []).length > 0) ? (
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
@@ -471,19 +579,19 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
                 onDragEnd={handleDragEnd}
               >
                 <SortableContext
-                  items={fields.map((f) => f.id)}
+                  items={currentFields.map((f) => f.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  {fields.map((field) => (
+                  {currentFields.map((field) => (
                     <SortableFieldItem key={field.id} field={field} />
                   ))}
                 </SortableContext>
                 <DragOverlay>
                   {activeId ? (
                     <div className="opacity-50">
-                      {fields.find((f) => f.id === activeId) && (
+                      {currentFields.find((f) => f.id === activeId) && (
                         <SortableFieldItem
-                          field={fields.find((f) => f.id === activeId)!}
+                          field={currentFields.find((f) => f.id === activeId)!}
                         />
                       )}
                     </div>
