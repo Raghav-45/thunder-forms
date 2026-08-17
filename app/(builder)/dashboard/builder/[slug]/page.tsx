@@ -68,9 +68,9 @@ interface FormBuilderProps {
 interface IFormStructure {
   pages: {
     sections: {
-      fields: FieldConfig[];
-    }[];
-  }[];
+      fields: FieldConfig[]
+    }[]
+  }[]
 }
 
 export default function FormBuilderPage({ params }: FormBuilderProps) {
@@ -91,7 +91,8 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   const [currentPageIndex, setCurrentPageIndex] = useState(0)
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
   const currentFields =
-  formStructure.pages[currentPageIndex]?.sections[currentSectionIndex]?.fields ?? []
+    formStructure.pages[currentPageIndex]?.sections[currentSectionIndex]
+      ?.fields ?? []
   const [fields, setFields] = useState<FieldConfig[]>([])
   const [editingField, setEditingField] = useState<FieldConfig | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -131,16 +132,161 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
   const [draggedElement, setDraggedElement] =
     useState<avaliableFieldsType | null>(null)
+  const [isDraggingSection, setIsDraggingSection] = useState(false)
+
+  const handleSectionDragStart = () => {
+    setIsDraggingSection(true)
+  }
+
+  const handleSectionDragEnd = () => {
+    setIsDraggingSection(false)
+  }
+
+  const addSection = () => {
+    setFormStructure((prev) => ({
+      ...prev,
+      pages: prev.pages.map((page, pageIndex) => {
+        if (pageIndex !== currentPageIndex) {
+          return page
+        }
+
+        return {
+          ...page,
+          sections: [
+            ...page.sections,
+            {
+              fields: [],
+            },
+          ],
+        }
+      }),
+    }))
+  }
+
+  const SortableSection = ({
+    section,
+    sectionIndex,
+  }: {
+    section: { fields: FieldConfig[] }
+    sectionIndex: number
+  }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({
+      id: `section-${sectionIndex}`,
+    })
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+    }
+
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="mb-4"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => handleElementDrop(e, sectionIndex)}
+      >
+        <div className="rounded-xl border border-border bg-muted/20 p-4">
+          <div
+            {...attributes}
+            {...listeners}
+            className="mb-3 flex cursor-grab items-center gap-2 text-xs font-medium text-muted-foreground active:cursor-grabbing"
+          >
+            <GripVerticalIcon className="size-4" />
+
+            <span>Section {sectionIndex + 1}</span>
+          </div>
+
+          {/* Fields */}
+          {section.fields.length > 0 ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={section.fields.map((field) => field.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {section.fields.map((field) => (
+                  <SortableFieldItem key={field.id} field={field} />
+                ))}
+              </SortableContext>
+
+              <DragOverlay>
+                {activeId ? (
+                  <div className="opacity-50">
+                    {section.fields.find((field) => field.id === activeId) && (
+                      <SortableFieldItem
+                        field={
+                          section.fields.find((field) => field.id === activeId)!
+                        }
+                      />
+                    )}
+                  </div>
+                ) : null}
+              </DragOverlay>
+            </DndContext>
+          ) : (
+            <div className="flex min-h-24 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
+              Drag fields here
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   const handleElementDragStart = (draggedElement: avaliableFieldsType) => {
     setDraggedElement(draggedElement)
   }
 
-  const handleElementDrop = (e: React.DragEvent) => {
+  const handleElementDrop = (e: React.DragEvent, sectionIndex: number) => {
     e.preventDefault()
+
+    const isSection = e.dataTransfer.getData('application/x-form-section')
+
+    if (isSection === 'section') {
+      addSection()
+      return
+    }
+
     if (draggedElement) {
       const newField = createDefaultFieldConfig(draggedElement)
-      updateCurrentFields((prev) => [...prev, newField])
+
+      setFormStructure((prev) => ({
+        ...prev,
+        pages: prev.pages.map((page, pageIndex) => {
+          if (pageIndex !== currentPageIndex) {
+            return page
+          }
+
+          return {
+            ...page,
+            sections: page.sections.map((section, index) => {
+              if (index !== sectionIndex) {
+                return section
+              }
+
+              return {
+                ...section,
+                fields: [...section.fields, newField],
+              }
+            }),
+          }
+        }),
+      }))
+
       setDraggedElement(null)
     }
   }
@@ -172,13 +318,9 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
     if (over && active.id !== over.id) {
       updateCurrentFields((items) => {
-        const oldIndex = items.findIndex(
-          (item) => item.id === active.id,
-        )
+        const oldIndex = items.findIndex((item) => item.id === active.id)
 
-        const newIndex = items.findIndex(
-          (item) => item.id === over.id,
-        )
+        const newIndex = items.findIndex((item) => item.id === over.id)
 
         return arrayMove(items, oldIndex, newIndex)
       })
@@ -188,9 +330,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   }
 
   const handleRemoveField = (id: string) => {
-    updateCurrentFields((prev) =>
-      prev.filter((field) => field.id !== id),
-    )
+    updateCurrentFields((prev) => prev.filter((field) => field.id !== id))
   }
 
   const SortableFieldItem = ({ field }: { field: FieldConfig }) => {
@@ -278,9 +418,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         onUpdate={(updatedField) => {
           updateCurrentFields((prev) =>
             prev.map((f) =>
-              f.id === updatedField.id
-                ? { ...f, ...updatedField }
-                : f,
+              f.id === updatedField.id ? { ...f, ...updatedField } : f,
             ),
           )
           setEditingField(null)
@@ -336,10 +474,14 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     onError: (error) => {
       if (error instanceof AxiosError) {
         if (error.response?.status === 422) {
-          const issues = error.response.data?.issues as { field: string; message: string }[] | undefined
+          const issues = error.response.data?.issues as
+            | { field: string; message: string }[]
+            | undefined
           toast.error('Validation error', {
             description: issues?.length
-              ? issues.map((issue) => `• ${issue.field}: ${issue.message}`).join('\n')
+              ? issues
+                  .map((issue) => `• ${issue.field}: ${issue.message}`)
+                  .join('\n')
               : 'Please check your form fields and try again.',
             style: { whiteSpace: 'pre-line' },
           })
@@ -375,10 +517,14 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     onError: (error) => {
       if (error instanceof AxiosError) {
         if (error.response?.status === 422) {
-          const issues = error.response.data?.issues as { field: string; message: string }[] | undefined
+          const issues = error.response.data?.issues as
+            | { field: string; message: string }[]
+            | undefined
           toast.error('Validation error', {
             description: issues?.length
-              ? issues.map((issue) => `• ${issue.field}: ${issue.message}`).join('\n')
+              ? issues
+                  .map((issue) => `• ${issue.field}: ${issue.message}`)
+                  .join('\n')
               : 'Please check your form fields and try again.',
             style: { whiteSpace: 'pre-line' },
           })
@@ -559,50 +705,72 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         <Card
           className={cn(
             'h-[calc(100vh-100px)] overflow-y-scroll border-2 border-dashed !p-0 border-muted mb-1',
-            !((formStructure.pages[currentPageIndex]?.sections.map((s) => s.fields).flat() ?? []).length > 0) && 'flex items-center justify-center',
+            !(
+              (
+                formStructure.pages[currentPageIndex]?.sections
+                  .map((s) => s.fields)
+                  .flat() ?? []
+              ).length > 0
+            ) && 'flex items-center justify-center',
           )}
-          onDragOver={(e: React.DragEvent) => e.preventDefault()}
-          onDrop={handleElementDrop}
+          // onDragOver={(e: React.DragEvent) => e.preventDefault()}
+          // onDrop={handleElementDrop}
         >
-          <CardContent
-            className={cn(
-              'p-3 md:p-4',
-              !((formStructure.pages[currentPageIndex]?.sections.map((s) => s.fields).flat() ?? []).length > 0) &&
-                'flex items-center justify-center w-full h-full',
-            )}
-          >
-            {((formStructure.pages[currentPageIndex]?.sections.map((s) => s.fields).flat() ?? []).length > 0) ? (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
+          <CardContent className="p-4">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={(event) => {
+                const { active, over } = event
+
+                if (!over || active.id === over.id) {
+                  return
+                }
+
+                const oldIndex = Number(
+                  String(active.id).replace('section-', ''),
+                )
+
+                const newIndex = Number(String(over.id).replace('section-', ''))
+
+                if (Number.isNaN(oldIndex) || Number.isNaN(newIndex)) {
+                  return
+                }
+
+                setFormStructure((prev) => ({
+                  ...prev,
+                  pages: prev.pages.map((page, pageIndex) => {
+                    if (pageIndex !== currentPageIndex) {
+                      return page
+                    }
+
+                    return {
+                      ...page,
+                      sections: arrayMove(page.sections, oldIndex, newIndex),
+                    }
+                  }),
+                }))
+
+                setCurrentSectionIndex(newIndex)
+              }}
+            >
+              <SortableContext
+                items={(
+                  formStructure.pages[currentPageIndex]?.sections ?? []
+                ).map((_, index) => `section-${index}`)}
+                strategy={verticalListSortingStrategy}
               >
-                <SortableContext
-                  items={currentFields.map((f) => f.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {currentFields.map((field) => (
-                    <SortableFieldItem key={field.id} field={field} />
-                  ))}
-                </SortableContext>
-                <DragOverlay>
-                  {activeId ? (
-                    <div className="opacity-50">
-                      {currentFields.find((f) => f.id === activeId) && (
-                        <SortableFieldItem
-                          field={currentFields.find((f) => f.id === activeId)!}
-                        />
-                      )}
-                    </div>
-                  ) : null}
-                </DragOverlay>
-              </DndContext>
-            ) : (
-              <div className="flex justify-center items-center h-full text-muted-foreground text-center">
-                <p>Drag elements here to build your form or Generate with AI</p>
-              </div>
-            )}
+                {formStructure.pages[currentPageIndex]?.sections.map(
+                  (section, sectionIndex) => (
+                    <SortableSection
+                      key={`section-${sectionIndex}`}
+                      section={section}
+                      sectionIndex={sectionIndex}
+                    />
+                  ),
+                )}
+              </SortableContext>
+            </DndContext>
           </CardContent>
         </Card>
       </ScrollArea>
@@ -618,6 +786,35 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
             <ScrollArea className="h-[calc(100vh-8rem)]">
               <div className="flex flex-row">
                 <div className="grid grid-cols-2 gap-2 md:flex md:flex-col items-start flex-wrap md:flex-nowrap gap-y-2 overflow-y-auto w-full">
+                  <div className="mb-4">
+                    <p className="mb-2 text-xs font-medium text-muted-foreground">
+                      Layout
+                    </p>
+
+                    <Button
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData(
+                          'application/x-form-section',
+                          'section',
+                        )
+                        e.dataTransfer.effectAllowed = 'copy'
+                      }}
+                      variant="outline"
+                      className="w-full rounded-lg bg-neutral-900! cursor-grab"
+                      size="sm"
+                    >
+                      <GripVerticalIcon className="size-4" />
+
+                      <span className="flex-1 text-left">Section</span>
+                    </Button>
+                  </div>
+
+                  <Separator className="my-4" />
+
+                  <p className="mb-2 text-xs font-medium text-muted-foreground">
+                    Fields
+                  </p>
                   {AVAILABLE_FIELDS.concat(comingSoonElements).map(
                     (fieldType) => (
                       <Button
