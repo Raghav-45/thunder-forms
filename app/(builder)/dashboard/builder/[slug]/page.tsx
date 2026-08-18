@@ -96,6 +96,8 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   const [fields, setFields] = useState<FieldConfig[]>([])
   const [editingField, setEditingField] = useState<FieldConfig | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [activeField, setActiveField] = useState<FieldConfig | null>(null)
+  const [activeFieldSection, setActiveFieldSection] = useState<number | null>(null)
 
   const updateCurrentFields = (
     updater: (fields: FieldConfig[]) => FieldConfig[],
@@ -123,6 +125,53 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
                 ...section,
                 fields: updater(section.fields),
               }
+            }),
+          }
+        }),
+      }
+    })
+  }
+
+  const moveFieldBetweenSections = (
+    sourceSectionIndex: number,
+    targetSectionIndex: number,
+    fieldId: string,
+    targetIndex: number,
+  ) => {
+    setFormStructure((prev) => {
+      if (!prev) return prev
+
+      const currentPage = prev.pages[currentPageIndex]
+      if (!currentPage) return prev
+
+      const sourceSection = currentPage.sections[sourceSectionIndex]
+      const targetSection = currentPage.sections[targetSectionIndex]
+      if (!sourceSection || !targetSection) return prev
+
+      const fieldToMove = sourceSection.fields.find((f) => f.id === fieldId)
+      if (!fieldToMove) return prev
+
+      const newSourceFields = sourceSection.fields.filter((f) => f.id !== fieldId)
+      const newTargetFields = [...targetSection.fields]
+      newTargetFields.splice(targetIndex, 0, fieldToMove)
+
+      return {
+        ...prev,
+        pages: prev.pages.map((page, pageIndex) => {
+          if (pageIndex !== currentPageIndex) {
+            return page
+          }
+
+          return {
+            ...page,
+            sections: page.sections.map((section, sectionIndex) => {
+              if (sectionIndex === sourceSectionIndex) {
+                return { ...section, fields: newSourceFields }
+              }
+              if (sectionIndex === targetSectionIndex) {
+                return { ...section, fields: newTargetFields }
+              }
+              return section
             }),
           }
         }),
@@ -219,7 +268,12 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
                 strategy={verticalListSortingStrategy}
               >
                 {section.fields.map((field) => (
-                  <SortableFieldItem key={field.id} field={field} />
+                  <SortableFieldItem
+                    key={field.id}
+                    field={field}
+                    sectionIndex={sectionIndex}
+                    isDragging={isDragging}
+                  />
                 ))}
               </SortableContext>
 
@@ -231,6 +285,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
                         field={
                           section.fields.find((field) => field.id === activeId)!
                         }
+                        sectionIndex={sectionIndex}
                       />
                     )}
                   </div>
@@ -310,30 +365,152 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   )
 
   const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string)
+    const id = event.active.id as string
+    setActiveId(id)
+
+    const currentPage = formStructure.pages[currentPageIndex]
+    if (!currentPage) return
+
+    for (const section of currentPage.sections) {
+      const field = section.fields.find((f) => f.id === id)
+      if (field) {
+        setActiveField(field)
+        break
+      }
+    }
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
 
     if (over && active.id !== over.id) {
-      updateCurrentFields((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id)
+      const activeIdStr = active.id as string
+      const overIdStr = over.id as string
 
-        const newIndex = items.findIndex((item) => item.id === over.id)
+      const currentPage = formStructure.pages[currentPageIndex]
+      if (!currentPage) {
+        setActiveId(null)
+        setActiveField(null)
+        return
+      }
 
-        return arrayMove(items, oldIndex, newIndex)
-      })
+      let sourceSectionIndex = -1
+      let targetSectionIndex = -1
+      let activeFieldData: FieldConfig | null = null
+
+      for (let i = 0; i < currentPage.sections.length; i++) {
+        const section = currentPage.sections[i]
+        const activeField = section.fields.find((f) => f.id === activeIdStr)
+        if (activeField) {
+          sourceSectionIndex = i
+          activeFieldData = activeField
+        }
+        const overField = section.fields.find((f) => f.id === overIdStr)
+        if (overField) {
+          targetSectionIndex = i
+        }
+      }
+
+      if (sourceSectionIndex === -1 || targetSectionIndex === -1 || !activeFieldData) {
+        setActiveId(null)
+        setActiveField(null)
+        return
+      }
+
+      if (sourceSectionIndex === targetSectionIndex) {
+        setFormStructure((prev) => {
+          if (!prev) return prev
+
+          return {
+            ...prev,
+            pages: prev.pages.map((page, pageIndex) => {
+              if (pageIndex !== currentPageIndex) {
+                return page
+              }
+
+              return {
+                ...page,
+                sections: page.sections.map((section, sectionIndex) => {
+                  if (sectionIndex !== sourceSectionIndex) {
+                    return section
+                  }
+
+                  const oldIndex = section.fields.findIndex(
+                    (item) => item.id === activeIdStr,
+                  )
+                  const newIndex = section.fields.findIndex(
+                    (item) => item.id === overIdStr,
+                  )
+
+                  return {
+                    ...section,
+                    fields: arrayMove(section.fields, oldIndex, newIndex),
+                  }
+                }),
+              }
+            }),
+          }
+        })
+      } else {
+        setFormStructure((prev) => {
+          if (!prev) return prev
+
+          const page = prev.pages[currentPageIndex]
+          if (!page) return prev
+
+          const sourceSection = page.sections[sourceSectionIndex]
+          const targetSection = page.sections[targetSectionIndex]
+          if (!sourceSection || !targetSection) return prev
+
+          const newSourceFields = sourceSection.fields.filter(
+            (f) => f.id !== activeIdStr,
+          )
+          const targetIndex = targetSection.fields.findIndex(
+            (f) => f.id === overIdStr,
+          )
+          const newTargetFields = [...targetSection.fields]
+          newTargetFields.splice(targetIndex, 0, activeFieldData!)
+
+          return {
+            ...prev,
+            pages: prev.pages.map((page, pageIndex) => {
+              if (pageIndex !== currentPageIndex) {
+                return page
+              }
+
+              return {
+                ...page,
+                sections: page.sections.map((section, sectionIndex) => {
+                  if (sectionIndex === sourceSectionIndex) {
+                    return { ...section, fields: newSourceFields }
+                  }
+                  if (sectionIndex === targetSectionIndex) {
+                    return { ...section, fields: newTargetFields }
+                  }
+                  return section
+                }),
+              }
+            }),
+          }
+        })
+      }
     }
 
     setActiveId(null)
+    setActiveField(null)
   }
 
   const handleRemoveField = (id: string) => {
     updateCurrentFields((prev) => prev.filter((field) => field.id !== id))
   }
 
-  const SortableFieldItem = ({ field }: { field: FieldConfig }) => {
+  const SortableFieldItem = ({
+    field,
+    sectionIndex,
+  }: {
+    field: FieldConfig
+    sectionIndex: number
+  }) => {
     const {
       attributes,
       listeners,
@@ -713,8 +890,6 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
               ).length > 0
             ) && 'flex items-center justify-center',
           )}
-          // onDragOver={(e: React.DragEvent) => e.preventDefault()}
-          // onDrop={handleElementDrop}
         >
           <CardContent className="p-4">
             <DndContext
