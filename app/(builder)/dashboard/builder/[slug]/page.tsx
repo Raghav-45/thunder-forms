@@ -31,24 +31,18 @@ import { CreateFormPayload } from '@/lib/validators/form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import axios, { AxiosError } from 'axios'
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
+  DragDropProvider,
   DragOverlay,
-  DragStartEvent,
-} from '@dnd-kit/core'
+  type DragEndEvent,
+  type DragOverEvent,
+} from '@dnd-kit/react'
+import { useSortable, isSortable } from '@dnd-kit/react/sortable'
+import { CollisionPriority } from '@dnd-kit/abstract'
 import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
+  PointerSensor,
+  PointerActivationConstraints,
+  type Sensors,
+} from '@dnd-kit/dom'
 import {
   GripVerticalIcon,
   Loader2Icon,
@@ -56,7 +50,7 @@ import {
   SaveIcon,
   Trash2Icon,
 } from 'lucide-react'
-import { use, useEffect, useState } from 'react'
+import { use, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { SettingsDialog } from '@/components/settings-dialog'
 import ImportGoogleForm from '@/components/FormBuilder/core/import-google-form'
@@ -95,9 +89,6 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
       ?.fields ?? []
   const [fields, setFields] = useState<FieldConfig[]>([])
   const [editingField, setEditingField] = useState<FieldConfig | null>(null)
-  const [activeId, setActiveId] = useState<string | null>(null)
-  const [activeField, setActiveField] = useState<FieldConfig | null>(null)
-  const [activeFieldSection, setActiveFieldSection] = useState<number | null>(null)
 
   const updateCurrentFields = (
     updater: (fields: FieldConfig[]) => FieldConfig[],
@@ -181,15 +172,6 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
   const [draggedElement, setDraggedElement] =
     useState<avaliableFieldsType | null>(null)
-  const [isDraggingSection, setIsDraggingSection] = useState(false)
-
-  const handleSectionDragStart = () => {
-    setIsDraggingSection(true)
-  }
-
-  const handleSectionDragEnd = () => {
-    setIsDraggingSection(false)
-  }
 
   const addSection = () => {
     setFormStructure((prev) => ({
@@ -219,35 +201,24 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     section: { fields: FieldConfig[] }
     sectionIndex: number
   }) => {
-    const {
-      attributes,
-      listeners,
-      setNodeRef,
-      transform,
-      transition,
-      isDragging,
-    } = useSortable({
+    const { ref, handleRef, isDragging } = useSortable({
       id: `section-${sectionIndex}`,
+      index: sectionIndex,
+      type: 'section',
+      accept: ['section', 'field'],
+      collisionPriority: CollisionPriority.Low,
     })
-
-    const style = {
-      transform: CSS.Transform.toString(transform),
-      transition,
-      opacity: isDragging ? 0.5 : 1,
-    }
 
     return (
       <div
-        ref={setNodeRef}
-        style={style}
-        className="mb-4"
+        ref={ref}
+        className={cn('mb-4', isDragging && 'opacity-50')}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => handleElementDrop(e, sectionIndex)}
       >
         <div className="rounded-xl border border-border bg-muted/20 p-4">
           <div
-            {...attributes}
-            {...listeners}
+            ref={handleRef}
             className="mb-3 flex cursor-grab items-center gap-2 text-xs font-medium text-muted-foreground active:cursor-grabbing"
           >
             <GripVerticalIcon className="size-4" />
@@ -257,41 +228,14 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
           {/* Fields */}
           {section.fields.length > 0 ? (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={section.fields.map((field) => field.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                {section.fields.map((field) => (
-                  <SortableFieldItem
-                    key={field.id}
-                    field={field}
-                    sectionIndex={sectionIndex}
-                    isDragging={isDragging}
-                  />
-                ))}
-              </SortableContext>
-
-              <DragOverlay>
-                {activeId ? (
-                  <div className="opacity-50">
-                    {section.fields.find((field) => field.id === activeId) && (
-                      <SortableFieldItem
-                        field={
-                          section.fields.find((field) => field.id === activeId)!
-                        }
-                        sectionIndex={sectionIndex}
-                      />
-                    )}
-                  </div>
-                ) : null}
-              </DragOverlay>
-            </DndContext>
+            section.fields.map((field, index) => (
+              <SortableFieldItem
+                key={field.id}
+                field={field}
+                index={index}
+                sectionIndex={sectionIndex}
+              />
+            ))
           ) : (
             <div className="flex min-h-24 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
               Drag fields here
@@ -353,226 +297,228 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   const isExistingForm = currentFormId && currentFormId !== 'new-form'
   const isNewForm = !isExistingForm && currentFormId === 'new-form'
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
+  const sensors = (defaults: Sensors) => [
+    ...defaults.filter((sensor) => sensor !== PointerSensor),
+    PointerSensor.configure({
+      activationConstraints(event: PointerEvent, source) {
+        if (event.pointerType === 'touch') {
+          return [
+            new PointerActivationConstraints.Delay({
+              value: 500,
+              tolerance: { x: 5, y: 5 },
+            }),
+          ]
+        }
+        return [new PointerActivationConstraints.Distance({ value: 8 })]
       },
     }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  )
+  ]
 
-  const handleDragStart = (event: DragStartEvent) => {
-    const id = event.active.id as string
-    setActiveId(id)
-
+  const findFieldById = (id: string | number) => {
     const currentPage = formStructure.pages[currentPageIndex]
-    if (!currentPage) return
+    if (!currentPage) return null
 
     for (const section of currentPage.sections) {
       const field = section.fields.find((f) => f.id === id)
-      if (field) {
-        setActiveField(field)
-        break
-      }
+      if (field) return field
     }
+
+    return null
+  }
+
+  const sectionIndexFromGroup = (group: string | number | undefined) => {
+    if (group == null) return null
+    const index = Number(String(group).replace('section-', ''))
+    return Number.isNaN(index) ? null : index
+  }
+
+  const formStructureSnapshot = useRef<IFormStructure | null>(null)
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { source, target } = event.operation
+    if (!isSortable(source) || !isSortable(target)) return
+    if (source.type !== 'field' || target.type !== 'section') return
+
+    // Dropping a field into an empty section: the OptimisticSortingPlugin
+    // cannot handle container targets, so drive the move via React state
+    event.preventDefault()
+
+    const targetSectionIndex = sectionIndexFromGroup(target.id)
+    if (targetSectionIndex == null) return
+
+    setFormStructure((prev) => {
+      if (!prev) return prev
+      const page = prev.pages[currentPageIndex]
+      if (!page) return prev
+
+      let sourceSectionIndex = -1
+      let field: FieldConfig | undefined
+      for (let i = 0; i < page.sections.length; i++) {
+        field = page.sections[i].fields.find((f) => f.id === source.id)
+        if (field) {
+          sourceSectionIndex = i
+          break
+        }
+      }
+      if (!field || sourceSectionIndex === -1) return prev
+      if (sourceSectionIndex === targetSectionIndex) return prev
+
+      const sections = page.sections.map((s) => ({ ...s, fields: [...s.fields] }))
+      sections[sourceSectionIndex].fields = sections[
+        sourceSectionIndex
+      ].fields.filter((f) => f.id !== source.id)
+      sections[targetSectionIndex].fields.push(field)
+
+      return {
+        ...prev,
+        pages: prev.pages.map((p, pageIndex) =>
+          pageIndex === currentPageIndex ? { ...p, sections } : p,
+        ),
+      }
+    })
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
-
-    if (over && active.id !== over.id) {
-      const activeIdStr = active.id as string
-      const overIdStr = over.id as string
-
-      const currentPage = formStructure.pages[currentPageIndex]
-      if (!currentPage) {
-        setActiveId(null)
-        setActiveField(null)
-        return
+    const { canceled, operation } = event
+    if (canceled) {
+      if (formStructureSnapshot.current) {
+        setFormStructure(formStructureSnapshot.current)
       }
-
-      let sourceSectionIndex = -1
-      let targetSectionIndex = -1
-      let activeFieldData: FieldConfig | null = null
-
-      for (let i = 0; i < currentPage.sections.length; i++) {
-        const section = currentPage.sections[i]
-        const activeField = section.fields.find((f) => f.id === activeIdStr)
-        if (activeField) {
-          sourceSectionIndex = i
-          activeFieldData = activeField
-        }
-        const overField = section.fields.find((f) => f.id === overIdStr)
-        if (overField) {
-          targetSectionIndex = i
-        }
-      }
-
-      if (sourceSectionIndex === -1 || targetSectionIndex === -1 || !activeFieldData) {
-        setActiveId(null)
-        setActiveField(null)
-        return
-      }
-
-      if (sourceSectionIndex === targetSectionIndex) {
-        setFormStructure((prev) => {
-          if (!prev) return prev
-
-          return {
-            ...prev,
-            pages: prev.pages.map((page, pageIndex) => {
-              if (pageIndex !== currentPageIndex) {
-                return page
-              }
-
-              return {
-                ...page,
-                sections: page.sections.map((section, sectionIndex) => {
-                  if (sectionIndex !== sourceSectionIndex) {
-                    return section
-                  }
-
-                  const oldIndex = section.fields.findIndex(
-                    (item) => item.id === activeIdStr,
-                  )
-                  const newIndex = section.fields.findIndex(
-                    (item) => item.id === overIdStr,
-                  )
-
-                  return {
-                    ...section,
-                    fields: arrayMove(section.fields, oldIndex, newIndex),
-                  }
-                }),
-              }
-            }),
-          }
-        })
-      } else {
-        setFormStructure((prev) => {
-          if (!prev) return prev
-
-          const page = prev.pages[currentPageIndex]
-          if (!page) return prev
-
-          const sourceSection = page.sections[sourceSectionIndex]
-          const targetSection = page.sections[targetSectionIndex]
-          if (!sourceSection || !targetSection) return prev
-
-          const newSourceFields = sourceSection.fields.filter(
-            (f) => f.id !== activeIdStr,
-          )
-          const targetIndex = targetSection.fields.findIndex(
-            (f) => f.id === overIdStr,
-          )
-          const newTargetFields = [...targetSection.fields]
-          newTargetFields.splice(targetIndex, 0, activeFieldData!)
-
-          return {
-            ...prev,
-            pages: prev.pages.map((page, pageIndex) => {
-              if (pageIndex !== currentPageIndex) {
-                return page
-              }
-
-              return {
-                ...page,
-                sections: page.sections.map((section, sectionIndex) => {
-                  if (sectionIndex === sourceSectionIndex) {
-                    return { ...section, fields: newSourceFields }
-                  }
-                  if (sectionIndex === targetSectionIndex) {
-                    return { ...section, fields: newTargetFields }
-                  }
-                  return section
-                }),
-              }
-            }),
-          }
-        })
-      }
+      return
     }
 
-    setActiveId(null)
-    setActiveField(null)
+    const { source } = operation
+    if (!isSortable(source)) return
+
+    if (source.type === 'section') {
+      const { initialIndex, index } = source
+      if (initialIndex === index) return
+
+      setFormStructure((prev) => {
+        if (!prev) return prev
+
+        return {
+          ...prev,
+          pages: prev.pages.map((page, pageIndex) => {
+            if (pageIndex !== currentPageIndex) {
+              return page
+            }
+
+            const sections = [...page.sections]
+            const [moved] = sections.splice(initialIndex, 1)
+            sections.splice(index, 0, moved)
+
+            return { ...page, sections }
+          }),
+        }
+      })
+
+      setCurrentSectionIndex(index)
+      return
+    }
+
+    if (source.type === 'field') {
+      const { initialIndex, index, initialGroup, group } = source
+      if (initialGroup == null || group == null) return
+      if (initialIndex === index && initialGroup === group) return
+
+      const sourceSectionIndex = sectionIndexFromGroup(initialGroup)
+      const targetSectionIndex = sectionIndexFromGroup(group)
+      if (sourceSectionIndex == null || targetSectionIndex == null) return
+
+      setFormStructure((prev) => {
+        if (!prev) return prev
+        const page = prev.pages[currentPageIndex]
+        if (!page) return prev
+
+        const sections = page.sections.map((s) => ({
+          ...s,
+          fields: [...s.fields],
+        }))
+        const sourceSection = sections[sourceSectionIndex]
+        const targetSection = sections[targetSectionIndex]
+        if (!sourceSection || !targetSection) return prev
+
+        const [moved] = sourceSection.fields.splice(initialIndex, 1)
+        if (!moved) return prev
+
+        targetSection.fields.splice(index, 0, moved)
+
+        return {
+          ...prev,
+          pages: prev.pages.map((p, pageIndex) =>
+            pageIndex === currentPageIndex ? { ...p, sections } : p,
+          ),
+        }
+      })
+    }
   }
 
   const handleRemoveField = (id: string) => {
     updateCurrentFields((prev) => prev.filter((field) => field.id !== id))
   }
 
-  const SortableFieldItem = ({
-    field,
-    sectionIndex,
-  }: {
-    field: FieldConfig
-    sectionIndex: number
-  }) => {
-    const {
-      attributes,
-      listeners,
-      setNodeRef,
-      transform,
-      transition,
-      isDragging,
-    } = useSortable({ id: field.id })
-
-    const style = {
-      transform: CSS.Transform.toString(transform),
-      transition,
-      opacity: isDragging ? 0.5 : 1,
-    }
-
+  const renderFieldCard = (field: FieldConfig) => {
     const FieldComponent = getFieldComponent(field.uniqueIdentifier)
 
     return (
-      <div ref={setNodeRef} style={style} className="mb-4 group">
-        <div
-          {...attributes}
-          {...listeners}
-          className="relative flex items-start gap-2 bg-card rounded-lg border-2 border-dashed border-border p-3 transition-all duration-200 hover:border-primary/50 hover:shadow-sm cursor-grab active:cursor-grabbing"
-        >
-          {/* Drag Handle - Visual indicator only */}
-          {/* <div className="pt-2 opacity-0 group-hover:opacity-70 pointer-events-none transition-opacity flex-shrink-0">
-            <GripVerticalIcon className="size-5 text-muted-foreground" />
-          </div> */}
+      <div className="relative flex items-start gap-2 bg-card rounded-lg border-2 border-dashed border-border p-3 transition-all duration-200 hover:border-primary/50 hover:shadow-sm cursor-grab active:cursor-grabbing">
+        {/* Field Content */}
+        <div className="flex-1 pr-2 pointer-events-none">
+          <FieldComponent
+            field={field as never}
+            value={undefined}
+            onChange={(value) => console.log(field.id, value)}
+          />
+        </div>
 
-          {/* Field Content */}
-          <div className="flex-1 pr-2 pointer-events-none">
-            <FieldComponent
-              field={field as never}
-              value={undefined}
-              onChange={(value) => console.log(field.id, value)}
-            />
-          </div>
-
-          {/* Action Buttons - Only visible on hover */}
-          <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-auto">
-            <div className="flex gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                type="button"
-                className="cursor-pointer h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary border border-border/50"
-                onClick={() => setEditingField(field)}
-              >
-                <PencilIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                type="button"
-                className="cursor-pointer h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-destructive/10 hover:text-destructive border border-border/50"
-                onClick={() => handleRemoveField(field.id)}
-              >
-                <Trash2Icon className="h-4 w-4" />
-              </Button>
-            </div>
+        {/* Action Buttons - Only visible on hover */}
+        <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-auto">
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              type="button"
+              className="cursor-pointer h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary border border-border/50"
+              onClick={() => setEditingField(field)}
+            >
+              <PencilIcon className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              type="button"
+              className="cursor-pointer h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-destructive/10 hover:text-destructive border border-border/50"
+              onClick={() => handleRemoveField(field.id)}
+            >
+              <Trash2Icon className="h-4 w-4" />
+            </Button>
           </div>
         </div>
+      </div>
+    )
+  }
+
+  const SortableFieldItem = ({
+    field,
+    index,
+    sectionIndex,
+  }: {
+    field: FieldConfig
+    index: number
+    sectionIndex: number
+  }) => {
+    const { ref, isDragging } = useSortable({
+      id: field.id,
+      index,
+      type: 'field',
+      accept: 'field',
+      group: `section-${sectionIndex}`,
+    })
+
+    return (
+      <div ref={ref} className={cn('mb-4 group', isDragging && 'opacity-50')}>
+        {renderFieldCard(field)}
       </div>
     )
   }
@@ -892,60 +838,37 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           )}
         >
           <CardContent className="p-4">
-            <DndContext
+            <DragDropProvider
               sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={(event) => {
-                const { active, over } = event
-
-                if (!over || active.id === over.id) {
-                  return
-                }
-
-                const oldIndex = Number(
-                  String(active.id).replace('section-', ''),
-                )
-
-                const newIndex = Number(String(over.id).replace('section-', ''))
-
-                if (Number.isNaN(oldIndex) || Number.isNaN(newIndex)) {
-                  return
-                }
-
-                setFormStructure((prev) => ({
-                  ...prev,
-                  pages: prev.pages.map((page, pageIndex) => {
-                    if (pageIndex !== currentPageIndex) {
-                      return page
-                    }
-
-                    return {
-                      ...page,
-                      sections: arrayMove(page.sections, oldIndex, newIndex),
-                    }
-                  }),
-                }))
-
-                setCurrentSectionIndex(newIndex)
+              onDragStart={() => {
+                formStructureSnapshot.current = formStructure
               }}
+              onDragOver={handleDragOver}
+              onDragEnd={handleDragEnd}
             >
-              <SortableContext
-                items={(
-                  formStructure.pages[currentPageIndex]?.sections ?? []
-                ).map((_, index) => `section-${index}`)}
-                strategy={verticalListSortingStrategy}
-              >
-                {formStructure.pages[currentPageIndex]?.sections.map(
-                  (section, sectionIndex) => (
-                    <SortableSection
-                      key={`section-${sectionIndex}`}
-                      section={section}
-                      sectionIndex={sectionIndex}
-                    />
-                  ),
-                )}
-              </SortableContext>
-            </DndContext>
+              {formStructure.pages[currentPageIndex]?.sections.map(
+                (section, sectionIndex) => (
+                  <SortableSection
+                    key={`section-${sectionIndex}`}
+                    section={section}
+                    sectionIndex={sectionIndex}
+                  />
+                ),
+              )}
+
+              <DragOverlay>
+                {(source) => {
+                  if (source?.type !== 'field') return null
+
+                  const field = findFieldById(source.id)
+                  if (!field) return null
+
+                  return (
+                    <div className="opacity-50">{renderFieldCard(field)}</div>
+                  )
+                }}
+              </DragOverlay>
+            </DragDropProvider>
           </CardContent>
         </Card>
       </ScrollArea>

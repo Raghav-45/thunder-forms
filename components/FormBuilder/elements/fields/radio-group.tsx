@@ -37,24 +37,12 @@ import {
   Trash2Icon,
 } from 'lucide-react'
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
+  DragDropProvider,
   DragOverlay,
-  DragStartEvent,
-} from '@dnd-kit/core'
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
+  type DragEndEvent,
+} from '@dnd-kit/react'
+import { useSortable, isSortable } from '@dnd-kit/react/sortable'
+import { PointerSensor, PointerActivationConstraints, type Sensors } from '@dnd-kit/dom'
 
 // ─── Config ──────────────────────────────────────────────
 
@@ -151,32 +139,22 @@ const SortableOptionItem = ({
   onUpdate: (index: number, updates: Partial<RadioOption>) => void
   onRemove: (index: number) => void
 }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: option.value })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  }
+  const { ref, handleRef, isDragging } = useSortable({
+    id: option.value,
+    index,
+  })
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
-      className="flex items-center gap-3 p-2 border rounded-md"
+      ref={ref}
+      className={`flex items-center gap-3 p-2 border rounded-md ${
+        isDragging ? 'opacity-50' : ''
+      }`}
     >
       <button
+        ref={handleRef}
         type="button"
         className="cursor-grab hover:cursor-grabbing p-1"
-        {...attributes}
-        {...listeners}
       >
         <GripVerticalIcon className="h-4 w-4 text-muted-foreground" />
       </button>
@@ -220,16 +198,23 @@ const RadioGroupEditorComponent: React.FC<
   EditorProps<RadioGroupConfig> & { isOpen: boolean }
 > = ({ field, onUpdate, onClose, isOpen }) => {
   const [config, setConfig] = useState<RadioGroupConfig>(field)
-  const [activeId, setActiveId] = useState<string | null>(null)
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
+  const sensors = (defaults: Sensors) => [
+    ...defaults.filter((sensor) => sensor !== PointerSensor),
+    PointerSensor.configure({
+      activationConstraints(event: PointerEvent, source) {
+        if (event.pointerType === 'touch') {
+          return [
+            new PointerActivationConstraints.Delay({
+              value: 500,
+              tolerance: { x: 5, y: 5 },
+            }),
+          ]
+        }
+        return [new PointerActivationConstraints.Distance({ value: 8 })]
+      },
     }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  )
+  ]
 
   const handleSave = () => {
     onUpdate(config)
@@ -273,20 +258,22 @@ const RadioGroupEditorComponent: React.FC<
     }))
   }
 
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string)
-  }
-
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
-    if (over && active.id !== over.id) {
-      setConfig((prev) => {
-        const oldIndex = prev.options.findIndex((o) => o.value === active.id)
-        const newIndex = prev.options.findIndex((o) => o.value === over.id)
-        return { ...prev, options: arrayMove(prev.options, oldIndex, newIndex) }
-      })
-    }
-    setActiveId(null)
+    const { canceled, operation } = event
+    if (canceled) return
+
+    const { source } = operation
+    if (!isSortable(source)) return
+
+    const { initialIndex, index } = source
+    if (initialIndex === index) return
+
+    setConfig((prev) => {
+      const options = [...prev.options]
+      const [removed] = options.splice(initialIndex, 1)
+      options.splice(index, 0, removed)
+      return { ...prev, options }
+    })
   }
 
   return (
@@ -359,41 +346,43 @@ const RadioGroupEditorComponent: React.FC<
                   </div>
 
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    <DndContext
+                    <DragDropProvider
                       sensors={sensors}
-                      collisionDetection={closestCenter}
-                      onDragStart={handleDragStart}
                       onDragEnd={handleDragEnd}
                     >
-                      <SortableContext
-                        items={config.options.map((o) => o.value)}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        {config.options.map((option, index) => (
-                          <SortableOptionItem
-                            key={option.value}
-                            option={option}
-                            index={index}
-                            onUpdate={handleUpdateOption}
-                            onRemove={handleRemoveOption}
-                          />
-                        ))}
-                      </SortableContext>
+                      {config.options.map((option, index) => (
+                        <SortableOptionItem
+                          key={option.value}
+                          option={option}
+                          index={index}
+                          onUpdate={handleUpdateOption}
+                          onRemove={handleRemoveOption}
+                        />
+                      ))}
                       <DragOverlay>
-                        {activeId ? (
-                          <div className="opacity-50">
-                            {config.options.find((o) => o.value === activeId) && (
+                        {(source) => {
+                          if (!source) return null
+
+                          const option = config.options.find(
+                            (o) => o.value === source.id,
+                          )
+                          if (!option) return null
+
+                          return (
+                            <div className="opacity-50">
                               <SortableOptionItem
-                                option={config.options.find((o) => o.value === activeId)!}
-                                index={config.options.findIndex((o) => o.value === activeId)}
+                                option={option}
+                                index={config.options.findIndex(
+                                  (o) => o.value === source.id,
+                                )}
                                 onUpdate={handleUpdateOption}
                                 onRemove={handleRemoveOption}
                               />
-                            )}
-                          </div>
-                        ) : null}
+                            </div>
+                          )
+                        }}
                       </DragOverlay>
-                    </DndContext>
+                    </DragDropProvider>
                   </div>
                 </div>
               </AccordionContent>
