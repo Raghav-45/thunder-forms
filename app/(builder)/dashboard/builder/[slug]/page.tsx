@@ -37,7 +37,10 @@ import {
   type DragOverEvent,
 } from '@dnd-kit/react'
 import { useSortable, isSortable } from '@dnd-kit/react/sortable'
-import { CollisionPriority } from '@dnd-kit/abstract'
+import {
+  CollisionPriority,
+  type Droppable,
+} from '@dnd-kit/abstract'
 import {
   PointerSensor,
   PointerActivationConstraints,
@@ -50,7 +53,7 @@ import {
   SaveIcon,
   Trash2Icon,
 } from 'lucide-react'
-import { use, useEffect, useRef, useState } from 'react'
+import { Fragment, use, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { SettingsDialog } from '@/components/settings-dialog'
 import ImportGoogleForm from '@/components/FormBuilder/core/import-google-form'
@@ -62,23 +65,31 @@ interface FormBuilderProps {
 interface IFormStructure {
   pages: {
     sections: {
+      id: string
       fields: FieldConfig[]
     }[]
   }[]
 }
 
+const newSection = (): { id: string; fields: FieldConfig[] } => ({
+  id: crypto.randomUUID(),
+  fields: [],
+})
+
 export default function FormBuilderPage({ params }: FormBuilderProps) {
   const { formSettings, setFormSettings } = useFormStore()
   const { slug: paramFormId } = use(params)
   const [currentFormId, setCurrentFormId] = useState<string>(paramFormId)
+  const [draggingSectionId, setDraggingSectionId] = useState<string | null>(
+    null,
+  )
+  const [sectionDropPreviewIndex, setSectionDropPreviewIndex] = useState<
+    number | null
+  >(null)
   const [formStructure, setFormStructure] = useState<IFormStructure>({
     pages: [
       {
-        sections: [
-          {
-            fields: [],
-          },
-        ],
+        sections: [newSection()],
       },
     ],
   })
@@ -183,22 +194,56 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
         return {
           ...page,
-          sections: [
-            ...page.sections,
-            {
-              fields: [],
-            },
-          ],
+          sections: [...page.sections, newSection()],
         }
       }),
     }))
   }
 
+  const renderSectionCard = (
+    section: { id: string; fields: FieldConfig[] },
+    sectionIndex: number,
+    handleRef?: React.Ref<HTMLDivElement>,
+    sortableFields = true,
+  ) => (
+    <div className="rounded-xl border border-border bg-muted/20 p-4">
+      <div
+        ref={handleRef}
+        className="mb-3 flex cursor-grab items-center gap-2 text-xs font-medium text-muted-foreground active:cursor-grabbing"
+      >
+        <GripVerticalIcon className="size-4" />
+
+        <span>Section {sectionIndex + 1}</span>
+      </div>
+
+      {section.fields.length > 0 ? (
+        section.fields.map((field, index) =>
+          sortableFields ? (
+            <SortableFieldItem
+              key={field.id}
+              field={field}
+              index={index}
+              sectionIndex={sectionIndex}
+            />
+          ) : (
+            <div key={field.id} className="mb-4">
+              {renderFieldCard(field)}
+            </div>
+          ),
+        )
+      ) : (
+        <div className="flex min-h-24 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
+          Drag fields here
+        </div>
+      )}
+    </div>
+  )
+
   const SortableSection = ({
     section,
     sectionIndex,
   }: {
-    section: { fields: FieldConfig[] }
+    section: { id: string; fields: FieldConfig[] }
     sectionIndex: number
   }) => {
     const { ref, handleRef, isDragging } = useSortable({
@@ -207,41 +252,21 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
       type: 'section',
       accept: ['section', 'field'],
       collisionPriority: CollisionPriority.Low,
+      disabled: {
+        draggable: false,
+        droppable: draggingSectionId === `section-${sectionIndex}`,
+      },
     })
 
     return (
       <div
         ref={ref}
+        data-section-id={section.id}
         className={cn('mb-4', isDragging && 'opacity-50')}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => handleElementDrop(e, sectionIndex)}
       >
-        <div className="rounded-xl border border-border bg-muted/20 p-4">
-          <div
-            ref={handleRef}
-            className="mb-3 flex cursor-grab items-center gap-2 text-xs font-medium text-muted-foreground active:cursor-grabbing"
-          >
-            <GripVerticalIcon className="size-4" />
-
-            <span>Section {sectionIndex + 1}</span>
-          </div>
-
-          {/* Fields */}
-          {section.fields.length > 0 ? (
-            section.fields.map((field, index) => (
-              <SortableFieldItem
-                key={field.id}
-                field={field}
-                index={index}
-                sectionIndex={sectionIndex}
-              />
-            ))
-          ) : (
-            <div className="flex min-h-24 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
-              Drag fields here
-            </div>
-          )}
-        </div>
+        {renderSectionCard(section, sectionIndex, handleRef)}
       </div>
     )
   }
@@ -332,11 +357,76 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     return Number.isNaN(index) ? null : index
   }
 
+  const sectionIndexFromTarget = (target: Droppable | null | undefined) => {
+    if (target == null || !isSortable(target as never)) return null
+    if (target.type === 'section') {
+      return sectionIndexFromGroup(target.id)
+    }
+    if (target.type === 'field') {
+      return sectionIndexFromGroup(
+        (target as { group?: string | number }).group,
+      )
+    }
+    return null
+  }
+
   const formStructureSnapshot = useRef<IFormStructure | null>(null)
+  const sectionsContainerRef = useRef<HTMLDivElement>(null)
+
+  const syncDomOrder = (
+    container: HTMLElement | null,
+    orderedIds: string[],
+    idAttr: string,
+  ) => {
+    if (!container) return
+    const nodesById = new Map<string, HTMLElement>()
+    for (const child of Array.from(container.children) as HTMLElement[]) {
+      const id = child.getAttribute(idAttr)
+      if (id) nodesById.set(id, child)
+    }
+    for (const id of orderedIds) {
+      const node = nodesById.get(id)
+      if (node) container.appendChild(node)
+    }
+  }
+
+  const syncSectionFieldsDom = (sectionId: string, fieldIds: string[]) => {
+    const container = sectionsContainerRef.current
+    if (!container) return
+    const wrapper = container.querySelector(
+      `[data-section-id="${sectionId}"]`,
+    )
+    const card = wrapper?.firstElementChild as HTMLElement | null
+    if (!card) return
+    syncDomOrder(card, fieldIds, 'data-field-id')
+  }
 
   const handleDragOver = (event: DragOverEvent) => {
     const { source, target } = event.operation
     if (!isSortable(source) || !isSortable(target)) return
+
+    // Sections: keep the OptimisticSortingPlugin from physically moving
+    // section elements. Its async dragover processing can resolve after
+    // the dragend commit and revert the DOM order; the dragend handler
+    // commits the reorder from the drop target instead
+    if (source.type === 'section') {
+      event.preventDefault()
+      setSectionDropPreviewIndex(sectionIndexFromTarget(target))
+      return
+    }
+
+    // Cross-group field->field: keep the OptimisticSortingPlugin from
+    // physically moving the field element between containers; the commit
+    // in handleDragEnd drives the state change instead
+    if (
+      source.type === 'field' &&
+      target.type === 'field' &&
+      source.group !== target.group
+    ) {
+      event.preventDefault()
+      return
+    }
+
     if (source.type !== 'field' || target.type !== 'section') return
 
     // Dropping a field into an empty section: the OptimisticSortingPlugin
@@ -382,7 +472,22 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     const { canceled, operation } = event
     if (canceled) {
       if (formStructureSnapshot.current) {
-        setFormStructure(formStructureSnapshot.current)
+        const snapshot = formStructureSnapshot.current
+        setFormStructure(snapshot)
+        const page = snapshot.pages[currentPageIndex]
+        if (page) {
+          syncDomOrder(
+            sectionsContainerRef.current,
+            page.sections.map((s) => s.id),
+            'data-section-id',
+          )
+          for (const section of page.sections) {
+            syncSectionFieldsDom(
+              section.id,
+              section.fields.map((f) => f.id),
+            )
+          }
+        }
       }
       return
     }
@@ -391,66 +496,110 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     if (!isSortable(source)) return
 
     if (source.type === 'section') {
-      const { initialIndex, index } = source
-      if (initialIndex === index) return
+      const { initialIndex } = source
 
-      setFormStructure((prev) => {
-        if (!prev) return prev
+      const targetSectionIndex = sectionIndexFromTarget(operation.target)
+      if (targetSectionIndex == null) return
+      if (initialIndex === targetSectionIndex) return
 
-        return {
-          ...prev,
-          pages: prev.pages.map((page, pageIndex) => {
-            if (pageIndex !== currentPageIndex) {
-              return page
-            }
+      const prev = formStructure
+      const currentPage = prev?.pages[currentPageIndex]
+      if (!prev || !currentPage) return
 
-            const sections = [...page.sections]
-            const [moved] = sections.splice(initialIndex, 1)
-            sections.splice(index, 0, moved)
+      const sections = [...currentPage.sections]
+      const [moved] = sections.splice(initialIndex, 1)
+      sections.splice(targetSectionIndex, 0, moved)
 
-            return { ...page, sections }
-          }),
-        }
+      setFormStructure({
+        ...prev,
+        pages: prev.pages.map((p, pageIndex) =>
+          pageIndex === currentPageIndex ? { ...p, sections } : p,
+        ),
       })
 
-      setCurrentSectionIndex(index)
+      syncDomOrder(
+        sectionsContainerRef.current,
+        sections.map((s) => s.id),
+        'data-section-id',
+      )
+
+      setCurrentSectionIndex(targetSectionIndex)
       return
     }
 
     if (source.type === 'field') {
       const { initialIndex, index, initialGroup, group } = source
-      if (initialGroup == null || group == null) return
-      if (initialIndex === index && initialGroup === group) return
+      if (initialGroup == null) return
 
       const sourceSectionIndex = sectionIndexFromGroup(initialGroup)
-      const targetSectionIndex = sectionIndexFromGroup(group)
-      if (sourceSectionIndex == null || targetSectionIndex == null) return
+      if (sourceSectionIndex == null) return
 
-      setFormStructure((prev) => {
-        if (!prev) return prev
-        const page = prev.pages[currentPageIndex]
-        if (!page) return prev
+      const target = operation.target
+      const targetIsField =
+        target != null && isSortable(target) && target.type === 'field'
 
-        const sections = page.sections.map((s) => ({
-          ...s,
-          fields: [...s.fields],
-        }))
-        const sourceSection = sections[sourceSectionIndex]
-        const targetSection = sections[targetSectionIndex]
-        if (!sourceSection || !targetSection) return prev
+      const pluginMovedCrossGroup = group != null && group !== initialGroup
+      const targetSectionIndex = pluginMovedCrossGroup
+        ? sectionIndexFromGroup(group)
+        : targetIsField
+          ? sectionIndexFromGroup(
+              (target as { group?: string | number }).group,
+            )
+          : sectionIndexFromGroup(group)
 
-        const [moved] = sourceSection.fields.splice(initialIndex, 1)
-        if (!moved) return prev
+      if (targetSectionIndex == null) return
 
+      const sameSection = targetSectionIndex === sourceSectionIndex
+      if (sameSection && initialIndex === index && !pluginMovedCrossGroup) {
+        return
+      }
+
+      const prev = formStructure
+      const page = prev?.pages[currentPageIndex]
+      if (!prev || !page) return
+
+      const sections = page.sections.map((s) => ({
+        ...s,
+        fields: [...s.fields],
+      }))
+      const sourceSection = sections[sourceSectionIndex]
+      const targetSection = sections[targetSectionIndex]
+      if (!sourceSection || !targetSection) return
+
+      const [moved] = sourceSection.fields.splice(initialIndex, 1)
+      if (!moved) return
+
+      if (sameSection) {
         targetSection.fields.splice(index, 0, moved)
+      } else if (targetIsField) {
+        const targetIndex =
+          (target as { index?: number }).index ?? targetSection.fields.length
+        targetSection.fields.splice(
+          Math.min(targetIndex, targetSection.fields.length),
+          0,
+          moved,
+        )
+      } else {
+        targetSection.fields.push(moved)
+      }
 
-        return {
-          ...prev,
-          pages: prev.pages.map((p, pageIndex) =>
-            pageIndex === currentPageIndex ? { ...p, sections } : p,
-          ),
-        }
+      setFormStructure({
+        ...prev,
+        pages: prev.pages.map((p, pageIndex) =>
+          pageIndex === currentPageIndex ? { ...p, sections } : p,
+        ),
       })
+
+      syncSectionFieldsDom(
+        sections[sourceSectionIndex].id,
+        sections[sourceSectionIndex].fields.map((f) => f.id),
+      )
+      if (targetSectionIndex !== sourceSectionIndex) {
+        syncSectionFieldsDom(
+          sections[targetSectionIndex].id,
+          sections[targetSectionIndex].fields.map((f) => f.id),
+        )
+      }
     }
   }
 
@@ -517,7 +666,11 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     })
 
     return (
-      <div ref={ref} className={cn('mb-4 group', isDragging && 'opacity-50')}>
+      <div
+        ref={ref}
+        data-field-id={field.id}
+        className={cn('mb-4 group', isDragging && 'opacity-50')}
+      >
         {renderFieldCard(field)}
       </div>
     )
@@ -584,6 +737,26 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           submitButtonText: form.data.submitButtonText,
         })
         setFields(form.data.fields)
+
+        const raw = form.data.fields as unknown
+        if (
+          raw &&
+          typeof raw === 'object' &&
+          !Array.isArray(raw) &&
+          Array.isArray((raw as { pages?: unknown }).pages)
+        ) {
+          const loaded = raw as IFormStructure
+          setFormStructure({
+            ...loaded,
+            pages: loaded.pages.map((page) => ({
+              ...page,
+              sections: page.sections.map((section) => ({
+                id: section.id ?? crypto.randomUUID(),
+                fields: section.fields,
+              })),
+            })),
+          })
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -809,11 +982,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
                 pages: [
                   ...prev.pages,
                   {
-                    sections: [
-                      {
-                        fields: [],
-                      },
-                    ],
+                    sections: [newSection()],
                   },
                 ],
               }))
@@ -837,35 +1006,87 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
             ) && 'flex items-center justify-center',
           )}
         >
-          <CardContent className="p-4">
+          <CardContent ref={sectionsContainerRef} className="p-4">
             <DragDropProvider
               sensors={sensors}
-              onDragStart={() => {
+              onDragStart={(event) => {
                 formStructureSnapshot.current = formStructure
+                setSectionDropPreviewIndex(null)
+                const source = event.operation.source
+                if (source?.type === 'section') {
+                  setDraggingSectionId(String(source.id))
+                }
               }}
               onDragOver={handleDragOver}
-              onDragEnd={handleDragEnd}
+              onDragEnd={(event) => {
+                setDraggingSectionId(null)
+                setSectionDropPreviewIndex(null)
+                handleDragEnd(event)
+              }}
             >
-              {formStructure.pages[currentPageIndex]?.sections.map(
-                (section, sectionIndex) => (
-                  <SortableSection
-                    key={`section-${sectionIndex}`}
-                    section={section}
-                    sectionIndex={sectionIndex}
-                  />
-                ),
-              )}
+              {(() => {
+                const draggingSectionIndex = sectionIndexFromGroup(
+                  draggingSectionId ?? undefined,
+                )
+                const previewSection =
+                  draggingSectionIndex != null
+                    ? formStructure.pages[currentPageIndex]?.sections[
+                        draggingSectionIndex
+                      ]
+                    : undefined
+
+                return formStructure.pages[currentPageIndex]?.sections.map(
+                  (section, sectionIndex) => (
+                    <Fragment key={section.id}>
+                      {sectionDropPreviewIndex === sectionIndex &&
+                        previewSection && (
+                          <div className="mb-4 pointer-events-none opacity-50">
+                            {renderSectionCard(
+                              previewSection,
+                              sectionIndex,
+                              undefined,
+                              false,
+                            )}
+                          </div>
+                        )}
+                      <SortableSection
+                        section={section}
+                        sectionIndex={sectionIndex}
+                      />
+                    </Fragment>
+                  ),
+                )
+              })()}
 
               <DragOverlay>
                 {(source) => {
-                  if (source?.type !== 'field') return null
+                  if (source?.type === 'field') {
+                    const field = findFieldById(source.id)
+                    if (!field) return null
 
-                  const field = findFieldById(source.id)
-                  if (!field) return null
+                    return (
+                      <div className="opacity-50">{renderFieldCard(field)}</div>
+                    )
+                  }
 
-                  return (
-                    <div className="opacity-50">{renderFieldCard(field)}</div>
-                  )
+                  if (source?.type === 'section') {
+                    const sectionIndex = sectionIndexFromGroup(source.id)
+                    if (sectionIndex == null) return null
+
+                    const section =
+                      formStructure.pages[currentPageIndex]?.sections[
+                        sectionIndex
+                      ]
+                    if (!section) return null
+
+                    return (
+                      <div className="opacity-50">
+                        {renderSectionCard(section, sectionIndex, undefined, false)}
+                      </div>
+                    )
+                  }
+
+                  return null
                 }}
               </DragOverlay>
             </DragDropProvider>
