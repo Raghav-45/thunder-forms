@@ -1,19 +1,5 @@
 'use client'
 
-// import { FC } from 'react'
-
-// interface pageProps {}
-
-// const page: FC<pageProps> = ({}) => {
-//   return (
-//     <div>
-//       <h1>Hello</h1>
-//     </div>
-//   )
-// }
-
-// export default page
-
 import React, { memo, useCallback, useRef, useState } from 'react'
 import type { PropsWithChildren } from 'react'
 import { CollisionPriority } from '@dnd-kit/abstract'
@@ -108,7 +94,7 @@ const SortableColumn = memo(function SortableColumn({
   return (
     <div
       ref={ref as any}
-      className={`border border-neutral-800 bg-neutral-900 rounded-xl p-4 min-w-[280px] flex flex-col gap-4 transition-opacity ${
+      className={`border border-neutral-800 bg-neutral-900 rounded-xl p-4 flex flex-col gap-4 transition-opacity ${
         isDragging ? 'opacity-50' : ''
       }`}
     >
@@ -173,9 +159,9 @@ export default function App() {
         }
       }, [])}
     >
-      <div className="p-8 mx-auto min-h-screen bg-neutral-950 text-white font-sans">
+      <div className="p-8 max-w-2xl mx-auto min-h-screen bg-neutral-950 text-white font-sans">
         <h1 className="text-3xl font-bold mb-8">Drag & Drop Testing</h1>
-        <div className="flex gap-6 items-start overflow-x-auto pb-8">
+        <div className="space-y-4 pb-8">
           {columns.map((column, columnIndex) => {
           const rows = items[column as keyof typeof items]
 
