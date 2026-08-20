@@ -3,10 +3,10 @@
 import React, { memo, useCallback, useRef, useState } from 'react'
 import type { PropsWithChildren } from 'react'
 import { CollisionPriority } from '@dnd-kit/abstract'
-import { DragDropProvider } from '@dnd-kit/react'
+import { DragDropProvider, DragOverlay } from '@dnd-kit/react'
 import { useSortable } from '@dnd-kit/react/sortable'
 import { move } from '@dnd-kit/helpers'
-import { Feedback, PointerSensor, KeyboardSensor } from '@dnd-kit/dom'
+import { PointerSensor, KeyboardSensor } from '@dnd-kit/dom'
 import { DragDropEventHandlers } from '@dnd-kit/react'
 import { GripVerticalIcon } from 'lucide-react'
 
@@ -46,12 +46,11 @@ const SortableItem = memo(function SortableItem({
   accentColor,
 }: PropsWithChildren<SortableItemProps>) {
   const group = column
-  const { handleRef, ref, isDragging } = useSortable({
+  const { handleRef, ref, isDragging, isDragSource } = useSortable({
     id,
     group,
     accept: 'item',
     type: 'item',
-    plugins: [Feedback.configure({ feedback: 'clone' })],
     index,
     data: { group },
   })
@@ -60,7 +59,7 @@ const SortableItem = memo(function SortableItem({
     <div
       ref={ref as any}
       className={`border border-neutral-800 bg-neutral-950 rounded-lg p-3 transition-opacity flex items-center justify-between ${
-        isDragging ? 'opacity-50' : ''
+        isDragSource ? 'opacity-30' : ''
       }`}
       style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
     >
@@ -83,7 +82,7 @@ const SortableColumn = memo(function SortableColumn({
   id,
   index,
 }: PropsWithChildren<SortableColumnProps>) {
-  const { handleRef, isDragging, ref } = useSortable({
+  const { handleRef, isDragging, isDragSource, ref } = useSortable({
     id,
     accept: ['column', 'item'],
     collisionPriority: CollisionPriority.Low,
@@ -95,7 +94,7 @@ const SortableColumn = memo(function SortableColumn({
     <div
       ref={ref as any}
       className={`border border-neutral-800 bg-neutral-900 rounded-xl p-4 flex flex-col gap-4 transition-opacity ${
-        isDragging ? 'opacity-50' : ''
+        isDragSource ? 'opacity-30' : ''
       }`}
     >
       <div
@@ -176,6 +175,47 @@ export default function App() {
         })}
         </div>
       </div>
+
+      <DragOverlay>
+        {(source) => {
+          const sourceId = String(source.id)
+          const column = sourceId[0] as keyof typeof COLORS
+          const accentColor = COLORS[column]
+
+          if (source.type === 'column') {
+            const columnRows = items[sourceId as keyof typeof items] ?? []
+            return (
+              <div className="border border-neutral-700 bg-neutral-900 rounded-xl p-4 flex flex-col gap-4 shadow-2xl opacity-95">
+                <div className="flex items-center gap-2 text-sm font-medium text-neutral-400 cursor-grabbing">
+                  <GripVerticalIcon className="size-4" />
+                  <span>Column {sourceId}</span>
+                </div>
+                <div className="space-y-3">
+                  {columnRows.map((itemId) => (
+                    <div
+                      key={itemId}
+                      className="border border-neutral-800 bg-neutral-950 rounded-lg p-3 flex items-center justify-between"
+                      style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
+                    >
+                      <span className="font-medium text-sm text-neutral-200">{itemId}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          }
+
+          return (
+            <div
+              className="border border-neutral-700 bg-neutral-950 rounded-lg p-3 flex items-center justify-between shadow-2xl opacity-95 cursor-grabbing"
+              style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
+            >
+              <span className="font-medium text-sm text-neutral-200">{sourceId}</span>
+              <GripVerticalIcon className="size-4 text-neutral-500" />
+            </div>
+          )
+        }}
+      </DragOverlay>
     </DragDropProvider>
   )
 }
