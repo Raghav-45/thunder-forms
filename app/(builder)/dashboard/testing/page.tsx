@@ -6,7 +6,11 @@ import { CollisionPriority } from '@dnd-kit/abstract'
 import { DragDropProvider, DragOverlay } from '@dnd-kit/react'
 import { useSortable } from '@dnd-kit/react/sortable'
 import { move } from '@dnd-kit/helpers'
-import { PointerSensor, KeyboardSensor } from '@dnd-kit/dom'
+import {
+  PointerSensor,
+  KeyboardSensor,
+  PointerActivationConstraints,
+} from '@dnd-kit/dom'
 import { DragDropEventHandlers } from '@dnd-kit/react'
 import { GripVerticalIcon } from 'lucide-react'
 
@@ -64,7 +68,10 @@ const SortableItem = memo(function SortableItem({
       style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
     >
       <span className="font-medium text-sm text-neutral-200">{id}</span>
-      <button ref={handleRef as any} className="cursor-grab active:cursor-grabbing text-neutral-500 hover:text-neutral-300">
+      <button
+        ref={handleRef as any}
+        className="cursor-grab active:cursor-grabbing text-neutral-500 hover:text-neutral-300"
+      >
         <GripVerticalIcon className="size-4" />
       </button>
     </div>
@@ -104,7 +111,7 @@ const SortableColumn = memo(function SortableColumn({
         <GripVerticalIcon className="size-4" />
         <span>Column {id}</span>
       </div>
-      
+
       {rows.length === 0 ? (
         <div className="border border-dashed border-neutral-800 rounded-lg h-24 flex items-center justify-center text-sm text-neutral-500">
           Drop items here
@@ -162,17 +169,17 @@ export default function App() {
         <h1 className="text-3xl font-bold mb-8">Drag & Drop Testing</h1>
         <div className="space-y-4 pb-8">
           {columns.map((column, columnIndex) => {
-          const rows = items[column as keyof typeof items]
+            const rows = items[column as keyof typeof items]
 
-          return (
-            <SortableColumn
-              key={column}
-              id={column}
-              index={columnIndex}
-              rows={rows}
-            />
-          )
-        })}
+            return (
+              <SortableColumn
+                key={column}
+                id={column}
+                index={columnIndex}
+                rows={rows}
+              />
+            )
+          })}
         </div>
       </div>
 
@@ -195,9 +202,14 @@ export default function App() {
                     <div
                       key={itemId}
                       className="border border-neutral-800 bg-neutral-950 rounded-lg p-3 flex items-center justify-between"
-                      style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
+                      style={{
+                        borderLeftColor: accentColor,
+                        borderLeftWidth: 4,
+                      }}
                     >
-                      <span className="font-medium text-sm text-neutral-200">{itemId}</span>
+                      <span className="font-medium text-sm text-neutral-200">
+                        {itemId}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -210,7 +222,9 @@ export default function App() {
               className="border border-neutral-700 bg-neutral-950 rounded-lg p-3 flex items-center justify-between shadow-2xl opacity-95 cursor-grabbing"
               style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
             >
-              <span className="font-medium text-sm text-neutral-200">{sourceId}</span>
+              <span className="font-medium text-sm text-neutral-200">
+                {sourceId}
+              </span>
               <GripVerticalIcon className="size-4 text-neutral-500" />
             </div>
           )
