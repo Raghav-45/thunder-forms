@@ -1,18 +1,17 @@
 'use client'
 
-import React, { memo, useCallback, useRef, useState } from 'react'
-import type { PropsWithChildren } from 'react'
 import { CollisionPriority } from '@dnd-kit/abstract'
-import { DragDropProvider, DragOverlay } from '@dnd-kit/react'
-import { useSortable } from '@dnd-kit/react/sortable'
+import { KeyboardSensor, PointerSensor } from '@dnd-kit/dom'
 import { move } from '@dnd-kit/helpers'
 import {
-  PointerSensor,
-  KeyboardSensor,
-  PointerActivationConstraints,
-} from '@dnd-kit/dom'
-import { DragDropEventHandlers } from '@dnd-kit/react'
+  DragDropEventHandlers,
+  DragDropProvider,
+  DragOverlay,
+} from '@dnd-kit/react'
+import { useSortable } from '@dnd-kit/react/sortable'
 import { GripVerticalIcon } from 'lucide-react'
+import type { PropsWithChildren } from 'react'
+import { memo, useCallback, useRef, useState } from 'react'
 
 function createRange(length: number) {
   return Array.from({ length }, (_, i) => i + 1)
