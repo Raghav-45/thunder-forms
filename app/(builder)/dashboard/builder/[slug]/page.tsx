@@ -32,7 +32,6 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import axios, { AxiosError } from 'axios'
 import {
   DragDropProvider,
-  DragOverlay,
   type DragEndEvent,
   type DragOverEvent,
 } from '@dnd-kit/react'
@@ -42,6 +41,7 @@ import {
   type Droppable,
 } from '@dnd-kit/abstract'
 import {
+  Feedback,
   PointerSensor,
   PointerActivationConstraints,
   type Sensors,
@@ -80,12 +80,6 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   const { formSettings, setFormSettings } = useFormStore()
   const { slug: paramFormId } = use(params)
   const [currentFormId, setCurrentFormId] = useState<string>(paramFormId)
-  const [draggingSectionId, setDraggingSectionId] = useState<string | null>(
-    null,
-  )
-  const [sectionDropPreviewIndex, setSectionDropPreviewIndex] = useState<
-    number | null
-  >(null)
   const [formStructure, setFormStructure] = useState<IFormStructure>({
     pages: [
       {
@@ -224,6 +218,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
               field={field}
               index={index}
               sectionIndex={sectionIndex}
+              sectionId={section.id}
             />
           ) : (
             <div key={field.id} className="mb-4">
@@ -247,15 +242,12 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     sectionIndex: number
   }) => {
     const { ref, handleRef, isDragging } = useSortable({
-      id: `section-${sectionIndex}`,
+      id: section.id,
       index: sectionIndex,
       type: 'section',
       accept: ['section', 'field'],
       collisionPriority: CollisionPriority.Low,
-      disabled: {
-        draggable: false,
-        droppable: draggingSectionId === `section-${sectionIndex}`,
-      },
+      plugins: [Feedback.configure({feedback: 'clone'})],
     })
 
     return (
@@ -351,19 +343,21 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     return null
   }
 
-  const sectionIndexFromGroup = (group: string | number | undefined) => {
-    if (group == null) return null
-    const index = Number(String(group).replace('section-', ''))
-    return Number.isNaN(index) ? null : index
+  const sectionIndexFromId = (id: string | number | undefined) => {
+    if (id == null) return null
+    const page = formStructure.pages[currentPageIndex]
+    if (!page) return null
+    const index = page.sections.findIndex((s) => s.id === id)
+    return index === -1 ? null : index
   }
 
   const sectionIndexFromTarget = (target: Droppable | null | undefined) => {
     if (target == null || !isSortable(target as never)) return null
     if (target.type === 'section') {
-      return sectionIndexFromGroup(target.id)
+      return sectionIndexFromId(target.id)
     }
     if (target.type === 'field') {
-      return sectionIndexFromGroup(
+      return sectionIndexFromId(
         (target as { group?: string | number }).group,
       )
     }
@@ -371,49 +365,10 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   }
 
   const formStructureSnapshot = useRef<IFormStructure | null>(null)
-  const sectionsContainerRef = useRef<HTMLDivElement>(null)
-
-  const syncDomOrder = (
-    container: HTMLElement | null,
-    orderedIds: string[],
-    idAttr: string,
-  ) => {
-    if (!container) return
-    const nodesById = new Map<string, HTMLElement>()
-    for (const child of Array.from(container.children) as HTMLElement[]) {
-      const id = child.getAttribute(idAttr)
-      if (id) nodesById.set(id, child)
-    }
-    for (const id of orderedIds) {
-      const node = nodesById.get(id)
-      if (node) container.appendChild(node)
-    }
-  }
-
-  const syncSectionFieldsDom = (sectionId: string, fieldIds: string[]) => {
-    const container = sectionsContainerRef.current
-    if (!container) return
-    const wrapper = container.querySelector(
-      `[data-section-id="${sectionId}"]`,
-    )
-    const card = wrapper?.firstElementChild as HTMLElement | null
-    if (!card) return
-    syncDomOrder(card, fieldIds, 'data-field-id')
-  }
 
   const handleDragOver = (event: DragOverEvent) => {
     const { source, target } = event.operation
     if (!isSortable(source) || !isSortable(target)) return
-
-    // Sections: keep the OptimisticSortingPlugin from physically moving
-    // section elements. Its async dragover processing can resolve after
-    // the dragend commit and revert the DOM order; the dragend handler
-    // commits the reorder from the drop target instead
-    if (source.type === 'section') {
-      event.preventDefault()
-      setSectionDropPreviewIndex(sectionIndexFromTarget(target))
-      return
-    }
 
     // Cross-group field->field: keep the OptimisticSortingPlugin from
     // physically moving the field element between containers; the commit
@@ -433,7 +388,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     // cannot handle container targets, so drive the move via React state
     event.preventDefault()
 
-    const targetSectionIndex = sectionIndexFromGroup(target.id)
+    const targetSectionIndex = sectionIndexFromId(target.id)
     if (targetSectionIndex == null) return
 
     setFormStructure((prev) => {
@@ -472,22 +427,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     const { canceled, operation } = event
     if (canceled) {
       if (formStructureSnapshot.current) {
-        const snapshot = formStructureSnapshot.current
-        setFormStructure(snapshot)
-        const page = snapshot.pages[currentPageIndex]
-        if (page) {
-          syncDomOrder(
-            sectionsContainerRef.current,
-            page.sections.map((s) => s.id),
-            'data-section-id',
-          )
-          for (const section of page.sections) {
-            syncSectionFieldsDom(
-              section.id,
-              section.fields.map((f) => f.id),
-            )
-          }
-        }
+        setFormStructure(formStructureSnapshot.current)
       }
       return
     }
@@ -496,11 +436,9 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     if (!isSortable(source)) return
 
     if (source.type === 'section') {
-      const { initialIndex } = source
+      const { initialIndex, index } = source
 
-      const targetSectionIndex = sectionIndexFromTarget(operation.target)
-      if (targetSectionIndex == null) return
-      if (initialIndex === targetSectionIndex) return
+      if (initialIndex === index) return
 
       const prev = formStructure
       const currentPage = prev?.pages[currentPageIndex]
@@ -508,7 +446,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
       const sections = [...currentPage.sections]
       const [moved] = sections.splice(initialIndex, 1)
-      sections.splice(targetSectionIndex, 0, moved)
+      sections.splice(index, 0, moved)
 
       setFormStructure({
         ...prev,
@@ -517,13 +455,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         ),
       })
 
-      syncDomOrder(
-        sectionsContainerRef.current,
-        sections.map((s) => s.id),
-        'data-section-id',
-      )
-
-      setCurrentSectionIndex(targetSectionIndex)
+      setCurrentSectionIndex(index)
       return
     }
 
@@ -531,7 +463,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
       const { initialIndex, index, initialGroup, group } = source
       if (initialGroup == null) return
 
-      const sourceSectionIndex = sectionIndexFromGroup(initialGroup)
+      const sourceSectionIndex = sectionIndexFromId(initialGroup)
       if (sourceSectionIndex == null) return
 
       const target = operation.target
@@ -540,12 +472,12 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
       const pluginMovedCrossGroup = group != null && group !== initialGroup
       const targetSectionIndex = pluginMovedCrossGroup
-        ? sectionIndexFromGroup(group)
+        ? sectionIndexFromId(group)
         : targetIsField
-          ? sectionIndexFromGroup(
+          ? sectionIndexFromId(
               (target as { group?: string | number }).group,
             )
-          : sectionIndexFromGroup(group)
+          : sectionIndexFromId(group)
 
       if (targetSectionIndex == null) return
 
@@ -589,17 +521,6 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           pageIndex === currentPageIndex ? { ...p, sections } : p,
         ),
       })
-
-      syncSectionFieldsDom(
-        sections[sourceSectionIndex].id,
-        sections[sourceSectionIndex].fields.map((f) => f.id),
-      )
-      if (targetSectionIndex !== sourceSectionIndex) {
-        syncSectionFieldsDom(
-          sections[targetSectionIndex].id,
-          sections[targetSectionIndex].fields.map((f) => f.id),
-        )
-      }
     }
   }
 
@@ -652,17 +573,20 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     field,
     index,
     sectionIndex,
+    sectionId,
   }: {
     field: FieldConfig
     index: number
     sectionIndex: number
+    sectionId: string
   }) => {
     const { ref, isDragging } = useSortable({
       id: field.id,
       index,
       type: 'field',
       accept: 'field',
-      group: `section-${sectionIndex}`,
+      group: sectionId,
+      plugins: [Feedback.configure({feedback: 'clone'})],
     })
 
     return (
@@ -1006,89 +930,26 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
             ) && 'flex items-center justify-center',
           )}
         >
-          <CardContent ref={sectionsContainerRef} className="p-4">
+          <CardContent className="p-4">
             <DragDropProvider
               sensors={sensors}
               onDragStart={(event) => {
                 formStructureSnapshot.current = formStructure
-                setSectionDropPreviewIndex(null)
-                const source = event.operation.source
-                if (source?.type === 'section') {
-                  setDraggingSectionId(String(source.id))
-                }
               }}
               onDragOver={handleDragOver}
               onDragEnd={(event) => {
-                setDraggingSectionId(null)
-                setSectionDropPreviewIndex(null)
                 handleDragEnd(event)
               }}
             >
-              {(() => {
-                const draggingSectionIndex = sectionIndexFromGroup(
-                  draggingSectionId ?? undefined,
-                )
-                const previewSection =
-                  draggingSectionIndex != null
-                    ? formStructure.pages[currentPageIndex]?.sections[
-                        draggingSectionIndex
-                      ]
-                    : undefined
-
-                return formStructure.pages[currentPageIndex]?.sections.map(
-                  (section, sectionIndex) => (
-                    <Fragment key={section.id}>
-                      {sectionDropPreviewIndex === sectionIndex &&
-                        previewSection && (
-                          <div className="mb-4 pointer-events-none opacity-50">
-                            {renderSectionCard(
-                              previewSection,
-                              sectionIndex,
-                              undefined,
-                              false,
-                            )}
-                          </div>
-                        )}
-                      <SortableSection
-                        section={section}
-                        sectionIndex={sectionIndex}
-                      />
-                    </Fragment>
-                  ),
-                )
-              })()}
-
-              <DragOverlay>
-                {(source) => {
-                  if (source?.type === 'field') {
-                    const field = findFieldById(source.id)
-                    if (!field) return null
-
-                    return (
-                      <div className="opacity-50">{renderFieldCard(field)}</div>
-                    )
-                  }
-
-                  if (source?.type === 'section') {
-                    const sectionIndex = sectionIndexFromGroup(source.id)
-                    if (sectionIndex == null) return null
-
-                    const section =
-                      formStructure.pages[currentPageIndex]?.sections[
-                        sectionIndex
-                      ]
-                    if (!section) return null
-
-                    return (
-                      <div className="opacity-50">
-                        {renderSectionCard(section, sectionIndex, undefined, false)}
-                      </div>
-                    )
-                  }
-
-                  return null
-                }}
-              </DragOverlay>
+              {formStructure.pages[currentPageIndex]?.sections.map(
+                (section, sectionIndex) => (
+                  <SortableSection
+                    key={section.id}
+                    section={section}
+                    sectionIndex={sectionIndex}
+                  />
+                ),
+              )}
             </DragDropProvider>
           </CardContent>
         </Card>
