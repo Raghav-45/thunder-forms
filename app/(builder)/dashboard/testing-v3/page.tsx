@@ -72,7 +72,9 @@ const SortableItem = memo(function SortableItem({
       }`}
       style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
     >
-      <span className="font-medium text-sm text-neutral-200">{label} - {id}</span>
+      <span className="font-medium text-sm text-neutral-200">
+        {label} - {id}
+      </span>
       <button
         ref={handleRef as any}
         className="cursor-grab active:cursor-grabbing text-neutral-500 hover:text-neutral-300"
@@ -249,9 +251,78 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         </div>
       </div>
 
-      {/* DragOverlay left disabled — it referenced the old columns/COLORS
-          shape and needs the same section/field treatment before it can
-          be safely re-enabled. */}
+      <DragOverlay>
+        {(source: any) => {
+          if (!source) return null
+
+          if (source.type === 'column') {
+            const sectionIndex = sections.findIndex((s) => s.id === source.id)
+            const section = sections[sectionIndex]
+            if (!section) return null
+            const accentColor =
+              ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
+
+            return (
+              <div className="border border-neutral-800 bg-neutral-900 rounded-xl p-4 flex flex-col gap-4 shadow-2xl cursor-grabbing">
+                <div className="flex items-center gap-2 text-sm font-medium text-neutral-400">
+                  <GripVerticalIcon className="size-4" />
+                  <span>Section - [{section.id}]</span>
+                </div>
+
+                {section.fields.length === 0 ? (
+                  <div className="border border-dashed border-neutral-800 rounded-lg h-24 flex items-center justify-center text-sm text-neutral-500">
+                    Drop fields here
+                  </div>
+                ) : (
+                  <div className="space-y-3 flex-1">
+                    {section.fields.map((field) => (
+                      <div
+                        key={field.id}
+                        className="border border-neutral-800 bg-neutral-950 rounded-lg p-3 flex items-center justify-between"
+                        style={{
+                          borderLeftColor: accentColor,
+                          borderLeftWidth: 4,
+                        }}
+                      >
+                        <span className="font-medium text-sm text-neutral-200">
+                          {field.uniqueIdentifier} - {field.id}
+                        </span>
+                        <GripVerticalIcon className="size-4 text-neutral-500" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          }
+
+          if (source.type === 'item') {
+            const sectionIndex = sections.findIndex((s) =>
+              s.fields.some((f) => f.id === source.id),
+            )
+            const field = sections[sectionIndex]?.fields.find(
+              (f) => f.id === source.id,
+            )
+            if (!field) return null
+            const accentColor =
+              ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
+
+            return (
+              <div
+                className="border border-neutral-800 bg-neutral-950 rounded-lg p-3 shadow-2xl flex items-center justify-between cursor-grabbing"
+                style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
+              >
+                <span className="font-medium text-sm text-neutral-200">
+                  {field.uniqueIdentifier} - {field.id}
+                </span>
+                <GripVerticalIcon className="size-4 text-neutral-500" />
+              </div>
+            )
+          }
+
+          return null
+        }}
+      </DragOverlay>
     </DragDropProvider>
   )
 }
