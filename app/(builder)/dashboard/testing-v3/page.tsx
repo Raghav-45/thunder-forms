@@ -13,10 +13,6 @@ import { GripVerticalIcon } from 'lucide-react'
 import type { PropsWithChildren } from 'react'
 import { memo, useCallback, useRef, useState } from 'react'
 
-function createRange(length: number) {
-  return Array.from({ length }, (_, i) => i + 1)
-}
-
 const sensors = [
   PointerSensor.configure({
     activatorElements(source) {
@@ -130,22 +126,28 @@ const SortableColumn = memo(function SortableColumn({
   )
 })
 
+interface Column {
+  id: string
+  items: string[]
+}
+
+const initialColumns: Column[] = [
+  { id: 'A', items: Array.from({ length: 6 }, (_, i) => `A${i + 1}`) },
+  { id: 'B', items: Array.from({ length: 6 }, (_, i) => `B${i + 1}`) },
+  { id: 'C', items: Array.from({ length: 6 }, (_, i) => `C${i + 1}`) },
+  { id: 'D', items: [] },
+]
+
 export default function App() {
-  const [items, setItems] = useState({
-    A: Array.from({ length: 6 }, (_, i) => i + 1).map((id) => `A${id}`),
-    B: Array.from({ length: 6 }, (_, i) => i + 1).map((id) => `B${id}`),
-    C: Array.from({ length: 6 }, (_, i) => i + 1).map((id) => `C${id}`),
-    D: [],
-  })
-  const [columns] = useState(Object.keys(items))
-  const snapshot = useRef(structuredClone(items))
+  const [columns, setColumns] = useState<Column[]>(initialColumns)
+  const snapshot = useRef(structuredClone(columns))
 
   return (
     <DragDropProvider
       sensors={sensors}
       onDragStart={useCallback<DragDropEventHandlers['onDragStart']>(() => {
-        snapshot.current = structuredClone(items)
-      }, [items])}
+        snapshot.current = structuredClone(columns)
+      }, [columns])}
       onDragOver={useCallback<DragDropEventHandlers['onDragOver']>((event) => {
         const { source } = event.operation
 
@@ -153,11 +155,23 @@ export default function App() {
           return
         }
 
-        setItems((items) => move(items, event))
+        setColumns((columns) => {
+          // `move` expects a Record<groupId, items[]>, so we project the
+          // array into that shape, run the move, then project it back.
+          const record = Object.fromEntries(
+            columns.map((c) => [c.id, c.items])
+          )
+          const updated = move(record, event)
+
+          return columns.map((c) => ({
+            ...c,
+            items: updated[c.id] ?? c.items,
+          }))
+        })
       }, [])}
       onDragEnd={useCallback<DragDropEventHandlers['onDragEnd']>((event) => {
         if (event.canceled) {
-          setItems(snapshot.current)
+          setColumns(snapshot.current)
           return
         }
       }, [])}
@@ -165,18 +179,14 @@ export default function App() {
       <div className="p-8 max-w-2xl mx-auto min-h-screen bg-neutral-950 text-white font-sans">
         <h1 className="text-3xl font-bold mb-8">Drag & Drop Testing</h1>
         <div className="space-y-4 pb-8">
-          {columns.map((column, columnIndex) => {
-            const rows = items[column as keyof typeof items]
-
-            return (
-              <SortableColumn
-                key={column}
-                id={column}
-                index={columnIndex}
-                rows={rows}
-              />
-            )
-          })}
+          {columns.map((column, columnIndex) => (
+            <SortableColumn
+              key={column.id}
+              id={column.id}
+              index={columnIndex}
+              rows={column.items}
+            />
+          ))}
         </div>
       </div>
 
@@ -187,7 +197,8 @@ export default function App() {
           const accentColor = COLORS[column]
 
           if (source.type === 'column') {
-            const columnRows = items[sourceId as keyof typeof items] ?? []
+            const columnRows =
+              columns.find((c) => c.id === sourceId)?.items ?? []
             return (
               <div className="border border-neutral-700 bg-neutral-900 rounded-xl p-4 flex flex-col gap-4 shadow-2xl opacity-95">
                 <div className="flex items-center gap-2 text-sm font-medium text-neutral-400 cursor-grabbing">
