@@ -17,8 +17,6 @@ function createRange(length: number) {
   return Array.from({ length }, (_, i) => i + 1)
 }
 
-const ITEM_COUNT = 6
-
 const sensors = [
   PointerSensor.configure({
     activatorElements(source) {
@@ -134,9 +132,9 @@ const SortableColumn = memo(function SortableColumn({
 
 export default function App() {
   const [items, setItems] = useState({
-    A: createRange(ITEM_COUNT).map((id) => `A${id}`),
-    B: createRange(ITEM_COUNT).map((id) => `B${id}`),
-    C: createRange(ITEM_COUNT).map((id) => `C${id}`),
+    A: Array.from({ length: 6 }, (_, i) => i + 1).map((id) => `A${id}`),
+    B: Array.from({ length: 6 }, (_, i) => i + 1).map((id) => `B${id}`),
+    C: Array.from({ length: 6 }, (_, i) => i + 1).map((id) => `C${id}`),
     D: [],
   })
   const [columns] = useState(Object.keys(items))
@@ -182,7 +180,7 @@ export default function App() {
         </div>
       </div>
 
-      <DragOverlay>
+      {/* <DragOverlay>
         {(source) => {
           const sourceId = String(source.id)
           const column = sourceId[0] as keyof typeof COLORS
@@ -228,7 +226,7 @@ export default function App() {
             </div>
           )
         }}
-      </DragOverlay>
+      </DragOverlay> */}
     </DragDropProvider>
   )
 }
