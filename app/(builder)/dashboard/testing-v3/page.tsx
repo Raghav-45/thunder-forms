@@ -1,5 +1,11 @@
 'use client'
 
+import {
+  AVAILABLE_FIELDS,
+  avaliableFieldsType,
+} from '@/components/FormBuilder/types/types'
+import { FieldConfig } from '@/components/FormBuilder/elements'
+import { createDefaultFieldConfig } from '@/components/FormBuilder/utils/helperFunctions'
 import { CollisionPriority } from '@dnd-kit/abstract'
 import { KeyboardSensor, PointerSensor } from '@dnd-kit/dom'
 import { move } from '@dnd-kit/helpers'
@@ -11,7 +17,7 @@ import {
 import { useSortable } from '@dnd-kit/react/sortable'
 import { GripVerticalIcon } from 'lucide-react'
 import type { PropsWithChildren } from 'react'
-import { memo, useCallback, useRef, useState } from 'react'
+import { memo, use, useCallback, useRef, useState } from 'react'
 
 const sensors = [
   PointerSensor.configure({
@@ -138,9 +144,53 @@ const initialColumns: Column[] = [
   { id: 'D', items: [] },
 ]
 
-export default function App() {
+interface FormBuilderProps {
+  params: Promise<{ slug: string }>
+}
+
+interface IFormStructure {
+  pages: {
+    sections: {
+      id: string
+      fields: FieldConfig[]
+    }[]
+  }[]
+}
+
+const generateNewSection = (): { id: string; fields: FieldConfig[] } => ({
+  id: crypto.randomUUID(),
+  fields: [],
+})
+
+export default function FormBuilderPage({ params }: FormBuilderProps) {
+  const { slug: paramFormId } = use(params)
+  const [formStructure, setFormStructure] = useState<IFormStructure>({
+    pages: [
+      {
+        sections: [generateNewSection()],
+      },
+    ],
+  })
+
   const [columns, setColumns] = useState<Column[]>(initialColumns)
   const snapshot = useRef(structuredClone(columns))
+
+  function handleAddSection() {
+    // setFormStructure((prev) => {
+    //   const newSection = generateNewSection()
+    //   const updatedPages = [...prev.pages]
+    //   updatedPages[0].sections.push(newSection)
+    //   return { ...prev, pages: updatedPages }
+    // })
+    const randomUniqueIdentifier = AVAILABLE_FIELDS[
+      Math.floor(Math.random() * AVAILABLE_FIELDS.length)
+    ] as avaliableFieldsType
+    const newField = createDefaultFieldConfig(randomUniqueIdentifier)
+    setColumns((prev) => [
+      { id: newField.id, items: [newField.uniqueIdentifier] },
+      ...prev,
+    ])
+  }
 
   return (
     <DragDropProvider
@@ -158,9 +208,7 @@ export default function App() {
         setColumns((columns) => {
           // `move` expects a Record<groupId, items[]>, so we project the
           // array into that shape, run the move, then project it back.
-          const record = Object.fromEntries(
-            columns.map((c) => [c.id, c.items])
-          )
+          const record = Object.fromEntries(columns.map((c) => [c.id, c.items]))
           const updated = move(record, event)
 
           return columns.map((c) => ({
@@ -178,6 +226,7 @@ export default function App() {
     >
       <div className="p-8 max-w-2xl mx-auto min-h-screen bg-neutral-950 text-white font-sans">
         <h1 className="text-3xl font-bold mb-8">Drag & Drop Testing</h1>
+        <button onClick={() => handleAddSection()}>Add Field</button>
         <div className="space-y-4 pb-8">
           {columns.map((column, columnIndex) => (
             <SortableColumn
