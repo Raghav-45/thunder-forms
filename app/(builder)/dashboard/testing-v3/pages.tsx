@@ -1,0 +1,297 @@
+'use client'
+
+import { FieldConfig } from '@/components/FormBuilder/elements'
+import { CollisionPriority } from '@dnd-kit/abstract'
+import { KeyboardSensor, PointerSensor } from '@dnd-kit/dom'
+import { move } from '@dnd-kit/helpers'
+import {
+  DragDropEventHandlers,
+  DragDropProvider,
+  DragOverlay,
+} from '@dnd-kit/react'
+import { useSortable } from '@dnd-kit/react/sortable'
+import { GripVerticalIcon } from 'lucide-react'
+import type { PropsWithChildren } from 'react'
+import { memo, use, useCallback, useRef, useState } from 'react'
+
+function createRange(length: number) {
+  return Array.from({ length }, (_, i) => i + 1)
+}
+
+const sensors = [
+  PointerSensor.configure({
+    activatorElements(source) {
+      return [source.element, source.handle]
+    },
+  }),
+  KeyboardSensor,
+]
+
+interface SortableItemProps {
+  field: FieldConfig
+  sectionId: string
+  index: number
+}
+
+const COLORS: Record<string, string> = {
+  A: '#7193f1',
+  B: '#FF851B',
+  C: '#2ECC40',
+  D: '#ff3680',
+}
+
+const SortableItem = memo(function SortableItem({
+  field,
+  sectionId,
+  index,
+}: SortableItemProps) {
+  const { handleRef, ref, isDragSource } = useSortable({
+    id: field.id,
+    group: sectionId,
+    accept: 'item',
+    type: 'item',
+    index,
+    data: {
+      sectionId,
+      field,
+    },
+  })
+
+  return (
+    <div
+      ref={ref as any}
+      className={`border border-neutral-800 bg-neutral-950 rounded-lg p-3 transition-opacity flex items-center justify-between ${
+        isDragSource ? 'opacity-30' : ''
+      }`}
+    >
+      <div>
+        <div className="font-medium text-sm text-neutral-200">
+          {field.label}
+        </div>
+
+        <div className="text-xs text-neutral-500">
+          {field.type}
+        </div>
+      </div>
+
+      <button
+        ref={handleRef as any}
+        className="cursor-grab active:cursor-grabbing text-neutral-500 hover:text-neutral-300"
+      >
+        <GripVerticalIcon className="size-4" />
+      </button>
+    </div>
+  )
+})
+
+interface SortableColumnProps {
+  id: string
+  index: number
+  section: {
+    id: string
+    fields: FieldConfig[]
+  }
+}
+
+const SortableColumn = memo(function SortableColumn({
+  section,
+  index,
+}: SortableColumnProps) {
+  const { handleRef, isDragSource, ref } = useSortable({
+    id: section.id,
+    accept: ['column', 'item'],
+    collisionPriority: CollisionPriority.Low,
+    type: 'column',
+    index,
+  })
+
+  return (
+    <div
+      ref={ref as any}
+      className={`border border-neutral-800 bg-neutral-900 rounded-xl p-4 flex flex-col gap-4 transition-opacity ${
+        isDragSource ? 'opacity-30' : ''
+      }`}
+    >
+      <div
+        ref={handleRef as any}
+        className="flex items-center gap-2 text-sm font-medium text-neutral-400 cursor-grab active:cursor-grabbing"
+      >
+        <GripVerticalIcon className="size-4" />
+
+        <span>Section {section.id}</span>
+      </div>
+
+      {section.fields.length === 0 ? (
+        <div className="border border-dashed border-neutral-800 rounded-lg h-24 flex items-center justify-center text-sm text-neutral-500">
+          Drop fields here
+        </div>
+      ) : (
+        <div className="space-y-3 flex-1">
+          {section.fields.map((field, fieldIndex) => (
+            <SortableItem
+              key={field.id}
+              id={field.id}
+              column={section.id}
+              index={fieldIndex}
+              accentColor="#7193f1"
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+})
+
+interface IFormStructure {
+  pages: {
+    sections: {
+      id: string
+      fields: FieldConfig[]
+    }[]
+  }[]
+}
+
+const generateNewSection = (): {
+  id: string
+  fields: FieldConfig[]
+} => ({
+  id: crypto.randomUUID(),
+  fields: [
+    {
+      id: 'A1',
+      uniqueIdentifier: 'text-input',
+      label: 'First Name',
+    },
+    {
+      id: 'A2',
+      uniqueIdentifier: 'text-input',
+      label: 'Last Name',
+    },
+    {
+      id: 'A3',
+      uniqueIdentifier: 'switch-field',
+      label: 'Subscribe to newsletter',
+    },
+  ],
+})
+
+interface FormBuilderProps {
+  params: Promise<{ slug: string }>
+}
+
+export default function FormBuilderPage({ params }: FormBuilderProps) {
+  const { slug: paramFormId } = use(params)
+  const [currentFormId, setCurrentFormId] = useState<string>(paramFormId)
+  
+  const [formStructure, setFormStructure] = useState<IFormStructure>({
+    pages: [
+      {
+        sections: [generateNewSection()],
+      },
+    ],
+  })
+
+  const currentPage = formStructure.pages[0]
+  const sections = currentPage.sections
+
+
+  const [items, setItems] = useState({
+    A: Array.from({ length: 6 }, (_, i) => i + 1).map((id) => `A${id}`),
+    B: Array.from({ length: 6 }, (_, i) => i + 1).map((id) => `B${id}`),
+    C: Array.from({ length: 6 }, (_, i) => i + 1).map((id) => `C${id}`),
+    D: [],
+  })
+  
+  const [columns] = useState(Object.keys(items))
+  const snapshot = useRef(structuredClone(items))
+
+  return (
+    <DragDropProvider
+      sensors={sensors}
+      onDragStart={useCallback<DragDropEventHandlers['onDragStart']>(() => {
+        snapshot.current = structuredClone(items)
+      }, [items])}
+      onDragOver={useCallback<DragDropEventHandlers['onDragOver']>((event) => {
+        const { source } = event.operation
+
+        if (source && source.type === 'column') {
+          return
+        }
+
+        setItems((items) => move(items, event))
+      }, [])}
+      onDragEnd={useCallback<DragDropEventHandlers['onDragEnd']>((event) => {
+        if (event.canceled) {
+          setItems(snapshot.current)
+          return
+        }
+      }, [])}
+    >
+      <div className="p-8 max-w-2xl mx-auto min-h-screen bg-neutral-950 text-white font-sans">
+        <h1 className="text-3xl font-bold mb-8">Drag & Drop Testing</h1>
+        <div className="space-y-4 pb-8">
+          {columns.map((column, columnIndex) => {
+            const rows = items[column as keyof typeof items]
+
+            return (
+              <SortableColumn
+                key={column}
+                id={column}
+                index={columnIndex}
+                rows={rows}
+              />
+            )
+          })}
+        </div>
+      </div>
+
+      {/* <DragOverlay>
+        {(source) => {
+          const sourceId = String(source.id)
+          const column = sourceId[0] as keyof typeof COLORS
+          const accentColor = COLORS[column]
+
+          if (source.type === 'column') {
+            const columnRows = items[sourceId as keyof typeof items] ?? []
+            return (
+              <div className="border border-neutral-700 bg-neutral-900 rounded-xl p-4 flex flex-col gap-4 shadow-2xl opacity-95">
+                <div className="flex items-center gap-2 text-sm font-medium text-neutral-400 cursor-grabbing">
+                  <GripVerticalIcon className="size-4" />
+                  <span>Column {sourceId}</span>
+                </div>
+                <div className="space-y-3">
+                  {columnRows.map((itemId) => (
+                    <div
+                      key={itemId}
+                      className="border border-neutral-800 bg-neutral-950 rounded-lg p-3 flex items-center justify-between"
+                      style={{
+                        borderLeftColor: accentColor,
+                        borderLeftWidth: 4,
+                      }}
+                    >
+                      <span className="font-medium text-sm text-neutral-200">
+                        {itemId}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          }
+
+          return (
+            <div
+              className="border border-neutral-700 bg-neutral-950 rounded-lg p-3 flex items-center justify-between shadow-2xl opacity-95 cursor-grabbing"
+              style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
+            >
+              <span className="font-medium text-sm text-neutral-200">
+                {sourceId}
+              </span>
+              <GripVerticalIcon className="size-4 text-neutral-500" />
+            </div>
+          )
+        }}
+      </DragOverlay> */}
+    </DragDropProvider>
+  )
+}
