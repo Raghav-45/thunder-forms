@@ -28,22 +28,28 @@ const sensors = [
   KeyboardSensor,
 ]
 
+// Section ids are now real UUIDs (not the old A/B/C/D demo keys), so
+// colors are assigned by position instead of looked up by id.
+const ACCENT_COLORS = [
+  '#7193f1',
+  '#FF851B',
+  '#2ECC40',
+  '#ff3680',
+  '#a78bfa',
+  '#22d3ee',
+]
+
 interface SortableItemProps {
   id: string
+  label: string
   column: string
   index: number
   accentColor: string
 }
 
-const COLORS: Record<string, string> = {
-  A: '#7193f1',
-  B: '#FF851B',
-  C: '#2ECC40',
-  D: '#ff3680',
-}
-
 const SortableItem = memo(function SortableItem({
   id,
+  label,
   column,
   index,
   accentColor,
@@ -66,7 +72,7 @@ const SortableItem = memo(function SortableItem({
       }`}
       style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
     >
-      <span className="font-medium text-sm text-neutral-200">{id}</span>
+      <span className="font-medium text-sm text-neutral-200">{label} - {id}</span>
       <button
         ref={handleRef as any}
         className="cursor-grab active:cursor-grabbing text-neutral-500 hover:text-neutral-300"
@@ -80,13 +86,15 @@ const SortableItem = memo(function SortableItem({
 interface SortableColumnProps {
   id: string
   index: number
-  rows: string[]
+  fields: FieldConfig[]
+  accentColor: string
 }
 
 const SortableColumn = memo(function SortableColumn({
-  rows,
+  fields,
   id,
   index,
+  accentColor,
 }: PropsWithChildren<SortableColumnProps>) {
   const { handleRef, isDragging, isDragSource, ref } = useSortable({
     id,
@@ -108,22 +116,23 @@ const SortableColumn = memo(function SortableColumn({
         className="flex items-center gap-2 text-sm font-medium text-neutral-400 cursor-grab active:cursor-grabbing"
       >
         <GripVerticalIcon className="size-4" />
-        <span>Column {id}</span>
+        <span>Section - [{id}]</span>
       </div>
 
-      {rows.length === 0 ? (
+      {fields.length === 0 ? (
         <div className="border border-dashed border-neutral-800 rounded-lg h-24 flex items-center justify-center text-sm text-neutral-500">
-          Drop items here
+          Drop fields here
         </div>
       ) : (
         <div className="space-y-3 flex-1">
-          {rows.map((itemId, itemIndex) => (
+          {fields.map((field, fieldIndex) => (
             <SortableItem
-              key={itemId}
-              id={itemId}
+              key={field.id}
+              id={field.id}
+              label={field.uniqueIdentifier}
               column={id}
-              index={itemIndex}
-              accentColor={COLORS[id]}
+              index={fieldIndex}
+              accentColor={accentColor}
             />
           ))}
         </div>
@@ -132,32 +141,22 @@ const SortableColumn = memo(function SortableColumn({
   )
 })
 
-interface Column {
-  id: string
-  items: string[]
-}
-
-const initialColumns: Column[] = [
-  { id: 'A', items: Array.from({ length: 6 }, (_, i) => `A${i + 1}`) },
-  { id: 'B', items: Array.from({ length: 6 }, (_, i) => `B${i + 1}`) },
-  { id: 'C', items: Array.from({ length: 6 }, (_, i) => `C${i + 1}`) },
-  { id: 'D', items: [] },
-]
-
 interface FormBuilderProps {
   params: Promise<{ slug: string }>
 }
 
+interface Section {
+  id: string
+  fields: FieldConfig[]
+}
+
 interface IFormStructure {
   pages: {
-    sections: {
-      id: string
-      fields: FieldConfig[]
-    }[]
+    sections: Section[]
   }[]
 }
 
-const generateNewSection = (): { id: string; fields: FieldConfig[] } => ({
+const generateNewSection = (): Section => ({
   id: crypto.randomUUID(),
   fields: [],
 })
@@ -172,32 +171,31 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     ],
   })
 
-  const [columns, setColumns] = useState<Column[]>(initialColumns)
-  const snapshot = useRef(structuredClone(columns))
+  const snapshot = useRef(structuredClone(formStructure))
 
   function handleAddSection() {
-    // setFormStructure((prev) => {
-    //   const newSection = generateNewSection()
-    //   const updatedPages = [...prev.pages]
-    //   updatedPages[0].sections.push(newSection)
-    //   return { ...prev, pages: updatedPages }
-    // })
     const randomUniqueIdentifier = AVAILABLE_FIELDS[
       Math.floor(Math.random() * AVAILABLE_FIELDS.length)
     ] as avaliableFieldsType
     const newField = createDefaultFieldConfig(randomUniqueIdentifier)
-    setColumns((prev) => [
-      { id: newField.id, items: [newField.uniqueIdentifier] },
+    const newSection: Section = { ...generateNewSection(), fields: [newField] }
+
+    setFormStructure((prev) => ({
       ...prev,
-    ])
+      pages: prev.pages.map((page, i) =>
+        i === 0 ? { ...page, sections: [newSection, ...page.sections] } : page,
+      ),
+    }))
   }
+
+  const sections = formStructure.pages[0].sections
 
   return (
     <DragDropProvider
       sensors={sensors}
       onDragStart={useCallback<DragDropEventHandlers['onDragStart']>(() => {
-        snapshot.current = structuredClone(columns)
-      }, [columns])}
+        snapshot.current = structuredClone(formStructure)
+      }, [formStructure])}
       onDragOver={useCallback<DragDropEventHandlers['onDragOver']>((event) => {
         const { source } = event.operation
 
@@ -205,21 +203,32 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           return
         }
 
-        setColumns((columns) => {
+        setFormStructure((prev) => {
+          const currentSections = prev.pages[0].sections
+
           // `move` expects a Record<groupId, items[]>, so we project the
-          // array into that shape, run the move, then project it back.
-          const record = Object.fromEntries(columns.map((c) => [c.id, c.items]))
+          // sections into that shape, run the move, then project it back.
+          const record = Object.fromEntries(
+            currentSections.map((s) => [s.id, s.fields]),
+          )
           const updated = move(record, event)
 
-          return columns.map((c) => ({
-            ...c,
-            items: updated[c.id] ?? c.items,
+          const newSections = currentSections.map((s) => ({
+            ...s,
+            fields: updated[s.id] ?? s.fields,
           }))
+
+          return {
+            ...prev,
+            pages: prev.pages.map((page, i) =>
+              i === 0 ? { ...page, sections: newSections } : page,
+            ),
+          }
         })
       }, [])}
       onDragEnd={useCallback<DragDropEventHandlers['onDragEnd']>((event) => {
         if (event.canceled) {
-          setColumns(snapshot.current)
+          setFormStructure(snapshot.current)
           return
         }
       }, [])}
@@ -228,65 +237,21 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         <h1 className="text-3xl font-bold mb-8">Drag & Drop Testing</h1>
         <button onClick={() => handleAddSection()}>Add Field</button>
         <div className="space-y-4 pb-8">
-          {columns.map((column, columnIndex) => (
+          {sections.map((section, sectionIndex) => (
             <SortableColumn
-              key={column.id}
-              id={column.id}
-              index={columnIndex}
-              rows={column.items}
+              key={section.id}
+              id={section.id}
+              index={sectionIndex}
+              fields={section.fields}
+              accentColor={ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]}
             />
           ))}
         </div>
       </div>
 
-      {/* <DragOverlay>
-        {(source) => {
-          const sourceId = String(source.id)
-          const column = sourceId[0] as keyof typeof COLORS
-          const accentColor = COLORS[column]
-
-          if (source.type === 'column') {
-            const columnRows =
-              columns.find((c) => c.id === sourceId)?.items ?? []
-            return (
-              <div className="border border-neutral-700 bg-neutral-900 rounded-xl p-4 flex flex-col gap-4 shadow-2xl opacity-95">
-                <div className="flex items-center gap-2 text-sm font-medium text-neutral-400 cursor-grabbing">
-                  <GripVerticalIcon className="size-4" />
-                  <span>Column {sourceId}</span>
-                </div>
-                <div className="space-y-3">
-                  {columnRows.map((itemId) => (
-                    <div
-                      key={itemId}
-                      className="border border-neutral-800 bg-neutral-950 rounded-lg p-3 flex items-center justify-between"
-                      style={{
-                        borderLeftColor: accentColor,
-                        borderLeftWidth: 4,
-                      }}
-                    >
-                      <span className="font-medium text-sm text-neutral-200">
-                        {itemId}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
-          }
-
-          return (
-            <div
-              className="border border-neutral-700 bg-neutral-950 rounded-lg p-3 flex items-center justify-between shadow-2xl opacity-95 cursor-grabbing"
-              style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
-            >
-              <span className="font-medium text-sm text-neutral-200">
-                {sourceId}
-              </span>
-              <GripVerticalIcon className="size-4 text-neutral-500" />
-            </div>
-          )
-        }}
-      </DragOverlay> */}
+      {/* DragOverlay left disabled — it referenced the old columns/COLORS
+          shape and needs the same section/field treatment before it can
+          be safely re-enabled. */}
     </DragDropProvider>
   )
 }
