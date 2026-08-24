@@ -76,11 +76,13 @@ const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
       } ${state === 'floating' ? 'shadow-2xl cursor-grabbing' : ''}`}
       style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
     >
-      <FieldComponent
-        field={field as never}
-        value={undefined}
-        onChange={(value) => console.log(field.id, value)}
-      />
+      <div className="flex-1 pr-2 pointer-events-none">
+        <FieldComponent
+          field={field as never}
+          value={undefined}
+          onChange={(value) => console.log(field.id, value)}
+        />
+      </div>
       {handleRef ? (
         <button
           ref={handleRef}
