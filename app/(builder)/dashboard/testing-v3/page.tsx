@@ -274,6 +274,39 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     }))
   }
 
+  function handleAddFieldToLastSection() {
+    const randomUniqueIdentifier = AVAILABLE_FIELDS[
+      Math.floor(Math.random() * AVAILABLE_FIELDS.length)
+    ] as avaliableFieldsType
+    const newField = createDefaultFieldConfig(randomUniqueIdentifier)
+
+    setFormStructure((prev) => {
+      const sections = prev.pages[0].sections
+      if (sections.length === 0) {
+        return {
+          ...prev,
+          pages: [
+            { ...prev.pages[0], sections: [{ ...generateNewSection(), fields: [newField] }] },
+          ],
+        }
+      }
+
+      return {
+        ...prev,
+        pages: prev.pages.map((page, i) =>
+          i === 0
+            ? {
+                ...page,
+                sections: sections.map((s, si) =>
+                  si === 0 ? { ...s, fields: [...s.fields, newField] } : s,
+                ),
+              }
+            : page,
+        ),
+      }
+    })
+  }
+
   const sections = formStructure.pages[0].sections
 
   return (
@@ -321,7 +354,12 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     >
       <div className="p-8 max-w-2xl mx-auto min-h-screen bg-neutral-950 text-white font-sans">
         <h1 className="text-3xl font-bold mb-8">Drag & Drop Testing</h1>
-        <button onClick={() => handleAddSection()}>Add Field</button>
+
+        <div className="flex flex-row justify-between">
+          <button onClick={() => handleAddSection()}>Add Section</button>
+          <button onClick={() => handleAddFieldToLastSection()}>Add Field to Latest Section</button>
+        </div>
+
         <div className="space-y-4 pb-8">
           {sections.map((section, sectionIndex) => (
             <SortableSection
