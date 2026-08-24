@@ -16,8 +16,8 @@ import {
 } from '@dnd-kit/react'
 import { useSortable } from '@dnd-kit/react/sortable'
 import { GripVerticalIcon } from 'lucide-react'
-import type { PropsWithChildren } from 'react'
-import { memo, use, useCallback, useRef, useState } from 'react'
+import type { PropsWithChildren, ReactNode } from 'react'
+import { forwardRef, memo, use, useCallback, useRef, useState } from 'react'
 
 const sensors = [
   PointerSensor.configure({
@@ -38,6 +38,98 @@ const ACCENT_COLORS = [
   '#a78bfa',
   '#22d3ee',
 ]
+
+// ---------------------------------------------------------------------
+// Presentational components. These know nothing about dnd-kit — they're
+// just "what an item/section looks like." Used both by the live sortable
+// tree (wrapped with drag behavior below) and by DragOverlay (rendered
+// bare, as a static floating clone). One definition of the UI, two call
+// sites — instead of the overlay hand-maintaining a visual copy.
+// ---------------------------------------------------------------------
+
+interface ItemCardProps {
+  id: string
+  label: string
+  accentColor: string
+  // 'ghost'    -> this is the item currently being dragged FROM (faded, still in place)
+  // 'floating' -> this is the DragOverlay clone following the cursor
+  state?: 'ghost' | 'floating'
+  // Only passed by the live sortable wrapper. Its presence is what turns
+  // the grip icon into an actual drag handle vs. a decorative icon.
+  handleRef?: React.Ref<HTMLButtonElement>
+}
+
+const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
+  { id, label, accentColor, state, handleRef },
+  ref,
+) {
+  return (
+    <div
+      ref={ref}
+      className={`border border-neutral-800 bg-neutral-950 rounded-lg p-3 flex items-center justify-between transition-opacity ${
+        state === 'ghost' ? 'opacity-30' : ''
+      } ${state === 'floating' ? 'shadow-2xl cursor-grabbing' : ''}`}
+      style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
+    >
+      <span className="font-medium text-sm text-neutral-200">{label} - {id}</span>
+      {handleRef ? (
+        <button
+          ref={handleRef}
+          className="cursor-grab active:cursor-grabbing text-neutral-500 hover:text-neutral-300"
+        >
+          <GripVerticalIcon className="size-4" />
+        </button>
+      ) : (
+        <GripVerticalIcon className="size-4 text-neutral-500" />
+      )}
+    </div>
+  )
+})
+
+interface SectionCardProps {
+  id: string
+  isEmpty: boolean
+  state?: 'ghost' | 'floating'
+  // Only passed by the live sortable wrapper — same idea as ItemCard.
+  handleRef?: React.Ref<HTMLDivElement>
+  children?: ReactNode
+}
+
+const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
+  function SectionCard({ id, isEmpty, state, handleRef, children }, ref) {
+    return (
+      <div
+        ref={ref}
+        className={`border border-neutral-800 bg-neutral-900 rounded-xl p-4 flex flex-col gap-4 transition-opacity ${
+          state === 'ghost' ? 'opacity-30' : ''
+        } ${state === 'floating' ? 'shadow-2xl cursor-grabbing' : ''}`}
+      >
+        <div
+          ref={handleRef}
+          className={`flex items-center gap-2 text-sm font-medium text-neutral-400 ${
+            handleRef ? 'cursor-grab active:cursor-grabbing' : ''
+          }`}
+        >
+          <GripVerticalIcon className="size-4" />
+          <span>Section - [{id}]</span>
+        </div>
+
+        {isEmpty ? (
+          <div className="border border-dashed border-neutral-800 rounded-lg h-24 flex items-center justify-center text-sm text-neutral-500">
+            Drop fields here
+          </div>
+        ) : (
+          <div className="space-y-3 flex-1">{children}</div>
+        )}
+      </div>
+    )
+  },
+)
+
+// ---------------------------------------------------------------------
+// Sortable wrappers. Thin: call useSortable, forward its ref/handleRef
+// into the presentational component above. No layout/styling lives here.
+// ---------------------------------------------------------------------
 
 interface SortableItemProps {
   id: string
@@ -65,23 +157,14 @@ const SortableItem = memo(function SortableItem({
   })
 
   return (
-    <div
+    <ItemCard
       ref={ref as any}
-      className={`border border-neutral-800 bg-neutral-950 rounded-lg p-3 transition-opacity flex items-center justify-between ${
-        isDragSource ? 'opacity-30' : ''
-      }`}
-      style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
-    >
-      <span className="font-medium text-sm text-neutral-200">
-        {label} - {id}
-      </span>
-      <button
-        ref={handleRef as any}
-        className="cursor-grab active:cursor-grabbing text-neutral-500 hover:text-neutral-300"
-      >
-        <GripVerticalIcon className="size-4" />
-      </button>
-    </div>
+      id={id}
+      label={label}
+      accentColor={accentColor}
+      state={isDragSource ? 'ghost' : undefined}
+      handleRef={handleRef as any}
+    />
   )
 })
 
@@ -107,39 +190,24 @@ const SortableColumn = memo(function SortableColumn({
   })
 
   return (
-    <div
+    <SectionCard
       ref={ref as any}
-      className={`border border-neutral-800 bg-neutral-900 rounded-xl p-4 flex flex-col gap-4 transition-opacity ${
-        isDragSource ? 'opacity-30' : ''
-      }`}
+      id={id}
+      isEmpty={fields.length === 0}
+      state={isDragSource ? 'ghost' : undefined}
+      handleRef={handleRef as any}
     >
-      <div
-        ref={handleRef as any}
-        className="flex items-center gap-2 text-sm font-medium text-neutral-400 cursor-grab active:cursor-grabbing"
-      >
-        <GripVerticalIcon className="size-4" />
-        <span>Section - [{id}]</span>
-      </div>
-
-      {fields.length === 0 ? (
-        <div className="border border-dashed border-neutral-800 rounded-lg h-24 flex items-center justify-center text-sm text-neutral-500">
-          Drop fields here
-        </div>
-      ) : (
-        <div className="space-y-3 flex-1">
-          {fields.map((field, fieldIndex) => (
-            <SortableItem
-              key={field.id}
-              id={field.id}
-              label={field.uniqueIdentifier}
-              column={id}
-              index={fieldIndex}
-              accentColor={accentColor}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+      {fields.map((field, fieldIndex) => (
+        <SortableItem
+          key={field.id}
+          id={field.id}
+          label={field.uniqueIdentifier}
+          column={id}
+          index={fieldIndex}
+          accentColor={accentColor}
+        />
+      ))}
+    </SectionCard>
   )
 })
 
@@ -263,36 +331,20 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
               ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
 
             return (
-              <div className="border border-neutral-800 bg-neutral-900 rounded-xl p-4 flex flex-col gap-4 shadow-2xl cursor-grabbing">
-                <div className="flex items-center gap-2 text-sm font-medium text-neutral-400">
-                  <GripVerticalIcon className="size-4" />
-                  <span>Section - [{section.id}]</span>
-                </div>
-
-                {section.fields.length === 0 ? (
-                  <div className="border border-dashed border-neutral-800 rounded-lg h-24 flex items-center justify-center text-sm text-neutral-500">
-                    Drop fields here
-                  </div>
-                ) : (
-                  <div className="space-y-3 flex-1">
-                    {section.fields.map((field) => (
-                      <div
-                        key={field.id}
-                        className="border border-neutral-800 bg-neutral-950 rounded-lg p-3 flex items-center justify-between"
-                        style={{
-                          borderLeftColor: accentColor,
-                          borderLeftWidth: 4,
-                        }}
-                      >
-                        <span className="font-medium text-sm text-neutral-200">
-                          {field.uniqueIdentifier} - {field.id}
-                        </span>
-                        <GripVerticalIcon className="size-4 text-neutral-500" />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <SectionCard
+                id={section.id}
+                isEmpty={section.fields.length === 0}
+                state="floating"
+              >
+                {section.fields.map((field) => (
+                  <ItemCard
+                    key={field.id}
+                    id={field.id}
+                    label={field.uniqueIdentifier}
+                    accentColor={accentColor}
+                  />
+                ))}
+              </SectionCard>
             )
           }
 
@@ -308,15 +360,12 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
               ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
 
             return (
-              <div
-                className="border border-neutral-800 bg-neutral-950 rounded-lg p-3 shadow-2xl flex items-center justify-between cursor-grabbing"
-                style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
-              >
-                <span className="font-medium text-sm text-neutral-200">
-                  {field.uniqueIdentifier} - {field.id}
-                </span>
-                <GripVerticalIcon className="size-4 text-neutral-500" />
-              </div>
+              <ItemCard
+                id={field.id}
+                label={field.uniqueIdentifier}
+                accentColor={accentColor}
+                state="floating"
+              />
             )
           }
 
