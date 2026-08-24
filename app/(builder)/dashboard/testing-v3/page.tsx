@@ -1,10 +1,10 @@
 'use client'
 
+import { FieldConfig } from '@/components/FormBuilder/elements'
 import {
   AVAILABLE_FIELDS,
   avaliableFieldsType,
 } from '@/components/FormBuilder/types/types'
-import { FieldConfig } from '@/components/FormBuilder/elements'
 import {
   createDefaultFieldConfig,
   getFieldComponent,
