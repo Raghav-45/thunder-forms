@@ -5,7 +5,10 @@ import {
   avaliableFieldsType,
 } from '@/components/FormBuilder/types/types'
 import { FieldConfig } from '@/components/FormBuilder/elements'
-import { createDefaultFieldConfig, getFieldComponent } from '@/components/FormBuilder/utils/helperFunctions'
+import {
+  createDefaultFieldConfig,
+  getFieldComponent,
+} from '@/components/FormBuilder/utils/helperFunctions'
 import { CollisionPriority } from '@dnd-kit/abstract'
 import { KeyboardSensor, PointerSensor } from '@dnd-kit/dom'
 import { move } from '@dnd-kit/helpers'
@@ -73,16 +76,11 @@ const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
       } ${state === 'floating' ? 'shadow-2xl cursor-grabbing' : ''}`}
       style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
     >
-      {/* <span className="font-medium text-sm text-neutral-200">
-        {label} - {id}
-      </span> */}
-
       <FieldComponent
         field={field as never}
         value={undefined}
         onChange={(value) => console.log(field.id, value)}
       />
-
       {handleRef ? (
         <button
           ref={handleRef}
@@ -145,10 +143,10 @@ const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
 interface SortableItemProps {
   id: string
   label: string
+  field: FieldConfig
   column: string
   index: number
   accentColor: string
-  field: FieldConfig
 }
 
 const SortableItem = memo(function SortableItem({
@@ -215,8 +213,8 @@ const SortableSection = memo(function SortableSection({
         <SortableItem
           key={field.id}
           id={field.id}
-          field={field}
           label={field.uniqueIdentifier}
+          field={field}
           column={id}
           index={fieldIndex}
           accentColor={accentColor}
@@ -251,7 +249,8 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   const [formStructure, setFormStructure] = useState<IFormStructure>({
     pages: [
       {
-        sections: [generateNewSection()],
+        // sections: [generateNewSection()],
+        sections: [],
       },
     ],
   })
