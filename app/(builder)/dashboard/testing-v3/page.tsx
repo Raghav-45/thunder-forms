@@ -5,7 +5,7 @@ import {
   avaliableFieldsType,
 } from '@/components/FormBuilder/types/types'
 import { FieldConfig } from '@/components/FormBuilder/elements'
-import { createDefaultFieldConfig } from '@/components/FormBuilder/utils/helperFunctions'
+import { createDefaultFieldConfig, getFieldComponent } from '@/components/FormBuilder/utils/helperFunctions'
 import { CollisionPriority } from '@dnd-kit/abstract'
 import { KeyboardSensor, PointerSensor } from '@dnd-kit/dom'
 import { move } from '@dnd-kit/helpers'
@@ -50,6 +50,7 @@ const ACCENT_COLORS = [
 interface ItemCardProps {
   id: string
   label: string
+  field: FieldConfig
   accentColor: string
   // 'ghost'    -> this is the item currently being dragged FROM (faded, still in place)
   // 'floating' -> this is the DragOverlay clone following the cursor
@@ -60,9 +61,10 @@ interface ItemCardProps {
 }
 
 const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
-  { id, label, accentColor, state, handleRef },
+  { id, label, field, accentColor, state, handleRef },
   ref,
 ) {
+  const FieldComponent = getFieldComponent(field.uniqueIdentifier)
   return (
     <div
       ref={ref}
@@ -71,9 +73,16 @@ const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
       } ${state === 'floating' ? 'shadow-2xl cursor-grabbing' : ''}`}
       style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
     >
-      <span className="font-medium text-sm text-neutral-200">
+      {/* <span className="font-medium text-sm text-neutral-200">
         {label} - {id}
-      </span>
+      </span> */}
+
+      <FieldComponent
+        field={field as never}
+        value={undefined}
+        onChange={(value) => console.log(field.id, value)}
+      />
+
       {handleRef ? (
         <button
           ref={handleRef}
@@ -139,11 +148,13 @@ interface SortableItemProps {
   column: string
   index: number
   accentColor: string
+  field: FieldConfig
 }
 
 const SortableItem = memo(function SortableItem({
   id,
   label,
+  field,
   column,
   index,
   accentColor,
@@ -163,6 +174,7 @@ const SortableItem = memo(function SortableItem({
       ref={ref as any}
       id={id}
       label={label}
+      field={field}
       accentColor={accentColor}
       state={isDragSource ? 'ghost' : undefined}
       handleRef={handleRef as any}
@@ -203,6 +215,7 @@ const SortableSection = memo(function SortableSection({
         <SortableItem
           key={field.id}
           id={field.id}
+          field={field}
           label={field.uniqueIdentifier}
           column={id}
           index={fieldIndex}
@@ -343,6 +356,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
                     key={field.id}
                     id={field.id}
                     label={field.uniqueIdentifier}
+                    field={field}
                     accentColor={accentColor}
                   />
                 ))}
@@ -365,6 +379,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
               <ItemCard
                 id={field.id}
                 label={field.uniqueIdentifier}
+                field={field}
                 accentColor={accentColor}
                 state="floating"
               />
