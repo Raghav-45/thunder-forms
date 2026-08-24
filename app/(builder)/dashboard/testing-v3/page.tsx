@@ -71,7 +71,9 @@ const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
       } ${state === 'floating' ? 'shadow-2xl cursor-grabbing' : ''}`}
       style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
     >
-      <span className="font-medium text-sm text-neutral-200">{label} - {id}</span>
+      <span className="font-medium text-sm text-neutral-200">
+        {label} - {id}
+      </span>
       {handleRef ? (
         <button
           ref={handleRef}
@@ -168,24 +170,24 @@ const SortableItem = memo(function SortableItem({
   )
 })
 
-interface SortableColumnProps {
+interface SortableSectionProps {
   id: string
   index: number
   fields: FieldConfig[]
   accentColor: string
 }
 
-const SortableColumn = memo(function SortableColumn({
+const SortableSection = memo(function SortableSection({
   fields,
   id,
   index,
   accentColor,
-}: PropsWithChildren<SortableColumnProps>) {
+}: PropsWithChildren<SortableSectionProps>) {
   const { handleRef, isDragging, isDragSource, ref } = useSortable({
     id,
-    accept: ['column', 'item'],
+    accept: ['section', 'item'],
     collisionPriority: CollisionPriority.Low,
-    type: 'column',
+    type: 'section',
     index,
   })
 
@@ -269,7 +271,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
       onDragOver={useCallback<DragDropEventHandlers['onDragOver']>((event) => {
         const { source } = event.operation
 
-        if (source && source.type === 'column') {
+        if (source && source.type === 'section') {
           return
         }
 
@@ -308,7 +310,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         <button onClick={() => handleAddSection()}>Add Field</button>
         <div className="space-y-4 pb-8">
           {sections.map((section, sectionIndex) => (
-            <SortableColumn
+            <SortableSection
               key={section.id}
               id={section.id}
               index={sectionIndex}
@@ -323,7 +325,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         {(source: any) => {
           if (!source) return null
 
-          if (source.type === 'column') {
+          if (source.type === 'section') {
             const sectionIndex = sections.findIndex((s) => s.id === source.id)
             const section = sections[sectionIndex]
             if (!section) return null
