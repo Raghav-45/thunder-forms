@@ -9,7 +9,12 @@ import {
   createDefaultFieldConfig,
   getFieldComponent,
 } from '@/components/FormBuilder/utils/helperFunctions'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription } from '@/components/ui/card'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
 import { CollisionPriority } from '@dnd-kit/abstract'
 import { KeyboardSensor, PointerSensor } from '@dnd-kit/dom'
 import { move } from '@dnd-kit/helpers'
@@ -333,7 +338,117 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   const sections = formStructure.pages[0].sections
 
   return (
-    <DragDropProvider
+
+    <div className="flex bg-background h-screen text-foreground">
+      {/* Left Side bar with Form Details */}
+      <Card className="hidden md:block border-0 border-r-2 rounded-none w-80 h-screen overflow-hidden">
+        <CardContent className="flex flex-col space-y-4 p-4 py-0 h-full">
+          <div className="flex flex-row justify-between mb-8">
+            <h2 className="font-bold text-2xl">Settings</h2>
+            {/* <Button
+              size="sm"
+              variant="secondary"
+              onClick={handleSaveForm}
+              disabled={isSaving}
+              className="text-xs cursor-pointer"
+            >
+              {isSaving ? (
+                <Loader2Icon className="animate-spin" />
+              ) : (
+                <SaveIcon />
+              )}{' '}
+              {isSaving ? 'Saving...' : 'Save'}
+            </Button> */}
+          </div>
+          {/* <div className="items-center gap-1.5 grid w-full">
+            <Label htmlFor="title">Form Title</Label>
+            <Input
+              id="title"
+              placeholder="Enter form name"
+              value={formSettings.title}
+              onChange={(e) =>
+                setFormSettings({
+                  ...formSettings,
+                  title: e.target.value,
+                })
+              }
+              className="bg-neutral-900!"
+            />
+          </div>
+          <div className="items-center gap-1.5 grid w-full">
+            <Label htmlFor="description">Form Description</Label>
+            <Textarea
+              id="description"
+              placeholder="Enter description"
+              className="max-h-24 bg-neutral-900!"
+              value={formSettings.description}
+              onChange={(e) =>
+                setFormSettings({
+                  ...formSettings,
+                  description: e.target.value,
+                })
+              }
+            />
+          </div>
+          <SettingsDialog /> */}
+
+          <div className="flex-grow"></div>
+
+          {/* <ImportGoogleForm
+            onImported={(title, description, fields) => {
+              setFormSettings({
+                ...formSettings,
+                title,
+                description,
+              })
+              setFields(fields)
+            }}
+          /> */}
+
+          {/* <GenerateWithAiPrompt
+            onGeneratedFields={(title, description, fields) => {
+              setFormSettings({
+                ...formSettings,
+                title,
+                description,
+              })
+              setFields(fields)
+            }}
+          /> */}
+        </CardContent>
+      </Card>
+
+      <ScrollArea className="flex-1 p-4 md:p-4 pt-6 overflow-auto sticky">
+        <div className="flex flex-row justify-between">
+          <h2 className="mb-6 font-bold text-3xl">Builder</h2>
+
+          {/* <div className="flex flex-row gap-x-2">
+            {currentFormId !== 'new-form' && (
+              <CopyButton value={`${siteConfig.url}/forms/${currentFormId}`} />
+            )}
+          </div> */}
+        </div>
+        <Card
+          className={cn(
+            'h-[calc(100vh-100px)] overflow-y-scroll border-2 border-dashed !p-0 border-muted mb-1',
+            !(sections.flatMap((s) => s.fields).length > 0) && 'flex items-center justify-center',
+          )}
+          // onDragOver={(e: React.DragEvent) => e.preventDefault()}
+          // onDrop={handleElementDrop}
+        >
+          <CardContent
+            className={cn(
+              'p-3 md:p-4',
+              !(sections.flatMap((s) => s.fields).length > 0) && 'flex items-center justify-center w-full h-full',
+            )}
+          >
+            {(
+              <div className="flex justify-center items-center h-full text-muted-foreground text-center">
+                <p>Drag elements here to build your form or Generate with AI</p>
+              </div>
+            )}
+
+            <DragDropProvider
       sensors={sensors}
       onDragStart={useCallback<DragDropEventHandlers['onDragStart']>(() => {
         snapshot.current = structuredClone(formStructure)
@@ -375,16 +490,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         }
       }, [])}
     >
-      <div className="p-8 max-w-5xl mx-auto min-h-screen bg-neutral-950 text-white font-sans">
-        <h1 className="text-3xl font-bold mb-8">Drag & Drop Testing</h1>
-
-        <div className="flex flex-row justify-between">
-          <button onClick={() => handleAddSection()}>Add Section</button>
-          <button onClick={() => handleAddFieldToLastSection()}>
-            Add Field to Latest Section
-          </button>
-        </div>
-
+      <div className="mx-auto min-h-screen text-white font-sans">
         <div className="space-y-4 pb-8">
           {sections.map((section, sectionIndex) => (
             <SortableSection
@@ -454,5 +560,209 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         }}
       </DragOverlay>
     </DragDropProvider>
+
+          </CardContent>
+        </Card>
+      </ScrollArea>
+
+      <>
+        <Card className="hidden md:block border-0 border-l-2 rounded-none w-80 h-screen overflow-hidden">
+          <CardContent className="p-4 pt-0">
+            <h2 className="font-bold text-2xl">Available Fields</h2>
+            <CardDescription>
+              Select fields from the list to add
+            </CardDescription>
+            <Separator className="my-4" />
+            <ScrollArea className="h-[calc(100vh-8rem)]">
+              <div className="flex flex-row">
+                <div className="grid grid-cols-2 gap-2 md:flex md:flex-col items-start flex-wrap md:flex-nowrap gap-y-2 overflow-y-auto w-full">
+                  <Button variant="outline"
+                    className="rounded-lg w-full px-2 md:pl-3 bg-neutral-900! cursor-grab"
+                    size="sm"
+                    onClick={() => handleAddSection()}
+                  >
+                    <div className="overflow-hidden truncate text-[0.625rem] md:text-xs">
+                      Add Section
+                    </div>
+                    <div className="ml-auto flex flex-row">
+                      <GripVerticalIcon className="size-4" />
+                    </div>
+                  </Button>
+                  <Separator className="my-2" />
+                  {AVAILABLE_FIELDS.concat(comingSoonElements).map(
+                    (fieldType) => (
+                      <Button
+                        key={fieldType}
+                        // draggable={AVAILABLE_FIELDS.includes(fieldType)}
+                        // onDragStart={() =>
+                        //   handleElementDragStart(
+                        //     fieldType as avaliableFieldsType,
+                        //   )
+                        // }
+                        variant="outline"
+                        className="rounded-lg w-full px-2 md:pl-3 bg-neutral-900! cursor-grab"
+                        size="sm"
+                        disabled={!AVAILABLE_FIELDS.includes(fieldType)}
+                        onClick={() => handleAddFieldToLastSection()}
+                      >
+                        <div className="overflow-hidden truncate text-[0.625rem] md:text-xs">
+                          {fieldType}
+                        </div>
+                        {!AVAILABLE_FIELDS.includes(fieldType) && (
+                          <Badge
+                            variant="outline"
+                            className="text-[9px] font-bold mx-1 px-1 bg-blue-400 text-black rounded-full py-0"
+                          >
+                            coming soon
+                          </Badge>
+                        )}
+                        <div className="ml-auto flex flex-row">
+                          <GripVerticalIcon className="size-4" />
+                        </div>
+                      </Button>
+                    ),
+                  )}
+                </div>
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+        {/* {renderEditor()} */}
+      </>
+    </div>
+
+    // <DragDropProvider
+    //   sensors={sensors}
+    //   onDragStart={useCallback<DragDropEventHandlers['onDragStart']>(() => {
+    //     snapshot.current = structuredClone(formStructure)
+    //   }, [formStructure])}
+    //   onDragOver={useCallback<DragDropEventHandlers['onDragOver']>((event) => {
+    //     const { source } = event.operation
+
+    //     if (source && source.type === 'section') {
+    //       return
+    //     }
+
+    //     setFormStructure((prev) => {
+    //       const currentSections = prev.pages[0].sections
+
+    //       // `move` expects a Record<groupId, items[]>, so we project the
+    //       // sections into that shape, run the move, then project it back.
+    //       const record = Object.fromEntries(
+    //         currentSections.map((s) => [s.id, s.fields]),
+    //       )
+    //       const updated = move(record, event)
+
+    //       const newSections = currentSections.map((s) => ({
+    //         ...s,
+    //         fields: updated[s.id] ?? s.fields,
+    //       }))
+
+    //       return {
+    //         ...prev,
+    //         pages: prev.pages.map((page, i) =>
+    //           i === 0 ? { ...page, sections: newSections } : page,
+    //         ),
+    //       }
+    //     })
+    //   }, [])}
+    //   onDragEnd={useCallback<DragDropEventHandlers['onDragEnd']>((event) => {
+    //     if (event.canceled) {
+    //       setFormStructure(snapshot.current)
+    //       return
+    //     }
+    //   }, [])}
+    // >
+    //   <div className="p-8 max-w-5xl mx-auto min-h-screen bg-neutral-950 text-white font-sans">
+    //     <h1 className="text-3xl font-bold mb-8">Drag & Drop Testing</h1>
+
+    //     <div className="flex flex-row justify-between">
+    //       <button onClick={() => handleAddSection()}>Add Section</button>
+    //       <button onClick={() => handleAddFieldToLastSection()}>
+    //         Add Field to Latest Section
+    //       </button>
+    //     </div>
+
+    //     <div className="space-y-4 pb-8">
+    //       {sections.map((section, sectionIndex) => (
+    //         <SortableSection
+    //           key={section.id}
+    //           id={section.id}
+    //           index={sectionIndex}
+    //           fields={section.fields}
+    //           accentColor={ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]}
+    //         />
+    //       ))}
+    //     </div>
+    //   </div>
+
+    //   <DragOverlay>
+    //     {(source: any) => {
+    //       if (!source) return null
+
+    //       if (source.type === 'section') {
+    //         const sectionIndex = sections.findIndex((s) => s.id === source.id)
+    //         const section = sections[sectionIndex]
+    //         if (!section) return null
+    //         const accentColor =
+    //           ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
+
+    //         return (
+    //           <SectionCard
+    //             id={section.id}
+    //             isEmpty={section.fields.length === 0}
+    //             state="floating"
+    //           >
+    //             {section.fields.map((field) => (
+    //               <ItemCard
+    //                 key={field.id}
+    //                 id={field.id}
+    //                 label={field.uniqueIdentifier}
+    //                 field={field}
+    //                 accentColor={accentColor}
+    //               />
+    //             ))}
+    //           </SectionCard>
+    //         )
+    //       }
+
+    //       if (source.type === 'item') {
+    //         const sectionIndex = sections.findIndex((s) =>
+    //           s.fields.some((f) => f.id === source.id),
+    //         )
+    //         const field = sections[sectionIndex]?.fields.find(
+    //           (f) => f.id === source.id,
+    //         )
+    //         if (!field) return null
+    //         const accentColor =
+    //           ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
+
+    //         return (
+    //           <ItemCard
+    //             id={field.id}
+    //             label={field.uniqueIdentifier}
+    //             field={field}
+    //             accentColor={accentColor}
+    //             state="floating"
+    //           />
+    //         )
+    //       }
+
+    //       return null
+    //     }}
+    //   </DragOverlay>
+    // </DragDropProvider>
   )
 }
+
+const comingSoonElements = [
+  'Combobox',
+  'File Input',
+  'Input OTP',
+  'Location Input',
+  'Password',
+  'Phone',
+  'Signature Input',
+  'Smart Datetime Input',
+  'Tags Input',
+]
