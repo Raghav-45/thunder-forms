@@ -72,7 +72,7 @@ const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
   return (
     <div
       ref={ref}
-      className={`group relative bg-neutral-950 rounded-lg flex items-center justify-between border-2 border-dashed border-border p-3 transition-all duration-200 hover:border-primary/50 hover:shadow-sm cursor-grab active:cursor-grabbing ${
+      className={`group relative bg-card rounded-lg flex items-center justify-between border-2 border-dashed border-border p-3 transition-all duration-200 hover:border-primary/50 hover:shadow-sm cursor-grab active:cursor-grabbing ${
         state === 'ghost' ? 'opacity-30' : ''
       } ${state === 'floating' ? 'shadow-2xl cursor-grabbing' : ''}`}
     >
