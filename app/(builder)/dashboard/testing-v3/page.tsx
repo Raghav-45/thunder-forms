@@ -9,6 +9,7 @@ import {
   createDefaultFieldConfig,
   getFieldComponent,
 } from '@/components/FormBuilder/utils/helperFunctions'
+import { Button } from '@/components/ui/button'
 import { CollisionPriority } from '@dnd-kit/abstract'
 import { KeyboardSensor, PointerSensor } from '@dnd-kit/dom'
 import { move } from '@dnd-kit/helpers'
@@ -18,7 +19,7 @@ import {
   DragOverlay,
 } from '@dnd-kit/react'
 import { useSortable } from '@dnd-kit/react/sortable'
-import { GripVerticalIcon } from 'lucide-react'
+import { GripVerticalIcon, PencilIcon, Trash2Icon } from 'lucide-react'
 import type { PropsWithChildren, ReactNode } from 'react'
 import { forwardRef, memo, use, useCallback, useRef, useState } from 'react'
 
@@ -71,10 +72,9 @@ const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
   return (
     <div
       ref={ref}
-      className={`border border-neutral-800 bg-neutral-950 rounded-lg p-3 flex items-center justify-between transition-opacity ${
+      className={`group relative bg-neutral-950 rounded-lg flex items-center justify-between border-2 border-dashed border-border p-3 transition-all duration-200 hover:border-primary/50 hover:shadow-sm cursor-grab active:cursor-grabbing ${
         state === 'ghost' ? 'opacity-30' : ''
       } ${state === 'floating' ? 'shadow-2xl cursor-grabbing' : ''}`}
-      style={{ borderLeftColor: accentColor, borderLeftWidth: 4 }}
     >
       <div className="flex-1 pr-2 pointer-events-none">
         <FieldComponent
@@ -83,16 +83,36 @@ const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
           onChange={(value) => console.log(field.id, value)}
         />
       </div>
-      {handleRef ? (
-        <button
-          ref={handleRef}
-          className="cursor-grab active:cursor-grabbing text-neutral-500 hover:text-neutral-300"
+      {/* Action Buttons - Only visible on hover */}
+      <div
+        className={`absolute right-3 top-3 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+          state === 'floating' ? 'hidden' : ''
+        }`}
+        onPointerDown={(event) => event.stopPropagation()}
+      >
+        <Button
+          variant="ghost"
+          size="icon"
+          type="button"
+          className="cursor-pointer h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary border border-border/50"
+          // TODO: wire up field editing
+          onClick={() => alert('Edit field functionality not implemented yet.')}
         >
-          <GripVerticalIcon className="size-4" />
-        </button>
-      ) : (
-        <GripVerticalIcon className="size-4 text-neutral-500" />
-      )}
+          <PencilIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          type="button"
+          className="cursor-pointer h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-destructive/10 hover:text-destructive border border-border/50"
+          // TODO: wire up field removal
+          onClick={() =>
+            alert('Remove field functionality not implemented yet.')
+          }
+        >
+          <Trash2Icon className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   )
 })
@@ -286,7 +306,10 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         return {
           ...prev,
           pages: [
-            { ...prev.pages[0], sections: [{ ...generateNewSection(), fields: [newField] }] },
+            {
+              ...prev.pages[0],
+              sections: [{ ...generateNewSection(), fields: [newField] }],
+            },
           ],
         }
       }
@@ -352,12 +375,14 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         }
       }, [])}
     >
-      <div className="p-8 max-w-2xl mx-auto min-h-screen bg-neutral-950 text-white font-sans">
+      <div className="p-8 max-w-5xl mx-auto min-h-screen bg-neutral-950 text-white font-sans">
         <h1 className="text-3xl font-bold mb-8">Drag & Drop Testing</h1>
 
         <div className="flex flex-row justify-between">
           <button onClick={() => handleAddSection()}>Add Section</button>
-          <button onClick={() => handleAddFieldToLastSection()}>Add Field to Latest Section</button>
+          <button onClick={() => handleAddFieldToLastSection()}>
+            Add Field to Latest Section
+          </button>
         </div>
 
         <div className="space-y-4 pb-8">
