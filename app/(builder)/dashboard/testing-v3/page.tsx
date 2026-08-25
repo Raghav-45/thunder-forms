@@ -337,6 +337,57 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
   const sections = formStructure.pages[0].sections
 
+  const handleDragStart = useCallback<DragDropEventHandlers['onDragStart']>(
+    () => {
+      snapshot.current = structuredClone(formStructure)
+    },
+    [formStructure],
+  )
+
+  const handleDragOver = useCallback<DragDropEventHandlers['onDragOver']>(
+    (event) => {
+      const { source } = event.operation
+
+      if (source && source.type === 'section') {
+        return
+      }
+
+      setFormStructure((prev) => {
+        const currentSections = prev.pages[0].sections
+
+        // `move` expects a Record<groupId, items[]>, so we project the
+        // sections into that shape, run the move, then project it back.
+        const record = Object.fromEntries(
+          currentSections.map((s) => [s.id, s.fields]),
+        )
+        const updated = move(record, event)
+
+        const newSections = currentSections.map((s) => ({
+          ...s,
+          fields: updated[s.id] ?? s.fields,
+        }))
+
+        return {
+          ...prev,
+          pages: prev.pages.map((page, i) =>
+            i === 0 ? { ...page, sections: newSections } : page,
+          ),
+        }
+      })
+    },
+    [],
+  )
+
+  const handleDragEnd = useCallback<DragDropEventHandlers['onDragEnd']>(
+    (event) => {
+      if (event.canceled) {
+        setFormStructure(snapshot.current)
+        return
+      }
+    },
+    [],
+  )
+
   return (
     <div className="flex bg-background h-screen text-foreground">
       {/* Left Side bar with Form Details */}
@@ -448,54 +499,10 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
             ) : (
               <DragDropProvider
                 sensors={sensors}
-                onDragStart={useCallback<
-                  DragDropEventHandlers['onDragStart']
-                >(() => {
-                  snapshot.current = structuredClone(formStructure)
-              }, [formStructure])}
-              onDragOver={useCallback<DragDropEventHandlers['onDragOver']>(
-                (event) => {
-                  const { source } = event.operation
-
-                  if (source && source.type === 'section') {
-                    return
-                  }
-
-                  setFormStructure((prev) => {
-                    const currentSections = prev.pages[0].sections
-
-                    // `move` expects a Record<groupId, items[]>, so we project the
-                    // sections into that shape, run the move, then project it back.
-                    const record = Object.fromEntries(
-                      currentSections.map((s) => [s.id, s.fields]),
-                    )
-                    const updated = move(record, event)
-
-                    const newSections = currentSections.map((s) => ({
-                      ...s,
-                      fields: updated[s.id] ?? s.fields,
-                    }))
-
-                    return {
-                      ...prev,
-                      pages: prev.pages.map((page, i) =>
-                        i === 0 ? { ...page, sections: newSections } : page,
-                      ),
-                    }
-                  })
-                },
-                [],
-              )}
-              onDragEnd={useCallback<DragDropEventHandlers['onDragEnd']>(
-                (event) => {
-                  if (event.canceled) {
-                    setFormStructure(snapshot.current)
-                    return
-                  }
-                },
-                [],
-              )}
-            >
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDragEnd={handleDragEnd}
+              >
               <div className="mx-auto min-h-screen text-white font-sans">
                 <div className="space-y-4 pb-8">
                   {sections.map((section, sectionIndex) => (
