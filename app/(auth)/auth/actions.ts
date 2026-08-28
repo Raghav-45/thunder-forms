@@ -22,8 +22,6 @@ export async function login(data: { email: string; password: string }) {
         error: { message: "Invalid login credentials", type: "Error" },
       }
     }
-
-    redirect("/")
   } catch (error: any) {
     return {
       success: false,
@@ -33,6 +31,8 @@ export async function login(data: { email: string; password: string }) {
       },
     }
   }
+
+  redirect("/dashboard")
 }
 
 export async function signup(data: {
@@ -59,8 +59,6 @@ export async function signup(data: {
         error: { message: "Signup failed. Please try again.", type: "Error" },
       }
     }
-
-    redirect("/")
   } catch (error: any) {
     const message = error?.message || "Signup failed. Please try again."
     if (message.includes("already")) {
@@ -74,4 +72,6 @@ export async function signup(data: {
       error: { message, type: "Error" },
     }
   }
+
+  redirect("/dashboard")
 }
