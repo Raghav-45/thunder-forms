@@ -299,11 +299,10 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     }))
   }
 
-  function handleAddFieldToLastSection() {
-    const randomUniqueIdentifier = AVAILABLE_FIELDS[
-      Math.floor(Math.random() * AVAILABLE_FIELDS.length)
-    ] as avaliableFieldsType
-    const newField = createDefaultFieldConfig(randomUniqueIdentifier)
+  function handleAddFieldToLastSection(
+    fieldType: avaliableFieldsType,
+  ) {
+    const newField = createDefaultFieldConfig(fieldType)
 
     setFormStructure((prev) => {
       const sections = prev.pages[0].sections
@@ -606,7 +605,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
                     </div>
                   </Button>
                   <Separator className="my-2" />
-                  {AVAILABLE_FIELDS.concat(comingSoonElements).map(
+                  {(AVAILABLE_FIELDS.concat(comingSoonElements) as avaliableFieldsType[]).map(
                     (fieldType) => (
                       <Button
                         key={fieldType}
@@ -620,7 +619,11 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
                         className="rounded-lg w-full px-2 md:pl-3 bg-neutral-900! cursor-grab"
                         size="sm"
                         disabled={!AVAILABLE_FIELDS.includes(fieldType)}
-                        onClick={() => handleAddFieldToLastSection()}
+                        onClick={() =>
+                          handleAddFieldToLastSection(
+                            fieldType as avaliableFieldsType,
+                          )
+                        }
                       >
                         <div className="overflow-hidden truncate text-[0.625rem] md:text-xs">
                           {fieldType}
