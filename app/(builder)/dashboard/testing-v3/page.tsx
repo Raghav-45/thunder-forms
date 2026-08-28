@@ -285,11 +285,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   const snapshot = useRef(structuredClone(formStructure))
 
   function handleAddSection() {
-    const randomUniqueIdentifier = AVAILABLE_FIELDS[
-      Math.floor(Math.random() * AVAILABLE_FIELDS.length)
-    ] as avaliableFieldsType
-    const newField = createDefaultFieldConfig(randomUniqueIdentifier)
-    const newSection: Section = { ...generateNewSection(), fields: [newField] }
+    const newSection: Section = generateNewSection()
 
     setFormStructure((prev) => ({
       ...prev,
