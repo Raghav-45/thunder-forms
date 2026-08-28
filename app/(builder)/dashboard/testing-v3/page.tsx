@@ -299,9 +299,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     }))
   }
 
-  function handleAddFieldToLastSection(
-    fieldType: avaliableFieldsType,
-  ) {
+  function handleAddFieldToLastSection(fieldType: avaliableFieldsType) {
     const newField = createDefaultFieldConfig(fieldType)
 
     setFormStructure((prev) => {
@@ -336,12 +334,11 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
   const sections = formStructure.pages[0].sections
 
-  const handleDragStart = useCallback<DragDropEventHandlers['onDragStart']>(
-    () => {
-      snapshot.current = structuredClone(formStructure)
-    },
-    [formStructure],
-  )
+  const handleDragStart = useCallback<
+    DragDropEventHandlers['onDragStart']
+  >(() => {
+    snapshot.current = structuredClone(formStructure)
+  }, [formStructure])
 
   const handleDragOver = useCallback<DragDropEventHandlers['onDragOver']>(
     (event) => {
@@ -491,7 +488,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
                 'flex items-center justify-center w-full h-full',
             )}
           >
-            { !(sections.flatMap((s) => s.fields).length > 0) ? (
+            {!(sections.flatMap((s) => s.fields).length > 0) ? (
               <div className="flex justify-center items-center h-full text-muted-foreground text-center">
                 <p>Drag elements here to build your form or Generate with AI</p>
               </div>
@@ -502,80 +499,81 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
               >
-              <div className="mx-auto min-h-screen text-white font-sans">
-                <div className="space-y-4 pb-8">
-                  {sections.map((section, sectionIndex) => (
-                    <SortableSection
-                      key={section.id}
-                      id={section.id}
-                      index={sectionIndex}
-                      fields={section.fields}
-                      accentColor={
-                        ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <DragOverlay>
-                {(source: any) => {
-                  if (!source) return null
-
-                  if (source.type === 'section') {
-                    const sectionIndex = sections.findIndex(
-                      (s) => s.id === source.id,
-                    )
-                    const section = sections[sectionIndex]
-                    if (!section) return null
-                    const accentColor =
-                      ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
-
-                    return (
-                      <SectionCard
+                <div className="mx-auto min-h-screen text-white font-sans">
+                  <div className="space-y-4 pb-8">
+                    {sections.map((section, sectionIndex) => (
+                      <SortableSection
+                        key={section.id}
                         id={section.id}
-                        isEmpty={section.fields.length === 0}
-                        state="floating"
-                      >
-                        {section.fields.map((field) => (
-                          <ItemCard
-                            key={field.id}
-                            id={field.id}
-                            label={field.uniqueIdentifier}
-                            field={field}
-                            accentColor={accentColor}
-                          />
-                        ))}
-                      </SectionCard>
-                    )
-                  }
-
-                  if (source.type === 'item') {
-                    const sectionIndex = sections.findIndex((s) =>
-                      s.fields.some((f) => f.id === source.id),
-                    )
-                    const field = sections[sectionIndex]?.fields.find(
-                      (f) => f.id === source.id,
-                    )
-                    if (!field) return null
-                    const accentColor =
-                      ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
-
-                    return (
-                      <ItemCard
-                        id={field.id}
-                        label={field.uniqueIdentifier}
-                        field={field}
-                        accentColor={accentColor}
-                        state="floating"
+                        index={sectionIndex}
+                        fields={section.fields}
+                        accentColor={
+                          ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
+                        }
                       />
-                    )
-                  }
+                    ))}
+                  </div>
+                </div>
 
-                  return null
-                }}
-              </DragOverlay>
-            </DragDropProvider>)}
+                <DragOverlay>
+                  {(source: any) => {
+                    if (!source) return null
+
+                    if (source.type === 'section') {
+                      const sectionIndex = sections.findIndex(
+                        (s) => s.id === source.id,
+                      )
+                      const section = sections[sectionIndex]
+                      if (!section) return null
+                      const accentColor =
+                        ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
+
+                      return (
+                        <SectionCard
+                          id={section.id}
+                          isEmpty={section.fields.length === 0}
+                          state="floating"
+                        >
+                          {section.fields.map((field) => (
+                            <ItemCard
+                              key={field.id}
+                              id={field.id}
+                              label={field.uniqueIdentifier}
+                              field={field}
+                              accentColor={accentColor}
+                            />
+                          ))}
+                        </SectionCard>
+                      )
+                    }
+
+                    if (source.type === 'item') {
+                      const sectionIndex = sections.findIndex((s) =>
+                        s.fields.some((f) => f.id === source.id),
+                      )
+                      const field = sections[sectionIndex]?.fields.find(
+                        (f) => f.id === source.id,
+                      )
+                      if (!field) return null
+                      const accentColor =
+                        ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
+
+                      return (
+                        <ItemCard
+                          id={field.id}
+                          label={field.uniqueIdentifier}
+                          field={field}
+                          accentColor={accentColor}
+                          state="floating"
+                        />
+                      )
+                    }
+
+                    return null
+                  }}
+                </DragOverlay>
+              </DragDropProvider>
+            )}
           </CardContent>
         </Card>
       </ScrollArea>
@@ -605,43 +603,45 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
                     </div>
                   </Button>
                   <Separator className="my-2" />
-                  {(AVAILABLE_FIELDS.concat(comingSoonElements) as avaliableFieldsType[]).map(
-                    (fieldType) => (
-                      <Button
-                        key={fieldType}
-                        // draggable={AVAILABLE_FIELDS.includes(fieldType)}
-                        // onDragStart={() =>
-                        //   handleElementDragStart(
-                        //     fieldType as avaliableFieldsType,
-                        //   )
-                        // }
-                        variant="outline"
-                        className="rounded-lg w-full px-2 md:pl-3 bg-neutral-900! cursor-grab"
-                        size="sm"
-                        disabled={!AVAILABLE_FIELDS.includes(fieldType)}
-                        onClick={() =>
-                          handleAddFieldToLastSection(
-                            fieldType as avaliableFieldsType,
-                          )
-                        }
-                      >
-                        <div className="overflow-hidden truncate text-[0.625rem] md:text-xs">
-                          {fieldType}
-                        </div>
-                        {!AVAILABLE_FIELDS.includes(fieldType) && (
-                          <Badge
-                            variant="outline"
-                            className="text-[9px] font-bold mx-1 px-1 bg-blue-400 text-black rounded-full py-0"
-                          >
-                            coming soon
-                          </Badge>
-                        )}
-                        <div className="ml-auto flex flex-row">
-                          <GripVerticalIcon className="size-4" />
-                        </div>
-                      </Button>
-                    ),
-                  )}
+                  {(
+                    AVAILABLE_FIELDS.concat(
+                      comingSoonElements,
+                    ) as avaliableFieldsType[]
+                  ).map((fieldType) => (
+                    <Button
+                      key={fieldType}
+                      // draggable={AVAILABLE_FIELDS.includes(fieldType)}
+                      // onDragStart={() =>
+                      //   handleElementDragStart(
+                      //     fieldType as avaliableFieldsType,
+                      //   )
+                      // }
+                      variant="outline"
+                      className="rounded-lg w-full px-2 md:pl-3 bg-neutral-900! cursor-grab"
+                      size="sm"
+                      disabled={!AVAILABLE_FIELDS.includes(fieldType)}
+                      onClick={() =>
+                        handleAddFieldToLastSection(
+                          fieldType as avaliableFieldsType,
+                        )
+                      }
+                    >
+                      <div className="overflow-hidden truncate text-[0.625rem] md:text-xs">
+                        {fieldType}
+                      </div>
+                      {!AVAILABLE_FIELDS.includes(fieldType) && (
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] font-bold mx-1 px-1 bg-blue-400 text-black rounded-full py-0"
+                        >
+                          coming soon
+                        </Badge>
+                      )}
+                      <div className="ml-auto flex flex-row">
+                        <GripVerticalIcon className="size-4" />
+                      </div>
+                    </Button>
+                  ))}
                 </div>
               </div>
             </ScrollArea>
