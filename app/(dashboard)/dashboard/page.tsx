@@ -6,9 +6,12 @@ import {
   schema as TableDataItemSchema,
 } from '@/components/form-table'
 import { SectionCards } from '@/components/section-cards'
+import { TemplateGallery } from '@/components/template-gallery'
+import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { format } from 'date-fns'
+import Link from 'next/link'
 import { z } from 'zod'
 
 interface ApiFormData {
@@ -100,10 +103,26 @@ export default function TestPage() {
       <div className="@container/main flex flex-1 flex-col gap-2">
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
           <SectionCards />
-          <div className="px-4 lg:px-6">
-            <ChartAreaInteractive />
-          </div>
-          <FormTable data={displayData} isLoading={isLoading} />
+            <div className="px-4 lg:px-6">
+              <ChartAreaInteractive />
+            </div>
+            <div className="px-4 lg:px-6">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-semibold">
+                    Start from a template
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Pick a pre-built form and customize it in the builder.
+                  </p>
+                </div>
+                <Button variant="outline" asChild>
+                  <Link href="/dashboard/templates">View all</Link>
+                </Button>
+              </div>
+              <TemplateGallery compact />
+            </div>
+            <FormTable data={displayData} isLoading={isLoading} />
         </div>
       </div>
     </div>

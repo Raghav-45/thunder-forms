@@ -15,6 +15,9 @@ import { Card, CardContent, CardDescription } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
+import { getTemplateBySlug } from '@/lib/form-templates'
+import { instantiateTemplate } from '@/lib/instantiate-template'
+import type { CreateFormPayload } from '@/lib/validators/form'
 import { CollisionPriority } from '@dnd-kit/abstract'
 import { KeyboardSensor, PointerSensor } from '@dnd-kit/dom'
 import { move } from '@dnd-kit/helpers'
@@ -24,9 +27,27 @@ import {
   DragOverlay,
 } from '@dnd-kit/react'
 import { useSortable } from '@dnd-kit/react/sortable'
-import { GripVerticalIcon, PencilIcon, Trash2Icon } from 'lucide-react'
+import axios from 'axios'
+import {
+  GripVerticalIcon,
+  Loader2Icon,
+  PencilIcon,
+  SaveIcon,
+  Trash2Icon,
+} from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { PropsWithChildren, ReactNode } from 'react'
-import { forwardRef, memo, use, useCallback, useRef, useState } from 'react'
+import {
+  Suspense,
+  forwardRef,
+  memo,
+  use,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
+import { toast } from 'sonner'
 
 const sensors = [
   PointerSensor.configure({
@@ -271,8 +292,25 @@ const generateNewSection = (): Section => ({
   fields: [],
 })
 
-export default function FormBuilderPage({ params }: FormBuilderProps) {
+export default function TestingV3Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center text-muted-foreground">
+          Loading builder...
+        </div>
+      }
+    >
+      <TestingV3Builder params={Promise.resolve({ slug: '' })} />
+    </Suspense>
+  )
+}
+
+function TestingV3Builder({ params }: FormBuilderProps) {
   const { slug: paramFormId } = use(params)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const templateSlug = searchParams.get('template')
   const [formStructure, setFormStructure] = useState<IFormStructure>({
     pages: [
       {
@@ -281,6 +319,50 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
       },
     ],
   })
+  const [templateTitle, setTemplateTitle] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Load a built-in template (?template=slug) into the builder on mount.
+  useEffect(() => {
+    if (!templateSlug) return
+    const template = getTemplateBySlug(templateSlug)
+    if (!template) {
+      toast.error('Template not found')
+      return
+    }
+    setFormStructure(instantiateTemplate(template))
+    setTemplateTitle(template.title)
+    toast.success(`Loaded template: ${template.title}`)
+  }, [templateSlug])
+
+  async function handleSaveAsNewForm() {
+    const totalFields = formStructure.pages.flatMap((page) =>
+      page.sections.flatMap((section) => section.fields),
+    ).length
+    if (totalFields === 0) {
+      toast.error('Add at least one field before saving')
+      return
+    }
+    setIsSaving(true)
+    try {
+      const template = templateSlug ? getTemplateBySlug(templateSlug) : undefined
+      const payload: CreateFormPayload = {
+        title: templateTitle ?? 'Untitled form',
+        description: templateTitle
+          ? `Created from the ${templateTitle} template`
+          : undefined,
+        fields: formStructure,
+        submitButtonText: template?.submitButtonText,
+      }
+      const { data } = await axios.post('/api/forms/new', payload)
+      toast.success('Form created! Opening it in the builder...')
+      router.push(`/dashboard/builder/${data.id}`)
+    } catch {
+      toast.error('Failed to save form')
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   const snapshot = useRef(structuredClone(formStructure))
 
@@ -464,12 +546,33 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
         <div className="flex flex-row justify-between">
           <h2 className="mb-6 font-bold text-3xl">Builder</h2>
 
+          <div className="flex flex-row gap-x-2">
+            <Button
+              size="sm"
+              onClick={handleSaveAsNewForm}
+              disabled={isSaving}
+              className="cursor-pointer"
+            >
+              {isSaving ? (
+                <Loader2Icon className="animate-spin" />
+              ) : (
+                <SaveIcon />
+              )}
+              {isSaving ? 'Saving...' : 'Save as new form'}
+            </Button>
+          </div>
           {/* <div className="flex flex-row gap-x-2">
             {currentFormId !== 'new-form' && (
               <CopyButton value={`${siteConfig.url}/forms/${currentFormId}`} />
             )}
           </div> */}
         </div>
+        {templateTitle && (
+          <p className="mb-4 text-sm text-muted-foreground">
+            Started from the “{templateTitle}” template — customize the fields
+            below, then hit “Save as new form”.
+          </p>
+        )}
         <Card
           className={cn(
             'h-[calc(100vh-100px)] overflow-y-scroll border-2 border-dashed !p-0 border-muted mb-1',

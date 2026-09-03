@@ -10,6 +10,11 @@
       "type": "remote",
       "url": "https://gitmcp.io/clauderic/dnd-kit",
       "enabled": true
+    },
+    "notion": {
+      "type": "remote",
+      "url": "https://mcp.notion.com/mcp",
+      "enabled": true
     }
   }
 }
