@@ -5,8 +5,7 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar
+  SidebarMenuItem
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 import {
@@ -41,7 +40,6 @@ const SidebarNavItem: FC<SidebarNavItemProps> = ({ item, isActive }) => (
 )
 
 export const DashboardSidebar: FC<DashboardSidebarProps> = ({}) => {
-  const { isMobile } = useSidebar()
   const pathname = usePathname()
   const checkIsActive = (link: string) => {
     const isActive = pathname === link
