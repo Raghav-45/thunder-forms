@@ -1,8 +1,6 @@
 import { FC } from 'react'
 
-interface indexProps {
-  
-}
+interface indexProps {}
 
 const index: FC<indexProps> = ({}) => {
   return <div>index</div>

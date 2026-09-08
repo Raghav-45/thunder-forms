@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import { Icons } from "@/components/Icons"
+import { Icons } from '@/components/Icons'
 import {
   Sidebar,
   SidebarContent,
@@ -9,26 +9,28 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { siteConfig } from "@/config/site"
-import { authClient } from "@/lib/auth-client"
-import Link from "next/link"
-import * as React from "react"
-import { sidebarLinks } from "../constants"
+} from '@/components/ui/sidebar'
+import { siteConfig } from '@/config/site'
+import { authClient } from '@/lib/auth-client'
+import Link from 'next/link'
+import * as React from 'react'
+import { sidebarLinks } from '../constants'
 
-import { NavMain } from "./sidebar/nav-main"
-import { NavOther } from "./sidebar/nav-other"
-import { NavSecondary } from "./sidebar/nav-secondary"
-import { NavUser } from "./sidebar/nav-user"
+import { NavMain } from './sidebar/nav-main'
+import { NavOther } from './sidebar/nav-other'
+import { NavSecondary } from './sidebar/nav-secondary'
+import { NavUser } from './sidebar/nav-user'
 
-export function DashboardSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function DashboardSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = authClient.useSession()
 
   const user = session?.user
     ? {
         name: (session.user as any).displayName || session.user.name,
         email: session.user.email,
-        avatar: session.user.image || "",
+        avatar: session.user.image || '',
       }
     : undefined
 
