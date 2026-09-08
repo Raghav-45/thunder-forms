@@ -30,7 +30,7 @@ export function NavSecondary({
   items,
 }: {
   items: {
-    name: string
+    title: string
     url: string
     icon: Icon
   }[]
@@ -48,7 +48,7 @@ export function NavSecondary({
       <SidebarGroupLabel>Repository</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
-          <SidebarMenuItem key={item.name}>
+          <SidebarMenuItem key={item.title}>
             <SidebarMenuButton asChild>
               <a
                 href={item.url}
@@ -57,7 +57,7 @@ export function NavSecondary({
                 )}
               >
                 <item.icon />
-                <span>{item.name}</span>
+                <span>{item.title}</span>
               </a>
             </SidebarMenuButton>
             <DropdownMenu>

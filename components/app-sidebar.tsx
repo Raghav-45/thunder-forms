@@ -40,7 +40,7 @@ const data = {
   ],
   navSecondary: [
     {
-      name: "Template Library",
+      title: "Template Library",
       url: "/dashboard/templates",
       icon: IconDatabase,
     },

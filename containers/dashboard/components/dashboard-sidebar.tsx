@@ -20,6 +20,7 @@ import { NavMain } from './sidebar/nav-main'
 import { NavOther } from './sidebar/nav-other'
 import { NavSecondary } from './sidebar/nav-secondary'
 import { NavUser } from './sidebar/nav-user'
+import {DashboardSidebar as DashboardSidebarComponent} from './sidebar'
 
 export function DashboardSidebar({
   ...props
@@ -57,9 +58,10 @@ export function DashboardSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={sidebarLinks.navMain} />
+        <DashboardSidebarComponent />
+        {/* <NavMain items={sidebarLinks.navMain} />
         <NavSecondary items={sidebarLinks.navSecondary} />
-        <NavOther items={sidebarLinks.navOther} className="mt-auto" />
+        <NavOther items={sidebarLinks.navOther} className="mt-auto" /> */}
       </SidebarContent>
       {user && (
         <SidebarFooter>
