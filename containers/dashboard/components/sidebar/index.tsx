@@ -64,6 +64,7 @@ export const DashboardSidebar: FC<DashboardSidebarProps> = ({}) => {
               </Button>
             </SidebarMenuItem>
           </SidebarMenu>
+
           <SidebarMenu>
             {sidebarLinks.navMain.map((item) => (
               <SidebarMenuItem key={item.title}>
@@ -88,49 +89,22 @@ export const DashboardSidebar: FC<DashboardSidebarProps> = ({}) => {
         <SidebarMenu>
           {sidebarLinks.navSecondary.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild>
-                <a
+              <SidebarMenuButton tooltip={item.title} asChild>
+                <Link
                   href={item.url}
                   className={cn(
                     checkIsActive(item.url) ? 'bg-sidebar-accent' : '',
                   )}
                 >
-                  <item.icon />
+                  {item.icon && <item.icon />}
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <SidebarMenuAction
-                    showOnHover
-                    className="data-[state=open]:bg-accent rounded-sm"
-                  >
-                    <IconDots />
-                    <span className="sr-only">More</span>
-                  </SidebarMenuAction>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  className="w-24 rounded-lg"
-                  side={isMobile ? 'bottom' : 'right'}
-                  align={isMobile ? 'end' : 'start'}
-                >
-                  <DropdownMenuItem>
-                    <IconFolder />
-                    <span>Open</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <IconShare3 />
-                    <span>Share</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive">
-                    <IconTrash />
-                    <span>Delete</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </SidebarMenuItem>
           ))}
+          {/* //NOTE: The following code is commented out because it was not being
+          used as we dont have lots of items to display. It can be uncommented
+          and used later if needed. */}
           {/* <SidebarMenuItem>
           <SidebarMenuButton className="text-sidebar-foreground/70">
             <IconDots className="text-sidebar-foreground/70" />
