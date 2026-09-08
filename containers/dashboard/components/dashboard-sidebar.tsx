@@ -13,14 +13,8 @@ import {
 import { siteConfig } from '@/config/site'
 import { authClient } from '@/lib/auth-client'
 import Link from 'next/link'
-import * as React from 'react'
-import { sidebarLinks } from '../constants'
-
-import { NavMain } from './sidebar/nav-main'
-import { NavOther } from './sidebar/nav-other'
-import { NavSecondary } from './sidebar/nav-secondary'
+import { DashboardSidebar as DashboardSidebarComponent } from './sidebar'
 import { NavUser } from './sidebar/nav-user'
-import {DashboardSidebar as DashboardSidebarComponent} from './sidebar'
 
 export function DashboardSidebar({
   ...props
@@ -59,9 +53,6 @@ export function DashboardSidebar({
       </SidebarHeader>
       <SidebarContent>
         <DashboardSidebarComponent />
-        {/* <NavMain items={sidebarLinks.navMain} />
-        <NavSecondary items={sidebarLinks.navSecondary} />
-        <NavOther items={sidebarLinks.navOther} className="mt-auto" /> */}
       </SidebarContent>
       {user && (
         <SidebarFooter>
