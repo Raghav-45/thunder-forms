@@ -4,8 +4,20 @@ import {
   IconListDetails,
   IconSettings,
 } from '@tabler/icons-react'
+import type { ComponentType } from 'react'
 
-export const sidebarSections = [
+interface SidebarItem {
+  title: string
+  url: string
+  icon: ComponentType
+}
+
+interface SidebarSection {
+  label?: string
+  items: SidebarItem[]
+}
+
+export const sidebarSections: SidebarSection[] = [
   {
     items: [
       {
