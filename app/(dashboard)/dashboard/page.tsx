@@ -1,9 +1,7 @@
 import Layout from '@/containers/dashboard/layout'
 import { FC } from 'react'
 
-interface pageProps {
-  
-}
+interface pageProps {}
 
 const page: FC<pageProps> = ({}) => {
   return (

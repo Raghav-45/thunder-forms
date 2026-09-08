@@ -1,11 +1,9 @@
 'use client'
 
-import Default from "@/containers/dashboard/templates"
+import Default from '@/containers/dashboard/templates'
 
 const page = ({}) => {
-  return (
-    <Default />
-  )
+  return <Default />
 }
 
 export default page
