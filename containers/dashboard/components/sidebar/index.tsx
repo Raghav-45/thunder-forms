@@ -84,30 +84,35 @@ export const DashboardSidebar: FC<DashboardSidebarProps> = ({}) => {
               </Button>
             </SidebarMenuItem>
           </SidebarMenu>
-
           <SidebarMenu>
             {sidebarLinks.navMain.map((item) => (
-              <SidebarNavItem key={item.title} item={item} isActive={checkIsActive(item.url)} />
+              <SidebarNavItem
+                key={item.title}
+                item={item}
+                isActive={checkIsActive(item.url)}
+              />
             ))}
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
       <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-        <SidebarGroupLabel>Repository</SidebarGroupLabel>
-        <SidebarMenu>
-          {sidebarLinks.navSecondary.map((item) => (
-            <SidebarNavItem key={item.title} item={item} isActive={checkIsActive(item.url)} />
-          ))}
-          {/* //NOTE: The following code is commented out because it was not being
-          used as we dont have lots of items to display. It can be uncommented
-          and used later if needed. */}
-          {/* <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <IconDots className="text-sidebar-foreground/70" />
-            <span>More</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem> */}
-        </SidebarMenu>
+        <SidebarGroupContent>
+          <SidebarGroupLabel>Repository</SidebarGroupLabel>
+          <SidebarMenu>
+            {sidebarLinks.navSecondary.map((item) => (
+              <SidebarNavItem key={item.title} item={item} isActive={checkIsActive(item.url)} />
+            ))}
+            {/* //NOTE: The following code is commented out because it was not being
+            used as we dont have lots of items to display. It can be uncommented
+            and used later if needed. */}
+            {/* <SidebarMenuItem>
+            <SidebarMenuButton className="text-sidebar-foreground/70">
+              <IconDots className="text-sidebar-foreground/70" />
+              <span>More</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem> */}
+          </SidebarMenu>
+        </SidebarGroupContent>
       </SidebarGroup>
       <SidebarGroup className="mt-auto">
         <SidebarGroupContent>
