@@ -1,11 +1,11 @@
 'use client'
 
-import { ChartAreaInteractive } from '@/components/chart-area-interactive'
+import { ChartAreaInteractive } from './components/chart-area-interactive'
 import {
   FormTable,
   schema as TableDataItemSchema,
-} from '@/components/form-table'
-import { SectionCards } from '@/components/section-cards'
+} from './components/form-table'
+import { SectionCards } from './components/section-cards'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { format } from 'date-fns'

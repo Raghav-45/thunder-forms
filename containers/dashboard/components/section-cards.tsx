@@ -1,6 +1,6 @@
 'use client'
 
-import MetricCard, { MetricCardProps } from '@/components/MetricCard'
+import MetricCard, { MetricCardProps } from './MetricCard'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
@@ -117,4 +117,3 @@ export function SectionCards() {
     </div>
   )
 }
-

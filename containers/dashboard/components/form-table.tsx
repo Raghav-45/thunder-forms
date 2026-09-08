@@ -74,7 +74,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import AnalyticsGraph from './analyticsGraph'
 import { DeleteFormDialog } from './delete-form-dialog'
-import { Skeleton } from './ui/skeleton'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export const schema = z.object({
   id: z.string(),

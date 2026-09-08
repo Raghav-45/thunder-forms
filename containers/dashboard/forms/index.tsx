@@ -3,7 +3,7 @@
 import {
   FormTable,
   schema as TableDataItemSchema,
-} from '@/components/form-table'
+} from '../components/form-table'
 import Layout from '@/containers/dashboard/layout'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
