@@ -17,7 +17,7 @@ import { usePathname } from 'next/navigation'
 import { ComponentType, FC } from 'react'
 import { sidebarSections } from '../../constants'
 
-interface DashboardSidebarProps {}
+interface SidebarSectionsProps {}
 
 interface SidebarNavItemProps {
   item: {
@@ -39,7 +39,7 @@ const SidebarNavItem: FC<SidebarNavItemProps> = ({ item, isActive }) => (
   </SidebarMenuItem>
 )
 
-export const DashboardSidebar: FC<DashboardSidebarProps> = ({}) => {
+export const SidebarSections: FC<SidebarSectionsProps> = ({}) => {
   const pathname = usePathname()
   const checkIsActive = (link: string) => {
     const isActive = pathname === link

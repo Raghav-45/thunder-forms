@@ -13,7 +13,7 @@ import {
 import { siteConfig } from '@/config/site'
 import { authClient } from '@/lib/auth-client'
 import Link from 'next/link'
-import { DashboardSidebar as DashboardSidebarComponent } from './sidebar'
+import { SidebarSections } from './sidebar'
 import { NavUser } from './sidebar/nav-user'
 
 export function DashboardSidebar({
@@ -52,7 +52,7 @@ export function DashboardSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <DashboardSidebarComponent />
+        <SidebarSections />
       </SidebarContent>
       {user && (
         <SidebarFooter>
