@@ -27,10 +27,30 @@ import {
 } from '@tabler/icons-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { FC } from 'react'
+import { ComponentType, FC } from 'react'
 import { sidebarLinks } from '../../constants'
 
 interface DashboardSidebarProps {}
+
+interface SidebarNavItemProps {
+  item: {
+    title: string
+    url: string
+    icon?: ComponentType
+  }
+  isActive: boolean
+}
+
+const SidebarNavItem: FC<SidebarNavItemProps> = ({ item, isActive }) => (
+  <SidebarMenuItem>
+    <SidebarMenuButton tooltip={item.title} asChild>
+      <Link href={item.url} className={cn(isActive ? 'bg-sidebar-accent' : '')}>
+        {item.icon && <item.icon />}
+        <span>{item.title}</span>
+      </Link>
+    </SidebarMenuButton>
+  </SidebarMenuItem>
+)
 
 export const DashboardSidebar: FC<DashboardSidebarProps> = ({}) => {
   const { isMobile } = useSidebar()
@@ -67,19 +87,7 @@ export const DashboardSidebar: FC<DashboardSidebarProps> = ({}) => {
 
           <SidebarMenu>
             {sidebarLinks.navMain.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton tooltip={item.title} asChild>
-                  <Link
-                    href={item.url}
-                    className={cn(
-                      checkIsActive(item.url) ? 'bg-sidebar-accent' : '',
-                    )}
-                  >
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <SidebarNavItem key={item.title} item={item} isActive={checkIsActive(item.url)} />
             ))}
           </SidebarMenu>
         </SidebarGroupContent>
@@ -88,19 +96,7 @@ export const DashboardSidebar: FC<DashboardSidebarProps> = ({}) => {
         <SidebarGroupLabel>Repository</SidebarGroupLabel>
         <SidebarMenu>
           {sidebarLinks.navSecondary.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title} asChild>
-                <Link
-                  href={item.url}
-                  className={cn(
-                    checkIsActive(item.url) ? 'bg-sidebar-accent' : '',
-                  )}
-                >
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            <SidebarNavItem key={item.title} item={item} isActive={checkIsActive(item.url)} />
           ))}
           {/* //NOTE: The following code is commented out because it was not being
           used as we dont have lots of items to display. It can be uncommented
