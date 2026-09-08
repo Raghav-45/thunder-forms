@@ -1,10 +1,10 @@
 import { GalleryVerticalEnd } from 'lucide-react'
 import { LoginForm } from './components/login-form'
-import Layout from './layout'
+import { AuthLayout } from './auth-layout'
 
 export default function AuthPage() {
   return (
-    <Layout
+    <AuthLayout
       logo={
         <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
           <GalleryVerticalEnd className="size-4" />
@@ -12,6 +12,6 @@ export default function AuthPage() {
       }
     >
       <LoginForm />
-    </Layout>
+    </AuthLayout>
   )
 }
