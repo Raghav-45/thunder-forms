@@ -72,7 +72,7 @@ import Link from 'next/link'
 import * as React from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import AnalyticsGraph from './analyticsGraph'
+import { AnalyticsGraph } from './analytics-graph'
 import { DeleteFormDialog } from './delete-form-dialog'
 
 export const schema = z.object({

@@ -25,7 +25,7 @@ export interface MetricCardProps {
   }
 }
 
-const MetricCard: FC<{ data: MetricCardProps }> = ({ data }) => {
+export const MetricCard: FC<{ data: MetricCardProps }> = ({ data }) => {
   const TrendIcon =
     data.trend.direction === 'up' ? IconTrendingUp : IconTrendingDown
 
@@ -52,5 +52,3 @@ const MetricCard: FC<{ data: MetricCardProps }> = ({ data }) => {
     </Card>
   )
 }
-
-export default MetricCard

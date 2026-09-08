@@ -3,7 +3,7 @@
 import { Skeleton } from '@/components/ui/skeleton'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
-import MetricCard, { MetricCardProps } from './MetricCard'
+import { MetricCard, type MetricCardProps } from './metric-card'
 
 interface OverallAnalytics {
   totalViews: number

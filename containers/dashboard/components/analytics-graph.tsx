@@ -126,7 +126,7 @@ interface AnalyticsGraphProps {
   className?: string
 }
 
-const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
+export const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
   formId,
   data,
   rawData,
@@ -243,5 +243,3 @@ const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
     </div>
   )
 }
-
-export default AnalyticsGraph
