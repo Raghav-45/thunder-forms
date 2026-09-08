@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
-import { GithubIcon } from "lucide-react"
-import { Button } from "./ui/button"
-import { authClient } from "@/lib/auth-client"
+import { Button } from '@/components/ui/button'
+import { authClient } from '@/lib/auth-client'
+import { GithubIcon } from 'lucide-react'
 
 export const ContinueWithOAuthButtonsGroup = () => {
   return (
@@ -13,8 +13,8 @@ export const ContinueWithOAuthButtonsGroup = () => {
         className="w-full"
         onClick={() =>
           authClient.signIn.social({
-            provider: "github",
-            callbackURL: "/",
+            provider: 'github',
+            callbackURL: '/',
           })
         }
       >

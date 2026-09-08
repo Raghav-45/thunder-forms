@@ -1,7 +1,6 @@
 'use client'
 
 import { login } from '@/app/(auth)/auth/actions'
-import { ContinueWithOAuthButtonsGroup } from '@/components/OAuthButtons'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -19,6 +18,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { ContinueWithOAuthButtonsGroup } from './oauth-buttons'
 
 export function LoginForm({
   className,

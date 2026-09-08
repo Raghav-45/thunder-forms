@@ -1,6 +1,6 @@
-import { LoginForm } from "@/components/login-form";
-import { GalleryVerticalEnd } from "lucide-react";
-import Layout from "./layout";
+import { GalleryVerticalEnd } from 'lucide-react'
+import { LoginForm } from './components/login-form'
+import Layout from './layout'
 
 export default function AuthPage() {
   return (
@@ -13,5 +13,5 @@ export default function AuthPage() {
     >
       <LoginForm />
     </Layout>
-  );
+  )
 }
