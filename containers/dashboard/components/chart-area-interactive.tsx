@@ -1,8 +1,5 @@
 'use client'
 
-import * as React from 'react'
-import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
-
 import {
   Card,
   CardContent,
@@ -28,6 +25,8 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
+import * as React from 'react'
+import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 
 export const description =
   'An interactive area chart showing analytics for all forms'
@@ -96,7 +95,7 @@ function generateEmptyTimeSeriesData(timeRange: string) {
 function fillMissingDatesInRange(data: TimeSeriesData[], days: number) {
   if (data.length === 0) {
     return generateEmptyTimeSeriesData(
-      days === 7 ? '7d' : days === 30 ? '30d' : '90d'
+      days === 7 ? '7d' : days === 30 ? '30d' : '90d',
     )
   }
 
@@ -191,8 +190,8 @@ export function ChartAreaInteractive() {
     timeRange === '90d'
       ? 'Last 3 months'
       : timeRange === '30d'
-      ? 'Last 30 days'
-      : 'Last 7 days'
+        ? 'Last 30 days'
+        : 'Last 7 days'
 
   return (
     <Card className="pt-0">

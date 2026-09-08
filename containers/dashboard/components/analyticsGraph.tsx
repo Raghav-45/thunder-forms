@@ -36,7 +36,7 @@ async function fetchAnalyticsData(formId: string): Promise<AnalyticsData[]> {
 
 // Generate full day intervals with zero impressions starting from 11PM
 const generateFullDayIntervals = (
-  intervalMinutes = 15
+  intervalMinutes = 15,
 ): GroupedImpression[] => {
   const intervals: GroupedImpression[] = []
   const totalMinutes = 24 * 60 // Full day in minutes
@@ -50,10 +50,10 @@ const generateFullDayIntervals = (
       currentHour === 0
         ? '12AM'
         : currentHour < 12
-        ? `${currentHour}AM`
-        : currentHour === 12
-        ? '12PM'
-        : `${currentHour - 12}PM`
+          ? `${currentHour}AM`
+          : currentHour === 12
+            ? '12PM'
+            : `${currentHour - 12}PM`
 
     intervals.push({
       time: timeString,
@@ -66,7 +66,7 @@ const generateFullDayIntervals = (
 
 const groupImpressionsByInterval = (
   data: AnalyticsData[],
-  intervalMinutes = 15
+  intervalMinutes = 15,
 ): GroupedImpression[] => {
   // Start with a full day of zero impressions from 11PM
   const fullDayIntervals = generateFullDayIntervals(intervalMinutes)
@@ -94,10 +94,10 @@ const groupImpressionsByInterval = (
       intervalHour === 0
         ? '12AM'
         : intervalHour < 12
-        ? `${intervalHour}AM`
-        : intervalHour === 12
-        ? '12PM'
-        : `${intervalHour - 12}PM`
+          ? `${intervalHour}AM`
+          : intervalHour === 12
+            ? '12PM'
+            : `${intervalHour - 12}PM`
 
     if (intervalMap.has(timeKey)) {
       intervalMap.set(timeKey, intervalMap.get(timeKey)! + 1)
@@ -153,13 +153,13 @@ const AnalyticsGraph: FC<AnalyticsGraphProps> = ({
     (rawData
       ? groupImpressionsByInterval(rawData, intervalMinutes)
       : fetchedData
-      ? groupImpressionsByInterval(fetchedData, intervalMinutes)
-      : generateFullDayIntervals(intervalMinutes))
+        ? groupImpressionsByInterval(fetchedData, intervalMinutes)
+        : generateFullDayIntervals(intervalMinutes))
 
   // Calculate total impressions for trend analysis
   const totalImpressions = processedData.reduce(
     (sum, item) => sum + item.impressions,
-    0
+    0,
   )
 
   // Handle loading state

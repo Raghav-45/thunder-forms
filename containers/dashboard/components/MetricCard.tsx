@@ -1,6 +1,3 @@
-import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react'
-import { FC } from 'react'
-
 import { Badge } from '@/components/ui/badge'
 import {
   Card,
@@ -10,6 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react'
+import { FC } from 'react'
 
 export interface MetricCardProps {
   title: string

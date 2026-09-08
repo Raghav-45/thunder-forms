@@ -1,9 +1,9 @@
 'use client'
 
-import MetricCard, { MetricCardProps } from './MetricCard'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
+import MetricCard, { MetricCardProps } from './MetricCard'
 
 interface OverallAnalytics {
   totalViews: number
@@ -98,7 +98,8 @@ export function SectionCards() {
       value: formatDuration(analytics?.averageVisitDuration || 0),
       description: 'Average Visit Duration',
       trend: {
-        direction: analytics && analytics.averageBounceRate < 50 ? 'up' : 'down',
+        direction:
+          analytics && analytics.averageBounceRate < 50 ? 'up' : 'down',
         percentage: `${analytics?.averageBounceRate.toFixed(1) || 0}% bounce`,
         label: `${analytics?.averageBounceRate.toFixed(1) || 0}% bounce rate`,
       },

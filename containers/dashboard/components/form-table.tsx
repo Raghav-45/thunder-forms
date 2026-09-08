@@ -1,34 +1,5 @@
 'use client'
 
-import {
-  IconChevronDown,
-  IconChevronLeft,
-  IconChevronRight,
-  IconChevronsLeft,
-  IconChevronsRight,
-  IconDotsVertical,
-  IconLayoutColumns,
-  IconLoader,
-  IconArchive,
-} from '@tabler/icons-react'
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  flexRender,
-  getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  Row,
-  SortingState,
-  useReactTable,
-  VisibilityState,
-} from '@tanstack/react-table'
-import * as React from 'react'
-import { z } from 'zod'
-
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -59,6 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -69,12 +41,39 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIsMobile } from '@/hooks/use-mobile'
+import {
+  IconArchive,
+  IconChevronDown,
+  IconChevronLeft,
+  IconChevronRight,
+  IconChevronsLeft,
+  IconChevronsRight,
+  IconDotsVertical,
+  IconLayoutColumns,
+  IconLoader,
+} from '@tabler/icons-react'
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  flexRender,
+  getCoreRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  Row,
+  SortingState,
+  useReactTable,
+  VisibilityState,
+} from '@tanstack/react-table'
 import { ChartLineIcon, DatabaseIcon, Edit2Icon } from 'lucide-react'
 import Link from 'next/link'
+import * as React from 'react'
 import { toast } from 'sonner'
+import { z } from 'zod'
 import AnalyticsGraph from './analyticsGraph'
 import { DeleteFormDialog } from './delete-form-dialog'
-import { Skeleton } from '@/components/ui/skeleton'
 
 export const schema = z.object({
   id: z.string(),
