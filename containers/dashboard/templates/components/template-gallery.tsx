@@ -19,13 +19,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
-  FORM_TEMPLATES,
   countTemplateFields,
   type FormTemplateSpec,
 } from '@/lib/form-templates'
 import { ArrowRightIcon, EyeIcon, FileTextIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
+import { FORM_TEMPLATES } from '../constants'
 
 function TemplateCard({ template }: { template: FormTemplateSpec }) {
   const [previewOpen, setPreviewOpen] = useState(false)

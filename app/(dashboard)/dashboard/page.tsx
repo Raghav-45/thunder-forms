@@ -1,14 +1,9 @@
-import Layout from '@/containers/dashboard/layout'
-import { FC } from 'react'
+'use client'
 
-interface pageProps {}
+import Default from '@/containers/dashboard'
 
-const page: FC<pageProps> = ({}) => {
-  return (
-    <Layout>
-      <div>page</div>
-    </Layout>
-  )
+const page = ({}) => {
+  return <Default />
 }
 
 export default page
