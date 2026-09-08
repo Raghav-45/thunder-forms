@@ -1,5 +1,3 @@
-'use client'
-
 import Default from '@/containers/dashboard/templates'
 
 const page = ({}) => {

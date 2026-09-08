@@ -1,3 +1,5 @@
+'use client'
+
 import {
   FormTable,
   schema as TableDataItemSchema,
