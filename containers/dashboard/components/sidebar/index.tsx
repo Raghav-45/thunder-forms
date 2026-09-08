@@ -15,7 +15,7 @@ import {
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ComponentType, FC } from 'react'
-import { sidebarLinks } from '../../constants'
+import { sidebarSections } from '../../constants'
 
 interface DashboardSidebarProps {}
 
@@ -71,40 +71,39 @@ export const DashboardSidebar: FC<DashboardSidebarProps> = ({}) => {
             </SidebarMenuItem>
           </SidebarMenu>
           <SidebarMenu>
-            {sidebarLinks.navMain.map((item) => (
+            {sidebarSections[0].items.map((item) => (
               <SidebarNavItem key={item.title} item={item} isActive={checkIsActive(item.url)} />
             ))}
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
-      <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-        <SidebarGroupContent>
-          <SidebarGroupLabel>Repository</SidebarGroupLabel>
-          <SidebarMenu>
-            {sidebarLinks.navSecondary.map((item) => (
-              <SidebarNavItem key={item.title} item={item} isActive={checkIsActive(item.url)} />
-            ))}
-            {/* //NOTE: The following code is commented out because it was not being
-            used as we dont have lots of items to display. It can be uncommented
-            and used later if needed. */}
-            {/* <SidebarMenuItem>
-            <SidebarMenuButton className="text-sidebar-foreground/70">
-              <IconDots className="text-sidebar-foreground/70" />
-              <span>More</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem> */}
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
-      <SidebarGroup className="mt-auto">
-        <SidebarGroupContent>
-          <SidebarMenu>
-            {sidebarLinks.navOther.map((item) => (
-              <SidebarNavItem key={item.title} item={item} isActive={checkIsActive(item.url)} />
-            ))}
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
+      {sidebarSections.slice(1).map((section, index) => (
+        <SidebarGroup
+          key={section.label ?? index}
+          className={cn(
+            'group-data-[collapsible=icon]:hidden',
+            index === sidebarSections.length - 2 && 'mt-auto',
+          )}
+        >
+          <SidebarGroupContent>
+            {section.label && <SidebarGroupLabel>{section.label}</SidebarGroupLabel>}
+            <SidebarMenu>
+              {/* //NOTE: The following code is commented out because it was not being
+              used as we dont have lots of items to display. It can be uncommented
+              and used later if needed. */}
+              {/* <SidebarMenuItem>
+                <SidebarMenuButton className="text-sidebar-foreground/70">
+                  <IconDots className="text-sidebar-foreground/70" />
+                  <span>More</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem> */}
+              {section.items.map((item) => (
+                <SidebarNavItem key={item.title} item={item} isActive={checkIsActive(item.url)} />
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      ))}
     </>
   )
 }

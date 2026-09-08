@@ -3,33 +3,40 @@ import {
   IconDatabase,
   IconListDetails,
   IconSettings,
-} from "@tabler/icons-react"
+} from '@tabler/icons-react'
 
-export const sidebarLinks = {
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: IconDashboard,
-    },
-    {
-      title: "My Forms",
-      url: "/dashboard/forms",
-      icon: IconListDetails,
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Template Library",
-      url: "/dashboard/templates",
-      icon: IconDatabase,
-    },
-  ],
-  navOther: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-    },
-  ],
-}
+export const sidebarSections = [
+  {
+    items: [
+      {
+        title: 'Dashboard',
+        url: '/dashboard',
+        icon: IconDashboard,
+      },
+      {
+        title: 'My Forms',
+        url: '/dashboard/forms',
+        icon: IconListDetails,
+      },
+    ],
+  },
+  {
+    label: 'Repository',
+    items: [
+      {
+        title: 'Template Library',
+        url: '/dashboard/templates',
+        icon: IconDatabase,
+      },
+    ],
+  },
+  {
+    items: [
+      {
+        title: 'Settings',
+        url: '#',
+        icon: IconSettings,
+      },
+    ],
+  },
+] as const
