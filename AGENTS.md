@@ -7,6 +7,7 @@
 - Put page-level logic and UI in the matching `containers/` folder.
 - Split larger containers into focused `components/`, `constants/`, `types/` `hooks/ ( if required )`, files.
 - Keep global shared components under root level `components/` & focused into their respective `components/` folder.
+- Remove obsolete duplicate implementations after moving code into `containers/`.
 
 ## Examples
 
