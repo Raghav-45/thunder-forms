@@ -86,11 +86,7 @@ export const DashboardSidebar: FC<DashboardSidebarProps> = ({}) => {
           </SidebarMenu>
           <SidebarMenu>
             {sidebarLinks.navMain.map((item) => (
-              <SidebarNavItem
-                key={item.title}
-                item={item}
-                isActive={checkIsActive(item.url)}
-              />
+              <SidebarNavItem key={item.title} item={item} isActive={checkIsActive(item.url)} />
             ))}
           </SidebarMenu>
         </SidebarGroupContent>
@@ -118,14 +114,7 @@ export const DashboardSidebar: FC<DashboardSidebarProps> = ({}) => {
         <SidebarGroupContent>
           <SidebarMenu>
             {sidebarLinks.navOther.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild>
-                  <a href={item.url}>
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <SidebarNavItem key={item.title} item={item} isActive={checkIsActive(item.url)} />
             ))}
           </SidebarMenu>
         </SidebarGroupContent>
