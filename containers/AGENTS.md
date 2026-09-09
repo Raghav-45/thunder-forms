@@ -55,9 +55,11 @@ containers/
 └── templates/                         # marketing templates page UI
 ```
 
-Keep a container flat until a `components/`, `constants/`, `hooks/`, or
-`types/` split has a real purpose. Each folder must have one clear ownership
-boundary; don't create a folder only for consistency with another container.
+Organize code by responsibility from the start: use folders like `components/`,
+`constants/`, `types/`, `hooks/`, and `utils/` when code belongs to those roles. One
+well-owned file is enough reason for a folder; don't keep code flat merely to
+avoid a folder. Each folder must have a clear ownership boundary — don't add
+empty or ceremonial folders only for consistency with another container.
 
 ## Refactoring rules
 

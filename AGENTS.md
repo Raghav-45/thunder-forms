@@ -11,7 +11,10 @@ Make the smallest change that achieves the requested goal. Don't add folders, wr
 - Page route files in `app/` stay thin — import or re-export from `containers/`, unless framework behavior requires otherwise.
 - Page-level logic and UI live in the matching `containers/<route>` folder.
 - A component used by only one feature stays in that feature's `containers/<feature>/components/`, next to the logic that uses it — don't promote it to root `components/` just in case.
-- Split a container into `components/`, `constants/`, `types/`, `hooks/` only once it's actually grown large enough to need it.
+- Organize container code by responsibility: use `components/`, `constants/`,
+  `types/`, `hooks/`, and `utils/` when code belongs to those roles. Don't keep related
+  code flat merely to avoid a folder, and don't create empty or ceremonial
+  folders with no clear owner.
 - Put a shared domain feature used by multiple routes in `features/<feature>/`; keep its UI, state, types, and utilities together.
 - `lib/` and root `components/` never import from `containers/` — shared code stays independent of any one route.
 - Keep `layout.tsx`, `loading.tsx`, `error.tsx` in `app/` — they control framework behavior.
