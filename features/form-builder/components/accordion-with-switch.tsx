@@ -1,6 +1,6 @@
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useState } from 'react'
 
 interface AccordionWithSwitchProps {
   text: string
@@ -16,14 +16,6 @@ const AccordionWithSwitch: FC<AccordionWithSwitchProps> = ({
   className,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen)
-  const [height, setHeight] = useState<number>(0)
-  const contentRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (contentRef.current) {
-      setHeight(isOpen ? contentRef.current.scrollHeight : 0)
-    }
-  }, [isOpen, children])
 
   const handleSwitchChange = (checked: boolean) => {
     setIsOpen(checked)
@@ -46,12 +38,14 @@ const AccordionWithSwitch: FC<AccordionWithSwitchProps> = ({
         />
       </div>
       <div
-        className="overflow-hidden text-sm transition-all duration-200 ease-in-out"
-        style={{ height: `${height}px` }}
+        className={cn(
+          'grid text-sm transition-[grid-template-rows] duration-200 ease-in-out',
+          isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+        )}
         data-state={isOpen ? 'open' : 'closed'}
         aria-hidden={!isOpen}
       >
-        <div ref={contentRef}>{children}</div>
+        <div className="overflow-hidden">{children}</div>
       </div>
     </div>
   )

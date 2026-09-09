@@ -17,18 +17,17 @@ import { z } from 'zod'
  * - A Zod validation schema factory
  *
  * To add a new field type:
- * 1. Create a new file in `elements/fields/`
+ * 1. Create a file in `elements/fields/`
  * 2. Extend `FormFieldDefinition<YourConfig>`
- * 3. Implement all abstract members
- * 4. Register an instance in `elements/registry.ts`
+ * 3. Implement the renderer, editor, defaults, and validation in that file
+ * 4. Register an instance in `elements/index.ts`
  *
- * That's it — validation, rendering, and editing all work automatically.
  */
 export abstract class FormFieldDefinition<
   TConfig extends BaseFieldConfig = BaseFieldConfig,
 > {
   /** Unique string key for this field type (e.g. 'text-input', 'multi-select') */
-  abstract readonly identifier: string
+  abstract readonly identifier: TConfig['uniqueIdentifier']
 
   /** The React component that renders this field in a live form */
   abstract readonly component: React.FC<FieldProps<TConfig>>

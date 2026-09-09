@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import React, { useState } from 'react'
 import { z } from 'zod'
-import AccordionWithSwitch from '@/components/accordion-with-switch'
+import AccordionWithSwitch from '@/features/form-builder/components/accordion-with-switch'
 import {
   Accordion,
   AccordionContent,
@@ -343,7 +343,7 @@ export class SliderFieldDefinition extends FormFieldDefinition<SliderConfig> {
     const min = field.min ?? 0
     const max = field.max ?? 100
 
-    let schema = z
+    const schema = z
       .number({ required_error: `${field.label} is required` })
       .min(min, `Value must be at least ${min}`)
       .max(max, `Value must be at most ${max}`)

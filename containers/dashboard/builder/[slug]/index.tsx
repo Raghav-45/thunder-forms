@@ -1,10 +1,7 @@
 'use client'
 
-import { CopyButton } from '@/components/copy-button'
-import {
-  DatePickerWithPresets,
-  IMMORTAL_SENTINEL_DATE,
-} from '@/components/date-picker-with-presets'
+import { CopyButton } from '@/features/form-builder/components/copy-button'
+import { IMMORTAL_SENTINEL_DATE } from '@/features/form-builder/components/date-picker-with-presets'
 import GenerateWithAiPrompt from '@/features/form-builder/core/generate-with-ai'
 import { FieldConfig } from '@/features/form-builder/elements'
 import { useFormStore } from '@/features/form-builder/store'
@@ -55,7 +52,7 @@ import {
 } from 'lucide-react'
 import { Fragment, use, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { SettingsDialog } from '@/components/settings-dialog'
+import { SettingsDialog } from '@/features/form-builder/components/settings-dialog'
 import ImportGoogleForm from '@/features/form-builder/core/import-google-form'
 
 interface FormBuilderProps {

@@ -9,7 +9,7 @@ import {
 import { Label } from '@/components/ui/label'
 import React, { useState } from 'react'
 import { z } from 'zod'
-import AccordionWithSwitch from '@/components/accordion-with-switch'
+import AccordionWithSwitch from '@/features/form-builder/components/accordion-with-switch'
 import {
   Accordion,
   AccordionContent,

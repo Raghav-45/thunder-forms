@@ -29,12 +29,8 @@ export interface EditorProps<T extends BaseFieldConfig = BaseFieldConfig> {
   onClose: () => void
 }
 
-/**
- * Represents all available field in FIELD_REGISTRY.
- */
-export const AVAILABLE_FIELDS = Object.keys(FIELD_REGISTRY)
-
-/**
- * Represents type all available field in FIELD_REGISTRY.
- */
+/** Represents all available field identifiers. */
 export type avaliableFieldsType = keyof typeof FIELD_REGISTRY
+
+/** Mutable list retained for existing builder consumers. */
+export const AVAILABLE_FIELDS: string[] = Object.keys(FIELD_REGISTRY)

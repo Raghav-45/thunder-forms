@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/radio-group'
 import React, { useState } from 'react'
 import { z } from 'zod'
-import AccordionWithSwitch from '@/components/accordion-with-switch'
+import AccordionWithSwitch from '@/features/form-builder/components/accordion-with-switch'
 import {
   Accordion,
   AccordionContent,
@@ -464,8 +464,6 @@ export class RadioGroupFieldDefinition extends FormFieldDefinition<RadioGroupCon
       'Please select a valid option',
     )
 
-    return field.required
-      ? baseSchema
-      : baseSchema.optional()
+    return field.required ? baseSchema : baseSchema.optional()
   }
 }

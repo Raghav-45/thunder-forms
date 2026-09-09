@@ -29,7 +29,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { useFormStore } from "@/features/form-builder/store"
-import { DatePickerWithPresets } from "@/components/date-picker-with-presets"
+import { DatePickerWithPresets } from "@/features/form-builder/components/date-picker-with-presets"
 
 const data = {
   nav: [

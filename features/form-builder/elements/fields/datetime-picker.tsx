@@ -12,7 +12,7 @@ import { z } from 'zod'
 import { format } from 'date-fns'
 import { CalendarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import AccordionWithSwitch from '@/components/accordion-with-switch'
+import AccordionWithSwitch from '@/features/form-builder/components/accordion-with-switch'
 import {
   Accordion,
   AccordionContent,
