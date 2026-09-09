@@ -12,6 +12,7 @@ Make the smallest change that achieves the requested goal. Don't add folders, wr
 - Page-level logic and UI live in the matching `containers/<route>` folder.
 - A component used by only one feature stays in that feature's `containers/<feature>/components/`, next to the logic that uses it — don't promote it to root `components/` just in case.
 - Split a container into `components/`, `constants/`, `types/`, `hooks/` only once it's actually grown large enough to need it.
+- Put a shared domain feature used by multiple routes in `features/<feature>/`; keep its UI, state, types, and utilities together.
 - `lib/` and root `components/` never import from `containers/` — shared code stays independent of any one route.
 - Keep `layout.tsx`, `loading.tsx`, `error.tsx` in `app/` — they control framework behavior.
 - Keep API handlers in `app/api/` and route-local server actions in `app/` — don't relocate them unless that's explicitly the task.
@@ -48,6 +49,8 @@ app/(dashboard)/dashboard/templates/page.tsx → containers/dashboard/templates/
 │   ├── home/
 │   ├── public/forms/[slug]/
 │   └── templates/
+├── features/                         # shared domain features
+│   └── form-builder/
 ├── components/                       # genuinely cross-feature UI only
 └── lib/                              # reusable utilities and shared domain data
 ```
