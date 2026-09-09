@@ -8,7 +8,7 @@ Make the smallest change that achieves the requested goal. Don't add folders, wr
 
 ## Project structure
 
-- Route files in `app/` stay thin — import or re-export from `containers/`, nothing more.
+- Page route files in `app/` stay thin — import or re-export from `containers/`, unless framework behavior requires otherwise.
 - Page-level logic and UI live in the matching `containers/<route>` folder.
 - A component used by only one feature stays in that feature's `containers/<feature>/components/`, next to the logic that uses it — don't promote it to root `components/` just in case.
 - Split a container into `components/`, `constants/`, `types/`, `hooks/` only once it's actually grown large enough to need it.
@@ -19,7 +19,7 @@ Make the smallest change that achieves the requested goal. Don't add folders, wr
 
 ## Route → container mapping
 
-```
+```text
 app/(dashboard)/dashboard/page.tsx           → containers/dashboard/index.tsx
 app/(dashboard)/dashboard/forms/page.tsx     → containers/dashboard/forms/index.tsx
 app/(dashboard)/dashboard/templates/page.tsx → containers/dashboard/templates/index.tsx
@@ -62,5 +62,5 @@ app/(dashboard)/dashboard/templates/page.tsx → containers/dashboard/templates/
 
 - URLs and routes are unchanged.
 - Client/server boundaries (`"use client"`) are preserved.
-- No dead code or duplicate implementations left behind.
+- No dead code or duplicate implementations introduced by this change remain.
 - The applicable type check, build, and targeted lint/tests all pass.
