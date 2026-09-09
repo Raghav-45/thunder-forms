@@ -22,7 +22,7 @@ import {
   countTemplateFields,
   FORM_TEMPLATES,
 } from '../constants'
-import type { FormTemplateSpec } from '../hello/types'
+import type { FormTemplateSpec } from '../types'
 import { ArrowRightIcon, EyeIcon, FileTextIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'

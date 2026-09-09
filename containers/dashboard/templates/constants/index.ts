@@ -1,4 +1,4 @@
-import type { FormTemplateSpec } from '../hello/types'
+import type { FormTemplateSpec } from '../types'
 
 /**
  * Built-in templates offered by the dashboard.
