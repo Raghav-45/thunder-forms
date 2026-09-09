@@ -18,6 +18,13 @@ app/(dashboard)/dashboard/forms/page.tsx     -> containers/dashboard/forms/index
 app/(dashboard)/dashboard/templates/page.tsx -> containers/dashboard/templates/index.tsx
 ```
 
+```text
+app/          → route entry points and Next.js framework files only
+containers/   → page UI, page logic, route-focused-only components, hooks, constants
+lib/          → reusable server/API utilities
+components/   → genuinely cross-feature UI only
+```
+
 Keep route-specific Next.js files such as `layout.tsx`, `loading.tsx`, and `error.tsx` in `app/` when they control framework behavior.
 
 ## Checks
