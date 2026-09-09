@@ -110,10 +110,10 @@ check — don't merge them or add a third:
 
 - `formValidation.ts` validates a *submitted value*, looking up the field in
   `FIELD_REGISTRY` and calling its `getValidationSchema`. Preserve its shared
-  required-value handling and its display-only section-header skip unless the
-  task changes validation behavior. Both public-form validation and
-  `app/api/forms/[id]/submit/route.ts` use this dispatcher — this feature
-  intentionally shares `FIELD_REGISTRY` with that API route.
+  required-value handling unless the task changes validation behavior. Both
+  public-form validation and `app/api/forms/[id]/submit/route.ts` use this
+  dispatcher — this feature intentionally shares `FIELD_REGISTRY` with that
+  API route.
 - `helperFunctions.ts` validates a *field's own config*
   (`validateFieldConfig`: is the id/label present and well-formed), plus small
   registry lookups (`getFieldComponent`, `getFieldEditor`,
@@ -151,7 +151,6 @@ features/form-builder/                 # form-building domain feature
 │   │   ├── number-input.tsx
 │   │   ├── radio-group.tsx
 │   │   ├── slider.tsx
-│   │   ├── section-header.tsx
 │   │   └── ...more field types can be added here as needed
 │   └── index.ts                        # FIELD_DEFINITIONS and FIELD_REGISTRY
 ├── store.ts                            # builder state

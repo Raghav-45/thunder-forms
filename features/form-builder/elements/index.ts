@@ -21,7 +21,6 @@ import { MultiSelectFieldDefinition } from './fields/multi-select'
 import { TextAreaFieldDefinition } from './fields/text-area'
 import { SwitchFieldDefinition } from './fields/switch-field'
 import { DatePickerFieldDefinition } from './fields/date-picker'
-import { SectionHeaderFieldDefinition } from './fields/section-header'
 import { CheckboxFieldDefinition } from './fields/checkbox'
 import { NumberInputFieldDefinition } from './fields/number-input'
 import { SingleSelectFieldDefinition } from './fields/single-select'
@@ -35,7 +34,6 @@ const FIELD_DEFINITIONS = [
   new TextAreaFieldDefinition(),
   new SwitchFieldDefinition(),
   new DatePickerFieldDefinition(),
-  new SectionHeaderFieldDefinition(),
   new CheckboxFieldDefinition(),
   new NumberInputFieldDefinition(),
   new SingleSelectFieldDefinition(),

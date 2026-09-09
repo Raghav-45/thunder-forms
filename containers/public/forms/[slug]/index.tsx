@@ -161,8 +161,6 @@ export default function FormPage({ params }: FormPageProps) {
           initialFormData[field.id] = undefined
         } else if (field.uniqueIdentifier === 'multi-select') {
           initialFormData[field.id] = []
-        } else if (field.uniqueIdentifier === 'section-header') {
-          // Section headers are display-only, no value needed
         } else if (field.uniqueIdentifier === 'slider') {
           // Slider starts at its default value (or min)
           const sliderField = field as { defaultValue?: number; min?: number }

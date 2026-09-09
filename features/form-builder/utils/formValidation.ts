@@ -44,9 +44,6 @@ export const validateFormFields = (
   fields.forEach((field) => {
     const value = formData[field.id]
 
-    // Section headers are display-only and never accept a response.
-    if (field.uniqueIdentifier === 'section-header') return
-
     // Required booleans accept both true and false; only a missing value fails.
     if (field.required) {
       if (

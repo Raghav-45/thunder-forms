@@ -276,17 +276,9 @@ export async function importGoogleForm(formUrl: string): Promise<ImportResult> {
   fieldCounter = 0
 
   for (const item of form.items || []) {
-    // Page breaks and text items → section headers
+    // Page breaks and text items are not supported.
     if (item.pageBreakItem || item.textItem) {
-      fields.push({
-        id: nextId('section'),
-        uniqueIdentifier: 'section-header',
-        label: item.title || 'Section',
-        description: item.description || '',
-        required: false,
-        disabled: false,
-        headingLevel: 'h3',
-      })
+      skippedItems.push(`"${item.title || 'Untitled'}" (Page break or text item — not supported)`)
       continue
     }
 
