@@ -1,24 +1,28 @@
 # AGENTS.md
 
+Instructions for AI agents working in this codebase.
+
+## Guiding principle: KISS
+
+Make the smallest change that achieves the requested goal. Don't add folders, wrapper components, barrels, or abstractions unless they reduce real duplication or clarify ownership. When two approaches both work, pick the boring one over the clever one.
+
 ## Project structure
 
-- Keep the Next.js route structure in `app/` unchanged.
-- Route files in `app/` should be thin entry points that import or directly re-export from `containers/`.
-- Put page-level logic and UI in the matching `containers/` folder.
-- Keep components that are only used by one feature or route inside that feature's `containers/<feature>/components/` folder, alongside its page-level logic.
-- Split larger containers into focused `components/`, `constants/`, `types/`, and `hooks/` files as needed.
-- Keep only genuinely reusable, cross-feature components under the root `components/` folder, grouped into focused subfolders where appropriate.
-- Remove obsolete duplicate implementations after moving code into `containers/`.
-- Keep reusable `lib/` and root `components/` modules independent of `containers/`; shared code must not import a route container.
-- Keep route-specific Next.js files such as `layout.tsx`, `loading.tsx`, and `error.tsx` in `app/` when they control framework behavior.
-- Keep API handlers in `app/api/` and route-local server actions in `app/` unless their move is explicitly requested.
+- Route files in `app/` stay thin — import or re-export from `containers/`, nothing more.
+- Page-level logic and UI live in the matching `containers/<route>` folder.
+- A component used by only one feature stays in that feature's `containers/<feature>/components/`, next to the logic that uses it — don't promote it to root `components/` just in case.
+- Split a container into `components/`, `constants/`, `types/`, `hooks/` only once it's actually grown large enough to need it.
+- `lib/` and root `components/` never import from `containers/` — shared code stays independent of any one route.
+- Keep `layout.tsx`, `loading.tsx`, `error.tsx` in `app/` — they control framework behavior.
+- Keep API handlers in `app/api/` and route-local server actions in `app/` — don't relocate them unless that's explicitly the task.
+- When you move code into `containers/`, delete the old implementation. No duplicates left behind.
 
-## Examples
+## Route → container mapping
 
-```text
-app/(dashboard)/dashboard/page.tsx           -> containers/dashboard/index.tsx
-app/(dashboard)/dashboard/forms/page.tsx     -> containers/dashboard/forms/index.tsx
-app/(dashboard)/dashboard/templates/page.tsx -> containers/dashboard/templates/index.tsx
+```
+app/(dashboard)/dashboard/page.tsx           → containers/dashboard/index.tsx
+app/(dashboard)/dashboard/forms/page.tsx     → containers/dashboard/forms/index.tsx
+app/(dashboard)/dashboard/templates/page.tsx → containers/dashboard/templates/index.tsx
 ```
 
 ## Directory structure
@@ -50,12 +54,13 @@ app/(dashboard)/dashboard/templates/page.tsx -> containers/dashboard/templates/i
 
 ## Refactoring rules
 
-- Follow KISS: make the smallest change that achieves the requested ownership or behavior goal.
-- Do not rename files, exports, or local components solely for aesthetic consistency. Rename only to fix ambiguity, a collision, a real typo, or a concrete ownership problem.
-- Do not add folders, wrapper components, barrels, or abstractions unless they reduce real duplication or clarify ownership.
-- Preserve URLs, client/server boundaries, public interfaces, failure behavior, ordering, comments, TODOs, and NOTE blocks unless their removal or change is explicitly requested.
-- Avoid format-only churn and leave unrelated or explicitly out-of-scope areas untouched.
+- Rename a file, export, or component only to fix a real ambiguity, collision, or typo — never for aesthetic consistency alone.
+- Preserve URLs, client/server boundaries, public interfaces, failure behavior, ordering, comments, TODOs, and NOTE blocks unless the task explicitly asks you to change them.
+- No format-only churn. Leave unrelated or out-of-scope files untouched.
 
-## Checks
+## Before finishing
 
-- Verify a structural change with the applicable type check, build, and targeted tests or lint.
+- URLs and routes are unchanged.
+- Client/server boundaries (`"use client"`) are preserved.
+- No dead code or duplicate implementations left behind.
+- The applicable type check, build, and targeted lint/tests all pass.
