@@ -93,8 +93,8 @@ export default function Home() {
             <BrowserMockup
               className="w-full"
               url={siteConfig.url.replace('https://', '')}
-              DahboardUrlDesktop="https://ui.shadcn.com/r/styles/new-york-v4/dashboard-01-dark.png"
-              DahboardUrlMobile="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/dashboard/dashboard-mobile-1.png"
+              dashboardImageUrlDesktop="https://ui.shadcn.com/r/styles/new-york-v4/dashboard-01-dark.png"
+              dashboardImageUrlMobile="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/dashboard/dashboard-mobile-1.png"
             />
             <div className="absolute bottom-0 h-2/3 w-full bg-linear-to-b from-transparent to-background" />
           </div>
@@ -194,8 +194,8 @@ export default function Home() {
 //             <BrowserMockup
 //               className="w-full"
 //               url={siteConfig.url.replace('https://', '')}
-//               DahboardUrlDesktop="https://ui.shadcn.com/r/styles/new-york-v4/dashboard-01-dark.png"
-//               DahboardUrlMobile="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/dashboard/dashboard-mobile-1.png"
+//               dashboardImageUrlDesktop="https://ui.shadcn.com/r/styles/new-york-v4/dashboard-01-dark.png"
+//               dashboardImageUrlMobile="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/dashboard/dashboard-mobile-1.png"
 //             />
 //             <div className="absolute bottom-0 h-2/3 w-full bg-linear-to-b from-transparent to-background" />
 //           </div>

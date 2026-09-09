@@ -79,14 +79,14 @@ export const SidebarSections: FC<SidebarSectionsProps> = ({}) => {
       </SidebarGroup>
       {sidebarSections.slice(1).map((section, index) => (
         <SidebarGroup
-          key={section.label ?? index}
+          key={section.title ?? index}
           className={cn(
             'group-data-[collapsible=icon]:hidden',
             index === sidebarSections.length - 2 && 'mt-auto',
           )}
         >
           <SidebarGroupContent>
-            {section.label && <SidebarGroupLabel>{section.label}</SidebarGroupLabel>}
+            {section.title && <SidebarGroupLabel>{section.title}</SidebarGroupLabel>}
             <SidebarMenu>
               {/* //NOTE: The following code is commented out because it was not being
               used as we dont have lots of items to display. It can be uncommented

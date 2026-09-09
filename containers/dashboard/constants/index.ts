@@ -13,7 +13,7 @@ interface SidebarItem {
 }
 
 interface SidebarSection {
-  label?: string
+  title?: string
   items: SidebarItem[]
 }
 
@@ -33,7 +33,7 @@ export const sidebarSections: SidebarSection[] = [
     ],
   },
   {
-    label: 'Repository',
+    title: 'Repository',
     items: [
       {
         title: 'Template Library',

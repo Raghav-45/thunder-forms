@@ -13,8 +13,8 @@ import Image from 'next/image'
 export const BrowserMockup = ({
   className = '',
   url = 'localhost:3000',
-  DahboardUrlDesktop = 'https://deifkwefumgah.cloudfront.net/shadcnblocks/block/dashboard/dashboard-1.png',
-  DahboardUrlMobile = 'https://deifkwefumgah.cloudfront.net/shadcnblocks/block/dashboard/dashboard-mobile-1.png',
+  dashboardImageUrlDesktop = 'https://deifkwefumgah.cloudfront.net/shadcnblocks/block/dashboard/dashboard-1.png',
+  dashboardImageUrlMobile = 'https://deifkwefumgah.cloudfront.net/shadcnblocks/block/dashboard/dashboard-mobile-1.png',
 }) => (
   <div
     className={cn(
@@ -48,7 +48,7 @@ export const BrowserMockup = ({
 
     <div className="relative w-full">
       <Image
-        src={DahboardUrlDesktop}
+        src={dashboardImageUrlDesktop}
         alt=""
         width={1880}
         height={1175}
@@ -56,7 +56,7 @@ export const BrowserMockup = ({
         className="object-cover hidden aspect-video h-full w-full object-top md:block"
       />
       <Image
-        src={DahboardUrlMobile}
+        src={dashboardImageUrlMobile}
         alt=""
         width={1880}
         height={1175}
