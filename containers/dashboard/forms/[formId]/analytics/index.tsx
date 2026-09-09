@@ -2,7 +2,7 @@
 
 // TODO: Refactor this file & its Imported components to use a common data fetching hook
 
-import LoadingScreen from '@/components/LoadingScreen'
+import LoadingScreen from '../../components/loading-screen'
 import {
   Card,
   CardContent,
@@ -19,8 +19,8 @@ import {
   DeviceRadialChart,
   OSRadialChart,
   ReferrerGraph,
-} from './breakdown-charts'
-import ImpressionsChart from './impressions-chart'
+} from './components/breakdown-charts'
+import ImpressionsChart from './components/impressions-chart'
 
 // Define your data types
 interface DailyViewData {

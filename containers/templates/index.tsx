@@ -1,5 +1,5 @@
 // import { TrendingUpIcon } from 'lucide-react'
-import { Announcement } from '@/components/Announcement'
+import { Announcement } from './components/announcement'
 import { Icons } from '@/components/Icons'
 
 // const baseUrl =

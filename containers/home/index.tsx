@@ -1,5 +1,5 @@
-import Dither from '@/components/background_Dither'
-import { BrowserMockup } from '@/components/SafariMockup'
+import Dither from './components/background-dither'
+import { BrowserMockup } from './components/browser-mockup'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { siteConfig } from '@/config/site'
@@ -106,8 +106,8 @@ export default function Home() {
 
 // OLD SIMPLER VERSION FOR REFERENCE
 
-// import Dither from '@/components/background_Dither'
-// import { BrowserMockup } from '@/components/SafariMockup'
+// import Dither from './components/background-dither'
+// import { BrowserMockup } from './components/browser-mockup'
 // import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 // import { Badge } from '@/components/ui/badge'
 // import { siteConfig } from '@/config/site'
