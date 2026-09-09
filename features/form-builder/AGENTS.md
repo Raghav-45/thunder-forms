@@ -38,6 +38,71 @@ a components subfolder or barrel file the existing structure doesn't need.
    Match their structure (proper section comments, `AccordionWithSwitch` usage,
    editor layout) instead of inventing a new shape.
 
+## New field template
+
+Use this as the file outline. Replace the example names and implement the
+renderer and editor for the field's actual behavior.
+
+```tsx
+'use client'
+
+import { FormFieldDefinition } from '@/features/form-builder/elements/base'
+import type {
+  BaseFieldConfig,
+  EditorProps,
+  FieldProps,
+} from '@/features/form-builder/types/types'
+import React from 'react'
+import { z } from 'zod'
+
+const FIELD_IDENTIFIER = 'example-field'
+
+interface ExampleFieldConfig extends BaseFieldConfig {
+  uniqueIdentifier: typeof FIELD_IDENTIFIER
+  // Add field-specific settings here (follow the guidelines & take inspirations from other fields).
+}
+
+const ExampleFieldRenderer: React.FC<FieldProps<ExampleFieldConfig>> = (
+  { field, value, onChange, onBlur, error },
+) => {
+  // Render UI here (follow the guidelines & take inspirations from other fields).
+  return null
+}
+
+const ExampleFieldEditor: React.FC<
+  EditorProps<ExampleFieldConfig> & { isOpen: boolean }
+> = ({ field, onUpdate, onClose, isOpen }) => {
+  // Render builder settings UI here (follow the guidelines & take inspirations from other fields).
+  return null
+}
+
+export class ExampleFieldDefinition extends FormFieldDefinition<ExampleFieldConfig> {
+  readonly identifier = FIELD_IDENTIFIER
+  readonly component = ExampleFieldRenderer
+  readonly editor = ExampleFieldEditor
+
+  defaultConfig(): ExampleFieldConfig {
+    return {
+      id: `example_${Date.now()}`,
+      uniqueIdentifier: FIELD_IDENTIFIER,
+      label: 'Example field',
+      required: false,
+      disabled: false,
+    }
+  }
+
+  getValidationSchema(field: ExampleFieldConfig): z.ZodTypeAny {
+    const schema = z.string()
+    return field.required ? schema.min(1, `${field.label} is required`) : schema.optional()
+  }
+}
+```
+
+Add `new ExampleFieldDefinition()` to `FIELD_DEFINITIONS` in `elements/index.ts`
+in the same change. `BaseFieldConfig` gets its allowed identifiers from that
+registry. Use a nearby real field as the source for actual UI, settings, and
+validation.
+
 ## Validation dispatchers
 
 `utils/` holds two thin dispatchers over `FIELD_REGISTRY`, split by what they
@@ -64,21 +129,37 @@ this architecture.
 ## Directory structure
 
 ```text
-elements/
-├── base.ts         # FormFieldDefinition contract — shared by every field
-├── index.ts         # FIELD_DEFINITIONS list + FIELD_REGISTRY built from it
-└── fields/           # one complete field per file (see Field structure)
-components/
-├── accordion-with-switch.tsx     # the one component shared across field editors
-├── settings-dialog.tsx           # form-level settings (title, expiry, redirect) — not field UI
-├── date-picker-with-presets.tsx  # used only by settings-dialog
-└── copy-button.tsx
-core/                 # builder composition: AI generation, Google Forms import,
-│                      # generateZodSchema.ts (combined schema for the AI path)
-types/types.ts         # shared config/prop types; available field types derive from FIELD_REGISTRY
-utils/                 # formValidation.ts + helperFunctions.ts (see above)
-store.ts               # builder state only
-constants/              # shared Form Builder constants
+features/form-builder/                 # form-building domain feature
+├── components/                         # Form Builder UI shared by feature flows
+├── constants/
+│   └── index.ts                        # shared Form Builder constants
+├── core/                               # AI generation, import, combined schemas
+│   ├── generate-with-ai.tsx
+│   ├── generateZodSchema.ts
+│   └── import-google-form.tsx
+├── elements/                           # field definition system
+│   ├── base.ts                         # FormFieldDefinition contract
+│   ├── fields/                         # one complete field defined per file, each having its own renderer, editor, defaults, validator
+│   │   ├── text-area.tsx
+│   │   ├── text-input.tsx
+│   │   ├── switch-field.tsx
+│   │   ├── date-picker.tsx
+│   │   ├── datetime-picker.tsx
+│   │   ├── checkbox.tsx
+│   │   ├── single-select.tsx
+│   │   ├── multi-select.tsx
+│   │   ├── number-input.tsx
+│   │   ├── radio-group.tsx
+│   │   ├── slider.tsx
+│   │   ├── section-header.tsx
+│   │   └── ...more field types can be added here as needed
+│   └── index.ts                        # FIELD_DEFINITIONS and FIELD_REGISTRY
+├── store.ts                            # builder state
+├── types/
+│   └── types.ts                        # shared config and prop types
+└── utils/                              # registry dispatch and small helpers
+    ├── formValidation.ts
+    └── helperFunctions.ts
 ```
 
 `components/` is not exclusively field UI — most of it belongs to the
