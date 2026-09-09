@@ -36,8 +36,10 @@ import { Textarea } from '@/components/ui/textarea'
 
 // ─── Config ──────────────────────────────────────────────
 
+const FIELD_IDENTIFIER = 'section-header'
+
 export interface SectionHeaderConfig extends BaseFieldConfig {
-  uniqueIdentifier: 'section-header'
+  uniqueIdentifier: typeof FIELD_IDENTIFIER
   headingLevel?: 'h2' | 'h3' | 'h4'
 }
 
@@ -169,7 +171,7 @@ const SectionHeaderEditorComponent: React.FC<
 // ─── Field Definition ────────────────────────────────────
 
 export class SectionHeaderFieldDefinition extends FormFieldDefinition<SectionHeaderConfig> {
-  readonly identifier = 'section-header' as const
+  readonly identifier = FIELD_IDENTIFIER
 
   readonly component = SectionHeaderComponent
   readonly editor = SectionHeaderEditorComponent
@@ -177,7 +179,7 @@ export class SectionHeaderFieldDefinition extends FormFieldDefinition<SectionHea
   defaultConfig(): SectionHeaderConfig {
     return {
       id: `section_${Date.now()}`,
-      uniqueIdentifier: 'section-header',
+      uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Section Title',
       description: '',
       required: false,

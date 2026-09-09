@@ -30,8 +30,10 @@ import { Textarea } from '@/components/ui/textarea'
 
 // ─── Config ──────────────────────────────────────────────
 
+const FIELD_IDENTIFIER = 'number-input'
+
 export interface NumberInputConfig extends BaseFieldConfig {
-  uniqueIdentifier: 'number-input'
+  uniqueIdentifier: typeof FIELD_IDENTIFIER
   min?: number
   max?: number
   step?: number
@@ -303,7 +305,7 @@ const NumberInputEditorComponent: React.FC<
 // ─── Field Definition ────────────────────────────────────
 
 export class NumberInputFieldDefinition extends FormFieldDefinition<NumberInputConfig> {
-  readonly identifier = 'number-input' as const
+  readonly identifier = FIELD_IDENTIFIER
 
   readonly component = NumberInputComponent
   readonly editor = NumberInputEditorComponent
@@ -311,7 +313,7 @@ export class NumberInputFieldDefinition extends FormFieldDefinition<NumberInputC
   defaultConfig(): NumberInputConfig {
     return {
       id: `number_${Date.now()}`,
-      uniqueIdentifier: 'number-input',
+      uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Amount',
       placeholder: 'Enter a number',
       description: '',

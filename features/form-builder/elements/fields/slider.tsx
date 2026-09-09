@@ -31,8 +31,10 @@ import { Textarea } from '@/components/ui/textarea'
 
 // ─── Config ──────────────────────────────────────────────
 
+const FIELD_IDENTIFIER = 'slider'
+
 export interface SliderConfig extends BaseFieldConfig {
-  uniqueIdentifier: 'slider'
+  uniqueIdentifier: typeof FIELD_IDENTIFIER
   min?: number
   max?: number
   step?: number
@@ -318,7 +320,7 @@ const SliderEditorComponent: React.FC<
 // ─── Field Definition ────────────────────────────────────
 
 export class SliderFieldDefinition extends FormFieldDefinition<SliderConfig> {
-  readonly identifier = 'slider' as const
+  readonly identifier = FIELD_IDENTIFIER
 
   readonly component = SliderComponent
   readonly editor = SliderEditorComponent
@@ -326,7 +328,7 @@ export class SliderFieldDefinition extends FormFieldDefinition<SliderConfig> {
   defaultConfig(): SliderConfig {
     return {
       id: `slider_${Date.now()}`,
-      uniqueIdentifier: 'slider',
+      uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Select a value',
       description: '',
       required: false,

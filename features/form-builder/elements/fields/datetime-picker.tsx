@@ -40,8 +40,10 @@ import { Textarea } from '@/components/ui/textarea'
 
 // ─── Config ──────────────────────────────────────────────
 
+const FIELD_IDENTIFIER = 'datetime-picker'
+
 export interface DateTimePickerConfig extends BaseFieldConfig {
-  uniqueIdentifier: 'datetime-picker'
+  uniqueIdentifier: typeof FIELD_IDENTIFIER
   /** Whether to disable past dates */
   disablePastDates?: boolean
   /** Whether to disable future dates */
@@ -453,7 +455,7 @@ const DateTimePickerEditorComponent: React.FC<
 // ─── Field Definition ────────────────────────────────────
 
 export class DateTimePickerFieldDefinition extends FormFieldDefinition<DateTimePickerConfig> {
-  readonly identifier = 'datetime-picker' as const
+  readonly identifier = FIELD_IDENTIFIER
 
   readonly component = DateTimePickerComponent
   readonly editor = DateTimePickerEditorComponent
@@ -461,7 +463,7 @@ export class DateTimePickerFieldDefinition extends FormFieldDefinition<DateTimeP
   defaultConfig(): DateTimePickerConfig {
     return {
       id: `datetime_${Date.now()}`,
-      uniqueIdentifier: 'datetime-picker',
+      uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Select Date & Time',
       placeholder: 'Pick a date & time',
       description: 'Choose a date and time from the calendar.',

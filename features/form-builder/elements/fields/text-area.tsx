@@ -30,8 +30,10 @@ import { Switch } from '@/components/ui/switch'
 
 // ─── Config ──────────────────────────────────────────────
 
+const FIELD_IDENTIFIER = 'text-area'
+
 export interface TextAreaConfig extends BaseFieldConfig {
-  uniqueIdentifier: 'text-area'
+  uniqueIdentifier: typeof FIELD_IDENTIFIER
   minLength?: number
   maxLength?: number
   pattern?: string
@@ -263,7 +265,7 @@ const TextAreaEditorComponent: React.FC<
 // ─── Field Definition ────────────────────────────────────
 
 export class TextAreaFieldDefinition extends FormFieldDefinition<TextAreaConfig> {
-  readonly identifier = 'text-area' as const
+  readonly identifier = FIELD_IDENTIFIER
 
   readonly component = TextAreaComponent
   readonly editor = TextAreaEditorComponent
@@ -271,7 +273,7 @@ export class TextAreaFieldDefinition extends FormFieldDefinition<TextAreaConfig>
   defaultConfig(): TextAreaConfig {
     return {
       id: `textarea_${Date.now()}`,
-      uniqueIdentifier: 'text-area',
+      uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Your Message',
       placeholder: 'Type your message here.',
       description: 'Your message will be copied to the support team.',

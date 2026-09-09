@@ -37,8 +37,10 @@ import { Textarea } from '@/components/ui/textarea'
 
 // ─── Config ──────────────────────────────────────────────
 
+const FIELD_IDENTIFIER = 'text-input'
+
 export interface TextInputConfig extends BaseFieldConfig {
-  uniqueIdentifier: 'text-input'
+  uniqueIdentifier: typeof FIELD_IDENTIFIER
   inputType?: 'text' | 'email' | 'password' | 'tel' | 'url'
   minLength?: number
   maxLength?: number
@@ -357,7 +359,7 @@ const TextInputEditorComponent: React.FC<
 // ─── Field Definition ────────────────────────────────────
 
 export class TextInputFieldDefinition extends FormFieldDefinition<TextInputConfig> {
-  readonly identifier = 'text-input' as const
+  readonly identifier = FIELD_IDENTIFIER
 
   readonly component = TextInputComponent
   readonly editor = TextInputEditorComponent
@@ -365,7 +367,7 @@ export class TextInputFieldDefinition extends FormFieldDefinition<TextInputConfi
   defaultConfig(): TextInputConfig {
     return {
       id: `text_${Date.now()}`,
-      uniqueIdentifier: 'text-input',
+      uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Your Name',
       placeholder: 'e.g., John Doe',
       description: 'Provide your name for identification.',

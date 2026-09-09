@@ -38,8 +38,10 @@ import { Textarea } from '@/components/ui/textarea'
 
 // ─── Config ──────────────────────────────────────────────
 
+const FIELD_IDENTIFIER = 'checkbox'
+
 export interface CheckboxConfig extends BaseFieldConfig {
-  uniqueIdentifier: 'checkbox'
+  uniqueIdentifier: typeof FIELD_IDENTIFIER
   checkedLabel?: string
   uncheckedLabel?: string
   /** When required, optionally enforce a specific answer: true (must check), false (must uncheck), or undefined (any answer) */
@@ -250,7 +252,7 @@ const CheckboxEditorComponent: React.FC<
 // ─── Field Definition ────────────────────────────────────
 
 export class CheckboxFieldDefinition extends FormFieldDefinition<CheckboxConfig> {
-  readonly identifier = 'checkbox' as const
+  readonly identifier = FIELD_IDENTIFIER
 
   readonly component = CheckboxComponent
   readonly editor = CheckboxEditorComponent
@@ -258,7 +260,7 @@ export class CheckboxFieldDefinition extends FormFieldDefinition<CheckboxConfig>
   defaultConfig(): CheckboxConfig {
     return {
       id: `checkbox_${Date.now()}`,
-      uniqueIdentifier: 'checkbox',
+      uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'I agree to the terms',
       placeholder: '',
       description: '',

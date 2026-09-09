@@ -46,8 +46,10 @@ import { Textarea } from '@/components/ui/textarea'
 
 // ─── Config ──────────────────────────────────────────────
 
+const FIELD_IDENTIFIER = 'date-picker'
+
 export interface DatePickerConfig extends BaseFieldConfig {
-  uniqueIdentifier: 'date-picker'
+  uniqueIdentifier: typeof FIELD_IDENTIFIER
   /** Date format string for display (date-fns format) */
   dateFormat?: string
   /** Minimum selectable date (ISO string) */
@@ -406,7 +408,7 @@ const DatePickerEditorComponent: React.FC<
 // ─── Field Definition ────────────────────────────────────
 
 export class DatePickerFieldDefinition extends FormFieldDefinition<DatePickerConfig> {
-  readonly identifier = 'date-picker' as const
+  readonly identifier = FIELD_IDENTIFIER
 
   readonly component = DatePickerComponent
   readonly editor = DatePickerEditorComponent
@@ -414,7 +416,7 @@ export class DatePickerFieldDefinition extends FormFieldDefinition<DatePickerCon
   defaultConfig(): DatePickerConfig {
     return {
       id: `datepicker_${Date.now()}`,
-      uniqueIdentifier: 'date-picker',
+      uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Select Date',
       placeholder: 'Pick a date',
       description: 'Choose a date from the calendar.',

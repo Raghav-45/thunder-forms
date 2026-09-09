@@ -64,8 +64,10 @@ export interface SelectOption {
   disabled?: boolean
 }
 
+const FIELD_IDENTIFIER = 'multi-select'
+
 export interface MultiSelectConfig extends BaseFieldConfig {
-  uniqueIdentifier: 'multi-select'
+  uniqueIdentifier: typeof FIELD_IDENTIFIER
   options: SelectOption[]
   minSelections?: number
   maxSelections?: number
@@ -637,7 +639,7 @@ const MultiSelectEditorComponent: React.FC<
 // ─── Field Definition ────────────────────────────────────
 
 export class MultiSelectFieldDefinition extends FormFieldDefinition<MultiSelectConfig> {
-  readonly identifier = 'multi-select' as const
+  readonly identifier = FIELD_IDENTIFIER
 
   readonly component = MultiSelectComponent
   readonly editor = MultiSelectEditorComponent
@@ -645,7 +647,7 @@ export class MultiSelectFieldDefinition extends FormFieldDefinition<MultiSelectC
   defaultConfig(): MultiSelectConfig {
     return {
       id: `multiselect_${Date.now()}`,
-      uniqueIdentifier: 'multi-select',
+      uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Select your framework',
       placeholder: 'Select multiple options',
       description: '',

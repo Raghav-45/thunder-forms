@@ -52,8 +52,10 @@ export interface RadioOption {
   disabled?: boolean
 }
 
+const FIELD_IDENTIFIER = 'radio-group'
+
 export interface RadioGroupConfig extends BaseFieldConfig {
-  uniqueIdentifier: 'radio-group'
+  uniqueIdentifier: typeof FIELD_IDENTIFIER
   options: RadioOption[]
   /** Layout direction for the radio buttons */
   orientation?: 'vertical' | 'horizontal'
@@ -435,7 +437,7 @@ const RadioGroupEditorComponent: React.FC<
 // ─── Field Definition ────────────────────────────────────
 
 export class RadioGroupFieldDefinition extends FormFieldDefinition<RadioGroupConfig> {
-  readonly identifier = 'radio-group' as const
+  readonly identifier = FIELD_IDENTIFIER
 
   readonly component = RadioGroupComponent
   readonly editor = RadioGroupEditorComponent
@@ -443,7 +445,7 @@ export class RadioGroupFieldDefinition extends FormFieldDefinition<RadioGroupCon
   defaultConfig(): RadioGroupConfig {
     return {
       id: `radio_${Date.now()}`,
-      uniqueIdentifier: 'radio-group',
+      uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Choose one',
       description: '',
       required: false,

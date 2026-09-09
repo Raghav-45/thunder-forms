@@ -37,8 +37,10 @@ import { Textarea } from '@/components/ui/textarea'
 
 // ─── Config ──────────────────────────────────────────────
 
+const FIELD_IDENTIFIER = 'switch-field'
+
 export interface SwitchConfig extends BaseFieldConfig {
-  uniqueIdentifier: 'switch-field'
+  uniqueIdentifier: typeof FIELD_IDENTIFIER
   checkedLabel?: string
   uncheckedLabel?: string
   /** When required, optionally enforce a specific answer: true (must accept), false (must decline), or undefined (any answer) */
@@ -269,7 +271,7 @@ const SwitchEditorComponent: React.FC<
 // ─── Field Definition ────────────────────────────────────
 
 export class SwitchFieldDefinition extends FormFieldDefinition<SwitchConfig> {
-  readonly identifier = 'switch-field' as const
+  readonly identifier = FIELD_IDENTIFIER
 
   readonly component = SwitchFieldComponent
   readonly editor = SwitchEditorComponent
@@ -277,7 +279,7 @@ export class SwitchFieldDefinition extends FormFieldDefinition<SwitchConfig> {
   defaultConfig(): SwitchConfig {
     return {
       id: `switch_${Date.now()}`,
-      uniqueIdentifier: 'switch-field',
+      uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Toggle option',
       placeholder: '',
       description: '',

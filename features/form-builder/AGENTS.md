@@ -16,8 +16,9 @@ a components subfolder or barrel file the existing structure doesn't need.
   type, renderer, editor, `defaultConfig`, and `getValidationSchema` all in
   that one file. Don't split a field's validation or defaults into another
   registry, utility, or folder.
-- `identifier` and `config.uniqueIdentifier` must use the same literal value —
-  the base class enforces this at type-check time.
+- Define one local `FIELD_IDENTIFIER` constant in each field file. Use it for
+  the config's `uniqueIdentifier` type, the definition's `identifier`, and
+  `defaultConfig().uniqueIdentifier`. Do not repeat its raw string literal.
 - Register new fields in `elements/index.ts`; an unregistered field is not
   usable anywhere in the builder, renderer, or validation.
 
@@ -25,9 +26,11 @@ a components subfolder or barrel file the existing structure doesn't need.
 
 1. Create `elements/fields/<field-name>.tsx` with `'use client'` when it
    renders UI or uses client hooks.
-2. Define a config interface extending `BaseFieldConfig`, with a literal
-   `uniqueIdentifier` such as `'star-rating-input'`.
-3. Extend `FormFieldDefinition<YourConfig>` and implement `identifier`,
+2. Define `const FIELD_IDENTIFIER = 'star-rating-input'`, then define
+   a config interface extending `BaseFieldConfig` with
+   `uniqueIdentifier: typeof FIELD_IDENTIFIER`.
+3. Extend `FormFieldDefinition<YourConfig>` and implement `identifier` using
+   `FIELD_IDENTIFIER`, plus
    renderer, editor, `defaultConfig`, and `getValidationSchema` in that file.
 4. Add one instance to `FIELD_DEFINITIONS` in `elements/index.ts`.
 5. Before writing from scratch, skim an existing field close to what you're
@@ -94,8 +97,8 @@ fields the way `accordion-with-switch.tsx` is.
 
 ## Before finishing
 
-- The new/changed field is registered in `FIELD_DEFINITIONS` and its
-  `identifier` matches `config.uniqueIdentifier`.
+- The new/changed field uses `FIELD_IDENTIFIER` for its config, definition,
+  and default config, and is registered in `FIELD_DEFINITIONS`.
 - Validation logic stays in the field file; no third dispatcher was added.
 - Client/server boundaries (`'use client'`) are preserved.
 - The applicable type check, build, and targeted lint/tests all pass.

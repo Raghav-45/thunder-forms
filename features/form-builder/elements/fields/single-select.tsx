@@ -55,8 +55,10 @@ export interface SingleSelectOption {
   disabled?: boolean
 }
 
+const FIELD_IDENTIFIER = 'single-select'
+
 export interface SingleSelectConfig extends BaseFieldConfig {
-  uniqueIdentifier: 'single-select'
+  uniqueIdentifier: typeof FIELD_IDENTIFIER
   options: SingleSelectOption[]
 }
 
@@ -437,7 +439,7 @@ const SingleSelectEditorComponent: React.FC<
 // ─── Field Definition ────────────────────────────────────
 
 export class SingleSelectFieldDefinition extends FormFieldDefinition<SingleSelectConfig> {
-  readonly identifier = 'single-select' as const
+  readonly identifier = FIELD_IDENTIFIER
 
   readonly component = SingleSelectComponent
   readonly editor = SingleSelectEditorComponent
@@ -445,7 +447,7 @@ export class SingleSelectFieldDefinition extends FormFieldDefinition<SingleSelec
   defaultConfig(): SingleSelectConfig {
     return {
       id: `select_${Date.now()}`,
-      uniqueIdentifier: 'single-select',
+      uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Select an option',
       placeholder: 'Choose one...',
       description: '',
