@@ -1,4 +1,4 @@
-import { FIELD_REGISTRY } from '@/components/FormBuilder/elements'
+import { FIELD_REGISTRY } from '@/features/form-builder/elements'
 
 export type FieldType = { name: string; isAvailable: boolean; index?: number }
 

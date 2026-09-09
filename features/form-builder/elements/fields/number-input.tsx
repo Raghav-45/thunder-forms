@@ -1,13 +1,14 @@
 'use client'
 
-import { FormFieldDefinition } from '@/components/FormBuilder/elements/base'
+import { FormFieldDefinition } from '@/features/form-builder/elements/base'
 import {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
-} from '@/components/FormBuilder/types/types'
+} from '@/features/form-builder/types/types'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
 import React, { useState } from 'react'
 import { z } from 'zod'
 import AccordionWithSwitch from '@/components/accordion-with-switch'
@@ -18,7 +19,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   Sheet,
   SheetContent,
@@ -26,35 +26,46 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
 
 // ─── Config ──────────────────────────────────────────────
 
-export interface TextAreaConfig extends BaseFieldConfig {
-  uniqueIdentifier: 'text-area'
-  minLength?: number
-  maxLength?: number
-  pattern?: string
-  autoComplete?: string
+export interface NumberInputConfig extends BaseFieldConfig {
+  uniqueIdentifier: 'number-input'
+  min?: number
+  max?: number
+  step?: number
+  allowDecimals?: boolean
 }
 
 // ─── Render Component ────────────────────────────────────
 
-const TextAreaComponent: React.FC<FieldProps<TextAreaConfig>> = ({
+const NumberInputComponent: React.FC<FieldProps<NumberInputConfig>> = ({
   field,
   value,
   onChange,
   onBlur,
   error,
 }) => {
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onChange(e.target.value)
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value
+    if (raw === '') {
+      onChange('')
+      return
+    }
+    // Allow typing negative sign and decimal point
+    if (raw === '-' || raw === '.' || raw === '-.') {
+      onChange(raw)
+      return
+    }
+    const num = Number(raw)
+    if (!isNaN(num)) {
+      onChange(num)
+    }
   }
 
   const handleBlur = () => {
-    if (onBlur) {
-      onBlur()
-    }
+    onBlur?.()
   }
 
   const inputId = `field-${field.id}`
@@ -72,15 +83,18 @@ const TextAreaComponent: React.FC<FieldProps<TextAreaConfig>> = ({
         {field.label}
       </Label>
 
-      <Textarea
+      <Input
         id={inputId}
+        type="number"
         placeholder={field.placeholder}
-        value={(value || '') as string}
+        value={value === undefined || value === null ? '' : String(value)}
         onChange={handleChange}
         onBlur={handleBlur}
         disabled={field.disabled}
         required={field.required}
-        autoComplete={field.autoComplete}
+        min={field.min}
+        max={field.max}
+        step={field.step || (field.allowDecimals ? 'any' : 1)}
         className={error ? 'border-red-500 focus:border-red-500' : ''}
       />
 
@@ -103,10 +117,10 @@ const TextAreaComponent: React.FC<FieldProps<TextAreaConfig>> = ({
 
 // ─── Editor Component ────────────────────────────────────
 
-const TextAreaEditorComponent: React.FC<
-  EditorProps<TextAreaConfig> & { isOpen: boolean }
+const NumberInputEditorComponent: React.FC<
+  EditorProps<NumberInputConfig> & { isOpen: boolean }
 > = ({ field, onUpdate, onClose, isOpen }) => {
-  const [config, setConfig] = useState<TextAreaConfig>(field)
+  const [config, setConfig] = useState<NumberInputConfig>(field)
 
   const handleSave = () => {
     onUpdate(config)
@@ -118,7 +132,7 @@ const TextAreaEditorComponent: React.FC<
     onClose()
   }
 
-  const handleInputChange = (key: keyof TextAreaConfig, value: unknown) => {
+  const handleInputChange = (key: keyof NumberInputConfig, value: unknown) => {
     setConfig((prev) => ({
       ...prev,
       [key]: value,
@@ -129,7 +143,7 @@ const TextAreaEditorComponent: React.FC<
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="sm:max-w-md overflow-y-auto gap-y-0">
         <SheetHeader>
-          <SheetTitle className="text-lg">Configure Text Area</SheetTitle>
+          <SheetTitle className="text-lg">Configure Number Input</SheetTitle>
         </SheetHeader>
 
         <div className="space-y-2 px-4">
@@ -187,38 +201,64 @@ const TextAreaEditorComponent: React.FC<
               <AccordionContent className="flex flex-col gap-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="min-length">Min Length</Label>
+                    <Label htmlFor="min-value">Min Value</Label>
                     <Input
-                      id="min-length"
+                      id="min-value"
                       type="number"
-                      min="0"
-                      value={config.minLength || ''}
+                      value={config.min ?? ''}
                       onChange={(e) =>
                         handleInputChange(
-                          'minLength',
-                          e.target.value ? parseInt(e.target.value) : undefined,
+                          'min',
+                          e.target.value ? Number(e.target.value) : undefined,
                         )
                       }
-                      placeholder="0"
+                      placeholder="No limit"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="max-length">Max Length</Label>
+                    <Label htmlFor="max-value">Max Value</Label>
                     <Input
-                      id="max-length"
+                      id="max-value"
                       type="number"
-                      min="1"
-                      value={config.maxLength || ''}
+                      value={config.max ?? ''}
                       onChange={(e) =>
                         handleInputChange(
-                          'maxLength',
-                          e.target.value ? parseInt(e.target.value) : undefined,
+                          'max',
+                          e.target.value ? Number(e.target.value) : undefined,
                         )
                       }
-                      placeholder="500"
+                      placeholder="No limit"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="step-value">Step</Label>
+                  <Input
+                    id="step-value"
+                    type="number"
+                    min="0"
+                    value={config.step ?? ''}
+                    onChange={(e) =>
+                      handleInputChange(
+                        'step',
+                        e.target.value ? Number(e.target.value) : undefined,
+                      )
+                    }
+                    placeholder="1"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="allow-decimals">Allow Decimals</Label>
+                  <Switch
+                    id="allow-decimals"
+                    checked={config.allowDecimals || false}
+                    onCheckedChange={(checked) =>
+                      handleInputChange('allowDecimals', checked)
+                    }
+                  />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -262,42 +302,36 @@ const TextAreaEditorComponent: React.FC<
 
 // ─── Field Definition ────────────────────────────────────
 
-export class TextAreaFieldDefinition extends FormFieldDefinition<TextAreaConfig> {
-  readonly identifier = 'text-area' as const
+export class NumberInputFieldDefinition extends FormFieldDefinition<NumberInputConfig> {
+  readonly identifier = 'number-input' as const
 
-  readonly component = TextAreaComponent
-  readonly editor = TextAreaEditorComponent
+  readonly component = NumberInputComponent
+  readonly editor = NumberInputEditorComponent
 
-  defaultConfig(): TextAreaConfig {
+  defaultConfig(): NumberInputConfig {
     return {
-      id: `textarea_${Date.now()}`,
-      uniqueIdentifier: 'text-area',
-      label: 'Your Message',
-      placeholder: 'Type your message here.',
-      description: 'Your message will be copied to the support team.',
+      id: `number_${Date.now()}`,
+      uniqueIdentifier: 'number-input',
+      label: 'Amount',
+      placeholder: 'Enter a number',
+      description: '',
       required: false,
       disabled: false,
-      maxLength: undefined,
+      allowDecimals: false,
     }
   }
 
-  getValidationSchema(field: TextAreaConfig): z.ZodTypeAny {
-    let schema = z.string()
+  getValidationSchema(field: NumberInputConfig): z.ZodTypeAny {
+    let schema = z.number({ invalid_type_error: 'Must be a number' })
 
-    if (field.minLength) {
-      schema = schema.min(
-        field.minLength,
-        `Must be at least ${field.minLength} characters`,
-      )
+    if (!field.allowDecimals) {
+      schema = schema.int('Must be a whole number')
     }
-    if (field.maxLength) {
-      schema = schema.max(
-        field.maxLength,
-        `Must be at most ${field.maxLength} characters`,
-      )
+    if (field.min !== undefined) {
+      schema = schema.min(field.min, `Must be at least ${field.min}`)
     }
-    if (field.pattern) {
-      schema = schema.regex(new RegExp(field.pattern), 'Invalid format')
+    if (field.max !== undefined) {
+      schema = schema.max(field.max, `Must be at most ${field.max}`)
     }
 
     return field.required ? schema : schema.optional()

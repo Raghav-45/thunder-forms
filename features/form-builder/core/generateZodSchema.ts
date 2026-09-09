@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FIELD_REGISTRY, FieldConfig } from '@/components/FormBuilder/elements'
+import { FIELD_REGISTRY, FieldConfig } from '@/features/form-builder/elements'
 import { z } from 'zod'
 
 export const generateZodSchema = (

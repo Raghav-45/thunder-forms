@@ -1,9 +1,9 @@
 'use client'
 
-import { FieldConfig } from '@/components/FormBuilder/elements'
-import { validateFormFields } from '@/components/FormBuilder/utils/formValidation'
-import { useFormStore } from '@/components/FormBuilder/store'
-import { getFieldComponent } from '@/components/FormBuilder/utils/helperFunctions'
+import { FieldConfig } from '@/features/form-builder/elements'
+import { validateFormFields } from '@/features/form-builder/utils/formValidation'
+import { useFormStore } from '@/features/form-builder/store'
+import { getFieldComponent } from '@/features/form-builder/utils/helperFunctions'
 import { FormSubmittedPage } from '../components/form-submitted-page'
 import { FormClosedDialog } from '../components/form-closed-dialog'
 import { Button } from '@/components/ui/button'

@@ -1,16 +1,12 @@
 'use client'
 
-import { FormFieldDefinition } from '@/components/FormBuilder/elements/base'
+import { FormFieldDefinition } from '@/features/form-builder/elements/base'
 import {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
-} from '@/components/FormBuilder/types/types'
+} from '@/features/form-builder/types/types'
 import { Label } from '@/components/ui/label'
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from '@/components/ui/radio-group'
 import React, { useState } from 'react'
 import { z } from 'zod'
 import AccordionWithSwitch from '@/components/accordion-with-switch'
@@ -22,6 +18,13 @@ import {
 } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Sheet,
   SheetContent,
@@ -46,22 +49,20 @@ import { PointerSensor, PointerActivationConstraints, type Sensors } from '@dnd-
 
 // ─── Config ──────────────────────────────────────────────
 
-export interface RadioOption {
+export interface SingleSelectOption {
   label: string
   value: string
   disabled?: boolean
 }
 
-export interface RadioGroupConfig extends BaseFieldConfig {
-  uniqueIdentifier: 'radio-group'
-  options: RadioOption[]
-  /** Layout direction for the radio buttons */
-  orientation?: 'vertical' | 'horizontal'
+export interface SingleSelectConfig extends BaseFieldConfig {
+  uniqueIdentifier: 'single-select'
+  options: SingleSelectOption[]
 }
 
 // ─── Render Component ────────────────────────────────────
 
-const RadioGroupComponent: React.FC<FieldProps<RadioGroupConfig>> = ({
+const SingleSelectComponent: React.FC<FieldProps<SingleSelectConfig>> = ({
   field,
   value,
   onChange,
@@ -72,6 +73,7 @@ const RadioGroupComponent: React.FC<FieldProps<RadioGroupConfig>> = ({
   return (
     <div className="space-y-2">
       <Label
+        htmlFor={inputId}
         className={`text-sm font-medium ${
           field.required
             ? "after:content-['*'] after:text-red-500 after:ml-1"
@@ -81,33 +83,29 @@ const RadioGroupComponent: React.FC<FieldProps<RadioGroupConfig>> = ({
         {field.label}
       </Label>
 
-      <RadioGroup
+      <Select
         value={(value as string) || ''}
         onValueChange={(val) => onChange(val)}
         disabled={field.disabled}
-        className={
-          field.orientation === 'horizontal'
-            ? 'flex flex-wrap gap-4'
-            : 'flex flex-col gap-2'
-        }
       >
-        {field.options.map((option) => (
-          <div key={option.value} className="flex items-center space-x-2">
-            <RadioGroupItem
+        <SelectTrigger
+          id={inputId}
+          className={`w-full ${error ? 'border-red-500 focus:border-red-500' : ''}`}
+        >
+          <SelectValue placeholder={field.placeholder || 'Select an option'} />
+        </SelectTrigger>
+        <SelectContent>
+          {field.options.map((option) => (
+            <SelectItem
+              key={option.value}
               value={option.value}
-              id={`${inputId}-${option.value}`}
               disabled={option.disabled}
-              className={error ? 'border-red-500' : ''}
-            />
-            <Label
-              htmlFor={`${inputId}-${option.value}`}
-              className="text-sm font-normal cursor-pointer"
             >
               {option.label}
-            </Label>
-          </div>
-        ))}
-      </RadioGroup>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       {field.description && (
         <p className="text-sm text-muted-foreground">{field.description}</p>
@@ -134,9 +132,9 @@ const SortableOptionItem = ({
   onUpdate,
   onRemove,
 }: {
-  option: RadioOption
+  option: SingleSelectOption
   index: number
-  onUpdate: (index: number, updates: Partial<RadioOption>) => void
+  onUpdate: (index: number, updates: Partial<SingleSelectOption>) => void
   onRemove: (index: number) => void
 }) => {
   const { ref, handleRef, isDragging } = useSortable({
@@ -161,13 +159,17 @@ const SortableOptionItem = ({
 
       <Input
         value={option.label}
-        onChange={(e) => onUpdate(index, { label: e.target.value })}
+        onChange={(e) =>
+          onUpdate(index, { label: e.target.value })
+        }
         placeholder="Option label"
         className="text-sm"
       />
       <Input
         value={option.value}
-        onChange={(e) => onUpdate(index, { value: e.target.value })}
+        onChange={(e) =>
+          onUpdate(index, { value: e.target.value })
+        }
         placeholder="Option value"
         className="text-sm"
       />
@@ -194,10 +196,10 @@ const SortableOptionItem = ({
 
 // ─── Editor Component ────────────────────────────────────
 
-const RadioGroupEditorComponent: React.FC<
-  EditorProps<RadioGroupConfig> & { isOpen: boolean }
+const SingleSelectEditorComponent: React.FC<
+  EditorProps<SingleSelectConfig> & { isOpen: boolean }
 > = ({ field, onUpdate, onClose, isOpen }) => {
-  const [config, setConfig] = useState<RadioGroupConfig>(field)
+  const [config, setConfig] = useState<SingleSelectConfig>(field)
 
   const sensors = (defaults: Sensors) => [
     ...defaults.filter((sensor) => sensor !== PointerSensor),
@@ -226,12 +228,12 @@ const RadioGroupEditorComponent: React.FC<
     onClose()
   }
 
-  const handleInputChange = (key: keyof RadioGroupConfig, value: unknown) => {
+  const handleInputChange = (key: keyof SingleSelectConfig, value: unknown) => {
     setConfig((prev) => ({ ...prev, [key]: value }))
   }
 
   const handleAddOption = () => {
-    const newOption: RadioOption = {
+    const newOption: SingleSelectOption = {
       label: 'New Option',
       value: `option_${Date.now()}`,
       disabled: false,
@@ -242,7 +244,7 @@ const RadioGroupEditorComponent: React.FC<
     }))
   }
 
-  const handleUpdateOption = (index: number, updates: Partial<RadioOption>) => {
+  const handleUpdateOption = (index: number, updates: Partial<SingleSelectOption>) => {
     setConfig((prev) => ({
       ...prev,
       options: prev.options.map((option, i) =>
@@ -280,7 +282,7 @@ const RadioGroupEditorComponent: React.FC<
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="sm:max-w-md overflow-y-auto gap-y-0">
         <SheetHeader>
-          <SheetTitle className="text-lg">Configure Radio Group</SheetTitle>
+          <SheetTitle className="text-lg">Configure Dropdown</SheetTitle>
         </SheetHeader>
 
         <div className="space-y-2 px-4">
@@ -302,6 +304,20 @@ const RadioGroupEditorComponent: React.FC<
                 </div>
 
                 <AccordionWithSwitch
+                  text="Placeholder"
+                  defaultOpen={!!config.placeholder}
+                >
+                  <Input
+                    id="field-placeholder"
+                    value={config.placeholder || ''}
+                    onChange={(e) =>
+                      handleInputChange('placeholder', e.target.value)
+                    }
+                    placeholder="Enter placeholder text"
+                  />
+                </AccordionWithSwitch>
+
+                <AccordionWithSwitch
                   text="Description"
                   defaultOpen={!!config.description}
                 >
@@ -315,20 +331,6 @@ const RadioGroupEditorComponent: React.FC<
                     rows={3}
                   />
                 </AccordionWithSwitch>
-
-                <div className="flex items-center justify-between py-2">
-                  <Label htmlFor="orientation-switch">Horizontal Layout</Label>
-                  <Switch
-                    id="orientation-switch"
-                    checked={config.orientation === 'horizontal'}
-                    onCheckedChange={(checked) =>
-                      handleInputChange(
-                        'orientation',
-                        checked ? 'horizontal' : 'vertical',
-                      )
-                    }
-                  />
-                </div>
 
                 <div className="space-y-4 px-0 py-4">
                   <div className="flex justify-between items-center">
@@ -434,30 +436,30 @@ const RadioGroupEditorComponent: React.FC<
 
 // ─── Field Definition ────────────────────────────────────
 
-export class RadioGroupFieldDefinition extends FormFieldDefinition<RadioGroupConfig> {
-  readonly identifier = 'radio-group' as const
+export class SingleSelectFieldDefinition extends FormFieldDefinition<SingleSelectConfig> {
+  readonly identifier = 'single-select' as const
 
-  readonly component = RadioGroupComponent
-  readonly editor = RadioGroupEditorComponent
+  readonly component = SingleSelectComponent
+  readonly editor = SingleSelectEditorComponent
 
-  defaultConfig(): RadioGroupConfig {
+  defaultConfig(): SingleSelectConfig {
     return {
-      id: `radio_${Date.now()}`,
-      uniqueIdentifier: 'radio-group',
-      label: 'Choose one',
+      id: `select_${Date.now()}`,
+      uniqueIdentifier: 'single-select',
+      label: 'Select an option',
+      placeholder: 'Choose one...',
       description: '',
       required: false,
       disabled: false,
-      orientation: 'vertical',
       options: [
-        { label: 'Option A', value: 'option_a' },
-        { label: 'Option B', value: 'option_b' },
-        { label: 'Option C', value: 'option_c' },
+        { label: 'Option 1', value: 'option_1' },
+        { label: 'Option 2', value: 'option_2' },
+        { label: 'Option 3', value: 'option_3' },
       ],
     }
   }
 
-  getValidationSchema(field: RadioGroupConfig): z.ZodTypeAny {
+  getValidationSchema(field: SingleSelectConfig): z.ZodTypeAny {
     const validValues = field.options.map((opt) => opt.value)
     const baseSchema = z.string().refine(
       (val) => validValues.includes(val),

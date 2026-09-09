@@ -1,4 +1,4 @@
-import { FieldConfig } from '@/components/FormBuilder/elements'
+import { FieldConfig } from '@/features/form-builder/elements'
 import { create } from 'zustand'
 import { DEFAULT_FORM_DESCRIPTION, DEFAULT_FORM_TITLE } from './constants'
 

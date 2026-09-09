@@ -1,6 +1,6 @@
 'use client'
 
-import { FieldConfig } from '@/components/FormBuilder/elements'
+import { FieldConfig } from '@/features/form-builder/elements'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,

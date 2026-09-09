@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { useFormStore } from "@/components/FormBuilder/store"
+import { useFormStore } from "@/features/form-builder/store"
 import { DatePickerWithPresets } from "@/components/date-picker-with-presets"
 
 const data = {

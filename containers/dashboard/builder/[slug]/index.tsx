@@ -5,18 +5,18 @@ import {
   DatePickerWithPresets,
   IMMORTAL_SENTINEL_DATE,
 } from '@/components/date-picker-with-presets'
-import GenerateWithAiPrompt from '@/components/FormBuilder/core/generate-with-ai'
-import { FieldConfig } from '@/components/FormBuilder/elements'
-import { useFormStore } from '@/components/FormBuilder/store'
+import GenerateWithAiPrompt from '@/features/form-builder/core/generate-with-ai'
+import { FieldConfig } from '@/features/form-builder/elements'
+import { useFormStore } from '@/features/form-builder/store'
 import {
   AVAILABLE_FIELDS,
   avaliableFieldsType,
-} from '@/components/FormBuilder/types/types'
+} from '@/features/form-builder/types/types'
 import {
   createDefaultFieldConfig,
   getFieldComponent,
   getFieldEditor,
-} from '@/components/FormBuilder/utils/helperFunctions'
+} from '@/features/form-builder/utils/helperFunctions'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription } from '@/components/ui/card'
@@ -56,7 +56,7 @@ import {
 import { Fragment, use, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { SettingsDialog } from '@/components/settings-dialog'
-import ImportGoogleForm from '@/components/FormBuilder/core/import-google-form'
+import ImportGoogleForm from '@/features/form-builder/core/import-google-form'
 
 interface FormBuilderProps {
   params: Promise<{ slug: string }>

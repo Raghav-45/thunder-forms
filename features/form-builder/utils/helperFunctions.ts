@@ -1,5 +1,5 @@
-import { FIELD_REGISTRY, FieldConfig } from '@/components/FormBuilder/elements'
-import { avaliableFieldsType } from '@/components/FormBuilder/types/types'
+import { FIELD_REGISTRY, FieldConfig } from '@/features/form-builder/elements'
+import { avaliableFieldsType } from '@/features/form-builder/types/types'
 
 /**
  * HELPER FUNCTIONS FOR FORM BUILDER

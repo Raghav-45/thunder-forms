@@ -1,4 +1,4 @@
-import { FieldConfig } from '@/components/FormBuilder/elements'
+import { FieldConfig } from '@/features/form-builder/elements'
 import { Icons } from '@/components/Icons'
 import { Button } from '@/components/ui/button'
 import {

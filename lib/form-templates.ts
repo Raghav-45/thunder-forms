@@ -1,4 +1,4 @@
-import type { avaliableFieldsType } from '@/components/FormBuilder/types/types'
+import type { avaliableFieldsType } from '@/features/form-builder/types/types'
 import { FORM_TEMPLATES } from '@/containers/dashboard/templates/constants'
 
 /**

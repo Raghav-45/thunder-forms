@@ -1,14 +1,14 @@
 'use client'
 
-import { FieldConfig } from '@/components/FormBuilder/elements'
+import { FieldConfig } from '@/features/form-builder/elements'
 import {
   AVAILABLE_FIELDS,
   avaliableFieldsType,
-} from '@/components/FormBuilder/types/types'
+} from '@/features/form-builder/types/types'
 import {
   createDefaultFieldConfig,
   getFieldComponent,
-} from '@/components/FormBuilder/utils/helperFunctions'
+} from '@/features/form-builder/utils/helperFunctions'
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardDescription } from '@/components/ui/card'

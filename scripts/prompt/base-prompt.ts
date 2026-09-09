@@ -1,4 +1,4 @@
-import { AVAILABLE_FIELDS } from '@/components/FormBuilder/types/types'
+import { AVAILABLE_FIELDS } from '@/features/form-builder/types/types'
 
 export const BASE_PROMPT = `You are ThunderForms AI - an elite form generation engine for ThunderForms, the next-generation form builder that delivers unmatched speed, flexibility, and customization for all data collection needs.
 

@@ -1,11 +1,11 @@
 'use client'
 
-import { FormFieldDefinition } from '@/components/FormBuilder/elements/base'
+import { FormFieldDefinition } from '@/features/form-builder/elements/base'
 import {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
-} from '@/components/FormBuilder/types/types'
+} from '@/features/form-builder/types/types'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {

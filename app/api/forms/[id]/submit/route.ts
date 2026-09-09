@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
-import { validateFormFields } from '@/components/FormBuilder/utils/formValidation'
-import type { FieldConfig } from '@/components/FormBuilder/elements'
+import { validateFormFields } from '@/features/form-builder/utils/formValidation'
+import type { FieldConfig } from '@/features/form-builder/elements'
 
 export async function POST(
   request: NextRequest,

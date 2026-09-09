@@ -1,4 +1,4 @@
-import { avaliableFieldsType } from '@/components/FormBuilder/types/types'
+import { avaliableFieldsType } from '@/features/form-builder/types/types'
 import fs from 'fs'
 import path from 'path'
 
@@ -7,7 +7,7 @@ const PROMPT_FILE_NAME = 'dynamic-system-prompt.ts'
 /**
  * Extracts all type definitions from 'type.ts' files within element folders,
  * removing import statements.
- * @param elementsDirPath The path to the 'FormBuilder/elements' directory.
+ * @param elementsDirPath The path to the 'features/form-builder/elements' directory.
  * @returns A string containing all extracted type definitions.
  */
 export async function extractElementTypeDefinitions(
@@ -66,20 +66,20 @@ async function generatePrompt() {
     // Import your types (adjust path as needed)
     const { BASE_PROMPT } = await import('./base-prompt')
     const { AVAILABLE_FIELDS } = await import(
-      '@/components/FormBuilder/types/types'
+      '@/features/form-builder/types/types'
     )
     const { createDefaultFieldConfig } = await import(
-      '@/components/FormBuilder/utils/helperFunctions'
+      '@/features/form-builder/utils/helperFunctions'
     )
 
     // Extract BaseFieldConfig from the types file
     const typesFilePath = path.resolve(
-      './components/FormBuilder/types/types.ts'
+      './features/form-builder/types/types.ts'
     )
     const baseFieldConfigInterface = await extractBaseFieldConfig(typesFilePath)
 
     // NEW: Extract all specific element type definitions
-    const elementsDirPath = path.resolve('./components/FormBuilder/elements')
+    const elementsDirPath = path.resolve('./features/form-builder/elements')
     const specificFieldTypeDefinitions = await extractElementTypeDefinitions(
       elementsDirPath
     )

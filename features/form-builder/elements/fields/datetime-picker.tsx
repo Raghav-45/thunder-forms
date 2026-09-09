@@ -1,11 +1,11 @@
 'use client'
 
-import { FormFieldDefinition } from '@/components/FormBuilder/elements/base'
+import { FormFieldDefinition } from '@/features/form-builder/elements/base'
 import {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
-} from '@/components/FormBuilder/types/types'
+} from '@/features/form-builder/types/types'
 import { Label } from '@/components/ui/label'
 import React, { useState } from 'react'
 import { z } from 'zod'

@@ -1,12 +1,11 @@
 'use client'
 
-import { FormFieldDefinition } from '@/components/FormBuilder/elements/base'
+import { FormFieldDefinition } from '@/features/form-builder/elements/base'
 import {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
-} from '@/components/FormBuilder/types/types'
-import { Checkbox } from '@/components/ui/checkbox'
+} from '@/features/form-builder/types/types'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import React, { useState } from 'react'
@@ -38,66 +37,61 @@ import { Textarea } from '@/components/ui/textarea'
 
 // ─── Config ──────────────────────────────────────────────
 
-export interface CheckboxConfig extends BaseFieldConfig {
-  uniqueIdentifier: 'checkbox'
+export interface SwitchConfig extends BaseFieldConfig {
+  uniqueIdentifier: 'switch-field'
   checkedLabel?: string
   uncheckedLabel?: string
-  /** When required, optionally enforce a specific answer: true (must check), false (must uncheck), or undefined (any answer) */
+  /** When required, optionally enforce a specific answer: true (must accept), false (must decline), or undefined (any answer) */
   requiredValue?: boolean
 }
 
 // ─── Render Component ────────────────────────────────────
 
-const CheckboxComponent: React.FC<FieldProps<CheckboxConfig>> = ({
+const SwitchFieldComponent: React.FC<FieldProps<SwitchConfig>> = ({
   field,
   value,
   onChange,
   error,
 }) => {
   const isAnswered = typeof value === 'boolean'
-  const checkedState: boolean | 'indeterminate' = !isAnswered ? 'indeterminate' : (value as boolean)
+  const isChecked = value === true
 
-  const handleChange = (checked: boolean | 'indeterminate') => {
-    // When clicking from indeterminate, treat as checking (true)
-    // When clicking from checked, uncheck (false)
-    // When clicking from unchecked, check (true)
-    if (checked === 'indeterminate') {
-      onChange?.(true)
-    } else {
-      onChange?.(checked)
-    }
+  const handleSwitchChange = (checked: boolean) => {
+    onChange?.(checked)
   }
-
-  const inputId = `field-${field.id}`
 
   return (
     <div className="space-y-2">
-      <div
-        className={`flex flex-row items-start gap-3 rounded-lg border p-3 shadow-sm ${
-          error ? 'border-red-500' : ''
-        }`}
-      >
-        <Checkbox
-          id={inputId}
-          checked={checkedState}
-          onCheckedChange={handleChange}
-          disabled={field.disabled}
-          aria-label={field.label}
-          className="mt-0.5"
-        />
+      <div className={`flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm ${
+        error ? 'border-red-500' : ''
+      }`}>
         <div className="space-y-0.5">
           <Label
-            htmlFor={inputId}
-            className={`text-sm leading-none font-medium select-none ${
+            htmlFor={field.id}
+            className={`flex items-center gap-2 text-sm leading-none font-medium select-none ${
               field.disabled ? 'opacity-50' : 'cursor-pointer'
             }`}
           >
             {field.label}
             {field.required && <span className="text-red-500 ml-1">*</span>}
           </Label>
-          {field.description && (
-            <p className="text-sm text-muted-foreground">{field.description}</p>
+          {field.description && <p className="text-sm text-muted-foreground">{field.description}</p>}
+        </div>
+        <div className="flex items-center gap-2">
+          {isAnswered && (
+            <span className="text-xs text-muted-foreground">
+              {isChecked ? (field.checkedLabel || 'On') : (field.uncheckedLabel || 'Off')}
+            </span>
           )}
+          <Switch
+            id={field.id}
+            checked={isChecked}
+            onCheckedChange={handleSwitchChange}
+            disabled={field.disabled}
+            aria-label={field.label}
+            tabIndex={0}
+            indeterminate={!isAnswered}
+          />
         </div>
       </div>
       {error && (
@@ -111,11 +105,10 @@ const CheckboxComponent: React.FC<FieldProps<CheckboxConfig>> = ({
 
 // ─── Editor Component ────────────────────────────────────
 
-const CheckboxEditorComponent: React.FC<
-  EditorProps<CheckboxConfig> & { isOpen: boolean }
+const SwitchEditorComponent: React.FC<
+  EditorProps<SwitchConfig> & { isOpen: boolean }
 > = ({ field, onUpdate, onClose, isOpen }) => {
-  const [config, setConfig] = useState<CheckboxConfig>(field)
-
+  const [config, setConfig] = useState<SwitchConfig>(field)
   const handleSave = () => {
     onUpdate(config)
     onClose()
@@ -126,9 +119,10 @@ const CheckboxEditorComponent: React.FC<
     onClose()
   }
 
-  const handleInputChange = (key: keyof CheckboxConfig, value: unknown) => {
+  const handleInputChange = (key: keyof SwitchConfig, value: unknown) => {
     setConfig((prev) => {
       const updated = { ...prev, [key]: value }
+      // Clear requiredValue when required is turned off
       if (key === 'required' && !value) {
         updated.requiredValue = undefined
       }
@@ -140,7 +134,7 @@ const CheckboxEditorComponent: React.FC<
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="sm:max-w-md overflow-y-auto gap-y-0">
         <SheetHeader>
-          <SheetTitle className="text-lg">Configure Checkbox</SheetTitle>
+          <SheetTitle className="text-lg">Configure Switch</SheetTitle>
         </SheetHeader>
 
         <div className="space-y-2 px-4">
@@ -175,6 +169,31 @@ const CheckboxEditorComponent: React.FC<
                     rows={3}
                   />
                 </AccordionWithSwitch>
+
+                <div className="grid grid-cols-10 gap-4">
+                  <div className="space-y-2 col-span-5">
+                    <Label htmlFor="checked-label">On Label</Label>
+                    <Input
+                      id="checked-label"
+                      value={config.checkedLabel || ''}
+                      onChange={(e) =>
+                        handleInputChange('checkedLabel', e.target.value)
+                      }
+                      placeholder="On"
+                    />
+                  </div>
+                  <div className="space-y-2 col-span-5">
+                    <Label htmlFor="unchecked-label">Off Label</Label>
+                    <Input
+                      id="unchecked-label"
+                      value={config.uncheckedLabel || ''}
+                      onChange={(e) =>
+                        handleInputChange('uncheckedLabel', e.target.value)
+                      }
+                      placeholder="Off"
+                    />
+                  </div>
+                </div>
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="validation">
@@ -207,14 +226,14 @@ const CheckboxEditorComponent: React.FC<
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="any">Any answer (user must interact)</SelectItem>
-                        <SelectItem value="true">Must be checked</SelectItem>
-                        <SelectItem value="false">Must be unchecked</SelectItem>
+                        <SelectItem value="true">Must accept ({config.checkedLabel || 'On'})</SelectItem>
+                        <SelectItem value="false">Must decline ({config.uncheckedLabel || 'Off'})</SelectItem>
                       </SelectContent>
                     </Select>
                     <p className="text-xs text-muted-foreground">
-                      {config.requiredValue === undefined && 'User must click the checkbox, but either state is accepted.'}
-                      {config.requiredValue === true && 'User must check the checkbox to submit (e.g., "I agree to terms").'}
-                      {config.requiredValue === false && 'User must leave the checkbox unchecked to submit.'}
+                      {config.requiredValue === undefined && 'User must toggle the switch, but either answer is accepted.'}
+                      {config.requiredValue === true && `User must select "${config.checkedLabel || 'On'}" to submit.`}
+                      {config.requiredValue === false && `User must select "${config.uncheckedLabel || 'Off'}" to submit.`}
                     </p>
                   </div>
                 )}
@@ -249,35 +268,37 @@ const CheckboxEditorComponent: React.FC<
 
 // ─── Field Definition ────────────────────────────────────
 
-export class CheckboxFieldDefinition extends FormFieldDefinition<CheckboxConfig> {
-  readonly identifier = 'checkbox' as const
+export class SwitchFieldDefinition extends FormFieldDefinition<SwitchConfig> {
+  readonly identifier = 'switch-field' as const
 
-  readonly component = CheckboxComponent
-  readonly editor = CheckboxEditorComponent
+  readonly component = SwitchFieldComponent
+  readonly editor = SwitchEditorComponent
 
-  defaultConfig(): CheckboxConfig {
+  defaultConfig(): SwitchConfig {
     return {
-      id: `checkbox_${Date.now()}`,
-      uniqueIdentifier: 'checkbox',
-      label: 'I agree to the terms',
+      id: `switch_${Date.now()}`,
+      uniqueIdentifier: 'switch-field',
+      label: 'Toggle option',
       placeholder: '',
       description: '',
       required: false,
       disabled: false,
+      checkedLabel: 'On',
+      uncheckedLabel: 'Off',
     }
   }
 
-  getValidationSchema(field: CheckboxConfig): z.ZodTypeAny {
+  getValidationSchema(field: SwitchConfig): z.ZodTypeAny {
     if (field.required) {
       let schema: z.ZodTypeAny = z.boolean({ required_error: `${field.label} is required` })
 
       if (field.requiredValue === true) {
         schema = schema.refine((val) => val === true, {
-          message: `${field.label} must be checked`,
+          message: `${field.label} must be ${field.checkedLabel || 'On'}`,
         })
       } else if (field.requiredValue === false) {
         schema = schema.refine((val) => val === false, {
-          message: `${field.label} must be unchecked`,
+          message: `${field.label} must be ${field.uncheckedLabel || 'Off'}`,
         })
       }
 

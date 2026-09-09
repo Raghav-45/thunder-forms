@@ -1,8 +1,8 @@
 'use client'
 
-import type { FieldConfig } from '@/components/FormBuilder/elements'
-import type { avaliableFieldsType } from '@/components/FormBuilder/types/types'
-import { createDefaultFieldConfig } from '@/components/FormBuilder/utils/helperFunctions'
+import type { FieldConfig } from '@/features/form-builder/elements'
+import type { avaliableFieldsType } from '@/features/form-builder/types/types'
+import { createDefaultFieldConfig } from '@/features/form-builder/utils/helperFunctions'
 import type { FormTemplateSpec } from '@/lib/form-templates'
 
 export interface BuiltSection {

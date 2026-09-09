@@ -1,4 +1,4 @@
-import { FieldConfig, FIELD_REGISTRY } from '@/components/FormBuilder/elements'
+import { FieldConfig, FIELD_REGISTRY } from '@/features/form-builder/elements'
 
 /**
  * CENTRALIZED FORM VALIDATION UTILITY
@@ -8,9 +8,9 @@ import { FieldConfig, FIELD_REGISTRY } from '@/components/FormBuilder/elements'
  * update the FIELD_REGISTRY when adding new field types!
  * 
  * HOW TO ADD NEW FIELD TYPES:
- * 1. Create your new field type (e.g., DatePicker) in components/FormBuilder/elements/date-picker/
+ * 1. Create your new field type (e.g., DatePicker) in features/form-builder/elements/date-picker/
  * 2. Add the validation schema function in date-picker/types.ts (e.g., getDatePickerValidationSchema)
- * 3. Update FIELD_REGISTRY in components/FormBuilder/elements/index.ts with your new field
+ * 3. Update FIELD_REGISTRY in features/form-builder/elements/index.ts with your new field
  * 4. That's it! The validation will work automatically everywhere!
  */
 
