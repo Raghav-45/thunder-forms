@@ -1,5 +1,13 @@
-import { FormTemplateSpec } from '@/lib/form-templates'
+import type { FormTemplateSpec } from '../hello/types'
 
+/**
+ * Built-in templates offered by the dashboard.
+ *
+ * Pure data — no runtime imports from the field registry, so this module is
+ * safe to import from both server and client components. Fields are
+ * materialized into real `FieldConfig` objects at use-time via
+ * `instantiateTemplate`, guaranteeing the shapes always match the registry.
+ */
 export const FORM_TEMPLATES: FormTemplateSpec[] = [
   {
     slug: 'contact-us',
@@ -266,3 +274,14 @@ export const FORM_TEMPLATES: FormTemplateSpec[] = [
     ],
   },
 ]
+
+export function getTemplateBySlug(slug: string): FormTemplateSpec | undefined {
+  return FORM_TEMPLATES.find((template) => template.slug === slug)
+}
+
+export function countTemplateFields(template: FormTemplateSpec): number {
+  return template.sections.reduce(
+    (total, section) => total + section.fields.length,
+    0,
+  )
+}

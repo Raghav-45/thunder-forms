@@ -3,7 +3,7 @@
 import type { FieldConfig } from '@/features/form-builder/elements'
 import type { avaliableFieldsType } from '@/features/form-builder/types/types'
 import { createDefaultFieldConfig } from '@/features/form-builder/utils/helperFunctions'
-import type { FormTemplateSpec } from '@/lib/form-templates'
+import type { FormTemplateSpec } from './types'
 
 export interface BuiltSection {
   id: string
