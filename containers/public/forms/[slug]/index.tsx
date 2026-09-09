@@ -2,7 +2,6 @@
 
 import { FieldConfig } from '@/features/form-builder/elements'
 import { validateFormFields } from '@/features/form-builder/utils/formValidation'
-import { useFormStore } from '@/features/form-builder/store'
 import { getFieldComponent } from '@/features/form-builder/utils/helperFunctions'
 import { FormSubmittedPage } from '../components/form-submitted-page'
 import { FormClosedDialog } from '../components/form-closed-dialog'
@@ -16,10 +15,19 @@ interface FormPageProps {
   params: Promise<{ slug: string }>
 }
 
+interface PublicFormSettings {
+  title: string
+  description?: string
+  expiresAt?: Date
+  maxSubmissions?: number
+  redirectUrl?: string
+  submitButtonText?: string
+}
+
 export default function FormPage({ params }: FormPageProps) {
-  const { formSettings, setFormSettings } = useFormStore()
   const { slug: currentFormId } = use(params)
   const [fields, setFields] = useState<FieldConfig[]>([])
+  const [formSettings, setFormSettings] = useState<PublicFormSettings | null>(null)
   const [isFormSubmitted, setIsFormSubmitted] = useState(false)
   const [formData, setFormData] = useState<Record<string, unknown>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -181,7 +189,7 @@ export default function FormPage({ params }: FormPageProps) {
   }
 
   // Handle empty fields state
-  if (form.isError || !fields || fields.length === 0) {
+  if (form.isError || !formSettings || !fields || fields.length === 0) {
     return <SkeletonPage />
   }
 
