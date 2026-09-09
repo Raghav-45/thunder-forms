@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useRef, useState, useCallback } from 'react'
+import React, { useRef, useState } from 'react'
 import {
   DragDropProvider,
   type DragEndEvent,
   type DragOverEvent,
 } from '@dnd-kit/react'
-import { useSortable } from '@dnd-kit/react/sortable'
+import { isSortable, useSortable } from '@dnd-kit/react/sortable'
 import { Feedback, PointerSensor, KeyboardSensor } from '@dnd-kit/dom'
 import { CollisionPriority } from '@dnd-kit/abstract'
 import { GripVerticalIcon } from 'lucide-react'
@@ -47,7 +47,9 @@ export default function PlaygroundPage() {
 
   const handleDragOver = (event: DragOverEvent) => {
     const { source, target } = event.operation
-    if (!source || !target) return
+    if (!source || !target || !isSortable(source) || !isSortable(target)) {
+      return
+    }
 
     // We rely on optimistic sorting for sections, no state update needed during drag over
     if (source.type === 'section') return
@@ -77,7 +79,7 @@ export default function PlaygroundPage() {
         const [movedField] = sourceFields.splice(sourceIndex, 1)
 
         let targetIndex =
-          target.type === 'field' ? (target as any).index : targetFields.length
+          target.type === 'field' ? target.index : targetFields.length
         if (targetIndex === undefined) targetIndex = targetFields.length
 
         targetFields.splice(targetIndex, 0, movedField)
@@ -94,6 +96,8 @@ export default function PlaygroundPage() {
       if (snapshot.current) setSections(snapshot.current)
       return
     }
+
+    if (!source || !isSortable(source)) return
 
     if (source.type === 'section') {
       const targetId = target?.id

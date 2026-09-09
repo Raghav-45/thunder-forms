@@ -3,8 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { format } from 'date-fns'
-import { z } from 'zod'
-import { schema as formTableSchema } from '../components/form-table'
+import type { FormTableRow } from '../types/form'
 
 interface ApiFormData {
   id: string
@@ -56,9 +55,7 @@ function getFormStatus(
   return `Active | ${responseCount} Response${responseCount !== 1 ? 's' : ''}`
 }
 
-function transformFormsData(
-  apiData: ApiFormData[],
-): z.infer<typeof formTableSchema>[] {
+function transformFormsData(apiData: ApiFormData[]): FormTableRow[] {
   return apiData.map((form) => ({
     id: form.id,
     title: form.title,
@@ -73,9 +70,7 @@ function transformFormsData(
   }))
 }
 
-function createSkeletonData(
-  count: number,
-): z.infer<typeof formTableSchema>[] {
+function createSkeletonData(count: number): FormTableRow[] {
   return Array.from({ length: count }, (_, index) => ({
     id: `skeleton-${index}`,
     title: '',
