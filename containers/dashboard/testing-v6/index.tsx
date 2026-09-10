@@ -37,12 +37,12 @@ import {
   Trash2Icon,
 } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { PropsWithChildren, ReactNode } from 'react'
+import type { ComponentType, PropsWithChildren, ReactNode } from 'react'
 import {
   Suspense,
+  createElement,
   forwardRef,
   memo,
-  use,
   useCallback,
   useEffect,
   useRef,
@@ -59,17 +59,6 @@ const sensors = [
   KeyboardSensor,
 ]
 
-// Section ids are now real UUIDs (not the old A/B/C/D demo keys), so
-// colors are assigned by position instead of looked up by id.
-const ACCENT_COLORS = [
-  '#7193f1',
-  '#FF851B',
-  '#2ECC40',
-  '#ff3680',
-  '#a78bfa',
-  '#22d3ee',
-]
-
 // ---------------------------------------------------------------------
 // Presentational components. These know nothing about dnd-kit — they're
 // just "what an item/section looks like." Used both by the live sortable
@@ -79,24 +68,35 @@ const ACCENT_COLORS = [
 // ---------------------------------------------------------------------
 
 interface ItemCardProps {
-  id: string
-  label: string
   field: FieldConfig
-  accentColor: string
   // 'ghost'    -> this is the item currently being dragged FROM (faded, still in place)
   // 'floating' -> this is the DragOverlay clone following the cursor
   state?: 'ghost' | 'floating'
   floatingWidth?: number | null
-  // Only passed by the live sortable wrapper. Its presence is what turns
-  // the grip icon into an actual drag handle vs. a decorative icon.
-  handleRef?: React.Ref<HTMLButtonElement>
+}
+
+type FieldPreviewComponent = ComponentType<{
+  field: FieldConfig
+  value: undefined
+  onChange: (value: unknown) => void
+}>
+
+function FieldPreview({ field }: { field: FieldConfig }) {
+  const FieldComponent = getFieldComponent(
+    field.uniqueIdentifier,
+  ) as unknown as FieldPreviewComponent
+
+  return createElement(FieldComponent, {
+    field: field as never,
+    value: undefined,
+    onChange: (value: unknown) => console.log(field.id, value),
+  })
 }
 
 const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
-  { id, label, field, accentColor, state, floatingWidth, handleRef },
+  { field, state, floatingWidth },
   ref,
 ) {
-  const FieldComponent = getFieldComponent(field.uniqueIdentifier)
   return (
     <div
       ref={ref}
@@ -112,13 +112,9 @@ const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
           ? 'pointer-events-none w-full shadow-2xl cursor-grabbing'
           : ''
       }`}
-    >
+      >
       <div className="flex-1 pr-2 pointer-events-none">
-        <FieldComponent
-          field={field as never}
-          value={undefined}
-          onChange={(value) => console.log(field.id, value)}
-        />
+        <FieldPreview field={field} />
       </div>
       {/* Action Buttons - Only visible on hover */}
       <div
@@ -214,25 +210,21 @@ const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
 
 interface SortableItemProps {
   id: string
-  label: string
   field: FieldConfig
   column: string
   index: number
-  accentColor: string
   isPlaceholder?: boolean
 }
 
 const SortableItem = memo(function SortableItem({
   id,
-  label,
   field,
   column,
   index,
-  accentColor,
   isPlaceholder,
 }: PropsWithChildren<SortableItemProps>) {
   const group = column
-  const { handleRef, ref, isDragging, isDragSource } = useSortable({
+  const { ref, isDragSource } = useSortable({
     id,
     group,
     accept: ['item', 'palette-field'],
@@ -243,13 +235,9 @@ const SortableItem = memo(function SortableItem({
 
   return (
     <ItemCard
-      ref={ref as any}
-      id={id}
-      label={label}
+      ref={ref}
       field={field}
-      accentColor={accentColor}
       state={isDragSource || isPlaceholder ? 'ghost' : undefined}
-      handleRef={handleRef as any}
     />
   )
 })
@@ -258,7 +246,6 @@ interface SortableSectionProps {
   id: string
   index: number
   fields: FieldConfig[]
-  accentColor: string
   palettePlaceholderId?: string | null
 }
 
@@ -266,10 +253,9 @@ const SortableSection = memo(function SortableSection({
   fields,
   id,
   index,
-  accentColor,
   palettePlaceholderId,
 }: PropsWithChildren<SortableSectionProps>) {
-  const { handleRef, isDragging, isDragSource, ref } = useSortable({
+  const { handleRef, isDragSource, ref } = useSortable({
     id,
     accept: ['section', 'item', 'palette-field'],
     collisionPriority: CollisionPriority.Low,
@@ -279,21 +265,19 @@ const SortableSection = memo(function SortableSection({
 
   return (
     <SectionCard
-      ref={ref as any}
+      ref={ref}
       id={id}
       isEmpty={fields.length === 0}
       state={isDragSource ? 'ghost' : undefined}
-      handleRef={handleRef as any}
+      handleRef={handleRef}
     >
       {fields.map((field, fieldIndex) => (
         <SortableItem
           key={field.id}
           id={field.id}
-          label={field.uniqueIdentifier}
           field={field}
           column={id}
           index={fieldIndex}
-          accentColor={accentColor}
           isPlaceholder={field.id === palettePlaceholderId}
         />
       ))}
@@ -325,7 +309,7 @@ const PaletteFieldRow = memo(function PaletteFieldRow({
 
   return (
     <button
-      ref={ref as any}
+      ref={ref}
       type="button"
       className={cn(
         buttonVariants({ variant: 'outline', size: 'sm' }),
@@ -367,10 +351,6 @@ function EmptyCanvasDropZoneV6() {
       </p>
     </div>
   )
-}
-
-interface FormBuilderProps {
-  params: Promise<{ slug: string }>
 }
 
 interface Section {
@@ -423,13 +403,12 @@ export default function TestingV6Page() {
         </div>
       }
     >
-      <TestingV6Builder params={Promise.resolve({ slug: '' })} />
+      <TestingV6Builder />
     </Suspense>
   )
 }
 
-function TestingV6Builder({ params }: FormBuilderProps) {
-  const { slug: paramFormId } = use(params)
+function TestingV6Builder() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const templateSlug = searchParams.get('template')
@@ -924,9 +903,6 @@ function TestingV6Builder({ params }: FormBuilderProps) {
                         id={section.id}
                         index={sectionIndex}
                         fields={section.fields}
-                        accentColor={
-                          ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
-                        }
                         palettePlaceholderId={palettePlaceholderId}
                       />
                     ))}
@@ -1004,17 +980,12 @@ function TestingV6Builder({ params }: FormBuilderProps) {
         {/* {renderEditor()} */}
       </>
         <DragOverlay>
-          {(source: any) => {
+          {(source) => {
             if (!source) return null
 
             if (source.type === 'section') {
-              const sectionIndex = sections.findIndex(
-                (s) => s.id === source.id,
-              )
-              const section = sections[sectionIndex]
+              const section = sections.find((s) => s.id === source.id)
               if (!section) return null
-              const accentColor =
-                ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
 
               return (
                 <SectionCard
@@ -1026,10 +997,7 @@ function TestingV6Builder({ params }: FormBuilderProps) {
                   {section.fields.map((field) => (
                     <ItemCard
                       key={field.id}
-                      id={field.id}
-                      label={field.uniqueIdentifier}
                       field={field}
-                      accentColor={accentColor}
                     />
                   ))}
                 </SectionCard>
@@ -1037,22 +1005,15 @@ function TestingV6Builder({ params }: FormBuilderProps) {
             }
 
             if (source.type === 'item') {
-              const sectionIndex = sections.findIndex((s) =>
+              const section = sections.find((s) =>
                 s.fields.some((f) => f.id === source.id),
               )
-              const field = sections[sectionIndex]?.fields.find(
-                (f) => f.id === source.id,
-              )
+              const field = section?.fields.find((f) => f.id === source.id)
               if (!field) return null
-              const accentColor =
-                ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
 
               return (
                 <ItemCard
-                  id={field.id}
-                  label={field.uniqueIdentifier}
                   field={field}
-                  accentColor={accentColor}
                   state="floating"
                   floatingWidth={dragOverlayWidth && (dragOverlayWidth - 33)}
                 />
@@ -1065,10 +1026,7 @@ function TestingV6Builder({ params }: FormBuilderProps) {
 
               return (
                 <ItemCard
-                  id={staged.id}
-                  label={staged.uniqueIdentifier}
                   field={staged}
-                  accentColor="#7193f1"
                   state="floating"
                   floatingWidth={dragOverlayWidth && (dragOverlayWidth - 33)}
                 />
