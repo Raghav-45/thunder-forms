@@ -392,7 +392,7 @@ function EmptyCanvasDropZoneV6() {
     <div
       ref={ref}
       className={cn(
-        'flex justify-center items-center h-full min-h-80 rounded-xl border border-dashed text-muted-foreground text-center transition-colors',
+        'flex justify-center items-center h-full min-h-240 rounded-xl border border-dashed text-muted-foreground text-center transition-colors',
         isDropTarget && 'border-primary bg-primary/10 text-primary',
       )}
     >
@@ -1101,7 +1101,10 @@ function TestingV6Builder() {
                 'flex items-center justify-center w-full h-full',
             )}
           >
-            <div ref={canvasContentRef} className="w-full">
+            <div
+              ref={canvasContentRef}
+              className={cn('w-full', !hasCanvasSections && 'h-full')}
+            >
           {!hasCanvasSections ? (
                 <EmptyCanvasDropZoneV6 />
               ) : (
