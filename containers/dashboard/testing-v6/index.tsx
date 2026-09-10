@@ -45,6 +45,7 @@ import {
   memo,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react'
@@ -157,12 +158,13 @@ interface SectionCardProps {
   floatingWidth?: number | null
   // Only passed by the live sortable wrapper — same idea as ItemCard.
   handleRef?: React.Ref<HTMLDivElement>
+  fieldListRef?: React.Ref<HTMLDivElement>
   children?: ReactNode
 }
 
 const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
   function SectionCard(
-    { id, isEmpty, state, floatingWidth, handleRef, children },
+    { id, isEmpty, state, floatingWidth, handleRef, fieldListRef, children },
     ref,
   ) {
     return (
@@ -192,11 +194,16 @@ const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
         </div>
 
         {isEmpty ? (
-          <div className="border border-dashed border-neutral-800 rounded-lg h-24 flex items-center justify-center text-sm text-neutral-500">
+          <div
+            ref={fieldListRef}
+            className="border border-dashed border-neutral-800 rounded-lg h-24 flex items-center justify-center text-sm text-neutral-500"
+          >
             Drop fields here
           </div>
         ) : (
-          <div className="space-y-3 flex-1">{children}</div>
+          <div ref={fieldListRef} className="space-y-3 flex-1">
+            {children}
+          </div>
         )}
       </div>
     )
@@ -247,6 +254,7 @@ interface SortableSectionProps {
   index: number
   fields: FieldConfig[]
   palettePlaceholderId?: string | null
+  onFieldSurfaceRef?: (id: string, element: HTMLDivElement | null) => void
 }
 
 const SortableSection = memo(function SortableSection({
@@ -254,6 +262,7 @@ const SortableSection = memo(function SortableSection({
   id,
   index,
   palettePlaceholderId,
+  onFieldSurfaceRef,
 }: PropsWithChildren<SortableSectionProps>) {
   const { handleRef, isDragSource, ref } = useSortable({
     id,
@@ -262,6 +271,10 @@ const SortableSection = memo(function SortableSection({
     type: 'section',
     index,
   })
+  const setFieldSurfaceRef = useCallback(
+    (element: HTMLDivElement | null) => onFieldSurfaceRef?.(id, element),
+    [id, onFieldSurfaceRef],
+  )
 
   return (
     <SectionCard
@@ -270,6 +283,7 @@ const SortableSection = memo(function SortableSection({
       isEmpty={fields.length === 0}
       state={isDragSource ? 'ghost' : undefined}
       handleRef={handleRef}
+      fieldListRef={setFieldSurfaceRef}
     >
       {fields.map((field, fieldIndex) => (
         <SortableItem
@@ -467,7 +481,11 @@ function TestingV6Builder() {
 
   const snapshot = useRef(structuredClone(formStructure))
   const canvasContentRef = useRef<HTMLDivElement>(null)
+  const fieldSurfaceRefs = useRef(new Map<string, HTMLDivElement>())
   const [dragOverlayWidth, setDragOverlayWidth] = useState<number | null>(
+    null,
+  )
+  const [fieldOverlayWidth, setFieldOverlayWidth] = useState<number | null>(
     null,
   )
   // v6: the clone currently staged in the canvas while a palette drag
@@ -476,6 +494,17 @@ function TestingV6Builder() {
   const [palettePlaceholderId, setPalettePlaceholderId] = useState<
     string | null
   >(null)
+
+  const registerFieldSurface = useCallback(
+    (sectionId: string, element: HTMLDivElement | null) => {
+      if (element) {
+        fieldSurfaceRefs.current.set(sectionId, element)
+      } else {
+        fieldSurfaceRefs.current.delete(sectionId)
+      }
+    },
+    [],
+  )
 
   useEffect(() => {
     const canvas = canvasContentRef.current
@@ -657,6 +686,52 @@ function TestingV6Builder() {
   const sections = formStructure.pages[0].sections
   const hasCanvasFields = sections.some((section) => section.fields.length > 0)
 
+  const setFieldOverlayWidthFromSurface = useCallback(
+    (surface: HTMLDivElement | undefined) => {
+      if (!surface) return
+
+      const nextWidth = surface.getBoundingClientRect().width
+      setFieldOverlayWidth((currentWidth) =>
+        currentWidth !== null && Math.abs(currentWidth - nextWidth) < 0.5
+          ? currentWidth
+          : nextWidth,
+      )
+    },
+    [],
+  )
+
+  const measureTargetFieldSurface = useCallback(
+    (target: { id?: unknown; data?: unknown } | null | undefined) => {
+      const targetData = target?.data as { group?: unknown } | undefined
+      const group = targetData?.group
+      const targetId = String(target?.id ?? '')
+      const sectionId =
+        typeof group === 'string' && fieldSurfaceRefs.current.has(group)
+          ? group
+          : sections.find((section) => section.id === targetId)?.id ??
+            sections.find((section) =>
+              section.fields.some((field) => field.id === targetId),
+            )?.id
+
+      setFieldOverlayWidthFromSurface(
+        sectionId ? fieldSurfaceRefs.current.get(sectionId) : undefined,
+      )
+    },
+    [sections, setFieldOverlayWidthFromSurface],
+  )
+
+  useLayoutEffect(() => {
+    const clone = paletteClone.current
+    if (!clone) return
+
+    const section = sections.find((candidate) =>
+      candidate.fields.some((field) => field.id === clone.id),
+    )
+    setFieldOverlayWidthFromSurface(
+      section ? fieldSurfaceRefs.current.get(section.id) : undefined,
+    )
+  }, [sections, setFieldOverlayWidthFromSurface])
+
   const handleDragStart = useCallback<
     DragDropEventHandlers['onDragStart']
   >(
@@ -664,7 +739,10 @@ function TestingV6Builder() {
       snapshot.current = structuredClone(formStructure)
 
       const { source } = event.operation
-      if (source?.type !== 'palette-field') return
+      if (source?.type !== 'palette-field') {
+        measureTargetFieldSurface(source)
+        return
+      }
 
       const fieldType =
         (
@@ -678,8 +756,9 @@ function TestingV6Builder() {
       clone.id = `palette_${crypto.randomUUID().slice(0, 8)}`
       paletteClone.current = clone
       setPalettePlaceholderId(clone.id)
+      setFieldOverlayWidth(null)
     },
-    [formStructure],
+    [formStructure, measureTargetFieldSurface],
   )
 
   const handleDragOver = useCallback<DragDropEventHandlers['onDragOver']>(
@@ -695,6 +774,7 @@ function TestingV6Builder() {
       // clone manually so the sidebar list never mutates.
       if (source && source.type === 'palette-field') {
         event.preventDefault()
+        measureTargetFieldSurface(target)
         const fieldType =
           (
             source as unknown as {
@@ -713,6 +793,8 @@ function TestingV6Builder() {
         )
         return
       }
+
+      measureTargetFieldSurface(target)
 
       setFormStructure((prev) => {
         const currentSections = prev.pages[0].sections
@@ -737,7 +819,7 @@ function TestingV6Builder() {
         }
       })
     },
-    [],
+    [measureTargetFieldSurface],
   )
 
   const handleDragEnd = useCallback<DragDropEventHandlers['onDragEnd']>(
@@ -904,6 +986,7 @@ function TestingV6Builder() {
                         index={sectionIndex}
                         fields={section.fields}
                         palettePlaceholderId={palettePlaceholderId}
+                        onFieldSurfaceRef={registerFieldSurface}
                       />
                     ))}
                   </div>
@@ -1009,26 +1092,26 @@ function TestingV6Builder() {
                 s.fields.some((f) => f.id === source.id),
               )
               const field = section?.fields.find((f) => f.id === source.id)
-              if (!field) return null
+              if (!field || !fieldOverlayWidth) return null
 
               return (
                 <ItemCard
                   field={field}
                   state="floating"
-                  floatingWidth={dragOverlayWidth && (dragOverlayWidth - 33)}
+                  floatingWidth={fieldOverlayWidth}
                 />
               )
             }
 
             if (source.type === 'palette-field') {
               const staged = paletteClone.current
-              if (!staged) return null
+              if (!staged || !fieldOverlayWidth) return null
 
               return (
                 <ItemCard
                   field={staged}
                   state="floating"
-                  floatingWidth={dragOverlayWidth && (dragOverlayWidth - 33)}
+                  floatingWidth={fieldOverlayWidth}
                 />
               )
             }
