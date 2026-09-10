@@ -101,7 +101,11 @@ const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
       ref={ref}
       className={`group relative bg-card rounded-lg flex items-center justify-between border-2 border-dashed border-border p-3 transition-all duration-200 hover:border-primary/50 hover:shadow-sm cursor-grab active:cursor-grabbing ${
         state === 'ghost' ? 'opacity-30' : ''
-      } ${state === 'floating' ? 'shadow-2xl cursor-grabbing' : ''}`}
+      } ${
+        state === 'floating'
+          ? 'pointer-events-none w-[min(42rem,calc(100vw-2rem))] shadow-2xl cursor-grabbing'
+          : ''
+      }`}
     >
       <div className="flex-1 pr-2 pointer-events-none">
         <FieldComponent
@@ -160,7 +164,11 @@ const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
         ref={ref}
         className={`border border-neutral-800 bg-neutral-900 rounded-xl p-4 flex flex-col gap-4 transition-opacity ${
           state === 'ghost' ? 'opacity-30' : ''
-        } ${state === 'floating' ? 'shadow-2xl cursor-grabbing' : ''}`}
+        } ${
+          state === 'floating'
+            ? 'pointer-events-none w-[min(42rem,calc(100vw-2rem))] shadow-2xl cursor-grabbing'
+            : ''
+        }`}
       >
         <div
           ref={handleRef}
@@ -196,6 +204,7 @@ interface SortableItemProps {
   column: string
   index: number
   accentColor: string
+  isPlaceholder?: boolean
 }
 
 const SortableItem = memo(function SortableItem({
@@ -205,6 +214,7 @@ const SortableItem = memo(function SortableItem({
   column,
   index,
   accentColor,
+  isPlaceholder,
 }: PropsWithChildren<SortableItemProps>) {
   const group = column
   const { handleRef, ref, isDragging, isDragSource } = useSortable({
@@ -223,7 +233,7 @@ const SortableItem = memo(function SortableItem({
       label={label}
       field={field}
       accentColor={accentColor}
-      state={isDragSource ? 'ghost' : undefined}
+      state={isDragSource || isPlaceholder ? 'ghost' : undefined}
       handleRef={handleRef as any}
     />
   )
@@ -234,6 +244,7 @@ interface SortableSectionProps {
   index: number
   fields: FieldConfig[]
   accentColor: string
+  palettePlaceholderId?: string | null
 }
 
 const SortableSection = memo(function SortableSection({
@@ -241,6 +252,7 @@ const SortableSection = memo(function SortableSection({
   id,
   index,
   accentColor,
+  palettePlaceholderId,
 }: PropsWithChildren<SortableSectionProps>) {
   const { handleRef, isDragging, isDragSource, ref } = useSortable({
     id,
@@ -267,6 +279,7 @@ const SortableSection = memo(function SortableSection({
           column={id}
           index={fieldIndex}
           accentColor={accentColor}
+          isPlaceholder={field.id === palettePlaceholderId}
         />
       ))}
     </SectionCard>
@@ -462,6 +475,9 @@ function TestingV6Builder({ params }: FormBuilderProps) {
   // v6: the clone currently staged in the canvas while a palette drag
   // hovers it. The palette list itself is never mutated.
   const paletteClone = useRef<FieldConfig | null>(null)
+  const [palettePlaceholderId, setPalettePlaceholderId] = useState<
+    string | null
+  >(null)
 
   // Insert (or reposition) the palette clone at the drop position
   // indicated by the current drag target. Same clone object is reused
@@ -649,6 +665,7 @@ function TestingV6Builder({ params }: FormBuilderProps) {
       const clone = createDefaultFieldConfig(fieldType)
       clone.id = `palette_${crypto.randomUUID().slice(0, 8)}`
       paletteClone.current = clone
+      setPalettePlaceholderId(clone.id)
     },
     [formStructure],
   )
@@ -713,15 +730,18 @@ function TestingV6Builder({ params }: FormBuilderProps) {
 
   const handleDragEnd = useCallback<DragDropEventHandlers['onDragEnd']>(
     (event) => {
-      if (event.canceled) {
+      const isPaletteDrag = event.operation.source?.type === 'palette-field'
+      if (event.canceled || (isPaletteDrag && !event.operation.target)) {
         setFormStructure(snapshot.current)
         paletteClone.current = null
+        setPalettePlaceholderId(null)
         return
       }
       // v6: a completed palette drop keeps the staged clone where it
       // landed. Reset the ref so the next palette drag mints a fresh field.
-      if (event.operation.source?.type === 'palette-field') {
+      if (isPaletteDrag) {
         paletteClone.current = null
+        setPalettePlaceholderId(null)
       }
     },
     [],
@@ -873,6 +893,7 @@ function TestingV6Builder({ params }: FormBuilderProps) {
                         accentColor={
                           ACCENT_COLORS[sectionIndex % ACCENT_COLORS.length]
                         }
+                        palettePlaceholderId={palettePlaceholderId}
                       />
                     ))}
                   </div>
