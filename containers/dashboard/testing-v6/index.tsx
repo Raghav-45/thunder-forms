@@ -60,6 +60,8 @@ const sensors = [
   KeyboardSensor,
 ]
 
+const PALETTE_SECTION_TYPE = 'palette-section'
+
 // ---------------------------------------------------------------------
 // Presentational components. These know nothing about dnd-kit — they're
 // just "what an item/section looks like." Used both by the live sortable
@@ -254,6 +256,7 @@ interface SortableSectionProps {
   index: number
   fields: FieldConfig[]
   palettePlaceholderId?: string | null
+  isPlaceholder?: boolean
   onFieldSurfaceRef?: (id: string, element: HTMLDivElement | null) => void
 }
 
@@ -262,11 +265,12 @@ const SortableSection = memo(function SortableSection({
   id,
   index,
   palettePlaceholderId,
+  isPlaceholder,
   onFieldSurfaceRef,
 }: PropsWithChildren<SortableSectionProps>) {
   const { handleRef, isDragSource, ref } = useSortable({
     id,
-    accept: ['section', 'item', 'palette-field'],
+    accept: ['section', 'item', 'palette-field', PALETTE_SECTION_TYPE],
     collisionPriority: CollisionPriority.Low,
     type: 'section',
     index,
@@ -281,7 +285,7 @@ const SortableSection = memo(function SortableSection({
       ref={ref}
       id={id}
       isEmpty={fields.length === 0}
-      state={isDragSource ? 'ghost' : undefined}
+      state={isDragSource || isPlaceholder ? 'ghost' : undefined}
       handleRef={handleRef}
       fieldListRef={setFieldSurfaceRef}
     >
@@ -342,11 +346,45 @@ const PaletteFieldRow = memo(function PaletteFieldRow({
   )
 })
 
+const PaletteSectionRow = memo(function PaletteSectionRow({
+  onAdd,
+}: {
+  onAdd: () => void
+}) {
+  const { ref, isDragSource } = useSortable({
+    id: 'v6-palette-section',
+    group: 'palette',
+    accept: () => false,
+    type: PALETTE_SECTION_TYPE,
+    index: 0,
+  })
+
+  return (
+    <button
+      ref={ref}
+      type="button"
+      className={cn(
+        buttonVariants({ variant: 'outline', size: 'sm' }),
+        'rounded-lg w-full px-2 md:pl-3 bg-neutral-900! cursor-grab',
+        isDragSource && 'opacity-30',
+      )}
+      onClick={onAdd}
+    >
+      <div className="overflow-hidden truncate text-[0.625rem] md:text-xs">
+        Add Section
+      </div>
+      <div className="ml-auto flex flex-row">
+        <GripVerticalIcon className="size-4" />
+      </div>
+    </button>
+  )
+})
+
 function EmptyCanvasDropZoneV6() {
   const { ref, isDropTarget } = useDroppable({
     id: 'v6-empty-canvas',
     type: 'canvas-empty',
-    accept: 'palette-field',
+    accept: ['palette-field', PALETTE_SECTION_TYPE],
     data: { kind: 'canvas-empty' },
   })
 
@@ -491,9 +529,12 @@ function TestingV6Builder() {
   // v6: the clone currently staged in the canvas while a palette drag
   // hovers it. The palette list itself is never mutated.
   const paletteClone = useRef<FieldConfig | null>(null)
+  const paletteSection = useRef<Section | null>(null)
   const [palettePlaceholderId, setPalettePlaceholderId] = useState<
     string | null
   >(null)
+  const [paletteSectionPlaceholderId, setPaletteSectionPlaceholderId] =
+    useState<string | null>(null)
 
   const registerFieldSurface = useCallback(
     (sectionId: string, element: HTMLDivElement | null) => {
@@ -639,6 +680,55 @@ function TestingV6Builder() {
     }
   }
 
+  function placePaletteSection(
+    prev: IFormStructure,
+    section: Section,
+    target: { id?: unknown; index?: unknown } | null,
+  ): IFormStructure {
+    const targetId = String(target?.id ?? '')
+    const sectionsWithoutClone = prev.pages[0].sections.filter(
+      (candidate) => candidate.id !== section.id,
+    )
+    const targetIndex =
+      targetId === 'v6-empty-canvas'
+        ? 0
+        : typeof target?.index === 'number'
+          ? target.index
+          : sectionsWithoutClone.findIndex(
+              (candidate) => candidate.id === targetId,
+            )
+
+    if (targetIndex < 0) {
+      return {
+        ...prev,
+        pages: prev.pages.map((page, i) =>
+          i === 0 ? { ...page, sections: sectionsWithoutClone } : page,
+        ),
+      }
+    }
+
+    const insertIndex = Math.min(
+      Math.max(targetIndex, 0),
+      sectionsWithoutClone.length,
+    )
+
+    return {
+      ...prev,
+      pages: prev.pages.map((page, i) =>
+        i === 0
+          ? {
+              ...page,
+              sections: [
+                ...sectionsWithoutClone.slice(0, insertIndex),
+                section,
+                ...sectionsWithoutClone.slice(insertIndex),
+              ],
+            }
+          : page,
+      ),
+    }
+  }
+
   function handleAddSection() {
     const newSection: Section = generateNewSection()
 
@@ -684,7 +774,7 @@ function TestingV6Builder() {
   }
 
   const sections = formStructure.pages[0].sections
-  const hasCanvasFields = sections.some((section) => section.fields.length > 0)
+  const hasCanvasSections = sections.length > 0
 
   const setFieldOverlayWidthFromSurface = useCallback(
     (surface: HTMLDivElement | undefined) => {
@@ -739,6 +829,13 @@ function TestingV6Builder() {
       snapshot.current = structuredClone(formStructure)
 
       const { source } = event.operation
+      if (source?.type === PALETTE_SECTION_TYPE) {
+        const section = generateNewSection()
+        paletteSection.current = section
+        setPaletteSectionPlaceholderId(section.id)
+        return
+      }
+
       if (source?.type !== 'palette-field') {
         measureTargetFieldSurface(source)
         return
@@ -765,7 +862,27 @@ function TestingV6Builder() {
     (event) => {
       const { source, target } = event.operation
 
+      if (source?.type === PALETTE_SECTION_TYPE) {
+        event.preventDefault()
+        const section = paletteSection.current
+        if (section) {
+          setFormStructure((prev) => placePaletteSection(prev, section, target))
+        }
+        return
+      }
+
       if (source && source.type === 'section') {
+        setFormStructure((prev) => {
+          const currentSections = prev.pages[0].sections
+          const reorderedSections = move(currentSections, event)
+
+          return {
+            ...prev,
+            pages: prev.pages.map((page, i) =>
+              i === 0 ? { ...page, sections: reorderedSections } : page,
+            ),
+          }
+        })
         return
       }
 
@@ -825,10 +942,17 @@ function TestingV6Builder() {
   const handleDragEnd = useCallback<DragDropEventHandlers['onDragEnd']>(
     (event) => {
       const isPaletteDrag = event.operation.source?.type === 'palette-field'
-      if (event.canceled || (isPaletteDrag && !event.operation.target)) {
+      const isPaletteSectionDrag =
+        event.operation.source?.type === PALETTE_SECTION_TYPE
+      if (
+        event.canceled ||
+        ((isPaletteDrag || isPaletteSectionDrag) && !event.operation.target)
+      ) {
         setFormStructure(snapshot.current)
         paletteClone.current = null
+        paletteSection.current = null
         setPalettePlaceholderId(null)
+        setPaletteSectionPlaceholderId(null)
         return
       }
       // v6: a completed palette drop keeps the staged clone where it
@@ -836,6 +960,10 @@ function TestingV6Builder() {
       if (isPaletteDrag) {
         paletteClone.current = null
         setPalettePlaceholderId(null)
+      }
+      if (isPaletteSectionDrag) {
+        paletteSection.current = null
+        setPaletteSectionPlaceholderId(null)
       }
     },
     [],
@@ -962,19 +1090,19 @@ function TestingV6Builder() {
         <Card
           className={cn(
             'h-[calc(100vh-100px)] overflow-y-scroll border-2 border-dashed !p-0 border-muted mb-1',
-            !(sections.flatMap((s) => s.fields).length > 0) &&
+          !hasCanvasSections &&
               'flex items-center justify-center',
           )}
         >
           <CardContent
             className={cn(
               'p-3 md:p-4',
-              !(sections.flatMap((s) => s.fields).length > 0) &&
+            !hasCanvasSections &&
                 'flex items-center justify-center w-full h-full',
             )}
           >
             <div ref={canvasContentRef} className="w-full">
-              {!hasCanvasFields ? (
+          {!hasCanvasSections ? (
                 <EmptyCanvasDropZoneV6 />
               ) : (
                 <div className="mx-auto min-h-screen text-white font-sans">
@@ -986,6 +1114,9 @@ function TestingV6Builder() {
                         index={sectionIndex}
                         fields={section.fields}
                         palettePlaceholderId={palettePlaceholderId}
+                        isPlaceholder={
+                          section.id === paletteSectionPlaceholderId
+                        }
                         onFieldSurfaceRef={registerFieldSurface}
                       />
                     ))}
@@ -1008,19 +1139,7 @@ function TestingV6Builder() {
             <ScrollArea className="h-[calc(100vh-8rem)]">
               <div className="flex flex-row">
                 <div className="grid grid-cols-2 gap-2 md:flex md:flex-col items-start flex-wrap md:flex-nowrap gap-y-2 overflow-y-auto w-full">
-                  <Button
-                    variant="outline"
-                    className="rounded-lg w-full px-2 md:pl-3 bg-neutral-900! cursor-grab"
-                    size="sm"
-                    onClick={() => handleAddSection()}
-                  >
-                    <div className="overflow-hidden truncate text-[0.625rem] md:text-xs">
-                      Add Section
-                    </div>
-                    <div className="ml-auto flex flex-row">
-                      <GripVerticalIcon className="size-4" />
-                    </div>
-                  </Button>
+                  <PaletteSectionRow onAdd={handleAddSection} />
                   <Separator className="my-2" />
                   {/* v6: second sortable list — drag a row onto the canvas,
                       or click it to append to the first section. */}
@@ -1112,6 +1231,20 @@ function TestingV6Builder() {
                   field={staged}
                   state="floating"
                   floatingWidth={fieldOverlayWidth}
+                />
+              )
+            }
+
+            if (source.type === PALETTE_SECTION_TYPE) {
+              const staged = paletteSection.current
+              if (!staged) return null
+
+              return (
+                <SectionCard
+                  id={staged.id}
+                  isEmpty
+                  state="floating"
+                  floatingWidth={dragOverlayWidth}
                 />
               )
             }
