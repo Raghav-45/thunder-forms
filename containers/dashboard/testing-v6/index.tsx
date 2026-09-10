@@ -86,24 +86,30 @@ interface ItemCardProps {
   // 'ghost'    -> this is the item currently being dragged FROM (faded, still in place)
   // 'floating' -> this is the DragOverlay clone following the cursor
   state?: 'ghost' | 'floating'
+  floatingWidth?: number | null
   // Only passed by the live sortable wrapper. Its presence is what turns
   // the grip icon into an actual drag handle vs. a decorative icon.
   handleRef?: React.Ref<HTMLButtonElement>
 }
 
 const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
-  { id, label, field, accentColor, state, handleRef },
+  { id, label, field, accentColor, state, floatingWidth, handleRef },
   ref,
 ) {
   const FieldComponent = getFieldComponent(field.uniqueIdentifier)
   return (
     <div
       ref={ref}
+      style={
+        state === 'floating' && floatingWidth
+          ? { width: floatingWidth }
+          : undefined
+      }
       className={`group relative bg-card rounded-lg flex items-center justify-between border-2 border-dashed border-border p-3 transition-all duration-200 hover:border-primary/50 hover:shadow-sm cursor-grab active:cursor-grabbing ${
         state === 'ghost' ? 'opacity-30' : ''
       } ${
         state === 'floating'
-          ? 'pointer-events-none w-[min(42rem,calc(100vw-2rem))] shadow-2xl cursor-grabbing'
+          ? 'pointer-events-none w-full shadow-2xl cursor-grabbing'
           : ''
       }`}
     >
@@ -152,21 +158,30 @@ interface SectionCardProps {
   id: string
   isEmpty: boolean
   state?: 'ghost' | 'floating'
+  floatingWidth?: number | null
   // Only passed by the live sortable wrapper — same idea as ItemCard.
   handleRef?: React.Ref<HTMLDivElement>
   children?: ReactNode
 }
 
 const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
-  function SectionCard({ id, isEmpty, state, handleRef, children }, ref) {
+  function SectionCard(
+    { id, isEmpty, state, floatingWidth, handleRef, children },
+    ref,
+  ) {
     return (
       <div
         ref={ref}
+        style={
+          state === 'floating' && floatingWidth
+            ? { width: floatingWidth }
+            : undefined
+        }
         className={`border border-neutral-800 bg-neutral-900 rounded-xl p-4 flex flex-col gap-4 transition-opacity ${
           state === 'ghost' ? 'opacity-30' : ''
         } ${
           state === 'floating'
-            ? 'pointer-events-none w-[min(42rem,calc(100vw-2rem))] shadow-2xl cursor-grabbing'
+            ? 'pointer-events-none w-full shadow-2xl cursor-grabbing'
             : ''
         }`}
       >
@@ -472,12 +487,30 @@ function TestingV6Builder({ params }: FormBuilderProps) {
   }
 
   const snapshot = useRef(structuredClone(formStructure))
+  const canvasContentRef = useRef<HTMLDivElement>(null)
+  const [dragOverlayWidth, setDragOverlayWidth] = useState<number | null>(
+    null,
+  )
   // v6: the clone currently staged in the canvas while a palette drag
   // hovers it. The palette list itself is never mutated.
   const paletteClone = useRef<FieldConfig | null>(null)
   const [palettePlaceholderId, setPalettePlaceholderId] = useState<
     string | null
   >(null)
+
+  useEffect(() => {
+    const canvas = canvasContentRef.current
+    if (!canvas) return
+
+    const updateOverlayWidth = () => {
+      setDragOverlayWidth(canvas.getBoundingClientRect().width)
+    }
+
+    updateOverlayWidth()
+    const observer = new ResizeObserver(updateOverlayWidth)
+    observer.observe(canvas)
+    return () => observer.disconnect()
+  }, [])
 
   // Insert (or reposition) the palette clone at the drop position
   // indicated by the current drag target. Same clone object is reused
@@ -879,9 +912,10 @@ function TestingV6Builder({ params }: FormBuilderProps) {
                 'flex items-center justify-center w-full h-full',
             )}
           >
-            {!hasCanvasFields ? (
-              <EmptyCanvasDropZoneV6 />
-            ) : (
+            <div ref={canvasContentRef} className="w-full">
+              {!hasCanvasFields ? (
+                <EmptyCanvasDropZoneV6 />
+              ) : (
                 <div className="mx-auto min-h-screen text-white font-sans">
                   <div className="space-y-4 pb-8">
                     {sections.map((section, sectionIndex) => (
@@ -898,7 +932,8 @@ function TestingV6Builder({ params }: FormBuilderProps) {
                     ))}
                   </div>
                 </div>
-            )}
+              )}
+            </div>
           </CardContent>
         </Card>
       </ScrollArea>
@@ -986,6 +1021,7 @@ function TestingV6Builder({ params }: FormBuilderProps) {
                   id={section.id}
                   isEmpty={section.fields.length === 0}
                   state="floating"
+                  floatingWidth={dragOverlayWidth}
                 >
                   {section.fields.map((field) => (
                     <ItemCard
@@ -1018,6 +1054,7 @@ function TestingV6Builder({ params }: FormBuilderProps) {
                   field={field}
                   accentColor={accentColor}
                   state="floating"
+                  floatingWidth={dragOverlayWidth && (dragOverlayWidth - 33)}
                 />
               )
             }
@@ -1033,6 +1070,7 @@ function TestingV6Builder({ params }: FormBuilderProps) {
                   field={staged}
                   accentColor="#7193f1"
                   state="floating"
+                  floatingWidth={dragOverlayWidth && (dragOverlayWidth - 33)}
                 />
               )
             }
