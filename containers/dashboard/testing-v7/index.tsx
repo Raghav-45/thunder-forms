@@ -357,6 +357,7 @@ interface Section {
 
 interface IFormStructure {
   pages: {
+    id: string
     sections: Section[]
   }[]
 }
@@ -434,14 +435,15 @@ function TestingV7Builder({ params }: FormBuilderProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const templateSlug = searchParams.get('template')
-  const [formStructure, setFormStructure] = useState<IFormStructure>({
+  const [formStructure, setFormStructure] = useState<IFormStructure>(() => ({
     pages: [
       {
+        id: crypto.randomUUID(),
         // sections: [generateNewSection()],
         sections: [],
       },
     ],
-  })
+  }))
   const [templateTitle, setTemplateTitle] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 

@@ -281,15 +281,23 @@ interface Section {
   fields: FieldConfig[]
 }
 
+interface Page {
+  id: string
+  sections: Section[]
+}
+
 interface IFormStructure {
-  pages: {
-    sections: Section[]
-  }[]
+  pages: Page[]
 }
 
 const generateNewSection = (): Section => ({
   id: crypto.randomUUID(),
   fields: [],
+})
+
+const generateNewPage = (): Page => ({
+  id: crypto.randomUUID(),
+  sections: [],
 })
 
 export default function TestingV3Page() {
@@ -311,14 +319,9 @@ function TestingV3Builder({ params }: FormBuilderProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const templateSlug = searchParams.get('template')
-  const [formStructure, setFormStructure] = useState<IFormStructure>({
-    pages: [
-      {
-        // sections: [generateNewSection()],
-        sections: [],
-      },
-    ],
-  })
+  const [formStructure, setFormStructure] = useState<IFormStructure>(() => ({
+    pages: [generateNewPage()],
+  }))
   const [templateTitle, setTemplateTitle] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 

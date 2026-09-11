@@ -1,6 +1,8 @@
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
+import { isFormStructure } from '@/features/form-builder/form-structure'
+import type { Prisma } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
 export async function POST(
@@ -30,12 +32,19 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
+    if (!isFormStructure(existingForm.fields)) {
+      return NextResponse.json(
+        { error: 'Invalid form structure' },
+        { status: 422 },
+      )
+    }
+
     const duplicatedForm = await prisma.forms.create({
       data: {
         userId: session.user.id,
         title: `${existingForm.title} (Copy)`,
         description: existingForm.description,
-        fields: existingForm.fields!,
+        fields: existingForm.fields as unknown as Prisma.InputJsonValue,
         maxSubmissions: existingForm.maxSubmissions,
         expiresAt: existingForm.expiresAt,
         redirectUrl: existingForm.redirectUrl,

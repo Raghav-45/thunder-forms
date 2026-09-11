@@ -1,6 +1,10 @@
 'use client'
 
 import { FieldConfig } from '@/features/form-builder/elements'
+import {
+  getOrderedFormFields,
+  isFormStructure,
+} from '@/features/form-builder/form-structure'
 import { validateFormFields } from '@/features/form-builder/utils/formValidation'
 import { getFieldComponent } from '@/features/form-builder/utils/helperFunctions'
 import { FormSubmittedPage } from '../components/form-submitted-page'
@@ -151,7 +155,13 @@ export default function FormPage({ params }: FormPageProps) {
         redirectUrl: form.data.redirectUrl,
         submitButtonText: form.data.submitButtonText,
       })
-      setFields(form.data.fields)
+      if (!isFormStructure(form.data.fields)) {
+        toast.error('Form is unavailable')
+        return
+      }
+
+      const normalizedFields = getOrderedFormFields(form.data.fields)
+      setFields(normalizedFields)
 
       // Check if form is closed based on status from API
       const isClosed = checkIsFormClosed(form.data.status)
@@ -163,7 +173,7 @@ export default function FormPage({ params }: FormPageProps) {
       
       // Initialize form data with default values
       const initialFormData: Record<string, unknown> = {}
-      form.data.fields.forEach((field: FieldConfig) => {
+      normalizedFields.forEach((field) => {
         if (field.uniqueIdentifier === 'switch-field' || field.uniqueIdentifier === 'checkbox') {
           // Start as undefined (unanswered) so required validation can detect no interaction
           initialFormData[field.id] = undefined
@@ -189,8 +199,21 @@ export default function FormPage({ params }: FormPageProps) {
   }
 
   // Handle empty fields state
-  if (form.isError || !formSettings || !fields || fields.length === 0) {
+  if (form.isError) {
+    return <FormUnavailablePage />
+  }
+
+  if (!formSettings || !fields) {
     return <SkeletonPage />
+  }
+
+  if (fields.length === 0) {
+    return (
+      <FormUnavailablePage
+        title="This form is not ready"
+        description="The form owner has not added any questions yet."
+      />
+    )
   }
 
   if (isFormSubmitted) {
@@ -225,6 +248,23 @@ export default function FormPage({ params }: FormPageProps) {
         </Button>
       </div>
     </>
+  )
+}
+
+function FormUnavailablePage({
+  title = 'This form is unavailable',
+  description = 'It may have been removed or is temporarily unavailable.',
+}: {
+  title?: string
+  description?: string
+}) {
+  return (
+    <main className="mx-auto flex min-h-screen max-w-2xl items-center px-4 py-16 md:px-10">
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        <p className="text-muted-foreground">{description}</p>
+      </div>
+    </main>
   )
 }
 

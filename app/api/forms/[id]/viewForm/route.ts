@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { getFormStatus } from '../../utils'
+import { isFormStructure } from '@/features/form-builder/form-structure'
 
 export async function GET(
   request: Request,
@@ -25,6 +26,13 @@ export async function GET(
 
     if (!form) {
       return NextResponse.json({ error: 'Form not found' }, { status: 404 })
+    }
+
+    if (!isFormStructure(form.fields)) {
+      return NextResponse.json(
+        { error: 'Form is unavailable' },
+        { status: 422 },
+      )
     }
 
     // Calculate status using _count but exclude it from response

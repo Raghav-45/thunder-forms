@@ -4,6 +4,13 @@ import { CopyButton } from '@/features/form-builder/components/copy-button'
 import { IMMORTAL_SENTINEL_DATE } from '@/features/form-builder/components/date-picker-with-presets'
 import GenerateWithAiPrompt from '@/features/form-builder/core/generate-with-ai'
 import { FieldConfig } from '@/features/form-builder/elements'
+import {
+  createFormPage,
+  createFormSection,
+  createFormStructure,
+  isFormStructure,
+  type FormStructure,
+} from '@/features/form-builder/form-structure'
 import { useFormStore } from '@/features/form-builder/store'
 import {
   AVAILABLE_FIELDS,
@@ -59,38 +66,20 @@ interface FormBuilderProps {
   params: Promise<{ slug: string }>
 }
 
-interface IFormStructure {
-  pages: {
-    sections: {
-      id: string
-      fields: FieldConfig[]
-    }[]
-  }[]
-}
-
-const newSection = (): { id: string; fields: FieldConfig[] } => ({
-  id: crypto.randomUUID(),
-  fields: [],
-})
+const newSection = () => createFormSection()
 
 export default function FormBuilderPage({ params }: FormBuilderProps) {
   const { formSettings, setFormSettings } = useFormStore()
   const { slug: paramFormId } = use(params)
   const [currentFormId, setCurrentFormId] = useState<string>(paramFormId)
-  const [formStructure, setFormStructure] = useState<IFormStructure>({
-    pages: [
-      {
-        sections: [newSection()],
-      },
-    ],
-  })
+  const [formStructure, setFormStructure] = useState<FormStructure>(() => ({
+    pages: [createFormPage([newSection()])],
+  }))
   const [currentPageIndex, setCurrentPageIndex] = useState(0)
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
-  const currentFields =
-    formStructure.pages[currentPageIndex]?.sections[currentSectionIndex]
-      ?.fields ?? []
-  const [fields, setFields] = useState<FieldConfig[]>([])
   const [editingField, setEditingField] = useState<FieldConfig | null>(null)
+  const [hasInvalidPersistedStructure, setHasInvalidPersistedStructure] =
+    useState(false)
 
   const updateCurrentFields = (
     updater: (fields: FieldConfig[]) => FieldConfig[],
@@ -361,7 +350,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     return null
   }
 
-  const formStructureSnapshot = useRef<IFormStructure | null>(null)
+  const formStructureSnapshot = useRef<FormStructure | null>(null)
 
   const handleDragOver = (event: DragOverEvent) => {
     const { source, target } = event.operation
@@ -657,27 +646,16 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           redirectUrl: form.data.redirectUrl,
           submitButtonText: form.data.submitButtonText,
         })
-        setFields(form.data.fields)
-
-        const raw = form.data.fields as unknown
-        if (
-          raw &&
-          typeof raw === 'object' &&
-          !Array.isArray(raw) &&
-          Array.isArray((raw as { pages?: unknown }).pages)
-        ) {
-          const loaded = raw as IFormStructure
-          setFormStructure({
-            ...loaded,
-            pages: loaded.pages.map((page) => ({
-              ...page,
-              sections: page.sections.map((section) => ({
-                id: section.id ?? crypto.randomUUID(),
-                fields: section.fields,
-              })),
-            })),
-          })
+        if (!isFormStructure(form.data.fields)) {
+          setHasInvalidPersistedStructure(true)
+          toast.error('Form structure is invalid')
+          return
         }
+
+        setHasInvalidPersistedStructure(false)
+        setFormStructure(form.data.fields)
+        setCurrentPageIndex(0)
+        setCurrentSectionIndex(0)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -756,6 +734,11 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
   })
 
   const handleSaveForm = () => {
+    if (hasInvalidPersistedStructure) {
+      toast.error('Fix the form structure before saving')
+      return
+    }
+
     if (!formSettings.title.trim()) {
       toast.error('Form name is required')
       return
@@ -764,7 +747,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
     const payload: CreateFormPayload = {
       title: formSettings.title,
       description: formSettings.description?.trim() || null,
-      fields: formStructure || [],
+      fields: formStructure,
       maxSubmissions: formSettings.maxSubmissions
         ? isNaN(formSettings.maxSubmissions)
           ? null
@@ -787,6 +770,21 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
 
   const isSaving = createFormMutation.isPending || updateFormMutation.isPending
 
+  const replaceWithImportedFields = (
+    title: string,
+    description: string,
+    importedFields: FieldConfig[],
+  ) => {
+    setFormSettings({
+      ...formSettings,
+      title,
+      description,
+    })
+    setFormStructure(createFormStructure(importedFields))
+    setCurrentPageIndex(0)
+    setCurrentSectionIndex(0)
+  }
+
   return (
     <div className="flex bg-background h-screen text-foreground">
       {/* Left Side bar with Form Details */}
@@ -798,7 +796,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
               size="sm"
               variant="secondary"
               onClick={handleSaveForm}
-              disabled={isSaving}
+              disabled={isSaving || hasInvalidPersistedStructure}
               className="text-xs cursor-pointer"
             >
               {isSaving ? (
@@ -844,25 +842,11 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
           <div className="flex-grow"></div>
 
           <ImportGoogleForm
-            onImported={(title, description, fields) => {
-              setFormSettings({
-                ...formSettings,
-                title,
-                description,
-              })
-              setFields(fields)
-            }}
+            onImported={replaceWithImportedFields}
           />
 
           <GenerateWithAiPrompt
-            onGeneratedFields={(title, description, fields) => {
-              setFormSettings({
-                ...formSettings,
-                title,
-                description,
-              })
-              setFields(fields)
-            }}
+            onGeneratedFields={replaceWithImportedFields}
           />
         </CardContent>
       </Card>
@@ -902,9 +886,7 @@ export default function FormBuilderPage({ params }: FormBuilderProps) {
                 ...prev,
                 pages: [
                   ...prev.pages,
-                  {
-                    sections: [newSection()],
-                  },
+                  createFormPage([newSection()]),
                 ],
               }))
 

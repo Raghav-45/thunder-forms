@@ -279,15 +279,23 @@ interface Section {
   fields: FieldConfig[]
 }
 
+interface Page {
+  id: string
+  sections: Section[]
+}
+
 interface IFormStructure {
-  pages: {
-    sections: Section[]
-  }[]
+  pages: Page[]
 }
 
 const generateNewSection = (): Section => ({
   id: crypto.randomUUID(),
   fields: [],
+})
+
+const generateNewPage = (): Page => ({
+  id: crypto.randomUUID(),
+  sections: [],
 })
 
 /**
@@ -448,14 +456,9 @@ function EmptyCanvasDroppable() {
 
 export default function FormBuilderPage({ params }: FormBuilderProps) {
   const { slug: paramFormId } = use(params)
-  const [formStructure, setFormStructure] = useState<IFormStructure>({
-    pages: [
-      {
-        // sections: [generateNewSection()],
-        sections: [],
-      },
-    ],
-  })
+  const [formStructure, setFormStructure] = useState<IFormStructure>(() => ({
+    pages: [generateNewPage()],
+  }))
 
   const snapshot = useRef(structuredClone(formStructure))
 

@@ -83,7 +83,7 @@ model forms {
   id                String    @id @default(cuid()) // Unique form identifier
   title             String // Form title
   description       String? // Form description
-  fields            Json // Dynamic form fields stored as JSON
+  fields            Json // Canonical pages -> sections -> fields form tree
   createdAt         DateTime  @default(now()) // Form creation timestamp
   expiresAt         DateTime? // Expiration date for the form, null for unlimited
   maxSubmissions    Int? // Maximum number of submissions allowed, null for unlimited

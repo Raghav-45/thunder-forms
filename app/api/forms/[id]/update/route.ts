@@ -1,9 +1,11 @@
 import { FormValidator } from '@/lib/validators/form'
 import { auth } from '@/lib/auth'
+import { isFormStructure } from '@/features/form-builder/form-structure'
 import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import type { Prisma } from '@prisma/client'
 
 export async function POST(
   request: Request,
@@ -31,6 +33,12 @@ export async function POST(
       redirectUrl,
       submitButtonText,
     } = FormValidator.parse(body)
+    if (!isFormStructure(fields)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid form structure' },
+        { status: 422 },
+      )
+    }
 
     // Check if form exists and user has permission
     const existingForm = await prisma.forms.findUnique({
@@ -62,7 +70,7 @@ export async function POST(
       data: {
         title: title,
         description: description,
-        fields: fields!,
+        fields: fields as unknown as Prisma.InputJsonValue,
         maxSubmissions: maxSubmissions,
         expiresAt: expiresAt,
         redirectUrl: redirectUrl,

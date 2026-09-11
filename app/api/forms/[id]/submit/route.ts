@@ -1,7 +1,10 @@
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
+import {
+  getOrderedFormFields,
+  isFormStructure,
+} from '@/features/form-builder/form-structure'
 import { validateFormFields } from '@/features/form-builder/utils/formValidation'
-import type { FieldConfig } from '@/features/form-builder/elements'
 
 export async function POST(
   request: NextRequest,
@@ -42,6 +45,13 @@ export async function POST(
       )
     }
 
+    if (!isFormStructure(form.fields)) {
+      return NextResponse.json(
+        { error: 'Form structure is invalid' },
+        { status: 422 },
+      )
+    }
+
     // Check if form has expired
     if (form.expiresAt && new Date(form.expiresAt) < new Date()) {
       return NextResponse.json(
@@ -59,7 +69,7 @@ export async function POST(
     }
 
     // Server-side validation using the same validation logic as client-side
-    const fields = form.fields as unknown as FieldConfig[]
+    const fields = getOrderedFormFields(form.fields)
     const validationErrors = validateFormFields(fields, data)
     
     if (Object.keys(validationErrors).length > 0) {

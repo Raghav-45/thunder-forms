@@ -1,10 +1,8 @@
-import { FieldConfig } from '@/features/form-builder/elements'
 import { create } from 'zustand'
 import { DEFAULT_FORM_DESCRIPTION, DEFAULT_FORM_TITLE } from './constants'
 
 type FormStore = {
   count: number
-  fields: FieldConfig[]
   formSettings: {
     title: string
     description?: string
@@ -14,7 +12,6 @@ type FormStore = {
     submitButtonText?: string
   }
   // Actions
-  setFields: (fields: FieldConfig[]) => void
   setFormSettings: (settings: FormStore['formSettings']) => void
   resetForm: () => void
 }
@@ -30,11 +27,7 @@ const initialFormSettings = {
 
 export const useFormStore = create<FormStore>()((set) => ({
   count: 1,
-  fields: [],
   formSettings: initialFormSettings,
-
-  // Direct setters - overwrite entire arrays/objects
-  setFields: (fields: FieldConfig[]) => set(() => ({ fields })),
 
   setFormSettings: (formSettings: FormStore['formSettings']) =>
     set(() => ({ formSettings })),
@@ -43,7 +36,6 @@ export const useFormStore = create<FormStore>()((set) => ({
   resetForm: () =>
     set(() => ({
       count: 1,
-      fields: [],
       formSettings: initialFormSettings,
     })),
 }))

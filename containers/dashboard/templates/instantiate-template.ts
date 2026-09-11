@@ -1,20 +1,18 @@
 'use client'
 
 import type { FieldConfig } from '@/features/form-builder/elements'
+import {
+  createFormPage,
+  createFormSection,
+  type FormSection,
+  type FormStructure,
+} from '@/features/form-builder/form-structure'
 import type { avaliableFieldsType } from '@/features/form-builder/types/types'
 import { createDefaultFieldConfig } from '@/features/form-builder/utils/helperFunctions'
 import type { FormTemplateSpec } from './types'
 
-export interface BuiltSection {
-  id: string
-  fields: FieldConfig[]
-}
-
-export interface BuiltFormStructure {
-  pages: {
-    sections: BuiltSection[]
-  }[]
-}
+export type BuiltSection = FormSection
+export type BuiltFormStructure = FormStructure
 
 /**
  * Materialize a template spec into builder-ready form structure.
@@ -26,39 +24,40 @@ export interface BuiltFormStructure {
  */
 export function instantiateTemplate(
   template: FormTemplateSpec,
-): BuiltFormStructure {
+): FormStructure {
   return {
     pages: [
-      {
-        sections: template.sections.map((section) => ({
-          id: crypto.randomUUID(),
-          fields: section.fields.map((spec) => {
-            const field = createDefaultFieldConfig(
-              spec.type as avaliableFieldsType,
-            ) as unknown as Record<string, unknown>
+      createFormPage(
+        template.sections.map((section) =>
+          createFormSection(
+            section.fields.map((spec) => {
+              const field = createDefaultFieldConfig(
+                spec.type as avaliableFieldsType,
+              ) as unknown as Record<string, unknown>
 
-            field.id = `${spec.type}_${crypto.randomUUID().slice(0, 8)}`
-            field.label = spec.label
-            if (spec.placeholder !== undefined) {
-              field.placeholder = spec.placeholder
-            }
-            if (spec.description !== undefined) {
-              field.description = spec.description
-            }
-            if (spec.required !== undefined) {
-              field.required = spec.required
-            }
-            if (spec.options !== undefined && 'options' in field) {
-              field.options = spec.options
-            }
-            if (spec.inputType !== undefined && 'inputType' in field) {
-              field.inputType = spec.inputType
-            }
+              field.id = `${spec.type}_${crypto.randomUUID().slice(0, 8)}`
+              field.label = spec.label
+              if (spec.placeholder !== undefined) {
+                field.placeholder = spec.placeholder
+              }
+              if (spec.description !== undefined) {
+                field.description = spec.description
+              }
+              if (spec.required !== undefined) {
+                field.required = spec.required
+              }
+              if (spec.options !== undefined && 'options' in field) {
+                field.options = spec.options
+              }
+              if (spec.inputType !== undefined && 'inputType' in field) {
+                field.inputType = spec.inputType
+              }
 
-            return field as unknown as FieldConfig
-          }),
-        })),
-      },
+              return field as unknown as FieldConfig
+            }),
+          ),
+        ),
+      ),
     ],
   }
 }
