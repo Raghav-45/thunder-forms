@@ -42,7 +42,7 @@ import {
   DragOverlay,
   useDroppable,
 } from '@dnd-kit/react'
-import { useSortable } from '@dnd-kit/react/sortable'
+import { isSortable, useSortable } from '@dnd-kit/react/sortable'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import {
@@ -54,7 +54,12 @@ import {
   Trash2Icon,
 } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
-import type { ComponentType, PropsWithChildren, ReactNode } from 'react'
+import type {
+  ComponentType,
+  PropsWithChildren,
+  ReactNode,
+  SetStateAction,
+} from 'react'
 import {
   Suspense,
   createElement,
@@ -520,6 +525,22 @@ interface EditingField {
   sectionId: string
 }
 
+type DragPreview =
+  | {
+      kind: 'field'
+      field: FieldConfig
+      session: number
+      sourceId: string
+      sourceType: string
+    }
+  | {
+      kind: 'section'
+      section: FormSection
+      session: number
+      sourceId: string
+      sourceType: string
+    }
+
 interface FormBuilderProps {
   params: Promise<{ slug: string }>
 }
@@ -556,7 +577,7 @@ function TestingV69Builder({ params }: FormBuilderProps) {
   const [currentFormId, setCurrentFormId] = useState(paramFormId)
   const [activePageId, setActivePageId] = useState(initialState.activePageId)
   const [editingField, setEditingField] = useState<EditingField | null>(null)
-  const [formStructure, setFormStructure] = useState<FormStructure>(
+  const [formStructure, setFormStructureState] = useState<FormStructure>(
     initialState.formStructure,
   )
   const [isSaving, setIsSaving] = useState(false)
@@ -571,13 +592,32 @@ function TestingV69Builder({ params }: FormBuilderProps) {
   const [fieldOverlayWidth, setFieldOverlayWidth] = useState<number | null>(
     null,
   )
+  const [dragPreview, setDragPreview] = useState<DragPreview | null>(null)
 
   const canvasRef = useRef<HTMLDivElement | null>(null)
   const fieldSurfaceRefs = useRef(new Map<string, HTMLDivElement>())
+  const formStructureRef = useRef<FormStructure>(initialState.formStructure)
   const formStructureSnapshot = useRef<FormStructure | null>(null)
+  const dragSession = useRef(0)
   const paletteFieldClone = useRef<FieldConfig | null>(null)
   const paletteSectionClone = useRef<FormSection | null>(null)
   const palettePlacement = useRef(false)
+
+  // Drag callbacks can start before React publishes the last live reorder.
+  // Keep the drag model synchronous so a section preview snapshots the exact
+  // field order that the user just created.
+  const setFormStructure = useCallback(
+    (update: SetStateAction<FormStructure>) => {
+      const next =
+        typeof update === 'function'
+          ? update(formStructureRef.current)
+          : update
+
+      formStructureRef.current = next
+      setFormStructureState(next)
+    },
+    [],
+  )
 
   const isExistingForm = currentFormId !== 'new-form'
   const isNewForm = !isExistingForm
@@ -647,7 +687,7 @@ function TestingV69Builder({ params }: FormBuilderProps) {
     observer.observe(canvas)
 
     return () => observer.disconnect()
-  }, [])
+  }, [setFormStructure])
 
   useLayoutEffect(() => {
     const clone = paletteFieldClone.current
@@ -741,7 +781,7 @@ function TestingV69Builder({ params }: FormBuilderProps) {
       pages: [...prev.pages, page],
     }))
     setActivePageId(page.id)
-  }, [])
+  }, [setFormStructure])
 
   const addSection = useCallback(() => {
     const section = createSection()
@@ -753,7 +793,7 @@ function TestingV69Builder({ params }: FormBuilderProps) {
           : page,
       ),
     }))
-  }, [resolvedActivePageId])
+  }, [resolvedActivePageId, setFormStructure])
 
   const addField = useCallback(
     (fieldType: avaliableFieldsType) => {
@@ -767,7 +807,7 @@ function TestingV69Builder({ params }: FormBuilderProps) {
           .structure
       })
     },
-    [resolvedActivePageId],
+    [resolvedActivePageId, setFormStructure],
   )
 
   const removeFieldById = useCallback(
@@ -781,7 +821,7 @@ function TestingV69Builder({ params }: FormBuilderProps) {
           : current,
       )
     },
-    [resolvedActivePageId],
+    [resolvedActivePageId, setFormStructure],
   )
 
   const replaceWithImportedFields = useCallback(
@@ -792,7 +832,7 @@ function TestingV69Builder({ params }: FormBuilderProps) {
       setActivePageId(page.id)
       setFormSettings({ ...formSettings, title, description })
     },
-    [formSettings, setFormSettings],
+    [formSettings, setFormSettings, setFormStructure],
   )
 
   const handleSaveForm = useCallback(async () => {
@@ -862,9 +902,11 @@ function TestingV69Builder({ params }: FormBuilderProps) {
   ])
 
   const resetPaletteDrag = useCallback(() => {
+    dragSession.current += 1
     paletteFieldClone.current = null
     paletteSectionClone.current = null
     palettePlacement.current = false
+    setDragPreview(null)
     setPaletteFieldPlaceholderId(null)
     setPaletteSectionPlaceholderId(null)
     setFieldOverlayWidth(null)
@@ -877,8 +919,18 @@ function TestingV69Builder({ params }: FormBuilderProps) {
       const { source } = event.operation
       if (!source) return
 
-      formStructureSnapshot.current = structuredClone(formStructure)
+      const session = dragSession.current + 1
+      dragSession.current = session
+
+      const dragStartStructure = structuredClone(formStructureRef.current)
+      const dragStartPage = getPage(
+        dragStartStructure,
+        resolvedActivePageId,
+      )
+
+      formStructureSnapshot.current = dragStartStructure
       palettePlacement.current = false
+      setDragPreview(null)
 
       if (source.type === PALETTE_FIELD_TYPE) {
         const sourceData = source.data as { fieldType?: unknown } | undefined
@@ -888,6 +940,13 @@ function TestingV69Builder({ params }: FormBuilderProps) {
         const field = createDefaultFieldConfig(fieldType as avaliableFieldsType)
         field.id = `palette_${crypto.randomUUID().slice(0, 8)}`
         paletteFieldClone.current = field
+        setDragPreview({
+          kind: 'field',
+          field,
+          session,
+          sourceId: String(source.id),
+          sourceType: source.type,
+        })
         setPaletteFieldPlaceholderId(field.id)
         setFieldOverlayWidth(null)
         return
@@ -896,15 +955,49 @@ function TestingV69Builder({ params }: FormBuilderProps) {
       if (source.type === PALETTE_SECTION_TYPE) {
         const section = createSection()
         paletteSectionClone.current = section
+        setDragPreview({
+          kind: 'section',
+          section,
+          session,
+          sourceId: String(source.id),
+          sourceType: source.type,
+        })
         setPaletteSectionPlaceholderId(section.id)
         return
       }
 
       if (source.type === ITEM_TYPE) {
+        const field = findField(dragStartPage, String(source.id))?.field
+        if (field) {
+          setDragPreview({
+            kind: 'field',
+            field,
+            session,
+            sourceId: String(source.id),
+            sourceType: source.type,
+          })
+        }
         measureFieldSurface(source as unknown as DropTarget)
+        return
+      }
+
+      if (source.type === SECTION_TYPE) {
+        const sectionIndex = dragStartPage?.sections.findIndex(
+          (section) => section.id === source.id,
+        ) ?? -1
+        const section = dragStartPage?.sections[sectionIndex]
+        if (section) {
+          setDragPreview({
+            kind: 'section',
+            section,
+            session,
+            sourceId: String(source.id),
+            sourceType: source.type,
+          })
+        }
       }
     },
-    [formStructure, measureFieldSurface],
+    [measureFieldSurface, resolvedActivePageId],
   )
 
   const handleDragOver = useCallback<DragDropEventHandlers['onDragOver']>(
@@ -919,8 +1012,7 @@ function TestingV69Builder({ params }: FormBuilderProps) {
             data: target.data,
             insertAfter:
               Boolean(target.shape) &&
-              (event.operation.shape?.current.center.y ??
-                event.operation.position.current.y) > target.shape!.center.y,
+              event.operation.position.current.y > target.shape!.center.y,
           }
         : null
 
@@ -1010,17 +1102,45 @@ function TestingV69Builder({ params }: FormBuilderProps) {
 
       if (source.type === ITEM_TYPE && target && targetWithPlacement) {
         measureFieldSurface(targetWithPlacement)
-        setFormStructure((prev) =>
-          moveExistingField(
+        setFormStructure((prev) => {
+          const page = getPage(prev, resolvedActivePageId)
+          const sourceField = findField(page, String(source.id))
+          const targetField = findField(page, String(target.id))
+
+          if (
+            page &&
+            sourceField &&
+            targetField &&
+            sourceField.section.id === targetField.section.id
+          ) {
+            const fields = move(sourceField.section.fields, event)
+            return {
+              ...prev,
+              pages: prev.pages.map((candidate) =>
+                candidate.id === resolvedActivePageId
+                  ? {
+                      ...candidate,
+                      sections: candidate.sections.map((section) =>
+                        section.id === sourceField.section.id
+                          ? { ...section, fields }
+                          : section,
+                      ),
+                    }
+                  : candidate,
+              ),
+            }
+          }
+
+          return moveExistingField(
             prev,
             resolvedActivePageId,
             String(source.id),
             targetWithPlacement,
-          ),
-        )
+          )
+        })
       }
     },
-    [measureFieldSurface, resolvedActivePageId],
+    [measureFieldSurface, resolvedActivePageId, setFormStructure],
   )
 
   const handleDragEnd = useCallback<DragDropEventHandlers['onDragEnd']>(
@@ -1042,7 +1162,7 @@ function TestingV69Builder({ params }: FormBuilderProps) {
       formStructureSnapshot.current = null
       resetPaletteDrag()
     },
-    [resetPaletteDrag],
+    [resetPaletteDrag, setFormStructure],
   )
 
   return (
@@ -1267,65 +1387,53 @@ function TestingV69Builder({ params }: FormBuilderProps) {
 
       <DragOverlay>
         {(source) => {
-          if (!source) return null
+          if (
+            !source ||
+            !dragPreview ||
+            dragPreview.session !== dragSession.current ||
+            dragPreview.sourceId !== String(source.id) ||
+            dragPreview.sourceType !== source.type
+          ) {
+            return null
+          }
 
-          if (source.type === SECTION_TYPE) {
-            const sectionIndex = activePage.sections.findIndex(
-              (section) => section.id === source.id,
-            )
-            const section = activePage.sections[sectionIndex]
-            if (!section || !canvasWidth) return null
+          const overlayKey = `${dragPreview.session}:${dragPreview.sourceType}:${dragPreview.sourceId}`
+
+          if (dragPreview.kind === 'section') {
+            if (!canvasWidth) return null
+
+            const sectionIndex = isSortable(source)
+              ? source.index
+              : activePage.sections.findIndex(
+                  (section) => section.id === dragPreview.section.id,
+                )
 
             return (
               <SectionCard
-                label={`Section ${sectionIndex + 1}`}
-                isEmpty={section.fields.length === 0}
+                key={overlayKey}
+                label={
+                  sectionIndex === -1 ? 'Section' : `Section ${sectionIndex + 1}`
+                }
+                isEmpty={dragPreview.section.fields.length === 0}
                 state="floating"
                 floatingWidth={canvasWidth}
               >
-                {section.fields.map((field) => (
+                {dragPreview.section.fields.map((field) => (
                   <ItemCard key={field.id} field={field} />
                 ))}
               </SectionCard>
             )
           }
 
-          if (source.type === ITEM_TYPE) {
-            const field = findField(activePage, String(source.id))?.field
-            if (!field || !fieldOverlayWidth) return null
+          if (dragPreview.kind === 'field') {
+            if (!fieldOverlayWidth) return null
 
             return (
               <ItemCard
-                field={field}
+                key={overlayKey}
+                field={dragPreview.field}
                 state="floating"
                 floatingWidth={fieldOverlayWidth}
-              />
-            )
-          }
-
-          if (source.type === PALETTE_FIELD_TYPE) {
-            const field = paletteFieldClone.current
-            if (!field || !fieldOverlayWidth) return null
-
-            return (
-              <ItemCard
-                field={field}
-                state="floating"
-                floatingWidth={fieldOverlayWidth}
-              />
-            )
-          }
-
-          if (source.type === PALETTE_SECTION_TYPE) {
-            const section = paletteSectionClone.current
-            if (!section || !canvasWidth) return null
-
-            return (
-              <SectionCard
-                label="New section"
-                isEmpty
-                state="floating"
-                floatingWidth={canvasWidth}
               />
             )
           }
