@@ -3,6 +3,12 @@
 import ImportGoogleForm from '@/features/form-builder/core/import-google-form'
 import GenerateWithAiPrompt from '@/features/form-builder/core/generate-with-ai'
 import type { FieldConfig } from '@/features/form-builder/elements'
+import {
+  isFormStructure,
+  type FormStructure as PersistedFormStructure,
+} from '@/features/form-builder/form-structure'
+import { CopyButton } from '@/features/form-builder/components/copy-button'
+import { IMMORTAL_SENTINEL_DATE } from '@/features/form-builder/components/date-picker-with-presets'
 import { useFormStore } from '@/features/form-builder/store'
 import {
   AVAILABLE_FIELDS,
@@ -22,8 +28,11 @@ import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
+import { siteConfig } from '@/config/site'
 import { cn } from '@/lib/utils'
 import type { CreateFormPayload } from '@/lib/validators/form'
+import { getTemplateBySlug } from '@/containers/dashboard/templates/constants'
+import { instantiateTemplate } from '@/containers/dashboard/templates/instantiate-template'
 import { CollisionPriority } from '@dnd-kit/abstract'
 import { KeyboardSensor, PointerSensor } from '@dnd-kit/dom'
 import { move } from '@dnd-kit/helpers'
@@ -34,6 +43,7 @@ import {
   useDroppable,
 } from '@dnd-kit/react'
 import { useSortable } from '@dnd-kit/react/sortable'
+import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import {
   GripVerticalIcon,
@@ -43,13 +53,14 @@ import {
   SaveIcon,
   Trash2Icon,
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import type { ComponentType, PropsWithChildren, ReactNode } from 'react'
 import {
   Suspense,
   createElement,
   forwardRef,
   memo,
+  use,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -509,6 +520,10 @@ interface EditingField {
   sectionId: string
 }
 
+interface FormBuilderProps {
+  params: Promise<{ slug: string }>
+}
+
 function createInitialState() {
   const firstPage = createPage()
 
@@ -518,7 +533,7 @@ function createInitialState() {
   }
 }
 
-export default function TestingV69Page() {
+export default function TestingV69Page({ params }: FormBuilderProps) {
   return (
     <Suspense
       fallback={
@@ -527,21 +542,26 @@ export default function TestingV69Page() {
         </div>
       }
     >
-      <TestingV69Builder />
+      <TestingV69Builder params={params} />
     </Suspense>
   )
 }
 
-function TestingV69Builder() {
+function TestingV69Builder({ params }: FormBuilderProps) {
+  const { slug: paramFormId } = use(params)
   const initialState = useState(createInitialState)[0]
-  const router = useRouter()
+  const searchParams = useSearchParams()
+  const templateSlug = searchParams.get('template')
   const { formSettings, setFormSettings } = useFormStore()
+  const [currentFormId, setCurrentFormId] = useState(paramFormId)
   const [activePageId, setActivePageId] = useState(initialState.activePageId)
   const [editingField, setEditingField] = useState<EditingField | null>(null)
   const [formStructure, setFormStructure] = useState<FormStructure>(
     initialState.formStructure,
   )
   const [isSaving, setIsSaving] = useState(false)
+  const [hasInvalidPersistedStructure, setHasInvalidPersistedStructure] =
+    useState(false)
   const [paletteFieldPlaceholderId, setPaletteFieldPlaceholderId] = useState<
     string | null
   >(null)
@@ -558,6 +578,9 @@ function TestingV69Builder() {
   const paletteFieldClone = useRef<FieldConfig | null>(null)
   const paletteSectionClone = useRef<FormSection | null>(null)
   const palettePlacement = useRef(false)
+
+  const isExistingForm = currentFormId !== 'new-form'
+  const isNewForm = !isExistingForm
 
   const activePage =
     getPage(formStructure, activePageId) ?? formStructure.pages[0]
@@ -636,6 +659,81 @@ function TestingV69Builder() {
     )
   }, [activePage, setFieldOverlayWidthFromSurface])
 
+  const form = useQuery({
+    queryKey: ['form', currentFormId],
+    queryFn: async () => {
+      const { data } = await axios.get(`/api/forms/${currentFormId}`)
+      return data
+    },
+    enabled: isExistingForm,
+    retry: false,
+    retryOnMount: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  })
+
+  useEffect(() => {
+    setCurrentFormId(paramFormId)
+  }, [paramFormId])
+
+  useEffect(() => {
+    if (!isExistingForm) return
+
+    if (form.isError) {
+      toast.error('Failed to load form')
+      return
+    }
+
+    if (!form.isSuccess || !form.data) return
+
+    if (!isFormStructure(form.data.fields)) {
+      setHasInvalidPersistedStructure(true)
+      toast.error('Form structure is invalid')
+      return
+    }
+
+    setHasInvalidPersistedStructure(false)
+    setFormSettings({
+      ...formSettings,
+      title: form.data.title,
+      description: form.data.description,
+      expiresAt: form.data.expiresAt
+        ? new Date(form.data.expiresAt)
+        : IMMORTAL_SENTINEL_DATE,
+      maxSubmissions: form.data.maxSubmissions,
+      redirectUrl: form.data.redirectUrl,
+      submitButtonText: form.data.submitButtonText,
+    })
+    setFormStructure(form.data.fields as PersistedFormStructure)
+    setActivePageId(form.data.fields.pages[0]?.id ?? initialState.activePageId)
+    // Hydration is intentionally driven by the query result, not the store
+    // writes performed inside this effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isExistingForm, form.data, form.isError, form.isSuccess])
+
+  useEffect(() => {
+    if (!isNewForm || !templateSlug) return
+
+    const template = getTemplateBySlug(templateSlug)
+    if (!template) {
+      toast.error('Template not found')
+      return
+    }
+
+    const structure = instantiateTemplate(template)
+    setFormStructure(structure)
+    setActivePageId(structure.pages[0]?.id ?? initialState.activePageId)
+    setFormSettings({
+      ...formSettings,
+      title: template.title,
+      description: template.description,
+      submitButtonText: template.submitButtonText,
+    })
+    toast.success(`Loaded template: ${template.title}`)
+    // A template is an initialization input: apply it once per template URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isNewForm, templateSlug])
+
   const addPage = useCallback(() => {
     const page = createPage()
     setFormStructure((prev) => ({
@@ -697,7 +795,12 @@ function TestingV69Builder() {
     [formSettings, setFormSettings],
   )
 
-  const handleSaveAsNewForm = useCallback(async () => {
+  const handleSaveForm = useCallback(async () => {
+    if (hasInvalidPersistedStructure) {
+      toast.error('Fix the form structure before saving')
+      return
+    }
+
     if (!formSettings.title.trim()) {
       toast.error('Form name is required')
       return
@@ -714,20 +817,49 @@ function TestingV69Builder() {
         title: formSettings.title,
         description: formSettings.description?.trim() || null,
         fields: formStructure,
-        maxSubmissions: formSettings.maxSubmissions ?? null,
+        maxSubmissions: formSettings.maxSubmissions
+          ? Number.isNaN(formSettings.maxSubmissions)
+            ? null
+            : formSettings.maxSubmissions
+          : null,
         expiresAt: formSettings.expiresAt,
         redirectUrl: formSettings.redirectUrl?.trim() || null,
         submitButtonText: formSettings.submitButtonText?.trim() || null,
       }
-      const { data } = await axios.post('/api/forms/new', payload)
-      toast.success('Form created. Opening builder...')
-      router.push(`/dashboard/builder/${data.id}`)
-    } catch {
-      toast.error('Failed to create form')
+      if (isNewForm) {
+        const { data } = await axios.post('/api/forms/new', payload)
+        setCurrentFormId(data.id)
+        window.history.replaceState(null, '', `/dashboard/builder/${data.id}`)
+        toast.success('Form created successfully')
+      } else {
+        await axios.post(`/api/forms/${currentFormId}/update`, payload)
+        toast.success('Form updated successfully')
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 422) {
+        const issues = error.response.data?.issues as
+          | { field: string; message: string }[]
+          | undefined
+        toast.error('Validation error', {
+          description: issues?.length
+            ? issues.map((issue) => `• ${issue.field}: ${issue.message}`).join('\n')
+            : 'Please check your form fields and try again.',
+          style: { whiteSpace: 'pre-line' },
+        })
+        return
+      }
+
+      toast.error(isNewForm ? 'Failed to create form' : 'Failed to update form')
     } finally {
       setIsSaving(false)
     }
-  }, [formSettings, formStructure, router])
+  }, [
+    currentFormId,
+    formSettings,
+    formStructure,
+    hasInvalidPersistedStructure,
+    isNewForm,
+  ])
 
   const resetPaletteDrag = useCallback(() => {
     paletteFieldClone.current = null
@@ -928,8 +1060,8 @@ function TestingV69Builder() {
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={handleSaveAsNewForm}
-                disabled={isSaving}
+                onClick={handleSaveForm}
+                disabled={isSaving || hasInvalidPersistedStructure}
                 className="cursor-pointer text-xs"
               >
                 {isSaving ? (
@@ -982,21 +1114,26 @@ function TestingV69Builder() {
 
         <ScrollArea className="sticky flex-1 overflow-auto p-4 pt-6 md:p-4 md:pt-6">
           <div className="flex flex-row justify-between">
-            <h1 className="mb-6 text-3xl font-bold">Builder · v69</h1>
-            <Button
-              type="button"
-              variant="secondary"
-              className="cursor-pointer"
-              onClick={handleSaveAsNewForm}
-              disabled={isSaving}
-            >
-              {isSaving ? (
-                <Loader2Icon className="animate-spin" />
-              ) : (
-                <SaveIcon />
-              )}
-              {isSaving ? 'Saving...' : 'Save as new form'}
-            </Button>
+            <h1 className="mb-6 text-3xl font-bold">Builder</h1>
+            <div className="flex gap-2">
+              {isExistingForm ? (
+                <CopyButton value={`${siteConfig.url}/forms/${currentFormId}`} />
+              ) : null}
+              <Button
+                type="button"
+                variant="secondary"
+                className="cursor-pointer"
+                onClick={handleSaveForm}
+                disabled={isSaving || hasInvalidPersistedStructure}
+              >
+                {isSaving ? (
+                  <Loader2Icon className="animate-spin" />
+                ) : (
+                  <SaveIcon />
+                )}
+                {isSaving ? 'Saving...' : 'Save'}
+              </Button>
+            </div>
           </div>
 
           <div className="mb-3 flex items-center gap-1 border-b">

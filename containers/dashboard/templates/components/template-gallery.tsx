@@ -70,7 +70,7 @@ function TemplateCard({ template }: { template: FormTemplateSpec }) {
           Preview
         </Button>
         <Button size="sm" className="flex-1 cursor-pointer" asChild>
-          <Link href={`/dashboard/testing-v3?template=${template.slug}`}>
+          <Link href={`/dashboard/builder/new-form?template=${template.slug}`}>
             Use template
             <ArrowRightIcon className="ml-1 size-4" />
           </Link>
@@ -128,7 +128,7 @@ function TemplateCard({ template }: { template: FormTemplateSpec }) {
               Close
             </Button>
             <Button className="cursor-pointer" asChild>
-              <Link href={`/dashboard/testing-v3?template=${template.slug}`}>
+              <Link href={`/dashboard/builder/new-form?template=${template.slug}`}>
                 Use this template
                 <ArrowRightIcon className="ml-1 size-4" />
               </Link>

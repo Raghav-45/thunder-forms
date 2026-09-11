@@ -1,5 +1,4 @@
 import {
-  FIELD_REGISTRY,
   type FieldConfig,
 } from '@/features/form-builder/elements'
 
@@ -21,6 +20,23 @@ export type FormStructureIdFactory = () => string
 
 type UnknownRecord = Record<string, unknown>
 
+// This validator runs in API routes as well as client components. Keep its
+// runtime dependencies server-safe; importing the client field registry here
+// makes valid fields appear unknown to the server bundle.
+const KNOWN_FIELD_IDENTIFIERS = new Set<string>([
+  'text-input',
+  'multi-select',
+  'text-area',
+  'switch-field',
+  'date-picker',
+  'checkbox',
+  'number-input',
+  'single-select',
+  'radio-group',
+  'slider',
+  'datetime-picker',
+])
+
 const createId = () => crypto.randomUUID()
 
 const isRecord = (value: unknown): value is UnknownRecord =>
@@ -34,7 +50,7 @@ const isKnownField = (value: unknown): value is FieldConfig => {
     return false
   }
 
-  return Object.hasOwn(FIELD_REGISTRY, value.uniqueIdentifier)
+  return KNOWN_FIELD_IDENTIFIERS.has(value.uniqueIdentifier)
 }
 
 const hasUniqueId = (ids: Set<string>, id: string): boolean => {

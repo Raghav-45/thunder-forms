@@ -1,34 +1,37 @@
-# Testing v69 Drag-and-Drop Design
+# Builder Adoption Research
 
-## Scope
+## Decision
 
-`/dashboard/testing-v69` preserves the master builder's Settings, canvas,
-available-fields palette, editable field previews, import, AI generation, and
-save-as-new-form flow. The experiment changes only interaction plumbing:
-sortable palette entries, live drag previews, pages, and sections.
+The production builder at `/dashboard/builder/[slug]` now uses this
+implementation. v69 was selected because it keeps the established builder
+surfaces while providing a complete page → section → field model and a more
+reliable drag interaction. The former `testing*` routes are retired.
 
-Public-form layout stays intentionally unchanged. The public renderer and
-submit endpoint read the persisted page/section tree as one ordered field
-sequence, so a saved v69 form remains renderable and validatable without
-adding a second respondent navigation model.
+## Evidence and Parity
 
-## Upstream Builder Baseline
+The upstream Thunder Forms master builder establishes the product contract:
+dynamic form identity, existing-form loading, create/update persistence,
+settings, field editing, import, AI generation, share link, and the
+three-column workflow.^1 This implementation keeps those contracts:
 
-The upstream builder establishes a three-column workflow: Settings on the
-left, a central Builder canvas, and Available Fields on the right. It also
-establishes editable preview cards, a dashed empty canvas, save behavior, and
-the field registry as the source of available field types.^1
+| Contract | Production behavior |
+| --- | --- |
+| New form | `/dashboard/builder/new-form` creates through `/api/forms/new`, then changes the URL to the new ID. |
+| Existing form | `/dashboard/builder/[id]` loads, validates, hydrates, and updates through `/api/forms/[id]/update`. |
+| Templates | The gallery opens `/dashboard/builder/new-form?template=…`; the selected template initializes the editor. |
+| Sharing | Saved forms expose the existing public-form copy link. |
+| Invalid data | Saving is blocked and the builder explains that the canonical structure is invalid. |
+| Editor tools | Settings, editable field previews, field palette, Google import, and AI generation remain available. |
 
-v69 retains those surfaces. It adds page tabs and section cards and persists
-the builder structure as `pages[].sections[].fields`. The public form consumes
-the same fields in stable page/section order until a dedicated respondent-page
-flow is designed.
+The public renderer consumes the persisted tree as one ordered field sequence.
+Respondent page navigation is intentionally out of scope; it needs its own UX
+design instead of silently changing the public form contract.
 
 ## Drag-and-Drop Contract
 
-The sortable-list documentation uses stable item IDs, list indexes, and groups.
-Items move during drag-over so nearby items visibly make room; a drag overlay
-renders a separate floating clone while the source remains in the list.^2
+dnd kit’s sortable guidance relies on stable item IDs, explicit sortable
+groups, movement during drag-over, and a separate drag overlay for the floating
+preview.^2
 
 v69 applies those rules as follows:
 
@@ -36,35 +39,25 @@ v69 applies those rules as follows:
 2. Existing fields and sections update their order live during drag-over.
 3. Palette entries are source-only. A palette drag owns one minted clone for
    its entire lifetime; the palette list itself never changes.
-4. The original source or staged clone remains as an opacity ghost. The
+4. The original source or staged clone remains as an opacity ghost; the
    `DragOverlay` owns the floating preview.
-5. Field overlay width comes from the target section's real field surface.
-   It does not use an offset or guessed canvas width.
+5. Field overlay width comes from the target section's real field surface, not
+   an offset or guessed canvas width.
 6. The canvas is one persistent droppable element. Its empty message changes
    as content appears, but its target does not unmount during the first drop.
 7. Cancelled drags and outside drops restore the drag-start snapshot.
 8. Drag operations are page-local. Changing pages changes only the visible
    page's section tree.
 
-## Interaction Acceptance Checks
+## Acceptance Checks
 
-- Drag a palette field into an empty canvas. It creates one section and stays
-  after release.
-- Drag a palette section into an empty canvas. It stays after release.
-- Drag a palette field into an empty section. It appears in that section.
-- Drag a field over another field. Both insertion ghost and floating card stay
-  visible at full target-surface width.
-- Drag a field across sections. The source section and target section update
-  live.
-- Drag a section over another section. Section order updates live.
-- Drop any active item outside canvas or cancel it. The page returns to its
-  drag-start order.
-- Add a page, then repeat all page-local drag cases without changing another
-  page.
-- Edit or remove a field after it moves between sections. The action affects
-  the field's actual page and section, not a selected-index shortcut.
-- Save a multi-page form, open its public URL, and submit it. Fields render and
-  validate in the same page/section order used by the builder.
+- Create a form, save it, reload its builder URL, edit it, and save again.
+- Start from every template card and save the resulting form.
+- Copy the public link for a saved form and complete it successfully.
+- Drag fields and sections into an empty canvas, empty sections, and across
+  sections; confirm the ghost and full-width overlay remain stable.
+- Cancel a field, section, and palette drag; confirm no unintended move stays.
+- Add a page and confirm its drag operations cannot reorder another page.
 
 ## Sources
 
