@@ -252,6 +252,23 @@ export function removeSection(
   }))
 }
 
+export function removePage(
+  structure: FormStructure,
+  pageId: string,
+): FormStructure {
+  if (
+    structure.pages.length <= 1 ||
+    !structure.pages.some((page) => page.id === pageId)
+  ) {
+    return structure
+  }
+
+  return {
+    ...structure,
+    pages: structure.pages.filter((page) => page.id !== pageId),
+  }
+}
+
 export function stagePaletteSection(
   structure: FormStructure,
   pageId: string,

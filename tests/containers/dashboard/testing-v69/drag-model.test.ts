@@ -5,6 +5,7 @@ import {
   fieldCount,
   moveExistingField,
   removeField,
+  removePage,
   removeSection,
   stagePaletteField,
   stagePaletteSection,
@@ -312,6 +313,20 @@ describe('v69 drag model', () => {
 
     expect(afterRemove).toEqual(initial)
     expect(afterUpdate).toEqual(initial)
+  })
+
+  it('removes one page but preserves the final page', () => {
+    const initial: FormStructure = {
+      pages: [
+        { id: 'page-a', sections: [section('section-a')] },
+        { id: 'page-b', sections: [section('section-b')] },
+      ],
+    }
+
+    const afterRemove = removePage(initial, 'page-a')
+
+    expect(afterRemove.pages.map((page) => page.id)).toEqual(['page-b'])
+    expect(removePage(afterRemove, 'page-b')).toBe(afterRemove)
   })
 
   it('counts fields across pages and sections in order', () => {
