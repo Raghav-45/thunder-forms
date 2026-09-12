@@ -23,13 +23,6 @@ import { SettingsDialog } from '@/features/form-builder/components/settings-dial
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardDescription } from '@/components/ui/card'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -40,6 +33,7 @@ import { cn } from '@/lib/utils'
 import type { CreateFormPayload } from '@/lib/validators/form'
 import { getTemplateBySlug } from '@/containers/dashboard/templates/constants'
 import { instantiateTemplate } from '@/containers/dashboard/templates/instantiate-template'
+import { ChromeTabStrip } from './components/chrome-tab-strip'
 import { CollisionPriority } from '@dnd-kit/abstract'
 import { KeyboardSensor, PointerSensor } from '@dnd-kit/dom'
 import { move } from '@dnd-kit/helpers'
@@ -54,14 +48,10 @@ import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import {
   GripVerticalIcon,
-  ChromeIcon,
-  ChevronDownIcon,
   Loader2Icon,
   PencilIcon,
-  PlusIcon,
   SaveIcon,
   Trash2Icon,
-  XIcon,
 } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import type { ComponentType, PropsWithChildren, ReactNode } from 'react'
@@ -1211,81 +1201,14 @@ function TestingV69BuilderContent({
               'mb-1 flex h-[calc(100vh-72px)] flex-col overflow-hidden border-2 border-dashed border-muted !p-0',
             )}
           >
-            <nav
-              aria-label="Form pages"
-              className="flex h-12 items-center overflow-x-auto border-t border-[#163349] bg-[#202124] px-2"
-            >
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label="Open page list"
-                    className="mr-2 grid size-7 shrink-0 place-items-center rounded-xl bg-[#3c4043] text-[#d2e3fc] transition-colors hover:bg-[#4a4d52] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
-                  >
-                    <ChevronDownIcon className="size-4" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  <DropdownMenuGroup>
-                    {formStructure.pages.map((page, index) => (
-                      <DropdownMenuItem
-                        key={page.id}
-                        onSelect={() => setActivePageId(page.id)}
-                      >
-                        Page {index + 1}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              {formStructure.pages.map((page, index) => (
-                <div
-                  key={page.id}
-                  className={cn(
-                    'relative h-10 w-60 shrink-0 rounded-t-xl transition-colors',
-                    page.id === resolvedActivePageId
-                      ? 'bg-[#3c4043] text-[#e8eaed] before:pointer-events-none before:absolute before:bottom-0 before:-left-2 before:size-2 before:rounded-br-xl before:shadow-[4px_4px_0_4px_#3c4043] before:content-[\'\'] after:pointer-events-none after:absolute after:bottom-0 after:-right-2 after:size-2 after:rounded-bl-xl after:shadow-[-4px_4px_0_4px_#3c4043] after:content-[\'\']'
-                      : 'text-[#bdc1c6] hover:bg-[#2b2c2f]',
-                  )}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setActivePageId(page.id)}
-                    aria-current={
-                      page.id === resolvedActivePageId ? 'page' : undefined
-                    }
-                    className="flex h-full w-full items-center gap-2 rounded-xl px-4 pr-10 text-left text-base font-medium outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-400"
-                  >
-                    <ChromeIcon className="size-5 shrink-0 text-[#c9cdd1]" />
-                    <span className="truncate">Page {index + 1}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removePageById(page.id)}
-                    disabled={formStructure.pages.length === 1}
-                    aria-label={`Delete page ${index + 1}`}
-                    title={
-                      formStructure.pages.length === 1
-                        ? 'A form needs at least one page'
-                        : `Delete page ${index + 1}`
-                    }
-                    className="absolute top-1/2 right-2 grid size-6 -translate-y-1/2 place-items-center rounded-full text-[#c9cdd1] transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
-                  >
-                    <XIcon className="size-4" />
-                  </button>
-                </div>
-              ))}
-              <span className="mx-2 h-4 w-px shrink-0 bg-white/15" />
-              <button
-                type="button"
-                onClick={addPage}
-                aria-label="Add page"
-                title="Add page"
-                className="grid size-7 shrink-0 place-items-center rounded-full bg-[#0b6ea8] text-white transition-colors hover:bg-[#0d7fbe] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#202124]"
-              >
-                <PlusIcon className="size-4" />
-              </button>
-            </nav>
+            <ChromeTabStrip
+              pages={formStructure.pages}
+              activePageId={resolvedActivePageId}
+              onSelectPage={setActivePageId}
+              onRemovePage={removePageById}
+              onAddPage={addPage}
+              canRemovePage={formStructure.pages.length > 1}
+            />
             <CardContent
               className={cn(
                 'min-h-0 flex-1 overflow-y-auto p-3 md:p-4',
