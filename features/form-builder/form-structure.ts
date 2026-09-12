@@ -84,7 +84,13 @@ export function createFormStructure(
 }
 
 export function isFormStructure(value: unknown): value is FormStructure {
-  if (!isRecord(value) || !Array.isArray(value.pages)) return false
+  if (
+    !isRecord(value) ||
+    !Array.isArray(value.pages) ||
+    value.pages.length === 0
+  ) {
+    return false
+  }
 
   const ids = new Set<string>()
 

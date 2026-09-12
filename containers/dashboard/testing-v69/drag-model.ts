@@ -217,7 +217,7 @@ export function moveExistingField(
   if (!destinationPage) return structure
 
   const destination = resolveFieldDestination(destinationPage, target)
-  if (!destination?.sectionId) return withoutField
+  if (!destination?.sectionId) return structure
 
   return updatePage(withoutField, pageId, (currentPage) => ({
     ...currentPage,

@@ -66,6 +66,13 @@ For each change, verify a valid multi-page form preserves page, section, and
 field order through save, view, validation, and submission. Verify malformed
 stored JSON returns HTTP 422 and never creates a response.
 
+Automated contracts live in the root `tests/` folder, mirrored by source area:
+
+- `tests/features/form-builder/` covers the shared form tree; and
+- `tests/containers/dashboard/testing-v69/` covers builder drag behaviour.
+
+Run `npm test` before changing either contract.
+
 ## Sources
 
 1. Prisma. [Working with Json fields](https://www.prisma.io/docs/orm/prisma-client/special-fields-and-types/working-with-json-fields). Accessed 11 September 2026.

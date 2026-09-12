@@ -549,6 +549,20 @@ export default function TestingV69Page({ params }: FormBuilderProps) {
 
 function TestingV69Builder({ params }: FormBuilderProps) {
   const { slug: paramFormId } = use(params)
+
+  return (
+    <TestingV69BuilderContent
+      key={paramFormId}
+      paramFormId={paramFormId}
+    />
+  )
+}
+
+function TestingV69BuilderContent({
+  paramFormId,
+}: {
+  paramFormId: string
+}) {
   const initialState = useState(createInitialState)[0]
   const searchParams = useSearchParams()
   const templateSlug = searchParams.get('template')
@@ -671,10 +685,6 @@ function TestingV69Builder({ params }: FormBuilderProps) {
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   })
-
-  useEffect(() => {
-    setCurrentFormId(paramFormId)
-  }, [paramFormId])
 
   useEffect(() => {
     if (!isExistingForm) return
