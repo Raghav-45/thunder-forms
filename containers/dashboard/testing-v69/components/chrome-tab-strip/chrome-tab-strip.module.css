@@ -1,29 +1,35 @@
 /**
  * Chrome-style tab strip.
  *
- * Geometry, spacing, and interaction behavior ported from `chrome-tabs`
+ * Geometry and spacing ported from `chrome-tabs`
  * v5.4.0 by Adam Schwartz (https://github.com/adamschwartz/chrome-tabs),
  * MIT License, Copyright (c) 2013 Adam Schwartz.
  *
  * Adaptations for this codebase (kept minimal and marked below):
- * - `[active]` / `[is-small]` / `[is-smaller]` / `[is-mini]` attribute
- *   selectors renamed to `data-*` equivalents for React/TS compatibility.
+ * - The active selector uses a `data-*` attribute for React/TS compatibility.
  * - Dark-theme values merged in; the active-tab fill, divider color, and
  *   title colors calibrated to native Chrome (measured screenshot values).
  * - The `:last-child::after` divider is kept (upstream hides it) so the
  *   separator before the new-tab button renders; paint order still hides
  *   dividers next to active/hovered tabs, exactly like upstream.
- * - App additions: `.chrome-tabs-new-tab` (new-tab button, not part of
- *   upstream), favicon child centering/color, `:focus-visible` rings.
+ * - App additions: CSS flex sizing, the new-tab button, favicon child
+ *   centering/color, and `:focus-visible` rings.
  */
 .chrome-tabs {
+  --tab-content-margin: 9px;
+  --chrome-tab-strip: #450a0a;
+  --chrome-tab-inactive: var(--chrome-tab-strip);
+  --chrome-tab-active: #b91c1c;
+  --chrome-tab-divider: #7f1d1d;
   box-sizing: border-box;
   position: relative;
+  min-width: 0;
+  max-width: 100%;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 12px;
   height: 46px;
   padding: 8px 3px 4px 3px;
-  background: #202124;
+  background: var(--chrome-tab-strip);
   border-radius: 5px 5px 0 0;
   overflow: hidden;
 }
@@ -35,16 +41,30 @@
   position: relative;
   width: 100%;
   height: 100%;
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.chrome-tabs .chrome-tabs-content::-webkit-scrollbar {
+  display: none;
 }
 .chrome-tabs .chrome-tab {
-  position: absolute;
-  left: 0;
+  position: relative;
   height: 36px;
-  width: 240px;
+  flex: 0 0 258px;
+  scroll-snap-align: start;
   border: 0;
-  margin: 0;
+  margin: 0 0 0 -1px;
   z-index: 1;
   pointer-events: none;
+}
+.chrome-tabs .chrome-tab:first-of-type {
+  margin-left: 0;
 }
 .chrome-tabs .chrome-tab,
 .chrome-tabs .chrome-tab * {
@@ -71,7 +91,7 @@
   top: 0;
   bottom: 0;
   width: 1px;
-  background: #3c3c3c;
+  background: var(--chrome-tab-divider);
   opacity: 1;
   transition: opacity 0.2s ease;
 }
@@ -98,17 +118,17 @@
   height: 100%;
 }
 .chrome-tabs .chrome-tab .chrome-tab-background > svg .chrome-tab-geometry {
-  fill: #292b2e;
+  fill: var(--chrome-tab-inactive);
 }
 .chrome-tabs .chrome-tab[data-active] {
   z-index: 5;
 }
 .chrome-tabs .chrome-tab[data-active] .chrome-tab-background > svg .chrome-tab-geometry {
-  fill: #3c3c3c;
+  fill: var(--chrome-tab-active);
 }
 .chrome-tabs .chrome-tab:not([data-active]) .chrome-tab-background {
   transition: opacity 0.2s ease;
-  opacity: 0;
+  opacity: 1;
 }
 @media (hover: hover) {
   .chrome-tabs .chrome-tab:not([data-active]):hover {
@@ -116,6 +136,9 @@
   }
   .chrome-tabs .chrome-tab:not([data-active]):hover .chrome-tab-background {
     opacity: 1;
+  }
+  .chrome-tabs .chrome-tab:not([data-active]):hover .chrome-tab-geometry {
+    fill: var(--chrome-tab-active);
   }
 }
 .chrome-tabs .chrome-tab .chrome-tab-content {
@@ -130,10 +153,6 @@
   border-top-right-radius: 8px;
   overflow: hidden;
   pointer-events: all;
-}
-.chrome-tabs .chrome-tab[data-is-mini] .chrome-tab-content {
-  padding-left: 2px;
-  padding-right: 2px;
 }
 .chrome-tabs .chrome-tab .chrome-tab-favicon {
   position: relative;
@@ -152,16 +171,6 @@
 .chrome-tabs .chrome-tab[data-active] .chrome-tab-favicon {
   color: #e2e2e2;
 }
-.chrome-tabs .chrome-tab[data-is-small] .chrome-tab-favicon {
-  margin-left: 0;
-}
-.chrome-tabs .chrome-tab[data-is-mini]:not([data-active]) .chrome-tab-favicon {
-  margin-left: auto;
-  margin-right: auto;
-}
-.chrome-tabs .chrome-tab[data-is-mini][data-active] .chrome-tab-favicon {
-  display: none;
-}
 .chrome-tabs .chrome-tab .chrome-tab-title {
   flex: 1;
   vertical-align: top;
@@ -172,16 +181,8 @@
   -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 24px), transparent);
   mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 24px), transparent);
 }
-.chrome-tabs .chrome-tab[data-is-small] .chrome-tab-title {
-  margin-left: 0;
-}
-.chrome-tabs .chrome-tab .chrome-tab-favicon + .chrome-tab-title,
-.chrome-tabs .chrome-tab[data-is-small] .chrome-tab-favicon + .chrome-tab-title {
+.chrome-tabs .chrome-tab .chrome-tab-favicon + .chrome-tab-title {
   margin-left: 8px;
-}
-.chrome-tabs .chrome-tab[data-is-smaller] .chrome-tab-favicon + .chrome-tab-title,
-.chrome-tabs .chrome-tab[data-is-mini] .chrome-tab-title {
-  display: none;
 }
 .chrome-tabs .chrome-tab[data-active] .chrome-tab-title {
   color: #e2e2e2;
@@ -199,6 +200,7 @@
   border: 0;
   padding: 0;
   width: 100%;
+  z-index: 0;
 }
 .chrome-tabs .chrome-tab .chrome-tab-close {
   flex-grow: 0;
@@ -213,6 +215,7 @@
   background-size: 8px 8px;
   border: 0;
   padding: 0;
+  z-index: 1;
 }
 @media (hover: hover) {
   .chrome-tabs .chrome-tab .chrome-tab-close:hover {
@@ -234,29 +237,20 @@
     opacity: 0.8;
   }
 }
-.chrome-tabs .chrome-tab[data-is-smaller] .chrome-tab-close {
-  margin-left: auto;
-}
-.chrome-tabs .chrome-tab[data-is-mini]:not([data-active]) .chrome-tab-close {
-  display: none;
-}
-.chrome-tabs .chrome-tab[data-is-mini][data-active] .chrome-tab-close {
-  margin-left: auto;
-  margin-right: auto;
-}
 .chrome-tabs .chrome-tabs-bottom-bar {
   position: absolute;
   bottom: 0;
   height: 4px;
   left: 0;
   width: 100%;
-  background: #3c3c3c;
+  background: var(--chrome-tab-strip);
   z-index: 10;
 }
 /* App addition: new-tab button (native Chrome element, not part of upstream). */
 .chrome-tabs .chrome-tabs-new-tab {
-  position: absolute;
-  top: 11px;
+  position: relative;
+  flex: 0 0 auto;
+  margin: 3px 0 0 8px;
   width: 24px;
   height: 24px;
   display: grid;
