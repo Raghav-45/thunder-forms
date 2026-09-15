@@ -182,7 +182,7 @@ const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
       ref={ref}
       style={isFloating && floatingWidth ? { width: floatingWidth } : undefined}
       className={cn(
-        'group relative flex items-center justify-between rounded-lg border-2 border-dashed border-slate-200 bg-white p-3 transition-all duration-200 hover:border-primary/50 hover:shadow-sm cursor-grab active:cursor-grabbing',
+        'group relative flex items-center justify-between rounded-lg border-2 border-dashed border-border bg-card p-3 transition-all duration-200 hover:border-primary/50 hover:shadow-sm cursor-grab active:cursor-grabbing',
         state === 'ghost' && 'opacity-30',
         isFloating && 'pointer-events-none shadow-2xl cursor-grabbing',
       )}
@@ -200,7 +200,7 @@ const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
             variant="ghost"
             size="icon"
             type="button"
-            className="h-8 w-8 cursor-pointer border border-slate-200 bg-white/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary"
+            className="h-8 w-8 cursor-pointer border border-border/50 bg-background/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary"
             onClick={onEdit}
           >
             <PencilIcon className="h-4 w-4" />
@@ -210,7 +210,7 @@ const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(function ItemCard(
             variant="ghost"
             size="icon"
             type="button"
-            className="h-8 w-8 cursor-pointer border border-slate-200 bg-white/80 backdrop-blur-sm hover:bg-destructive/10 hover:text-destructive"
+            className="h-8 w-8 cursor-pointer border border-border/50 bg-background/80 backdrop-blur-sm hover:bg-destructive/10 hover:text-destructive"
             onClick={onRemove}
           >
             <Trash2Icon className="h-4 w-4" />
@@ -254,7 +254,7 @@ const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
         ref={ref}
         style={isFloating && floatingWidth ? { width: floatingWidth } : undefined}
         className={cn(
-          'flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-opacity',
+          'flex flex-col gap-4 rounded-xl border border-neutral-800 bg-neutral-900 p-4 transition-opacity',
           state === 'ghost' && 'opacity-30',
           isFloating && 'pointer-events-none shadow-2xl cursor-grabbing',
         )}
@@ -262,7 +262,7 @@ const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
         <div
           ref={handleRef}
           className={cn(
-            'flex items-center gap-2 text-sm font-medium text-slate-500',
+            'flex items-center gap-2 text-sm font-medium text-neutral-400',
             hasDragHandle && 'cursor-grab active:cursor-grabbing',
           )}
         >
@@ -273,7 +273,7 @@ const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
         {isEmpty ? (
           <div
             ref={fieldSurfaceRef}
-            className="flex h-24 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50/50 text-sm text-slate-400"
+            className="flex h-24 items-center justify-center rounded-lg border border-dashed border-neutral-800 text-sm text-neutral-500"
           >
             Drop fields here
           </div>
@@ -500,7 +500,7 @@ function CanvasDropSurface({
       ) : (
         <div
           className={cn(
-            'flex h-full min-h-80 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-center text-slate-500 transition-colors',
+            'flex h-full min-h-80 items-center justify-center rounded-xl border border-dashed text-center text-muted-foreground transition-colors',
             isDropTarget && 'border-primary bg-primary/10 text-primary',
           )}
         >
@@ -1198,7 +1198,7 @@ function TestingV69BuilderContent({
 
           <Card
             className={cn(
-              'mb-1 flex h-[calc(100vh-72px)] flex-col gap-0 overflow-hidden border border-slate-200 bg-slate-50 text-slate-900 !p-0',
+              'mb-1 flex h-[calc(100vh-72px)] flex-col gap-0 overflow-hidden border-none bg-card text-card-foreground !p-0',
             )}
           >
             <ChromeTabStrip
@@ -1219,7 +1219,7 @@ function TestingV69BuilderContent({
                 hasSections={hasCanvasSections}
                 onCanvasRef={registerCanvas}
               >
-                <div className="mx-auto min-h-full font-sans text-slate-900">
+                <div className="mx-auto min-h-full font-sans text-card-foreground">
                   <div className="space-y-4 pb-8">
                     {activePage.sections.map((section, sectionIndex) => (
                       <SortableSection
