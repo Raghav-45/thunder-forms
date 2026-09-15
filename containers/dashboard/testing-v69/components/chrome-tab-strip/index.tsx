@@ -38,7 +38,7 @@ export function ChromeTabStrip({
   return (
     <nav
       aria-label="Form pages"
-      className="relative box-border h-[46px] min-w-0 max-w-full overflow-hidden rounded-t-[5px] bg-[#450a0a] px-[3px] pb-1 pt-2 font-[-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Helvetica,Arial,sans-serif,'Apple_Color_Emoji','Segoe_UI_Emoji','Segoe_UI_Symbol'] text-[12px]"
+      className="relative box-border h-11 min-w-0 max-w-full overflow-hidden rounded-t-[5px] bg-[#450a0a] px-[3px] pt-2 font-[-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Helvetica,Arial,sans-serif,'Apple_Color_Emoji','Segoe_UI_Emoji','Segoe_UI_Symbol'] text-[12px]"
     >
       <div className="relative flex h-full w-full min-w-0 max-w-full items-start overflow-x-auto overscroll-x-contain [scroll-snap-type:x_proximity] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <svg
@@ -60,21 +60,21 @@ export function ChromeTabStrip({
           const geometryClassName = cn(
             'fill-[#450a0a]',
             isActive
-              ? 'fill-[#b91c1c]'
-              : 'group-hover/tab:fill-[#b91c1c]',
+              ? 'fill-[var(--card)]'
+              : 'group-hover/tab:fill-[var(--card)]',
           )
 
           return (
             <div
               key={page.id}
               className={cn(
-                'group/tab pointer-events-none relative z-[1] ml-[-1px] h-9 flex-[0_0_258px] cursor-default select-none [scroll-snap-align:start] [&_*]:cursor-default [&_*]:select-none',
+                'group/tab pointer-events-none relative z-[1] ml-[-1px] h-9 flex-[0_0_258px] cursor-default select-none [scroll-snap-align:start] [&_*]:cursor-default [&_*]:select-none translate-y-[2px]',
                 index === 0 && 'ml-0',
                 isActive ? 'z-[5]' : 'hover:z-[2]',
               )}
               {...(isActive ? { 'data-active': '' } : {})}
             >
-              <div className="pointer-events-none absolute inset-x-[9px] bottom-[7px] top-[7px] before:pointer-events-none before:absolute before:inset-y-0 before:left-0 before:block before:w-px before:bg-[#7f1d1d] before:opacity-100 before:[transition:opacity_0.2s_ease] after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:block after:w-px after:bg-[#7f1d1d] after:opacity-100 after:[transition:opacity_0.2s_ease]" />
+              <div className="pointer-events-none absolute inset-x-[9px] bottom-[7px] top-[7px] before:pointer-events-none before:absolute before:inset-y-0 before:left-0 before:block before:w-px before:bg-[#450a0a] before:opacity-100 before:[transition:opacity_0.2s_ease] after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:block after:w-px after:bg-[#450a0a] after:opacity-100 after:[transition:opacity_0.2s_ease]" />
               <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-100 [transition:opacity_0.2s_ease]">
                 <svg
                   version="1.1"
@@ -154,7 +154,6 @@ export function ChromeTabStrip({
           <PlusIcon className="size-3.5" />
         </button>
       </div>
-      <div className="absolute inset-x-0 bottom-0 z-10 h-1 bg-[#450a0a]" />
     </nav>
   )
 }
