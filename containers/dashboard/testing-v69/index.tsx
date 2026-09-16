@@ -500,7 +500,7 @@ function CanvasDropSurface({
       ) : (
         <div
           className={cn(
-            'flex h-full min-h-80 items-center justify-center rounded-xl border border-dashed text-center text-muted-foreground transition-colors',
+            'flex h-full min-h-80 items-center justify-center rounded-3xl border border-dashed text-center text-muted-foreground transition-colors',
             isDropTarget && 'border-primary bg-primary/10 text-primary',
           )}
         >
@@ -1198,7 +1198,7 @@ function TestingV69BuilderContent({
 
           <Card
             className={cn(
-              'mb-1 flex h-[calc(100vh-72px)] flex-col gap-0 overflow-hidden border-none bg-card text-card-foreground !p-0',
+              'mb-1 flex h-[calc(100vh-72px)] flex-col gap-0 overflow-hidden rounded-3xl border-none bg-card text-card-foreground !p-0',
             )}
           >
             <ChromeTabStrip
