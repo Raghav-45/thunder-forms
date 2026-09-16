@@ -65,6 +65,7 @@ import { toast } from 'sonner'
 import {
   CANVAS_DROP_ID,
   type DropTarget,
+  type FormPage,
   type FormSection,
   type FormStructure,
   ITEM_TYPE,
@@ -141,6 +142,10 @@ function createInitialState() {
   }
 }
 
+// Stable fallback for unreachable empty-pages state (see activePage below).
+// Module scope keeps hook deps stable; never written, only read.
+const EMPTY_PAGE_FALLBACK: FormPage = { id: '', sections: [] }
+
 export default function BuilderPage({ params }: FormBuilderProps) {
   return (
     <Suspense
@@ -195,6 +200,7 @@ function BuilderContent({
   )
 
   const canvasRef = useRef<HTMLDivElement | null>(null)
+  const canvasObserverRef = useRef<ResizeObserver | null>(null)
   const fieldSurfaceRefs = useRef(new Map<string, HTMLDivElement>())
   const formStructureSnapshot = useRef<FormStructure | null>(null)
   const paletteFieldClone = useRef<FieldConfig | null>(null)
@@ -205,21 +211,33 @@ function BuilderContent({
   const isNewForm = !isExistingForm
 
   const activePage =
-    getPage(formStructure, activePageId) ?? formStructure.pages[0]
+    getPage(formStructure, activePageId) ??
+    formStructure.pages[0] ??
+    EMPTY_PAGE_FALLBACK
   const resolvedActivePageId = activePage.id
   const hasCanvasSections = activePage.sections.length > 0
   const shouldReduceMotion = useReducedMotion()
   const activePageIndex = formStructure.pages.findIndex(
     (page) => page.id === resolvedActivePageId,
   )
-  const previousPageIndex = useRef(activePageIndex)
   const pageTransitionDirection = useRef(0)
 
-  if (activePageIndex !== previousPageIndex.current) {
-    pageTransitionDirection.current =
-      activePageIndex > previousPageIndex.current ? 1 : -1
-    previousPageIndex.current = activePageIndex
-  }
+  const selectPage = useCallback(
+    (pageId: string) => {
+      const nextIndex = formStructure.pages.findIndex(
+        (page) => page.id === pageId,
+      )
+      if (
+        nextIndex !== -1 &&
+        activePageIndex !== -1 &&
+        nextIndex !== activePageIndex
+      ) {
+        pageTransitionDirection.current = nextIndex > activePageIndex ? 1 : -1
+      }
+      setActivePageId(pageId)
+    },
+    [formStructure.pages, activePageIndex],
+  )
 
   const pageTransitionVariants: Variants = {
     initial: (direction: number) =>
@@ -246,7 +264,25 @@ function BuilderContent({
   }
 
   const registerCanvas = useCallback((element: HTMLDivElement | null) => {
+    if (!element) {
+      // A null detach can come from an exiting (superseded) canvas that
+      // unmounts after the new canvas attached. Never kill the live
+      // observer here; full unmount is handled by the effect cleanup below.
+      return
+    }
+
+    canvasObserverRef.current?.disconnect()
+    canvasObserverRef.current = null
     canvasRef.current = element
+
+    const updateCanvasWidth = () => {
+      setCanvasWidth(element.getBoundingClientRect().width)
+    }
+
+    updateCanvasWidth()
+    const observer = new ResizeObserver(updateCanvasWidth)
+    observer.observe(element)
+    canvasObserverRef.current = observer
   }, [])
 
   const registerFieldSurface = useCallback(
@@ -293,19 +329,18 @@ function BuilderContent({
   )
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const updateCanvasWidth = () => {
-      setCanvasWidth(canvas.getBoundingClientRect().width)
+    // Re-sync after StrictMode's mount → unmount → remount cycle in dev,
+    // which runs the cleanup below without re-invoking the canvas ref.
+    const node = canvasRef.current
+    if (node && !canvasObserverRef.current) {
+      registerCanvas(node)
     }
 
-    updateCanvasWidth()
-    const observer = new ResizeObserver(updateCanvasWidth)
-    observer.observe(canvas)
-
-    return () => observer.disconnect()
-  }, [])
+    return () => {
+      canvasObserverRef.current?.disconnect()
+      canvasObserverRef.current = null
+    }
+  }, [registerCanvas])
 
   useLayoutEffect(() => {
     const clone = paletteFieldClone.current
@@ -390,6 +425,7 @@ function BuilderContent({
 
   const addPage = useCallback(() => {
     const page = createPage()
+    pageTransitionDirection.current = 1
     setFormStructure((prev) => ({
       ...prev,
       pages: [...prev.pages, page],
@@ -406,6 +442,9 @@ function BuilderContent({
       if (nextStructure === formStructure) return
 
       if (pageId === resolvedActivePageId) {
+        if (pageIndex > 0) {
+          pageTransitionDirection.current = -1
+        }
         setActivePageId(
           nextStructure.pages[Math.max(0, pageIndex - 1)].id,
         )
@@ -847,7 +886,7 @@ function BuilderContent({
             <ChromeTabStrip
               pages={formStructure.pages}
               activePageId={resolvedActivePageId}
-              onSelectPage={setActivePageId}
+              onSelectPage={selectPage}
               onRemovePage={removePageById}
               onAddPage={addPage}
               canRemovePage={formStructure.pages.length > 1}
