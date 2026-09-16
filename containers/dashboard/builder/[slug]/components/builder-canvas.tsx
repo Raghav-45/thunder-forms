@@ -87,7 +87,7 @@ const SortableSection = memo(function SortableSection({
     data: { sectionId: id },
   })
   const { ref: fieldSurfaceDropRef } = useDroppable({
-    id: `v69-section-${id}-field-surface`,
+    id: `builder-section-${id}-field-surface`,
     accept: [ITEM_TYPE, PALETTE_FIELD_TYPE],
     collisionPriority: CollisionPriority.Low,
     disabled: fields.length > 0,

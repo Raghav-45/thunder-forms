@@ -777,9 +777,9 @@ function BuilderContent({
             </div>
 
             <div className="grid w-full items-center gap-1.5">
-              <Label htmlFor="v69-title">Form title</Label>
+              <Label htmlFor="builder-title">Form title</Label>
               <Input
-                id="v69-title"
+                id="builder-title"
                 placeholder="Enter form name"
                 value={formSettings.title}
                 onChange={(event) =>
@@ -793,9 +793,9 @@ function BuilderContent({
             </div>
 
             <div className="grid w-full items-center gap-1.5">
-              <Label htmlFor="v69-description">Description</Label>
+              <Label htmlFor="builder-description">Description</Label>
               <Textarea
-                id="v69-description"
+                id="builder-description"
                 placeholder="Enter description"
                 value={formSettings.description}
                 onChange={(event) =>

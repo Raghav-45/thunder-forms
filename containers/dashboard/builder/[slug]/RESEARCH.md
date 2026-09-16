@@ -3,7 +3,7 @@
 ## Decision
 
 The production builder at `/dashboard/builder/[slug]` now uses this
-implementation. v69 was selected because it keeps the established builder
+implementation. This builder was selected because it keeps the established builder
 surfaces while providing a complete page → section → field model and a more
 reliable drag interaction. The former `testing*` routes are retired.
 
@@ -33,7 +33,7 @@ dnd kit’s sortable guidance relies on stable item IDs, explicit sortable
 groups, movement during drag-over, and a separate drag overlay for the floating
 preview.^2
 
-v69 applies those rules as follows:
+This implementation applies those rules as follows:
 
 1. Field and section IDs remain stable across drag-over events.
 2. Existing fields and sections update their order live during drag-over.

@@ -25,7 +25,7 @@ const COMING_SOON_FIELDS = [
 ]
 
 const PALETTE = AVAILABLE_FIELDS.map((fieldType, index) => ({
-  id: `v69-palette-${fieldType}-${index}`,
+  id: `builder-palette-${fieldType}-${index}`,
   fieldType: fieldType as avaliableFieldsType,
 }))
 
@@ -40,7 +40,7 @@ const PaletteFieldRow = memo(function PaletteFieldRow({
 }) {
   const { isDragSource, ref } = useSortable({
     id,
-    group: 'v69-palette',
+    group: 'builder-palette',
     accept: () => false,
     type: PALETTE_FIELD_TYPE,
     index: PALETTE.findIndex((item) => item.id === id),
@@ -72,8 +72,8 @@ const PaletteSectionRow = memo(function PaletteSectionRow({
   onAdd: () => void
 }) {
   const { isDragSource, ref } = useSortable({
-    id: 'v69-palette-section',
-    group: 'v69-palette',
+    id: 'builder-palette-section',
+    group: 'builder-palette',
     accept: () => false,
     type: PALETTE_SECTION_TYPE,
     index: 0,

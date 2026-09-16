@@ -9,8 +9,8 @@ import {
 
 export type { FormPage, FormSection, FormStructure }
 
-export const CANVAS_DROP_ID = 'v69-canvas'
-export const SECTION_GROUP_ID = 'v69-sections'
+export const CANVAS_DROP_ID = 'builder-canvas'
+export const SECTION_GROUP_ID = 'builder-sections'
 export const ITEM_TYPE = 'item'
 export const SECTION_TYPE = 'section'
 export const PALETTE_FIELD_TYPE = 'palette-field'
