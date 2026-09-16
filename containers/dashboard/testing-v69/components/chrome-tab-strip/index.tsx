@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import { GlobeIcon, PlusIcon, XIcon } from 'lucide-react'
+import { motion, useReducedMotion } from 'motion/react'
 
 export interface ChromeTabStripPage {
   id: string
@@ -23,6 +24,8 @@ export function ChromeTabStrip({
   onAddPage,
   canRemovePage,
 }: ChromeTabStripProps) {
+  const shouldReduceMotion = useReducedMotion()
+
   return (
     <nav
       aria-label="Form pages"
@@ -41,9 +44,15 @@ export function ChromeTabStrip({
             {...(isActive ? { 'data-active': '' } : {})}
           >
             {isActive ? (
-              <div
+              <motion.div
                 aria-hidden="true"
+                layoutId="builder-active-page-tab"
                 className="absolute inset-0 z-0 rounded-t-xl bg-card shadow-[0_-1px_4px_rgba(0,0,0,0.22)] before:absolute before:bottom-0 before:-left-3 before:size-3 before:bg-[radial-gradient(circle_at_top_left,transparent_12px,var(--card)_12px)] after:absolute after:bottom-0 after:-right-3 after:size-3 after:bg-[radial-gradient(circle_at_top_right,transparent_12px,var(--card)_12px)]"
+                transition={
+                  shouldReduceMotion
+                    ? { duration: 0 }
+                    : { type: 'spring', stiffness: 400, damping: 30 }
+                }
               />
             ) : (
               <div

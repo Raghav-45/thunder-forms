@@ -47,6 +47,12 @@ import { useSortable } from '@dnd-kit/react/sortable'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import {
+  AnimatePresence,
+  motion,
+  type Variants,
+  useReducedMotion,
+} from 'motion/react'
+import {
   GripVerticalIcon,
   Loader2Icon,
   PencilIcon,
@@ -601,6 +607,42 @@ function TestingV69BuilderContent({
     getPage(formStructure, activePageId) ?? formStructure.pages[0]
   const resolvedActivePageId = activePage.id
   const hasCanvasSections = activePage.sections.length > 0
+  const shouldReduceMotion = useReducedMotion()
+  const activePageIndex = formStructure.pages.findIndex(
+    (page) => page.id === resolvedActivePageId,
+  )
+  const previousPageIndex = useRef(activePageIndex)
+  const pageTransitionDirection = useRef(0)
+
+  if (activePageIndex !== previousPageIndex.current) {
+    pageTransitionDirection.current =
+      activePageIndex > previousPageIndex.current ? 1 : -1
+    previousPageIndex.current = activePageIndex
+  }
+
+  const pageTransitionVariants: Variants = {
+    initial: (direction: number) =>
+      shouldReduceMotion
+        ? { opacity: 0 }
+        : {
+            opacity: 0,
+            x: direction > 0 ? 80 : direction < 0 ? -80 : 0,
+            scale: 0.98,
+            filter: 'blur(8px)',
+          },
+    animate: shouldReduceMotion
+      ? { opacity: 1 }
+      : { opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' },
+    exit: (direction: number) =>
+      shouldReduceMotion
+        ? { opacity: 0 }
+        : {
+            opacity: 0,
+            x: direction > 0 ? -80 : direction < 0 ? 80 : 0,
+            scale: 0.98,
+            filter: 'blur(8px)',
+          },
+  }
 
   const registerCanvas = useCallback((element: HTMLDivElement | null) => {
     canvasRef.current = element
@@ -1215,39 +1257,64 @@ function TestingV69BuilderContent({
                 !hasCanvasSections && 'flex h-full w-full items-center justify-center',
               )}
             >
-              <CanvasDropSurface
-                hasSections={hasCanvasSections}
-                onCanvasRef={registerCanvas}
+              <AnimatePresence
+                mode="popLayout"
+                custom={pageTransitionDirection.current}
               >
-                <div className="mx-auto min-h-full font-sans text-card-foreground">
-                  <div className="space-y-4 pb-8">
-                    {activePage.sections.map((section, sectionIndex) => (
-                      <SortableSection
-                        key={section.id}
-                        id={section.id}
-                        index={sectionIndex}
-                        label={`Section ${sectionIndex + 1}`}
-                        fields={section.fields}
-                        isPlaceholder={
-                          section.id === paletteSectionPlaceholderId
+                <motion.div
+                  key={resolvedActivePageId}
+                  custom={pageTransitionDirection.current}
+                  className={cn('w-full', !hasCanvasSections && 'h-full')}
+                  variants={pageTransitionVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  transition={
+                    shouldReduceMotion
+                      ? { duration: 0.15 }
+                      : {
+                          type: 'spring',
+                          stiffness: 400,
+                          damping: 35,
+                          mass: 0.8,
                         }
-                        placeholderFieldId={paletteFieldPlaceholderId}
-                        onFieldSurfaceRef={registerFieldSurface}
-                        onEditField={(field) =>
-                          setEditingField({
-                            field,
-                            pageId: resolvedActivePageId,
-                            sectionId: section.id,
-                          })
-                        }
-                        onRemoveField={(fieldId) =>
-                          removeFieldById(section.id, fieldId)
-                        }
-                      />
-                    ))}
-                  </div>
-                </div>
-              </CanvasDropSurface>
+                  }
+                >
+                  <CanvasDropSurface
+                    hasSections={hasCanvasSections}
+                    onCanvasRef={registerCanvas}
+                  >
+                    <div className="mx-auto min-h-full font-sans text-card-foreground">
+                      <div className="space-y-4 pb-8">
+                        {activePage.sections.map((section, sectionIndex) => (
+                          <SortableSection
+                            key={section.id}
+                            id={section.id}
+                            index={sectionIndex}
+                            label={`Section ${sectionIndex + 1}`}
+                            fields={section.fields}
+                            isPlaceholder={
+                              section.id === paletteSectionPlaceholderId
+                            }
+                            placeholderFieldId={paletteFieldPlaceholderId}
+                            onFieldSurfaceRef={registerFieldSurface}
+                            onEditField={(field) =>
+                              setEditingField({
+                                field,
+                                pageId: resolvedActivePageId,
+                                sectionId: section.id,
+                              })
+                            }
+                            onRemoveField={(fieldId) =>
+                              removeFieldById(section.id, fieldId)
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </CanvasDropSurface>
+                </motion.div>
+              </AnimatePresence>
             </CardContent>
           </Card>
         </ScrollArea>
