@@ -24,9 +24,10 @@ Make the smallest change that achieves the requested goal. Don't add folders, wr
 ## Route → container mapping
 
 ```text
-app/(dashboard)/dashboard/page.tsx           → containers/dashboard/index.tsx
-app/(dashboard)/dashboard/forms/page.tsx     → containers/dashboard/forms/index.tsx
-app/(dashboard)/dashboard/templates/page.tsx → containers/dashboard/templates/index.tsx
+app/(dashboard)/dashboard/page.tsx                → containers/dashboard/index.tsx
+app/(dashboard)/dashboard/forms/page.tsx          → containers/dashboard/forms/index.tsx
+app/(dashboard)/dashboard/templates/page.tsx      → containers/dashboard/templates/index.tsx
+app/(builder)/dashboard/builder/[slug]/page.tsx   → containers/dashboard/builder/[slug]/index.tsx
 ```
 
 ## Directory structure
@@ -38,11 +39,12 @@ app/(dashboard)/dashboard/templates/page.tsx → containers/dashboard/templates/
 │   ├── (auth)/auth/                  # auth routes and route-local actions
 │   ├── (dashboard)/dashboard/        # dashboard routes and framework layout
 │   ├── (public)/forms/[slug]/        # public form route
-│   ├── (builder)/dashboard/          # builder and playground routes
+│   ├── (builder)/dashboard/          # builder routes
 │   └── api/                          # API route handlers
 ├── containers/                       # route/page UI and page-level logic
 │   ├── auth/
 │   ├── dashboard/
+│   │   ├── builder/[slug]/              # builder page UI (pages/sections/fields + drag-model)
 │   │   ├── components/
 │   │   ├── forms/
 │   │   │   ├── components/
