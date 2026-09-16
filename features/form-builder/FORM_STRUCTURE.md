@@ -69,7 +69,7 @@ stored JSON returns HTTP 422 and never creates a response.
 Automated contracts live in the root `tests/` folder, mirrored by source area:
 
 - `tests/features/form-builder/` covers the shared form tree; and
-- `tests/containers/dashboard/testing-v69/` covers builder drag behaviour.
+- `tests/containers/dashboard/builder/[slug]/` covers builder drag behaviour.
 
 Run `npm test` before changing either contract.
 

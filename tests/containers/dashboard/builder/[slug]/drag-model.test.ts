@@ -10,7 +10,7 @@ import {
   stagePaletteField,
   stagePaletteSection,
   updateField,
-} from '@/containers/dashboard/testing-v69/drag-model'
+} from '@/containers/dashboard/builder/[slug]/drag-model'
 import { describe, expect, it } from 'vitest'
 
 const field = (id: string): FieldConfig =>
@@ -34,7 +34,7 @@ const fieldIds = (structure: FormStructure): string[] =>
     item.fields.map((entry) => entry.id),
   )
 
-describe('v69 drag model', () => {
+describe('builder drag model', () => {
   it('creates a section when a palette field lands on an empty canvas', () => {
     const result = stagePaletteField(form([]), 'page-a', field('palette'), {
       id: CANVAS_DROP_ID,
