@@ -1214,9 +1214,9 @@ function TestingV69BuilderContent({
           </CardContent>
         </Card>
 
-        <ScrollArea className="sticky flex-1 overflow-auto p-4 pt-6 md:p-4 md:pt-6">
-          <div className="flex flex-row justify-between">
-            <h1 className="mb-6 text-3xl font-bold">Builder</h1>
+        <ScrollArea className="sticky flex-1 overflow-auto bg-card">
+          <div className="flex flex-row justify-between bg-[#111111] px-4 pt-6 md:px-4 md:pt-6">
+            <h1 className="text-3xl font-bold">Builder</h1>
             <div className="flex gap-2">
               {isExistingForm ? (
                 <CopyButton value={`${siteConfig.url}/forms/${currentFormId}`} />
@@ -1240,7 +1240,7 @@ function TestingV69BuilderContent({
 
           <Card
             className={cn(
-              'mb-1 flex h-[calc(100vh-72px)] flex-col gap-0 overflow-hidden rounded-3xl border-none bg-card text-card-foreground !p-0',
+              'mb-1 flex h-[calc(100vh-72px)] flex-col gap-0 overflow-hidden rounded-none border-none bg-card text-card-foreground !p-0',
             )}
           >
             <ChromeTabStrip

@@ -29,7 +29,7 @@ export function ChromeTabStrip({
   return (
     <nav
       aria-label="Form pages"
-      className="relative flex h-[52px] min-w-0 max-w-full items-end gap-0.5 overflow-x-auto rounded-t-3xl bg-[#111111] px-4 pt-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="relative flex h-[52px] min-w-0 max-w-full items-end gap-0.5 overflow-x-auto bg-[#111111] px-4 pt-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {pages.map((page, index) => {
         const isActive = page.id === activePageId
