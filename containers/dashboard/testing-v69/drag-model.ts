@@ -119,6 +119,34 @@ function updatePage(
   }
 }
 
+function insertField(
+  structure: FormStructure,
+  pageId: string,
+  field: FieldConfig,
+  destination: FieldDestination,
+): FormStructure {
+  return updatePage(structure, pageId, (currentPage) => ({
+    ...currentPage,
+    sections: currentPage.sections.map((section) => {
+      if (section.id !== destination.sectionId) return section
+
+      const index = Math.min(
+        Math.max(destination.index, 0),
+        section.fields.length,
+      )
+
+      return {
+        ...section,
+        fields: [
+          ...section.fields.slice(0, index),
+          field,
+          ...section.fields.slice(index),
+        ],
+      }
+    }),
+  }))
+}
+
 export function removeField(
   structure: FormStructure,
   pageId: string,
@@ -173,26 +201,7 @@ export function stagePaletteField(
 
   return {
     placed: true,
-    structure: updatePage(withoutField, pageId, (currentPage) => ({
-      ...currentPage,
-      sections: currentPage.sections.map((section) => {
-        if (section.id !== destination.sectionId) return section
-
-        const index = Math.min(
-          Math.max(destination.index, 0),
-          section.fields.length,
-        )
-
-        return {
-          ...section,
-          fields: [
-            ...section.fields.slice(0, index),
-            field,
-            ...section.fields.slice(index),
-          ],
-        }
-      }),
-    })),
+    structure: insertField(withoutField, pageId, field, destination),
   }
 }
 
@@ -219,26 +228,7 @@ export function moveExistingField(
   const destination = resolveFieldDestination(destinationPage, target)
   if (!destination?.sectionId) return structure
 
-  return updatePage(withoutField, pageId, (currentPage) => ({
-    ...currentPage,
-    sections: currentPage.sections.map((section) => {
-      if (section.id !== destination.sectionId) return section
-
-      const index = Math.min(
-        Math.max(destination.index, 0),
-        section.fields.length,
-      )
-
-      return {
-        ...section,
-        fields: [
-          ...section.fields.slice(0, index),
-          source.field,
-          ...section.fields.slice(index),
-        ],
-      }
-    }),
-  }))
+  return insertField(withoutField, pageId, source.field, destination)
 }
 
 export function removeSection(
