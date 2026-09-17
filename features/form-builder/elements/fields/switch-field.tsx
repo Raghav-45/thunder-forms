@@ -278,7 +278,7 @@ export class SwitchFieldDefinition extends FormFieldDefinition<SwitchConfig> {
 
   defaultConfig(): SwitchConfig {
     return {
-      id: `switch_${Date.now()}`,
+      id: `switch_${crypto.randomUUID()}`,
       uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Toggle option',
       placeholder: '',

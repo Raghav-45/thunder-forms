@@ -237,7 +237,7 @@ const SingleSelectEditorComponent: React.FC<
   const handleAddOption = () => {
     const newOption: SingleSelectOption = {
       label: 'New Option',
-      value: `option_${Date.now()}`,
+      value: `option_${crypto.randomUUID()}`,
       disabled: false,
     }
     setConfig((prev) => ({
@@ -446,7 +446,7 @@ export class SingleSelectFieldDefinition extends FormFieldDefinition<SingleSelec
 
   defaultConfig(): SingleSelectConfig {
     return {
-      id: `select_${Date.now()}`,
+      id: `select_${crypto.randomUUID()}`,
       uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Select an option',
       placeholder: 'Choose one...',

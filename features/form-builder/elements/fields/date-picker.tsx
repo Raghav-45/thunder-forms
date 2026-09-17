@@ -415,7 +415,7 @@ export class DatePickerFieldDefinition extends FormFieldDefinition<DatePickerCon
 
   defaultConfig(): DatePickerConfig {
     return {
-      id: `datepicker_${Date.now()}`,
+      id: `datepicker_${crypto.randomUUID()}`,
       uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Select Date',
       placeholder: 'Pick a date',

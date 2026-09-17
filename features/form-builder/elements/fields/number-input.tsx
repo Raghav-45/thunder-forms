@@ -312,7 +312,7 @@ export class NumberInputFieldDefinition extends FormFieldDefinition<NumberInputC
 
   defaultConfig(): NumberInputConfig {
     return {
-      id: `number_${Date.now()}`,
+      id: `number_${crypto.randomUUID()}`,
       uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Amount',
       placeholder: 'Enter a number',

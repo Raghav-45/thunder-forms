@@ -366,7 +366,7 @@ export class TextInputFieldDefinition extends FormFieldDefinition<TextInputConfi
 
   defaultConfig(): TextInputConfig {
     return {
-      id: `text_${Date.now()}`,
+      id: `text_${crypto.randomUUID()}`,
       uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Your Name',
       placeholder: 'e.g., John Doe',

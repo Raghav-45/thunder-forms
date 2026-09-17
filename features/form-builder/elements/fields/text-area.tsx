@@ -272,7 +272,7 @@ export class TextAreaFieldDefinition extends FormFieldDefinition<TextAreaConfig>
 
   defaultConfig(): TextAreaConfig {
     return {
-      id: `textarea_${Date.now()}`,
+      id: `textarea_${crypto.randomUUID()}`,
       uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Your Message',
       placeholder: 'Type your message here.',

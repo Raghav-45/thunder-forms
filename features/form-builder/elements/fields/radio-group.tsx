@@ -235,7 +235,7 @@ const RadioGroupEditorComponent: React.FC<
   const handleAddOption = () => {
     const newOption: RadioOption = {
       label: 'New Option',
-      value: `option_${Date.now()}`,
+      value: `option_${crypto.randomUUID()}`,
       disabled: false,
     }
     setConfig((prev) => ({
@@ -444,7 +444,7 @@ export class RadioGroupFieldDefinition extends FormFieldDefinition<RadioGroupCon
 
   defaultConfig(): RadioGroupConfig {
     return {
-      id: `radio_${Date.now()}`,
+      id: `radio_${crypto.randomUUID()}`,
       uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Choose one',
       description: '',

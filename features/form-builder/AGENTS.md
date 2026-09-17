@@ -83,7 +83,7 @@ export class ExampleFieldDefinition extends FormFieldDefinition<ExampleFieldConf
 
   defaultConfig(): ExampleFieldConfig {
     return {
-      id: `example_${Date.now()}`,
+      id: `example_${crypto.randomUUID()}`,
       uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Example field',
       required: false,

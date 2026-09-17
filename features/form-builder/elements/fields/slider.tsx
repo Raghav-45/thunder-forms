@@ -327,7 +327,7 @@ export class SliderFieldDefinition extends FormFieldDefinition<SliderConfig> {
 
   defaultConfig(): SliderConfig {
     return {
-      id: `slider_${Date.now()}`,
+      id: `slider_${crypto.randomUUID()}`,
       uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Select a value',
       description: '',

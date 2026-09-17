@@ -259,7 +259,7 @@ export class CheckboxFieldDefinition extends FormFieldDefinition<CheckboxConfig>
 
   defaultConfig(): CheckboxConfig {
     return {
-      id: `checkbox_${Date.now()}`,
+      id: `checkbox_${crypto.randomUUID()}`,
       uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'I agree to the terms',
       placeholder: '',

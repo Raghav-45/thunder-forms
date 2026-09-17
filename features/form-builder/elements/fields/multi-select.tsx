@@ -374,7 +374,7 @@ const MultiSelectEditorComponent: React.FC<
   const handleAddOption = () => {
     const newOption: SelectOption = {
       label: 'New Option',
-      value: `option_${Date.now()}`,
+      value: `option_${crypto.randomUUID()}`,
       disabled: false,
     }
 
@@ -646,7 +646,7 @@ export class MultiSelectFieldDefinition extends FormFieldDefinition<MultiSelectC
 
   defaultConfig(): MultiSelectConfig {
     return {
-      id: `multiselect_${Date.now()}`,
+      id: `multiselect_${crypto.randomUUID()}`,
       uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Select your framework',
       placeholder: 'Select multiple options',

@@ -462,7 +462,7 @@ export class DateTimePickerFieldDefinition extends FormFieldDefinition<DateTimeP
 
   defaultConfig(): DateTimePickerConfig {
     return {
-      id: `datetime_${Date.now()}`,
+      id: `datetime_${crypto.randomUUID()}`,
       uniqueIdentifier: FIELD_IDENTIFIER,
       label: 'Select Date & Time',
       placeholder: 'Pick a date & time',
