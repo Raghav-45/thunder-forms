@@ -9,7 +9,6 @@
 - No CLAUDE.md, no architecture docs
 - README is default Next.js boilerplate — says nothing about the actual product
 - Landing page uses placeholder images from shadcnblocks CDN and claims "10k+ users" (likely fake social proof — keep it as it is)
-- `FormResponseViewerCard.tsx` uses hardcoded fake data
 
 ---
 
@@ -19,8 +18,8 @@
 **What:** Add loading state + disable submit button during form submission. Prevent duplicate responses.
 **Effort:** S
 
-### 2. Route group rename
-**What:** Rename `app/(test)/` to `app/(builder)/` for the builder and `app/(public)/` for form submission pages.
+### 2. Route group rename — DONE
+**What was:** Rename `app/(test)/` to `app/(builder)/` for the builder and `app/(public)/` for form submission pages.
 **Effort:** S
 
 ### 3. Smart templates gallery

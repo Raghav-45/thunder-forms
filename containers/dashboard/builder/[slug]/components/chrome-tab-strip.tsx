@@ -85,7 +85,7 @@ export function ChromeTabStrip({
                 title={`Delete page ${index + 1}`}
                 onClick={() => onRemovePage(page.id)}
                 className={cn(
-                  'relative z-20 -mr-1 grid size-5 shrink-0 place-items-center rounded-full text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-ring',
+                  'relative z-20 -mr-1 grid size-5 shrink-0 place-items-center rounded-full text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-ring pointer-coarse:opacity-100',
                   isActive
                     ? 'opacity-100'
                     : 'group-hover/tab:opacity-100',

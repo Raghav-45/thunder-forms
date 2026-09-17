@@ -188,8 +188,6 @@ export default function FormPage({ params }: FormPageProps) {
         }
       })
       setFormData(initialFormData)
-      
-      console.log(form.data)
     }
   }, [form.isError, form.isSuccess, form.data, setFormSettings])
 

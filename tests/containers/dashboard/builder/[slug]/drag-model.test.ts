@@ -342,4 +342,26 @@ describe('builder drag model', () => {
 
     expect(fieldCount(structure)).toBe(3)
   })
+
+  it('drops a palette field into an empty section by section id or surface', () => {
+    const initial = form([
+      section('section-a'),
+      section('section-b', [field('field-b')]),
+    ])
+
+    const bySectionId = stagePaletteField(initial, 'page-a', field('palette'), {
+      id: 'section-a',
+    })
+    expect(bySectionId.placed).toBe(true)
+    expect(fieldIds(bySectionId.structure)).toEqual(['palette', 'field-b'])
+
+    const bySurface = stagePaletteField(
+      initial,
+      'page-a',
+      field('surface'),
+      { id: 'surface-x', data: { sectionId: 'section-a' } },
+    )
+    expect(bySurface.placed).toBe(true)
+    expect(fieldIds(bySurface.structure)).toEqual(['surface', 'field-b'])
+  })
 })

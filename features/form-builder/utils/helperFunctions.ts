@@ -56,5 +56,12 @@ export const validateFieldConfig = (config: FieldConfig): string[] => {
     errors.push('Field label is required')
   }
 
+  if (
+    typeof config.uniqueIdentifier === 'string' &&
+    !(config.uniqueIdentifier in FIELD_REGISTRY)
+  ) {
+    errors.push(`Unknown field type: ${config.uniqueIdentifier}`)
+  }
+
   return errors
 }
