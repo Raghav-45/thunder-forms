@@ -3,6 +3,7 @@ import {
   createFormStructure,
   getOrderedFormFields,
   isFormStructure,
+  sanitizeImportedFields,
   type FormStructure,
 } from '@/features/form-builder/form-structure'
 import { describe, expect, it } from 'vitest'
@@ -127,5 +128,35 @@ describe('form structure', () => {
         pages: [{ id: 'page', sections: [{ id: 'page', fields: [] }] }],
       }),
     ).toBe(false)
+  })
+})
+
+describe('sanitizeImportedFields', () => {
+  it('drops unknown types and repairs missing or duplicate ids', () => {
+    const result = sanitizeImportedFields([
+      field('keep'),
+      { ...field('keep'), label: 'duplicate id' },
+      { ...field(''), label: 'missing id' },
+      { id: 'bad', label: 'bad', uniqueIdentifier: 'unknown' },
+      'not-an-object',
+      null,
+    ])
+
+    expect(result).toHaveLength(3)
+    expect(result[0].id).toBe('keep')
+    expect(new Set(result.map((item) => item.id)).size).toBe(3)
+    expect(
+      result.every((item) =>
+        isFormStructure({
+          pages: [{ id: 'page', sections: [{ id: 'section', fields: [item] }] }],
+        }),
+      ),
+    ).toBe(true)
+  })
+
+  it('returns an empty list for non-array payloads', () => {
+    expect(sanitizeImportedFields(undefined)).toEqual([])
+    expect(sanitizeImportedFields({})).toEqual([])
+    expect(sanitizeImportedFields('fields')).toEqual([])
   })
 })

@@ -1,5 +1,7 @@
 // pages/api/analytics/[id]/index.ts (Modified)
-import { analyticsPrisma } from '@/lib/prisma'
+import { analyticsPrisma, prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 // Define interfaces for type safety
@@ -34,6 +36,31 @@ export async function GET(
 
   if (!id) {
     return NextResponse.json({ error: 'Missing ID' }, { status: 400 })
+  }
+
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const form = await prisma.forms.findUnique({
+    where: { id },
+    select: { userId: true },
+  })
+  if (!form) {
+    return NextResponse.json({ error: 'Form not found' }, { status: 404 })
+  }
+  if (form.userId !== session.user.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
+
+  if (!process.env.ANALYTICS_DATABASE_URL) {
+    return NextResponse.json(
+      { error: 'Analytics DB not configured' },
+      { status: 500 }
+    )
   }
 
   try {

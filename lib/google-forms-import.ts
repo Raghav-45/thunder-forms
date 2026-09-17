@@ -121,11 +121,8 @@ function slugify(text: string): string {
     .replace(/^_|_$/g, '')
 }
 
-let fieldCounter = 0
-
 function nextId(prefix: string): string {
-  fieldCounter++
-  return `${prefix}_${Date.now()}_${fieldCounter}`
+  return `${prefix}_${crypto.randomUUID()}`
 }
 
 function mapQuestionItem(item: GoogleFormItem): ImportedField | null {
@@ -272,8 +269,6 @@ export async function importGoogleForm(formUrl: string): Promise<ImportResult> {
 
   const fields: ImportedField[] = []
   const skippedItems: string[] = []
-
-  fieldCounter = 0
 
   for (const item of form.items || []) {
     // Page breaks and text items are not supported.

@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai'
 import { NextResponse } from 'next/server'
+import { isKnownFieldIdentifier } from '@/features/form-builder/form-structure'
 import { SYSTEM_PROMPT } from './prompt'
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
@@ -40,7 +41,42 @@ export async function GET(request: Request) {
     .replace(/```\n?/g, '')
     .trim()
 
-  const parsedJson = JSON.parse(cleanedJson)
+  let parsedJson: {
+    title?: unknown
+    description?: unknown
+    fields?: unknown
+  }
+  try {
+    parsedJson = JSON.parse(cleanedJson)
+  } catch {
+    return NextResponse.json(
+      { error: 'AI returned invalid JSON' },
+      { status: 502 },
+    )
+  }
+
+  // LLM output trust boundary: never pass unvalidated model output to the
+  // client. Require the documented shape and known field types only.
+  if (
+    typeof parsedJson !== 'object' ||
+    parsedJson === null ||
+    typeof parsedJson.title !== 'string' ||
+    !Array.isArray(parsedJson.fields) ||
+    !parsedJson.fields.every(
+      (field) =>
+        typeof field === 'object' &&
+        field !== null &&
+        typeof (field as { id?: unknown }).id === 'string' &&
+        isKnownFieldIdentifier(
+          (field as { uniqueIdentifier?: unknown }).uniqueIdentifier,
+        ),
+    )
+  ) {
+    return NextResponse.json(
+      { error: 'AI returned an unexpected form shape' },
+      { status: 502 },
+    )
+  }
 
   return NextResponse.json({
     ...parsedJson,

@@ -28,8 +28,15 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          await prisma.profiles.create({
-            data: {
+          // Idempotent: retries or duplicate hook runs must not orphan or
+          // crash signup when the profile row already exists.
+          await prisma.profiles.upsert({
+            where: { id: user.id },
+            update: {
+              email: user.email,
+              display_name: (user.displayName as string) || user.name,
+            },
+            create: {
               id: user.id,
               email: user.email,
               display_name: (user.displayName as string) || user.name,

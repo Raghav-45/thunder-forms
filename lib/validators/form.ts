@@ -12,7 +12,7 @@ export const FormValidator = z.object({
     .optional(),
   expiresAt: z.coerce
     .date()
-    .min(new Date(), 'Expiration date must be in the future')
+    .refine((date) => date > new Date(), 'Expiration date must be in the future')
     .optional(),
   redirectUrl: z.string().url('Must be a valid URL').nullable().optional(),
   submitButtonText: z.string().max(50, 'Must be 50 characters or less').nullable().optional(),

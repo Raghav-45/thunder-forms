@@ -5,6 +5,7 @@ import GenerateWithAiPrompt from '@/features/form-builder/core/generate-with-ai'
 import type { FieldConfig } from '@/features/form-builder/elements'
 import {
   isFormStructure,
+  sanitizeImportedFields,
   type FormStructure as PersistedFormStructure,
 } from '@/features/form-builder/form-structure'
 import { CopyButton } from '@/features/form-builder/components/copy-button'
@@ -501,8 +502,16 @@ function BuilderContent({
 
   const replaceWithImportedFields = useCallback(
     (title: string, description: string, fields: FieldConfig[]) => {
+      // AI generation and Google import produce unvalidated payloads. Sanitize
+      // before they enter builder state so unknown types or duplicate ids can
+      // never brick the canvas.
+      const cleanFields = sanitizeImportedFields(fields)
+      if (cleanFields.length === 0) {
+        toast.error('Import produced no usable fields')
+        return
+      }
       const page = createPage()
-      page.sections = [{ ...createSection(), fields }]
+      page.sections = [{ ...createSection(), fields: cleanFields }]
       setFormStructure({ pages: [page] })
       setActivePageId(page.id)
       setFormSettings({ ...formSettings, title, description })

@@ -60,6 +60,18 @@ export const validateFormFields = (
       }
     }
 
+    // Optional fields left untouched submit empty values ('' / [] /
+    // undefined). Field schemas only accept undefined as empty, so skip
+    // field-specific validation for empty optional values.
+    const isEmptyValue =
+      value === undefined ||
+      value === null ||
+      value === '' ||
+      (Array.isArray(value) && value.length === 0)
+    if (!field.required && isEmptyValue) {
+      return
+    }
+
     // Field-specific constraints (length, options, dates, and so on).
     const error = validateFormField(field, value)
     if (error) {

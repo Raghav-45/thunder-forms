@@ -83,6 +83,15 @@ export async function GET() {
     // Fetch analytics data for all user forms by combining conditions
     let rawLogs: WebsiteEventLog[] = []
 
+    // Form ids are DB-sourced cuids, but they are interpolated into raw SQL:
+    // reject anything outside the cuid alphabet as defense in depth.
+    if (!formIds.every((id) => /^c[a-z0-9]+$/.test(id))) {
+      return NextResponse.json(
+        { error: 'Failed to fetch overall analytics' },
+        { status: 500 }
+      )
+    }
+
     if (formIds.length > 0) {
       // Build dynamic where clause for multiple forms
       const whereConditions = formIds

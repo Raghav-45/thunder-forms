@@ -53,6 +53,10 @@ const isKnownField = (value: unknown): value is FieldConfig => {
   return KNOWN_FIELD_IDENTIFIERS.has(value.uniqueIdentifier)
 }
 
+export function isKnownFieldIdentifier(value: unknown): boolean {
+  return typeof value === 'string' && KNOWN_FIELD_IDENTIFIERS.has(value)
+}
+
 const hasUniqueId = (ids: Set<string>, id: string): boolean => {
   if (ids.has(id)) return false
 
@@ -127,4 +131,30 @@ export function getOrderedFormFields(
   return structure.pages.flatMap((page) =>
     page.sections.flatMap((section) => section.fields),
   )
+}
+
+/**
+ * Sanitize externally produced fields (AI generation, Google import) before
+ * they enter builder state. Drops unknown field types and repairs missing or
+ * duplicate ids so the result always passes `isFormStructure` id rules.
+ */
+export function sanitizeImportedFields(value: unknown): FieldConfig[] {
+  if (!Array.isArray(value)) return []
+
+  const seen = new Set<string>()
+  const clean: FieldConfig[] = []
+
+  for (const entry of value) {
+    if (!isRecord(entry) || !isKnownFieldIdentifier(entry.uniqueIdentifier)) {
+      continue
+    }
+    const field = entry as unknown as FieldConfig
+    if (!hasId(field.id) || seen.has(field.id)) {
+      field.id = `imported_${createId()}`
+    }
+    seen.add(field.id)
+    clean.push(field)
+  }
+
+  return clean
 }

@@ -43,8 +43,9 @@ export async function GET(
     )
 
     // Destructure to exclude _count from the response (users shouldn't see internal response count)
+    // and userId (form owners stay private on the public endpoint)
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { _count, ...formWithoutCount } = form
+    const { _count, userId, ...formWithoutCount } = form
 
     // Add status to form response (without _count)
     const formWithStatus = {

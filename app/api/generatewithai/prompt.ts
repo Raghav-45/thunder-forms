@@ -63,7 +63,6 @@ export interface SwitchConfig extends BaseFieldConfig {
 // --- Types from text-area/types.ts ---
 export interface TextAreaConfig extends BaseFieldConfig {
   uniqueIdentifier: 'text-area',
-  inputType?: 'text' | 'email' | 'password' | 'tel' | 'url'
   minLength?: number
   maxLength?: number
   pattern?: string
