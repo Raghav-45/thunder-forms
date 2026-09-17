@@ -806,22 +806,8 @@ function BuilderContent({
       <div className="flex h-screen bg-background text-foreground">
         <Card className="hidden h-screen w-80 overflow-hidden rounded-none border-0 border-r-2 md:block">
           <CardContent className="flex h-full flex-col space-y-4 p-4 py-0">
-            <div className="mb-8 flex flex-row justify-between">
+            <div className="mb-8">
               <h2 className="text-2xl font-bold">Settings</h2>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={handleSaveForm}
-                disabled={isSaving || hasInvalidPersistedStructure}
-                className="cursor-pointer text-xs"
-              >
-                {isSaving ? (
-                  <Loader2Icon className="animate-spin" />
-                ) : (
-                  <SaveIcon />
-                )}
-                {isSaving ? 'Saving...' : 'Save'}
-              </Button>
             </div>
 
             <div className="grid w-full items-center gap-1.5">
