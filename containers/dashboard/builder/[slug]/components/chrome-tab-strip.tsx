@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils'
 import { GlobeIcon, PlusIcon, XIcon } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
+import { useEffect, useRef } from 'react'
 
 export interface ChromeTabStripPage {
   id: string
@@ -25,10 +26,20 @@ export function ChromeTabStrip({
   canRemovePage,
 }: ChromeTabStripProps) {
   const shouldReduceMotion = useReducedMotion()
+  const navRef = useRef<HTMLElement | null>(null)
+
+  // Keep the active tab visible when switching or adding pages. `nearest`
+  // scrolls the strip horizontally without moving the page vertically.
+  useEffect(() => {
+    navRef.current
+      ?.querySelector('[data-active]')
+      ?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  }, [activePageId, pages.length])
 
   return (
     <nav
       aria-label="Form pages"
+      ref={navRef}
       className="relative flex h-[52px] min-w-0 max-w-full items-end gap-0.5 overflow-x-auto bg-[#111111] px-4 pt-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {pages.map((page, index) => {

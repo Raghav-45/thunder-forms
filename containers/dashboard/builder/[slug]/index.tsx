@@ -803,7 +803,7 @@ function BuilderContent({
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex h-screen bg-background text-foreground">
+      <div className="flex h-screen min-w-0 bg-background text-foreground">
         <Card className="hidden h-screen w-80 overflow-hidden rounded-none border-0 border-r-2 md:block">
           <CardContent className="flex h-full flex-col space-y-4 p-4 py-0">
             <div className="mb-8">
@@ -849,7 +849,7 @@ function BuilderContent({
           </CardContent>
         </Card>
 
-        <ScrollArea className="sticky flex-1 overflow-auto bg-card">
+        <ScrollArea className="sticky min-w-0 flex-1 overflow-auto bg-card [&_[data-radix-scroll-area-viewport]>div]:w-full [&_[data-radix-scroll-area-viewport]>div]:table-fixed">
           <div className="flex flex-row justify-between bg-[#111111] px-4 pt-6 md:px-4 md:pt-6">
             <h1 className="text-3xl font-bold">Builder</h1>
             <div className="flex gap-2">

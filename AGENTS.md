@@ -6,6 +6,14 @@ Instructions for AI agents working in this codebase.
 
 Make the smallest change that achieves the requested goal. Don't add folders, wrapper components, barrels, or abstractions unless they reduce real duplication or clarify ownership. When two approaches both work, pick the boring one over the clever one.
 
+## Shadcn UI
+
+- Treat `components/ui/` as the original shadcn baseline. Do not change it for feature-specific styling or layout; fix the consuming feature instead. Change a shared primitive only when the task explicitly requires it.
+
+## Skills
+
+- Before starting work, check the repository skills in `.agents/skills/`. When one clearly applies, read and follow its `SKILL.md`.
+
 ## Project structure
 
 - Page route files in `app/` stay thin — import or re-export from `containers/`, unless framework behavior requires otherwise.
