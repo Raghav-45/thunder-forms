@@ -25,6 +25,8 @@ const fields = {
       sections: [
         {
           id: 'section-1',
+          title: 'Contact details',
+          description: 'How we can reach you.',
           fields: [
             {
               id: 'email',

@@ -45,7 +45,7 @@ export const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(
         ref={ref}
         style={isFloating && floatingWidth ? { width: floatingWidth } : undefined}
         className={cn(
-          'group relative flex items-center justify-between rounded-lg border-2 border-dashed border-border bg-card p-3 transition-all duration-200 hover:border-primary/50 hover:shadow-sm cursor-grab active:cursor-grabbing',
+          'group/item relative flex items-center justify-between rounded-lg border-2 border-dashed border-border bg-card p-3 transition-all duration-200 hover:border-primary/50 hover:shadow-sm cursor-grab active:cursor-grabbing',
           state === 'ghost' && 'opacity-30',
           isFloating && 'pointer-events-none shadow-2xl cursor-grabbing',
         )}
@@ -56,7 +56,7 @@ export const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(
 
         {!isFloating && onEdit && onRemove ? (
           <div
-            className="absolute right-3 top-3 z-10 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+            className="absolute right-3 top-3 z-10 flex gap-1 opacity-0 transition-opacity group-hover/item:opacity-100"
             onPointerDown={(event) => event.stopPropagation()}
           >
             <Button
@@ -88,12 +88,15 @@ export const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(
 
 interface SectionCardProps {
   children?: ReactNode
+  description?: string
   fieldSurfaceRef?: (element: HTMLDivElement | null) => void
   floatingWidth?: number | null
   hasDragHandle?: boolean
   handleRef?: (element: Element | null) => void
   isEmpty: boolean
   label: string
+  onEdit?: () => void
+  onRemove?: () => void
   state?: 'ghost' | 'floating'
 }
 
@@ -101,12 +104,15 @@ export const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
   function SectionCard(
     {
       children,
+      description,
       fieldSurfaceRef,
       floatingWidth,
       hasDragHandle,
       handleRef,
       isEmpty,
       label,
+      onEdit,
+      onRemove,
       state,
     },
     ref,
@@ -118,20 +124,56 @@ export const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
         ref={ref}
         style={isFloating && floatingWidth ? { width: floatingWidth } : undefined}
         className={cn(
-          'flex flex-col gap-4 rounded-xl border border-neutral-800 bg-neutral-900 p-4 transition-opacity',
+          'group/section flex flex-col gap-4 rounded-xl border border-neutral-800 bg-neutral-900 p-4 transition-opacity',
           state === 'ghost' && 'opacity-30',
           isFloating && 'pointer-events-none shadow-2xl cursor-grabbing',
         )}
-      >
-        <div
-          ref={handleRef}
-          className={cn(
-            'flex items-center gap-2 text-sm font-medium text-neutral-400',
-            hasDragHandle && 'cursor-grab active:cursor-grabbing',
-          )}
         >
-          <GripVerticalIcon className="size-4" />
-          <span>{label}</span>
+        <div className="flex min-w-0 items-start gap-2 text-sm font-medium text-neutral-400">
+          <div
+            ref={handleRef}
+            className={cn(
+              'flex min-w-0 flex-1 items-start gap-2',
+              hasDragHandle && 'cursor-grab active:cursor-grabbing',
+            )}
+          >
+            <GripVerticalIcon className="mt-0.5 size-4 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate">{label}</p>
+              {description ? (
+                <p className="mt-0.5 truncate text-xs font-normal text-neutral-500">
+                  {description}
+                </p>
+              ) : null}
+            </div>
+          </div>
+          {!isFloating && onEdit && onRemove ? (
+            <div
+              className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover/section:opacity-100 focus-within:opacity-100"
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                className="h-8 w-8 cursor-pointer border border-border/50 bg-background/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary"
+                onClick={onEdit}
+              >
+                <PencilIcon className="h-4 w-4" />
+                <span className="sr-only">Edit {label}</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                className="h-8 w-8 cursor-pointer border border-border/50 bg-background/80 backdrop-blur-sm hover:bg-destructive/10 hover:text-destructive"
+                onClick={onRemove}
+              >
+                <Trash2Icon className="h-4 w-4" />
+                <span className="sr-only">Remove {label}</span>
+              </Button>
+            </div>
+          ) : null}
         </div>
 
         {isEmpty ? (

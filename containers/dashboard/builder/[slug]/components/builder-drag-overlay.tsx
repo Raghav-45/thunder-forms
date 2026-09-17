@@ -46,7 +46,8 @@ export function BuilderDragOverlay({
 
           return (
             <SectionCard
-              label={`Section ${sectionIndex + 1}`}
+              label={section.title || `Section ${sectionIndex + 1}`}
+              description={section.description}
               isEmpty={section.fields.length === 0}
               state="floating"
               floatingWidth={canvasWidth}

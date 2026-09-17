@@ -26,6 +26,8 @@ const fields = {
       sections: [
         {
           id: 'section-1',
+          title: 'Your details',
+          description: 'Tell us about yourself.',
           fields: [
             { id: 'name', label: 'Name', uniqueIdentifier: 'text-input' },
           ],

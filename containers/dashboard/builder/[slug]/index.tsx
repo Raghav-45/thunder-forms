@@ -34,6 +34,7 @@ import { BuilderCanvas } from './components/builder-canvas'
 import { ChromeTabStrip } from './components/chrome-tab-strip'
 import { BuilderDragOverlay } from './components/builder-drag-overlay'
 import { BuilderPalette } from './components/builder-palette'
+import { SectionEditor } from './components/section-editor'
 import { KeyboardSensor, PointerSensor } from '@dnd-kit/dom'
 import { move } from '@dnd-kit/helpers'
 import {
@@ -85,6 +86,7 @@ import {
   stagePaletteField,
   stagePaletteSection,
   updateField,
+  updateSection,
 } from './drag-model'
 
 const sensors = [
@@ -128,6 +130,11 @@ interface EditingField {
   field: FieldConfig
   pageId: string
   sectionId: string
+}
+
+interface EditingSection {
+  pageId: string
+  section: FormSection
 }
 
 interface FormBuilderProps {
@@ -184,6 +191,7 @@ function BuilderContent({
   const [currentFormId, setCurrentFormId] = useState(paramFormId)
   const [activePageId, setActivePageId] = useState(initialState.activePageId)
   const [editingField, setEditingField] = useState<EditingField | null>(null)
+  const [editingSection, setEditingSection] = useState<EditingSection | null>(null)
   const [formStructure, setFormStructure] = useState<FormStructure>(
     initialState.formStructure,
   )
@@ -454,6 +462,9 @@ function BuilderContent({
       setEditingField((current) =>
         current?.pageId === pageId ? null : current,
       )
+      setEditingSection((current) =>
+        current?.pageId === pageId ? null : current,
+      )
       setFormStructure(nextStructure)
     },
     [formStructure, resolvedActivePageId],
@@ -495,6 +506,18 @@ function BuilderContent({
         current?.sectionId === sectionId && current.field.id === fieldId
           ? null
           : current,
+      )
+    },
+    [resolvedActivePageId],
+  )
+
+  const removeSectionById = useCallback(
+    (sectionId: string) => {
+      setFormStructure((prev) =>
+        removeSection(prev, resolvedActivePageId, sectionId),
+      )
+      setEditingSection((current) =>
+        current?.section.id === sectionId ? null : current,
       )
     },
     [resolvedActivePageId],
@@ -919,6 +942,12 @@ function BuilderContent({
                     activePage={activePage}
                     hasSections={hasCanvasSections}
                     onCanvasRef={registerCanvas}
+                    onEditSection={(section) =>
+                      setEditingSection({
+                        pageId: resolvedActivePageId,
+                        section,
+                      })
+                    }
                     onEditField={(field, sectionId) =>
                       setEditingField({
                         field,
@@ -927,6 +956,7 @@ function BuilderContent({
                       })
                     }
                     onFieldSurfaceRef={registerFieldSurface}
+                    onRemoveSection={removeSectionById}
                     onRemoveField={removeFieldById}
                     paletteFieldPlaceholderId={paletteFieldPlaceholderId}
                     paletteSectionPlaceholderId={paletteSectionPlaceholderId}
@@ -966,6 +996,19 @@ function BuilderContent({
             setEditingField(null)
           }}
           onClose={() => setEditingField(null)}
+        />
+      ) : null}
+
+      {editingSection ? (
+        <SectionEditor
+          section={editingSection.section}
+          onUpdate={(section) => {
+            setFormStructure((prev) =>
+              updateSection(prev, editingSection.pageId, section),
+            )
+            setEditingSection(null)
+          }}
+          onClose={() => setEditingSection(null)}
         />
       ) : null}
     </DragDropProvider>

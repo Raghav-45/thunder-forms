@@ -4,6 +4,8 @@ import { FieldConfig } from '@/features/form-builder/elements'
 import {
   getOrderedFormFields,
   isFormStructure,
+  type FormSection,
+  type FormStructure,
 } from '@/features/form-builder/form-structure'
 import { validateFormFields } from '@/features/form-builder/utils/formValidation'
 import { getFieldComponent } from '@/features/form-builder/utils/helperFunctions'
@@ -31,6 +33,7 @@ interface PublicFormSettings {
 export default function FormPage({ params }: FormPageProps) {
   const { slug: currentFormId } = use(params)
   const [fields, setFields] = useState<FieldConfig[]>([])
+  const [sections, setSections] = useState<FormSection[]>([])
   const [formSettings, setFormSettings] = useState<PublicFormSettings | null>(null)
   const [isFormSubmitted, setIsFormSubmitted] = useState(false)
   const [formData, setFormData] = useState<Record<string, unknown>>({})
@@ -160,8 +163,10 @@ export default function FormPage({ params }: FormPageProps) {
         return
       }
 
-      const normalizedFields = getOrderedFormFields(form.data.fields)
+      const formStructure = form.data.fields as FormStructure
+      const normalizedFields = getOrderedFormFields(formStructure)
       setFields(normalizedFields)
+      setSections(formStructure.pages.flatMap((page) => page.sections))
 
       // Check if form is closed based on status from API
       const isClosed = checkIsFormClosed(form.data.status)
@@ -235,7 +240,25 @@ export default function FormPage({ params }: FormPageProps) {
           <p className="text-muted-foreground">{formSettings.description}</p>
         </div>
         <div className="space-y-4 w-full">
-          {fields.map((field) => renderField(field))}
+          {sections.map((section) => (
+            <section key={section.id} className="space-y-4">
+              {section.title || section.description ? (
+                <div className="space-y-1">
+                  {section.title ? (
+                    <h3 className="text-xl font-semibold tracking-tight">
+                      {section.title}
+                    </h3>
+                  ) : null}
+                  {section.description ? (
+                    <p className="text-muted-foreground">
+                      {section.description}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+              {section.fields.map((field) => renderField(field))}
+            </section>
+          ))}
         </div>
         <Button
           className="w-full md:w-auto"

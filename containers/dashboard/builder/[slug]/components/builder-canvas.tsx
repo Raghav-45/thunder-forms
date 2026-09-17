@@ -55,25 +55,31 @@ const SortableItem = memo(function SortableItem({
 })
 
 interface SortableSectionProps {
+  description?: string
   fields: FieldConfig[]
   id: string
   index: number
   isPlaceholder?: boolean
   label: string
+  onEdit: () => void
   onEditField: (field: FieldConfig) => void
   onFieldSurfaceRef: (id: string, element: HTMLDivElement | null) => void
+  onRemove: () => void
   onRemoveField: (fieldId: string) => void
   placeholderFieldId?: string | null
 }
 
 const SortableSection = memo(function SortableSection({
+  description,
   fields,
   id,
   index,
   isPlaceholder,
   label,
+  onEdit,
   onEditField,
   onFieldSurfaceRef,
+  onRemove,
   onRemoveField,
   placeholderFieldId,
 }: PropsWithChildren<SortableSectionProps>) {
@@ -106,10 +112,13 @@ const SortableSection = memo(function SortableSection({
     <SectionCard
       ref={ref}
       label={label}
+      description={description}
       isEmpty={fields.length === 0}
       hasDragHandle
       handleRef={handleRef}
       fieldSurfaceRef={setFieldSurfaceRef}
+      onEdit={isPlaceholder ? undefined : onEdit}
+      onRemove={isPlaceholder ? undefined : onRemove}
       state={isDragSource || isPlaceholder ? 'ghost' : undefined}
     >
       {fields.map((field, fieldIndex) => (
@@ -179,8 +188,10 @@ interface BuilderCanvasProps {
   activePage: FormPage
   hasSections: boolean
   onCanvasRef: (element: HTMLDivElement | null) => void
+  onEditSection: (section: FormPage['sections'][number]) => void
   onEditField: (field: FieldConfig, sectionId: string) => void
   onFieldSurfaceRef: (id: string, element: HTMLDivElement | null) => void
+  onRemoveSection: (sectionId: string) => void
   onRemoveField: (sectionId: string, fieldId: string) => void
   paletteFieldPlaceholderId: string | null
   paletteSectionPlaceholderId: string | null
@@ -190,8 +201,10 @@ export function BuilderCanvas({
   activePage,
   hasSections,
   onCanvasRef,
+  onEditSection,
   onEditField,
   onFieldSurfaceRef,
+  onRemoveSection,
   onRemoveField,
   paletteFieldPlaceholderId,
   paletteSectionPlaceholderId,
@@ -208,12 +221,15 @@ export function BuilderCanvas({
               key={section.id}
               id={section.id}
               index={sectionIndex}
-              label={`Section ${sectionIndex + 1}`}
+              label={section.title || `Section ${sectionIndex + 1}`}
+              description={section.description}
               fields={section.fields}
               isPlaceholder={section.id === paletteSectionPlaceholderId}
               placeholderFieldId={paletteFieldPlaceholderId}
               onFieldSurfaceRef={onFieldSurfaceRef}
+              onEdit={() => onEditSection(section)}
               onEditField={(field) => onEditField(field, section.id)}
+              onRemove={() => onRemoveSection(section.id)}
               onRemoveField={(fieldId) => onRemoveField(section.id, fieldId)}
             />
           ))}

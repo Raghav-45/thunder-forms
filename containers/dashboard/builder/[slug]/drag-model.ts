@@ -323,6 +323,19 @@ export function updateField(
   }))
 }
 
+export function updateSection(
+  structure: FormStructure,
+  pageId: string,
+  section: FormSection,
+): FormStructure {
+  return updatePage(structure, pageId, (page) => ({
+    ...page,
+    sections: page.sections.map((candidate) =>
+      candidate.id === section.id ? section : candidate,
+    ),
+  }))
+}
+
 export function fieldCount(structure: FormStructure): number {
   return getOrderedFields(structure).length
 }

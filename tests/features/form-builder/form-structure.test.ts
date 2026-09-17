@@ -56,6 +56,39 @@ describe('form structure', () => {
     ])
   })
 
+  it('accepts optional section titles and descriptions', () => {
+    expect(
+      isFormStructure({
+        pages: [
+          {
+            id: 'page',
+            sections: [
+              {
+                id: 'section',
+                title: 'About you',
+                description: 'Tell us about yourself.',
+                fields: [field('field')],
+              },
+            ],
+          },
+        ],
+      }),
+    ).toBe(true)
+  })
+
+  it('rejects section metadata that is not text', () => {
+    expect(
+      isFormStructure({
+        pages: [
+          {
+            id: 'page',
+            sections: [{ id: 'section', title: 1, fields: [] }],
+          },
+        ],
+      }),
+    ).toBe(false)
+  })
+
   it('rejects an empty page list before builder state can dereference it', () => {
     expect(isFormStructure({ pages: [] })).toBe(false)
   })

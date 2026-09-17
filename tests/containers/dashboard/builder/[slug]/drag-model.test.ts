@@ -10,6 +10,7 @@ import {
   stagePaletteField,
   stagePaletteSection,
   updateField,
+  updateSection,
 } from '@/containers/dashboard/builder/[slug]/drag-model'
 import { describe, expect, it } from 'vitest'
 
@@ -293,6 +294,25 @@ describe('builder drag model', () => {
     expect(withoutSection.pages[0].sections.map((item) => item.id)).toEqual([
       'section-a',
     ])
+  })
+
+  it('updates only the requested section metadata', () => {
+    const initial = form([
+      { ...section('section-a'), title: 'First' },
+      { ...section('section-b'), title: 'Second' },
+    ])
+
+    const updated = updateSection(initial, 'page-a', {
+      ...initial.pages[0].sections[1],
+      title: 'About you',
+      description: 'Tell us more.',
+    })
+
+    expect(updated.pages[0].sections[0].title).toBe('First')
+    expect(updated.pages[0].sections[1]).toMatchObject({
+      title: 'About you',
+      description: 'Tell us more.',
+    })
   })
 
   it('leaves unrelated fields untouched for invalid remove or update targets', () => {

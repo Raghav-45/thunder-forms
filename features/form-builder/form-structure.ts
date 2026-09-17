@@ -3,8 +3,10 @@ import {
 } from '@/features/form-builder/elements'
 
 export interface FormSection {
+  description?: string
   id: string
   fields: FieldConfig[]
+  title?: string
 }
 
 export interface FormPage {
@@ -113,7 +115,10 @@ export function isFormStructure(value: unknown): value is FormStructure {
         !isRecord(section) ||
         !hasId(section.id) ||
         !hasUniqueId(ids, section.id) ||
-        !Array.isArray(section.fields)
+        !Array.isArray(section.fields) ||
+        (section.title !== undefined && typeof section.title !== 'string') ||
+        (section.description !== undefined &&
+          typeof section.description !== 'string')
       ) {
         return false
       }
