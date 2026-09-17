@@ -33,18 +33,28 @@ test('page tabs scroll without widening the builder', async ({ page }) => {
     .getByRole('navigation', { name: 'Form pages' })
     .evaluate((nav) => {
       const active = nav.querySelector('[data-active]')
+      const addPage = nav.querySelector('[data-add-page]')
       const navRect = nav.getBoundingClientRect()
       const activeRect = active?.getBoundingClientRect()
+      const addPageRect = addPage?.getBoundingClientRect()
 
       return {
         documentWidth: document.documentElement.scrollWidth,
         viewportWidth: window.innerWidth,
         navWidth: nav.clientWidth,
         navScrollWidth: nav.scrollWidth,
+        addPageRightGap: addPageRect
+          ? navRect.right - addPageRect.right
+          : 0,
         activeVisible: Boolean(
           activeRect &&
             activeRect.left >= navRect.left &&
             activeRect.right <= navRect.right,
+        ),
+        addPageVisible: Boolean(
+          addPageRect &&
+            addPageRect.left >= navRect.left &&
+            addPageRect.right <= navRect.right,
         ),
       }
     })
@@ -52,4 +62,6 @@ test('page tabs scroll without widening the builder', async ({ page }) => {
   expect(measurements.documentWidth).toBe(measurements.viewportWidth)
   expect(measurements.navScrollWidth).toBeGreaterThan(measurements.navWidth)
   expect(measurements.activeVisible).toBe(true)
+  expect(measurements.addPageVisible).toBe(true)
+  expect(measurements.addPageRightGap).toBeGreaterThanOrEqual(16)
 })

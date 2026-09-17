@@ -27,13 +27,23 @@ export function ChromeTabStrip({
 }: ChromeTabStripProps) {
   const shouldReduceMotion = useReducedMotion()
   const navRef = useRef<HTMLElement | null>(null)
+  const previousPageCount = useRef(pages.length)
 
-  // Keep the active tab visible when switching or adding pages. `nearest`
-  // scrolls the strip horizontally without moving the page vertically.
+  // Keep the selected tab visible, and keep the add control reachable after
+  // it creates a new tab. `nearest` only scrolls the strip horizontally.
   useEffect(() => {
-    navRef.current
-      ?.querySelector('[data-active]')
-      ?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+    const addedPage = pages.length > previousPageCount.current
+    const nav = navRef.current
+
+    if (addedPage && nav) {
+      nav.scrollTo({ left: nav.scrollWidth })
+    } else {
+      nav
+        ?.querySelector('[data-active]')
+        ?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+    }
+
+    previousPageCount.current = pages.length
   }, [activePageId, pages.length])
 
   return (
@@ -110,6 +120,7 @@ export function ChromeTabStrip({
       })}
       <button
         type="button"
+        data-add-page
         onClick={onAddPage}
         aria-label="Add page"
         title="Add page"
