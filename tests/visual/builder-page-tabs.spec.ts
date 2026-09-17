@@ -16,13 +16,7 @@ test('page tabs retain the Chrome tab-strip treatment', async ({ page }) => {
 
 test('page tabs scroll without widening the builder', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 })
-  await page.goto(
-    new URL(
-      '/dashboard/builder/new-form',
-      process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000',
-    ).toString(),
-    { waitUntil: 'networkidle' },
-  )
+  await page.goto('/dashboard/builder/new-form', { waitUntil: 'networkidle' })
 
   const addPage = page.getByRole('button', { name: 'Add page' })
   for (let index = 0; index < 6; index += 1) {
