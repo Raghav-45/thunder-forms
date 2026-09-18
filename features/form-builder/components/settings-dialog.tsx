@@ -30,16 +30,18 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { useFormStore } from "@/features/form-builder/store"
 import { DatePickerWithPresets } from "@/features/form-builder/components/date-picker-with-presets"
+import { GoogleSheetsIntegration } from '@/features/google-sheets/components/google-sheets-integration'
 
 const data = {
   nav: [
     { name: "Access & Control", icon: Shield },
     { name: "Navigation", icon: Split },
     { name: "Appearance", icon: Settings },
+    { name: "Integrations", icon: Link },
   ],
 }
 
-export function SettingsDialog() {
+export function SettingsDialog({ formId }: { formId: string | null }) {
   const [open, setOpen] = React.useState(false)
   const [activeTab, setActiveTab] = React.useState("Access & Control")
   const { formSettings, setFormSettings } = useFormStore()
@@ -84,6 +86,21 @@ export function SettingsDialog() {
             </SidebarContent>
           </Sidebar>
           <main className="flex h-[550px] flex-1 flex-col overflow-hidden bg-background">
+            <div className="flex gap-1 overflow-x-auto border-b p-2 md:hidden">
+              {data.nav.map((item) => (
+                <Button
+                  key={item.name}
+                  type="button"
+                  variant={activeTab === item.name ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => setActiveTab(item.name)}
+                  className="shrink-0"
+                >
+                  <item.icon className="mr-1.5 h-4 w-4" />
+                  {item.name}
+                </Button>
+              ))}
+            </div>
             <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-8">
 
               {/* --- Access & Control --- */}
@@ -202,6 +219,10 @@ export function SettingsDialog() {
                     </div>
                   </div>
                 </div>
+              )}
+
+              {activeTab === "Integrations" && (
+                <GoogleSheetsIntegration formId={formId} />
               )}
             </div>
           </main>

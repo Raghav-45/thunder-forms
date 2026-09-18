@@ -1,70 +1,125 @@
 import { auth } from '@/lib/auth'
+import {
+  importGoogleForm,
+  listGoogleForms,
+} from '@/features/google-forms-import/server/forms'
+import {
+  consumeGoogleFormsImportSession,
+  getGoogleFormsImportAccessToken,
+  GOOGLE_FORMS_IMPORT_SESSION_COOKIE,
+  googleFormsImportCookieOptions,
+} from '@/features/google-forms-import/server/session'
 import { headers } from 'next/headers'
-import { importGoogleForm, extractFormId, isResponderLink } from '@/lib/google-forms-import'
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function POST(request: NextRequest) {
+function googleErrorStatus(error: unknown): number | null {
+  if (typeof error !== 'object' || error === null) return null
+  const response = (error as { response?: { status?: unknown } }).response
+  return typeof response?.status === 'number' ? response.status : null
+}
+
+function isGoogleFormId(value: unknown): value is string {
+  return typeof value === 'string' && /^[A-Za-z0-9_-]+$/.test(value)
+}
+
+async function currentUserId(): Promise<string | null> {
+  const session = await auth.api.getSession({ headers: await headers() })
+  return session?.user?.id || null
+}
+
+function clearImportSession(response: NextResponse) {
+  response.cookies.set(
+    GOOGLE_FORMS_IMPORT_SESSION_COOKIE,
+    '',
+    googleFormsImportCookieOptions(),
+  )
+  return response
+}
+
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers()
-    })
-    if (!session?.user?.id) {
+    const userId = await currentUserId()
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const { url } = body
-
-    if (!url || typeof url !== 'string') {
-      return NextResponse.json(
-        { error: 'Google Forms URL is required' },
-        { status: 400 }
+    const accessToken = await getGoogleFormsImportAccessToken(request, userId)
+    if (!accessToken) {
+      return clearImportSession(
+        NextResponse.json(
+          { error: 'Google authorization expired. Connect Google again.' },
+          { status: 401 },
+        ),
       )
     }
 
-    if (isResponderLink(url)) {
-      return NextResponse.json(
-        { error: 'This is a sharing/responder link. Please use the edit link instead — open the form in Google Forms and copy the URL from the address bar (it should look like docs.google.com/forms/d/.../edit).' },
-        { status: 400 }
-      )
-    }
-
-    const formId = extractFormId(url)
-    if (!formId) {
-      return NextResponse.json(
-        { error: 'Invalid Google Forms URL. Expected format: https://docs.google.com/forms/d/...' },
-        { status: 400 }
-      )
-    }
-
-    const result = await importGoogleForm(url)
-
-    return NextResponse.json(result)
-  } catch (error: unknown) {
-    console.error('Google Forms import error:', error)
-
-    const statusCode = (error as { code?: number })?.code
-    if (statusCode === 404) {
-      return NextResponse.json(
-        { error: 'Google Form not found. Check the URL and make sure the form is shared with the service account.' },
-        { status: 404 }
-      )
-    }
-    if (statusCode === 403) {
-      return NextResponse.json(
-        { error: 'No access to this form. Please share it with the service account email.' },
-        { status: 403 }
-      )
+    const pageToken = request.nextUrl.searchParams.get('pageToken')
+    if (pageToken && pageToken.length > 1_000) {
+      return NextResponse.json({ error: 'Invalid page token' }, { status: 400 })
     }
 
     return NextResponse.json(
+      await listGoogleForms(accessToken, pageToken || undefined),
+    )
+  } catch (error) {
+    console.error('Google Forms listing failed:', error)
+    const status = googleErrorStatus(error)
+    return NextResponse.json(
       {
-        error: 'Failed to import Google Form',
-        message: process.env.NODE_ENV === 'development' && error instanceof Error
-          ? error.message
-          : undefined,
+        error:
+          status === 401 || status === 403
+            ? 'Google authorization expired. Connect Google again.'
+            : 'Could not load Google Forms',
       },
-      { status: 500 }
+      { status: status === 401 || status === 403 ? 401 : 500 },
+    )
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const userId = await currentUserId()
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { formId } = await request.json()
+    if (!isGoogleFormId(formId)) {
+      return NextResponse.json(
+        { error: 'Invalid Google Form selection' },
+        { status: 400 },
+      )
+    }
+
+    const accessToken = await getGoogleFormsImportAccessToken(request, userId)
+    if (!accessToken) {
+      return clearImportSession(
+        NextResponse.json(
+          { error: 'Google authorization expired. Connect Google again.' },
+          { status: 401 },
+        ),
+      )
+    }
+
+    const result = await importGoogleForm(accessToken, formId)
+    await consumeGoogleFormsImportSession(request, userId)
+    return clearImportSession(NextResponse.json(result))
+  } catch (error) {
+    console.error('Google Forms import failed:', error)
+    const status = googleErrorStatus(error)
+    return NextResponse.json(
+      {
+        error:
+          status === 404
+            ? 'That Google Form is no longer available.'
+            : status === 401 || status === 403
+              ? 'Google authorization expired. Connect Google again.'
+              : 'Could not import Google Form',
+      },
+      {
+        status:
+          status === 404 ? 404 : status === 401 || status === 403 ? 401 : 500,
+      },
     )
   }
 }

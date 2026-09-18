@@ -2,14 +2,29 @@ import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
+  after: vi.fn(),
+  createDelivery: vi.fn(),
   createResponse: vi.fn(),
+  drainGoogleSheetsDeliveries: vi.fn(),
   findForm: vi.fn(),
+  transaction: vi.fn(),
+}))
+
+vi.mock('next/server', async (importOriginal) => {
+  const original = await importOriginal<typeof import('next/server')>()
+  return { ...original, after: mocks.after }
+})
+
+vi.mock('@/features/google-sheets/server/deliveries', () => ({
+  drainGoogleSheetsDeliveries: mocks.drainGoogleSheetsDeliveries,
 }))
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     forms: { findUnique: mocks.findForm },
     responses: { create: mocks.createResponse },
+    google_sheets_deliveries: { create: mocks.createDelivery },
+    $transaction: mocks.transaction,
   },
 }))
 
@@ -59,7 +74,18 @@ describe('POST /api/forms/[id]/submit', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.findForm.mockResolvedValue(storedForm())
-    mocks.createResponse.mockResolvedValue({ id: 'response-1' })
+    mocks.createResponse.mockResolvedValue({
+      id: 'response-1',
+      createdAt: new Date('2026-09-18T00:00:00.000Z'),
+    })
+    mocks.drainGoogleSheetsDeliveries.mockResolvedValue(1)
+    mocks.transaction.mockImplementation(async (callback) =>
+      callback({
+        forms: { findUnique: mocks.findForm },
+        responses: { create: mocks.createResponse },
+        google_sheets_deliveries: { create: mocks.createDelivery },
+      }),
+    )
   })
 
   it('returns 400 before querying the form for non-object data', async () => {
@@ -145,30 +171,57 @@ describe('POST /api/forms/[id]/submit', () => {
     })
   })
 
-  it('creates no more responses than configured limit under concurrent submits', async () => {
-    let findCalls = 0
-    let releaseReads = () => {}
-    const bothReadsStarted = new Promise<void>((resolve) => {
-      releaseReads = resolve
-    })
+  it('retries a serializable transaction conflict before persisting a response', async () => {
+    mocks.transaction
+      .mockRejectedValueOnce({ code: 'P2034' })
+      .mockImplementationOnce(async (callback) =>
+        callback({
+          forms: { findUnique: mocks.findForm },
+          responses: { create: mocks.createResponse },
+          google_sheets_deliveries: { create: mocks.createDelivery },
+        }),
+      )
 
-    mocks.findForm.mockImplementation(async () => {
-      findCalls += 1
-      if (findCalls === 2) {
-        releaseReads()
-      }
-      await bothReadsStarted
-      return storedForm({ maxSubmissions: 1, _count: { responses: 0 } })
-    })
+    const response = await POST(
+      requestFor({ email: 'person@example.com' }),
+      { params },
+    )
 
-    const [first, second] = await Promise.all([
-      POST(requestFor({ email: 'first@example.com' }), { params }),
-      POST(requestFor({ email: 'second@example.com' }), { params }),
-    ])
-
-    expect(
-      [first.status, second.status].filter((status) => status === 201),
-    ).toHaveLength(1)
+    expect(response.status).toBe(201)
+    expect(mocks.transaction).toHaveBeenCalledTimes(2)
     expect(mocks.createResponse).toHaveBeenCalledTimes(1)
+  })
+
+  it('creates an immutable Sheets delivery with an active integration', async () => {
+    mocks.findForm.mockResolvedValue(
+      storedForm({
+        googleSheetsIntegration: {
+          id: 'integration-1',
+          status: 'ACTIVE',
+          headers: [
+            { key: '__response_id', label: 'Submission ID' },
+            { key: '__submitted_at', label: 'Submitted At' },
+            { key: 'email', label: 'Email' },
+          ],
+        },
+      }),
+    )
+
+    const response = await POST(
+      requestFor({ email: 'person@example.com' }),
+      { params },
+    )
+
+    expect(response.status).toBe(201)
+    expect(mocks.createDelivery).toHaveBeenCalledWith({
+      data: {
+        integrationId: 'integration-1',
+        responseId: 'response-1',
+        row: ['response-1', '2026-09-18T00:00:00.000Z', 'person@example.com'],
+      },
+    })
+    expect(mocks.after).toHaveBeenCalledTimes(1)
+    await mocks.after.mock.calls[0][0]()
+    expect(mocks.drainGoogleSheetsDeliveries).toHaveBeenCalledTimes(1)
   })
 })

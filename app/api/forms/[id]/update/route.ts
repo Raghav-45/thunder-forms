@@ -1,6 +1,12 @@
 import { FormValidator } from '@/lib/validators/form'
 import { auth } from '@/lib/auth'
 import { isFormStructure } from '@/features/form-builder/form-structure'
+import { GoogleSheetsIntegrationStatus } from '@prisma/client'
+import {
+  isGoogleSheetsHeaders,
+  reconcileGoogleSheetsHeaders,
+} from '@/features/google-sheets/server/schema'
+import { updateManagedSheetHeaders } from '@/features/google-sheets/server/sheets'
 import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
@@ -43,6 +49,9 @@ export async function POST(
     // Check if form exists and user has permission
     const existingForm = await prisma.forms.findUnique({
       where: { id },
+      include: {
+        googleSheetsIntegration: { include: { connection: true } },
+      },
     })
 
     if (!existingForm) {
@@ -64,19 +73,58 @@ export async function POST(
     //   )
     // }
 
-    // Update the form with the new data
-    const updatedForm = await prisma.forms.update({
-      where: { id },
-      data: {
-        title: title,
-        description: description,
-        fields: fields as unknown as Prisma.InputJsonValue,
-        maxSubmissions: maxSubmissions,
-        expiresAt: expiresAt,
-        redirectUrl: redirectUrl,
-        submitButtonText: submitButtonText,
-      },
-    })
+    const formData = {
+      title: title,
+      description: description,
+      fields: fields as unknown as Prisma.InputJsonValue,
+      maxSubmissions: maxSubmissions,
+      expiresAt: expiresAt,
+      redirectUrl: redirectUrl,
+      submitButtonText: submitButtonText,
+    }
+    const integration = existingForm.googleSheetsIntegration
+    const nextHeaders =
+      integration && isGoogleSheetsHeaders(integration.headers)
+        ? reconcileGoogleSheetsHeaders(integration.headers, fields)
+        : null
+    const headersChanged =
+      nextHeaders !== null &&
+      JSON.stringify(nextHeaders) !== JSON.stringify(integration?.headers)
+
+    if (integration && !nextHeaders) {
+      return NextResponse.json(
+        { error: 'Google Sheets integration headers are invalid' },
+        { status: 409 },
+      )
+    }
+
+    if (
+      integration &&
+      headersChanged &&
+      integration.status === GoogleSheetsIntegrationStatus.ACTIVE
+    ) {
+      await updateManagedSheetHeaders(
+        integration.connection.encryptedRefreshToken,
+        integration.spreadsheetId,
+        integration.sheetId,
+        nextHeaders,
+      )
+    }
+
+    const updatedForm =
+      integration && headersChanged
+        ? await prisma.$transaction(async (transaction) => {
+            const form = await transaction.forms.update({
+              where: { id },
+              data: formData,
+            })
+            await transaction.google_sheets_integrations.update({
+              where: { id: integration.id },
+              data: { headers: nextHeaders as unknown as Prisma.InputJsonValue },
+            })
+            return form
+          })
+        : await prisma.forms.update({ where: { id }, data: formData })
 
     return NextResponse.json(updatedForm)
   } catch (error) {

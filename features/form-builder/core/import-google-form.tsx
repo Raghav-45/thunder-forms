@@ -1,6 +1,6 @@
 'use client'
 
-import { FieldConfig } from '@/features/form-builder/elements'
+import type { FieldConfig } from '@/features/form-builder/elements'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -10,20 +10,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import {
-  Copy,
-  FileDown,
-  Link,
-  Loader2,
-  CheckCircle2,
   ArrowRight,
+  FileDown,
+  FileText,
+  Loader2,
+  RefreshCw,
 } from 'lucide-react'
-import { FC, useState } from 'react'
+import { type FC, useCallback, useEffect, useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-
-const GOOGLE_SERVICE_ACCOUNT_EMAIL =
-  process.env.NEXT_PUBLIC_GOOGLE_SERVICE_ACCOUNT_EMAIL
 
 interface ImportGoogleFormProps {
   onImported: (
@@ -33,87 +29,174 @@ interface ImportGoogleFormProps {
   ) => void
 }
 
+interface GoogleFormSummary {
+  id: string
+  title: string
+  modifiedTime: string | null
+  ownedByMe: boolean
+}
+
+interface GoogleFormsListResponse {
+  forms: GoogleFormSummary[]
+  nextPageToken: string | null
+}
+
+interface GoogleFormsImportResponse {
+  title: string
+  description: string
+  fields: FieldConfig[]
+  skippedItems: string[]
+}
+
+function formatModifiedTime(value: string | null): string {
+  if (!value) return 'Last edited date unavailable'
+  return `Last edited ${new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+  }).format(new Date(value))}`
+}
+
 const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
-  const [url, setUrl] = useState('')
+  const pathname = usePathname()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const googleFormsImportResult = searchParams.get('googleFormsImport')
   const [isOpen, setIsOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [forms, setForms] = useState<GoogleFormSummary[]>([])
+  const [nextPageToken, setNextPageToken] = useState<string | null>(null)
+  const [hasAuthorization, setHasAuthorization] = useState<boolean | null>(null)
+  const [isLoadingForms, setIsLoadingForms] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [importingFormId, setImportingFormId] = useState<string | null>(null)
 
-  function handleCopy() {
-    if (!GOOGLE_SERVICE_ACCOUNT_EMAIL) return
-    navigator.clipboard.writeText(GOOGLE_SERVICE_ACCOUNT_EMAIL)
-    setCopied(true)
-    toast.success('Email copied!')
-    setTimeout(() => setCopied(false), 2000)
-  }
+  const loadForms = useCallback(async (pageToken?: string) => {
+    setIsLoadingForms(true)
+    try {
+      const query = pageToken
+        ? `?${new URLSearchParams({ pageToken }).toString()}`
+        : ''
+      const response = await fetch(`/api/forms/import-google-form${query}`)
+      if (response.status === 401) {
+        setHasAuthorization(false)
+        setForms([])
+        setNextPageToken(null)
+        return
+      }
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Could not load Google Forms')
+      }
 
-  async function handleImport() {
-    if (!url.trim()) {
-      toast.error('Please enter a Google Forms URL')
+      const data = await response.json() as GoogleFormsListResponse
+      setHasAuthorization(true)
+      setForms((current) => pageToken ? [...current, ...data.forms] : data.forms)
+      setNextPageToken(data.nextPageToken)
+    } catch (error) {
+      setHasAuthorization(false)
+      toast.error(
+        error instanceof Error ? error.message : 'Could not load Google Forms',
+      )
+    } finally {
+      setIsLoadingForms(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isOpen) return
+    void loadForms()
+  }, [isOpen, loadForms])
+
+  useEffect(() => {
+    if (!googleFormsImportResult) return
+
+    const nextParams = new URLSearchParams(searchParams.toString())
+    nextParams.delete('googleFormsImport')
+    router.replace(`${pathname}${nextParams.size ? `?${nextParams}` : ''}`)
+
+    if (googleFormsImportResult === 'connected') {
+      setIsOpen(true)
+      toast.success('Google Forms ready to import')
       return
     }
 
-    setIsLoading(true)
+    toast.error(
+      googleFormsImportResult === 'denied'
+        ? 'Google access was not granted'
+        : 'Could not connect to Google Forms',
+    )
+  }, [googleFormsImportResult, pathname, router, searchParams])
+
+  async function connectGoogle() {
+    setIsConnecting(true)
     try {
-      const res = await fetch('/api/forms/import-google-form', {
+      const response = await fetch('/api/forms/import-google-form/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url.trim() }),
+        body: JSON.stringify({ returnTo: pathname }),
       })
-
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Failed to import form')
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Could not start Google authorization')
       }
 
-      const data = await res.json()
-      onImported(
-        data.title,
-        data.description || '',
-        data.fields as FieldConfig[],
-      )
-
-      if (data.skippedItems?.length > 0) {
-        toast.warning(
-          `Imported with ${data.skippedItems.length} skipped item(s)`,
-          {
-            description: data.skippedItems.join('\n'),
-            style: { whiteSpace: 'pre-line' },
-            duration: 8000,
-          },
-        )
-      } else {
-        toast.success(
-          `Imported "${data.title}" with ${data.fields.length} field(s)`,
-        )
+      const { authorizationUrl } = await response.json() as {
+        authorizationUrl: string
       }
-
-      setIsOpen(false)
-      setUrl('')
+      window.location.assign(authorizationUrl)
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : 'Failed to import form',
+        error instanceof Error ? error.message : 'Could not start Google authorization',
       )
-    } finally {
-      setIsLoading(false)
+      setIsConnecting(false)
     }
   }
 
-  const stepNumber = (n: number) => (
-    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background text-xs font-bold shrink-0">
-      {n}
-    </div>
-  )
+  async function importSelectedForm(form: GoogleFormSummary) {
+    setImportingFormId(form.id)
+    try {
+      const response = await fetch('/api/forms/import-google-form', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ formId: form.id }),
+      })
+      if (response.status === 401) {
+        setHasAuthorization(false)
+      }
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Could not import Google Form')
+      }
+
+      const data = await response.json() as GoogleFormsImportResponse
+      onImported(data.title, data.description || '', data.fields)
+      setIsOpen(false)
+      setForms([])
+      setNextPageToken(null)
+      setHasAuthorization(false)
+
+      if (data.skippedItems.length > 0) {
+        toast.warning(`Imported with ${data.skippedItems.length} skipped item(s)`, {
+          description: data.skippedItems.join('\n'),
+          style: { whiteSpace: 'pre-line' },
+          duration: 8_000,
+        })
+      } else {
+        toast.success(`Imported “${data.title}” with ${data.fields.length} field(s)`)
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'Could not import Google Form',
+      )
+    } finally {
+      setImportingFormId(null)
+    }
+  }
 
   return (
     <Dialog
       open={isOpen}
       onOpenChange={(open) => {
         setIsOpen(open)
-        if (!open) {
-          setUrl('')
-          setCopied(false)
-        }
+        if (!open) setImportingFormId(null)
       }}
     >
       <DialogTrigger asChild>
@@ -122,115 +205,116 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
           Import from Google Forms
         </Button>
       </DialogTrigger>
-      <DialogContent
-        className="overflow-hidden p-0 gap-0 sm:max-w-[540px]"
-        overlayClassName="bg-black/60 backdrop-blur-md"
-      >
-        <DialogHeader className="px-6 pt-6 pb-1 gap-0">
+      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[580px]">
+        <DialogHeader className="border-b px-6 py-5">
           <DialogTitle className="text-lg font-semibold">
-            Import from Google Forms
+            Import a Google Form
           </DialogTitle>
-          <DialogDescription>
-            Migrate your existing Google Form to ThunderForms in seconds.
+          <DialogDescription className="max-w-md">
+            Choose an existing form and copy its supported questions into this builder.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="px-6 py-5 space-y-5">
-          {/* Step 1: Share access */}
-          {GOOGLE_SERVICE_ACCOUNT_EMAIL && (
-  <div className="space-y-2.5">
-    <div className="flex items-center gap-2.5">
-      {stepNumber(1)}
-      <p className="text-sm font-medium">
-        Share access with ThunderForms
-      </p>
-    </div>
-
-    <div className="ml-8 space-y-2">
-      <p className="text-xs text-muted-foreground leading-relaxed">
-        Open your Google Form &rarr; click <strong>Share</strong> (top right)
-        &rarr; under <strong>Add collaborators</strong> paste the email below
-        &rarr; set the role to <strong>Editor</strong> &rarr; click
-        <strong> Send</strong>.
-      </p>
-
-      <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 min-w-0">
-        <code className="text-xs font-mono flex-1 break-all select-all min-w-0">
-          {GOOGLE_SERVICE_ACCOUNT_EMAIL}
-        </code>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 shrink-0 cursor-pointer"
-          onClick={handleCopy}
-        >
-          {copied ? (
-            <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-          ) : (
-            <Copy className="h-3.5 w-3.5" />
-          )}
-        </Button>
-      </div>
-    </div>
-  </div>
-)}
-
-          {/* Step 2: Paste URL */}
-          <div className="space-y-2.5">
-            <div className="flex items-center gap-2.5">
-              {stepNumber(GOOGLE_SERVICE_ACCOUNT_EMAIL ? 2 : 1)}
-              <p className="text-sm font-medium">
-                Paste the form&apos;s edit link
+        {hasAuthorization === false ? (
+          <div className="space-y-5 px-6 py-7">
+            <div className="flex size-10 items-center justify-center rounded-md border bg-muted">
+              <FileText className="size-5 text-muted-foreground" />
+            </div>
+            <div className="space-y-1.5">
+              <p className="font-medium">Browse your Google Forms</p>
+              <p className="max-w-md text-sm leading-6 text-muted-foreground">
+                ThunderForms will show the forms you can access, then read only
+                the one you select. It does not save a reusable Google connection.
               </p>
             </div>
-
-            <div className="ml-8 space-y-1.5">
-              <div className="relative">
-                <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <Input
-                  type="url"
-                  placeholder="https://docs.google.com/forms/d/.../edit"
-                  className="pl-9 h-10"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      handleImport()
-                    }
-                  }}
-                  disabled={isLoading}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Use the edit link from your browser address bar, not the sharing
-                link.
-              </p>
-            </div>
+            <Button
+              type="button"
+              className="cursor-pointer"
+              onClick={connectGoogle}
+              disabled={isConnecting}
+            >
+              {isConnecting ? <Loader2 className="animate-spin" /> : <ArrowRight />}
+              {isConnecting ? 'Opening Google…' : 'Browse my Google Forms'}
+            </Button>
           </div>
-        </div>
+        ) : isLoadingForms && hasAuthorization === null ? (
+          <div className="flex h-56 items-center justify-center">
+            <Loader2 className="size-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <div className="px-6 py-5">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-sm font-medium">Choose a form to import</p>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="cursor-pointer"
+                onClick={() => void loadForms()}
+                disabled={isLoadingForms || importingFormId !== null}
+              >
+                <RefreshCw className={isLoadingForms ? 'animate-spin' : ''} />
+                Refresh
+              </Button>
+            </div>
 
-        {/* Footer */}
-        <div className="border-t bg-muted/30 px-6 py-4 flex items-center justify-end">
-          <Button
-            onClick={handleImport}
-            disabled={isLoading || !url.trim()}
-            className="text-xs cursor-pointer"
-            size="sm"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Importing...
-              </>
+            {forms.length === 0 && !isLoadingForms ? (
+              <div className="rounded-lg border border-dashed px-5 py-10 text-center">
+                <p className="text-sm font-medium">No Google Forms found</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Create a form in Google Forms, or check that you are using the right Google account.
+                </p>
+              </div>
             ) : (
-              <>
-                Import Form
-                <ArrowRight className="h-4 w-4" />
-              </>
+              <div className="max-h-[360px] divide-y overflow-y-auto rounded-lg border">
+                {forms.map((form) => (
+                  <div
+                    key={form.id}
+                    className="flex items-center gap-3 px-4 py-3.5"
+                  >
+                    <FileText className="size-4 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{form.title}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {formatModifiedTime(form.modifiedTime)}
+                        {form.ownedByMe ? ' · Owned by you' : ''}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="shrink-0 cursor-pointer"
+                      onClick={() => void importSelectedForm(form)}
+                      disabled={importingFormId !== null}
+                    >
+                      {importingFormId === form.id ? (
+                        <Loader2 className="animate-spin" />
+                      ) : null}
+                      Import
+                    </Button>
+                  </div>
+                ))}
+                {isLoadingForms ? (
+                  <div className="flex justify-center py-4">
+                    <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                  </div>
+                ) : null}
+              </div>
             )}
-          </Button>
-        </div>
+
+            {nextPageToken ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-4 w-full cursor-pointer"
+                onClick={() => void loadForms(nextPageToken)}
+                disabled={isLoadingForms || importingFormId !== null}
+              >
+                Load more forms
+              </Button>
+            ) : null}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )

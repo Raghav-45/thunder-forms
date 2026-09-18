@@ -19,6 +19,7 @@ import {
   getFieldEditor,
 } from '@/features/form-builder/utils/helperFunctions'
 import { SettingsDialog } from '@/features/form-builder/components/settings-dialog'
+import { googleSheetsOAuthResultMessage } from '@/features/google-sheets/oauth-result'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -50,7 +51,7 @@ import {
   useReducedMotion,
 } from 'motion/react'
 import { Loader2Icon, SaveIcon } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { ComponentType } from 'react'
 import {
   Suspense,
@@ -185,8 +186,10 @@ function BuilderContent({
   paramFormId: string
 }) {
   const initialState = useState(createInitialState)[0]
+  const router = useRouter()
   const searchParams = useSearchParams()
   const templateSlug = searchParams.get('template')
+  const googleSheetsResult = searchParams.get('googleSheets')
   const { formSettings, setFormSettings } = useFormStore()
   const [currentFormId, setCurrentFormId] = useState(paramFormId)
   const [activePageId, setActivePageId] = useState(initialState.activePageId)
@@ -218,6 +221,18 @@ function BuilderContent({
 
   const isExistingForm = currentFormId !== 'new-form'
   const isNewForm = !isExistingForm
+
+  useEffect(() => {
+    if (!googleSheetsResult) return
+
+    const result = googleSheetsOAuthResultMessage(googleSheetsResult)
+    toast[result.type](result.message)
+
+    const nextParams = new URLSearchParams(searchParams.toString())
+    nextParams.delete('googleSheets')
+    const query = nextParams.toString()
+    router.replace(`/dashboard/builder/${paramFormId}${query ? `?${query}` : ''}`)
+  }, [googleSheetsResult, paramFormId, router, searchParams])
 
   const activePage =
     getPage(formStructure, activePageId) ??
@@ -865,7 +880,7 @@ function BuilderContent({
               />
             </div>
 
-            <SettingsDialog />
+            <SettingsDialog formId={isExistingForm ? currentFormId : null} />
             <div className="flex-grow" />
             <ImportGoogleForm onImported={replaceWithImportedFields} />
             <GenerateWithAiPrompt onGeneratedFields={replaceWithImportedFields} />

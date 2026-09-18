@@ -13,6 +13,24 @@ enum UserRole {
   admin
 }
 
+enum GoogleSheetsConnectionStatus {
+  ACTIVE
+  REAUTH_REQUIRED
+}
+
+enum GoogleSheetsIntegrationStatus {
+  ACTIVE
+  PAUSED
+}
+
+enum GoogleSheetsDeliveryStatus {
+  PENDING
+  PROCESSING
+  RETRY
+  SYNCED
+  FAILED
+}
+
 /// Better Auth: Core user table
 model user {
   id            String    @id @default(uuid())
@@ -27,6 +45,10 @@ model user {
   sessions session[] // One-to-many: A user can have multiple sessions
   accounts account[] // One-to-many: A user can have multiple linked accounts
   forms    forms[]   // One-to-many: A user can create multiple forms
+  googleSheetsConnection google_sheets_connections?
+  googleSheetsOAuthAttempts google_sheets_oauth_attempts[]
+  googleSheetsSetupLocks google_sheets_setup_locks[]
+  googleFormsImportAttempts google_forms_import_attempts[]
 }
 
 /// Better Auth: Session management
@@ -95,6 +117,9 @@ model forms {
 
   responses responses[] // One-to-many: A form can have multiple responses
   template  templates? // One-to-one: A form can have at most one template
+  googleSheetsIntegration google_sheets_integrations?
+  googleSheetsOAuthAttempts google_sheets_oauth_attempts[]
+  googleSheetsSetupLock google_sheets_setup_locks?
 }
 
 model responses {
@@ -104,6 +129,108 @@ model responses {
 
   forms   forms  @relation(fields: [formsId], references: [id], onDelete: Cascade)
   formsId String // References forms.id
+  googleSheetsDeliveries google_sheets_deliveries[]
+}
+
+model google_sheets_connections {
+  id                    String                       @id @default(cuid())
+  userId                String                       @unique
+  encryptedRefreshToken String
+  grantedScopes         String
+  status                GoogleSheetsConnectionStatus @default(ACTIVE)
+  createdAt             DateTime                     @default(now())
+  updatedAt             DateTime                     @updatedAt
+
+  user         user                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  integrations google_sheets_integrations[]
+}
+
+model google_sheets_oauth_attempts {
+  state                 String   @id
+  encryptedCodeVerifier String
+  userId                String
+  formId                String
+  expiresAt             DateTime
+  createdAt             DateTime @default(now())
+
+  user user  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  form forms @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+}
+
+model google_sheets_integrations {
+  id             String                        @id @default(cuid())
+  formId         String                        @unique
+  connectionId   String
+  spreadsheetId  String
+  spreadsheetUrl String
+  spreadsheetTitle String
+  sheetId        Int
+  sheetTitle     String
+  headers        Json
+  status         GoogleSheetsIntegrationStatus @default(ACTIVE)
+  lastSyncedAt   DateTime?
+  lastError      String?
+  createdAt      DateTime                      @default(now())
+  updatedAt      DateTime                      @updatedAt
+
+  form       forms                     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  connection google_sheets_connections @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  deliveries google_sheets_deliveries[]
+
+  @@unique([connectionId, spreadsheetId, sheetId])
+}
+
+model google_sheets_setup_locks {
+  formId    String   @id
+  userId    String
+  createdAt DateTime @default(now())
+
+  form forms @relation(fields: [formId], references: [id], onDelete: Cascade)
+  user user  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+}
+
+/// A short-lived, one-time OAuth session used only to browse and import a
+/// Google Form. It never stores a refresh token or creates an account link.
+model google_forms_import_attempts {
+  state                 String   @id
+  encryptedCodeVerifier String?
+  encryptedAccessToken  String?
+  userId                String
+  returnTo              String
+  expiresAt             DateTime
+  createdAt             DateTime @default(now())
+
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+}
+
+model google_sheets_deliveries {
+  id            String                     @id @default(cuid())
+  integrationId String
+  responseId    String
+  row           Json
+  status        GoogleSheetsDeliveryStatus @default(PENDING)
+  attemptCount  Int                        @default(0)
+  nextAttemptAt DateTime                   @default(now())
+  lockedAt      DateTime?
+  lockedBy      String?
+  syncedAt      DateTime?
+  updatedRange  String?
+  lastErrorCode String?
+  lastError     String?
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+
+  integration google_sheets_integrations @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  response    responses                  @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  @@unique([integrationId, responseId])
+  @@index([status, nextAttemptAt])
 }
 
 model templates {
