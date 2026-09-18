@@ -877,12 +877,15 @@ function BuilderContent({
             <h1 className="text-3xl font-bold">Builder</h1>
             <div className="flex gap-2">
               {isExistingForm ? (
-                <CopyButton value={`${siteConfig.url}/forms/${currentFormId}`} />
+                <CopyButton
+                  className="h-8"
+                  value={`${siteConfig.url}/forms/${currentFormId}`}
+                />
               ) : null}
               <Button
                 type="button"
                 variant="secondary"
-                className="cursor-pointer"
+                className="h-8 cursor-pointer"
                 onClick={handleSaveForm}
                 disabled={isSaving || hasInvalidPersistedStructure}
               >

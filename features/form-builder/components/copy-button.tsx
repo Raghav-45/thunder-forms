@@ -5,10 +5,11 @@ import { CheckIcon, LinkIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface CopyButtonProps {
-  value: string // String to copy
+  className?: string
+  value: string
 }
 
-export function CopyButton({ value }: CopyButtonProps) {
+export function CopyButton({ className, value }: CopyButtonProps) {
   const [hasCopied, setHasCopied] = React.useState(false)
 
   const handleCopy = () => {
@@ -24,8 +25,8 @@ export function CopyButton({ value }: CopyButtonProps) {
     <Button
       onClick={handleCopy}
       variant="secondary"
-      size="sm"
       aria-label="Copy"
+      className={className}
     >
       {hasCopied ? (
         <>
