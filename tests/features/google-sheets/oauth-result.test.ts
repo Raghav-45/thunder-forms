@@ -15,6 +15,14 @@ describe('Google Sheets OAuth result messages', () => {
       type: 'error',
       message: 'Google rejected OAuth client credentials. Update Client Secret and restart.',
     })
+    expect(googleSheetsOAuthResultMessage('denied')).toEqual({
+      type: 'error',
+      message: 'Google access was denied',
+    })
+    expect(googleSheetsOAuthResultMessage('missing-refresh-token')).toEqual({
+      type: 'error',
+      message: 'Google did not return ongoing access. Connect Google again.',
+    })
   })
 
   it('keeps unknown callback failures actionable', () => {

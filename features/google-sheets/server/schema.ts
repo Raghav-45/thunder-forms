@@ -7,6 +7,10 @@ import {
   type FormStructure,
 } from '@/features/form-builder/form-structure'
 
+function fieldLabel(label: string | undefined): string {
+  return label?.trim() || 'Untitled field'
+}
+
 export function createGoogleSheetsHeaders(
   structure: FormStructure,
 ): GoogleSheetsColumn[] {
@@ -14,7 +18,7 @@ export function createGoogleSheetsHeaders(
     ...GOOGLE_SHEETS_FIXED_COLUMNS,
     ...getOrderedFormFields(structure).map((field) => ({
       key: field.id,
-      label: field.label?.trim() || 'Untitled field',
+      label: fieldLabel(field.label),
     })),
   ]
 }
@@ -43,7 +47,7 @@ export function reconcileGoogleSheetsHeaders(
   const labelsByFieldId = new Map(
     fields.map((field) => [
       field.id,
-      field.label?.trim() || 'Untitled field',
+      fieldLabel(field.label),
     ]),
   )
   const headers = currentHeaders.map(({ key, label }) => ({
@@ -59,7 +63,7 @@ export function reconcileGoogleSheetsHeaders(
 
     headers.push({
       key: field.id,
-      label: field.label?.trim() || 'Untitled field',
+      label: fieldLabel(field.label),
     })
     knownKeys.add(field.id)
   }

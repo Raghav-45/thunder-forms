@@ -4,7 +4,10 @@ const mocks = vi.hoisted(() => ({
   findForm: vi.fn(),
   getSession: vi.fn(),
   headers: vi.fn(),
+  transaction: vi.fn(),
   update: vi.fn(),
+  updateHeaders: vi.fn(),
+  updateIntegration: vi.fn(),
 }))
 
 vi.mock('@/lib/auth', () => ({
@@ -12,7 +15,15 @@ vi.mock('@/lib/auth', () => ({
 }))
 
 vi.mock('@/lib/prisma', () => ({
-  prisma: { forms: { findUnique: mocks.findForm, update: mocks.update } },
+  prisma: {
+    forms: { findUnique: mocks.findForm, update: mocks.update },
+    google_sheets_integrations: { update: mocks.updateIntegration },
+    $transaction: mocks.transaction,
+  },
+}))
+
+vi.mock('@/features/google-sheets/server/sheets', () => ({
+  updateManagedSheetHeaders: mocks.updateHeaders,
 }))
 
 vi.mock('next/headers', () => ({ headers: mocks.headers }))
@@ -55,6 +66,12 @@ describe('POST /api/forms/[id]/update', () => {
     mocks.getSession.mockResolvedValue({ user: { id: 'user-1' } })
     mocks.findForm.mockResolvedValue({ id: 'form-1', userId: 'user-1' })
     mocks.update.mockResolvedValue({ id: 'form-1', ...payload })
+    mocks.transaction.mockImplementation(async (callback) =>
+      callback({
+        forms: { update: mocks.update },
+        google_sheets_integrations: { update: mocks.updateIntegration },
+      }),
+    )
   })
 
   afterEach(() => {
@@ -121,5 +138,76 @@ describe('POST /api/forms/[id]/update', () => {
         redirectUrl: null,
       }),
     })
+  })
+
+  it('updates active Sheet headers before saving the form manifest', async () => {
+    mocks.findForm.mockResolvedValue({
+      id: 'form-1',
+      userId: 'user-1',
+      googleSheetsIntegration: {
+        id: 'integration-1',
+        status: 'ACTIVE',
+        spreadsheetId: 'spreadsheet-1',
+        sheetId: 42,
+        headers: [
+          { key: '__response_id', label: 'Submission ID' },
+          { key: '__submitted_at', label: 'Submitted At' },
+          { key: 'name', label: 'Old name' },
+        ],
+        connection: { encryptedRefreshToken: 'encrypted-token' },
+      },
+    })
+
+    const response = await POST(requestFor(payload), { params })
+
+    expect(response.status).toBe(200)
+    expect(mocks.updateHeaders).toHaveBeenCalledWith(
+      'encrypted-token',
+      'spreadsheet-1',
+      42,
+      [
+        { key: '__response_id', label: 'Submission ID' },
+        { key: '__submitted_at', label: 'Submitted At' },
+        { key: 'name', label: 'Name' },
+      ],
+    )
+    expect(mocks.transaction).toHaveBeenCalledTimes(1)
+    expect(mocks.updateHeaders).toHaveBeenCalledBefore(mocks.transaction)
+    expect(mocks.updateIntegration).toHaveBeenCalledWith({
+      where: { id: 'integration-1' },
+      data: {
+        headers: [
+          { key: '__response_id', label: 'Submission ID' },
+          { key: '__submitted_at', label: 'Submitted At' },
+          { key: 'name', label: 'Name' },
+        ],
+      },
+    })
+  })
+
+  it('stores paused integration headers without writing to Google', async () => {
+    mocks.findForm.mockResolvedValue({
+      id: 'form-1',
+      userId: 'user-1',
+      googleSheetsIntegration: {
+        id: 'integration-1',
+        status: 'PAUSED',
+        spreadsheetId: 'spreadsheet-1',
+        sheetId: 42,
+        headers: [
+          { key: '__response_id', label: 'Submission ID' },
+          { key: '__submitted_at', label: 'Submitted At' },
+          { key: 'name', label: 'Old name' },
+        ],
+        connection: { encryptedRefreshToken: 'encrypted-token' },
+      },
+    })
+
+    const response = await POST(requestFor(payload), { params })
+
+    expect(response.status).toBe(200)
+    expect(mocks.updateHeaders).not.toHaveBeenCalled()
+    expect(mocks.transaction).toHaveBeenCalledTimes(1)
+    expect(mocks.updateIntegration).toHaveBeenCalledTimes(1)
   })
 })

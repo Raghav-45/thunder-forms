@@ -1,7 +1,7 @@
 import { FormValidator } from '@/lib/validators/form'
 import { auth } from '@/lib/auth'
 import { isFormStructure } from '@/features/form-builder/form-structure'
-import { GoogleSheetsIntegrationStatus } from '@prisma/client'
+import { GoogleSheetsIntegrationStatus, type Prisma } from '@prisma/client'
 import {
   isGoogleSheetsHeaders,
   reconcileGoogleSheetsHeaders,
@@ -11,7 +11,6 @@ import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import type { Prisma } from '@prisma/client'
 
 export async function POST(
   request: Request,
@@ -74,13 +73,13 @@ export async function POST(
     // }
 
     const formData = {
-      title: title,
-      description: description,
+      title,
+      description,
       fields: fields as unknown as Prisma.InputJsonValue,
-      maxSubmissions: maxSubmissions,
-      expiresAt: expiresAt,
-      redirectUrl: redirectUrl,
-      submitButtonText: submitButtonText,
+      maxSubmissions,
+      expiresAt,
+      redirectUrl,
+      submitButtonText,
     }
     const integration = existingForm.googleSheetsIntegration
     const nextHeaders =

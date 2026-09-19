@@ -17,18 +17,12 @@ import { updateManagedSheetHeaders } from '@/features/google-sheets/server/sheet
 import { isFormStructure } from '@/features/form-builder/form-structure'
 import { NextRequest, NextResponse } from 'next/server'
 
-async function paramsFormId(
-  params: Promise<{ id: string }>,
-): Promise<string> {
-  return (await params).id
-}
-
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const formId = await paramsFormId(params)
+    const { id: formId } = await params
     const { userId } = await getOwnedGoogleSheetsForm(formId)
     const [connection, integration] = await Promise.all([
       prisma.google_sheets_connections.findUnique({ where: { userId } }),
@@ -90,8 +84,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const formId = await paramsFormId(params)
-    const { form, userId } = await getOwnedGoogleSheetsForm(formId)
+    const { id: formId } = await params
+    const { form } = await getOwnedGoogleSheetsForm(formId)
     const body = await request.json()
     const status = body?.status
 
@@ -174,7 +168,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const formId = await paramsFormId(params)
+    const { id: formId } = await params
     await getOwnedGoogleSheetsForm(formId)
     await prisma.google_sheets_integrations.delete({ where: { formId } })
     return NextResponse.json({ success: true })

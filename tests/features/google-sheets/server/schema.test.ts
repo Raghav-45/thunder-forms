@@ -113,4 +113,59 @@ describe('Google Sheets response schema', () => {
       { key: 'retired-field', label: 'Retired field' },
     ])
   })
+
+  it('keeps historical column order through field deletion and reordering', () => {
+    const current = createGoogleSheetsHeaders(structure)
+    const next = {
+      pages: [
+        {
+          id: 'page-1',
+          sections: [
+            {
+              id: 'section-1',
+              fields: [
+                {
+                  id: 'updates',
+                  label: 'Product updates',
+                  uniqueIdentifier: 'switch-field',
+                },
+                { id: 'name', label: 'Full name', uniqueIdentifier: 'text-input' },
+                { id: 'company', label: 'Company', uniqueIdentifier: 'text-input' },
+              ],
+            },
+          ],
+        },
+      ],
+    } as unknown as FormStructure
+
+    expect(reconcileGoogleSheetsHeaders(current, next)).toEqual([
+      { key: '__response_id', label: 'Submission ID' },
+      { key: '__submitted_at', label: 'Submitted At' },
+      { key: 'name', label: 'Full name' },
+      { key: 'topics', label: 'Topics' },
+      { key: 'updates', label: 'Product updates' },
+      { key: 'company', label: 'Company' },
+    ])
+  })
+
+  it('keeps existing value serialization rules', () => {
+    expect(
+      createGoogleSheetsRow(
+        [
+          { key: 'empty', label: 'Empty' },
+          { key: 'choices', label: 'Choices' },
+          { key: 'enabled', label: 'Enabled' },
+          { key: 'metadata', label: 'Metadata' },
+        ],
+        'response-1',
+        new Date('2026-09-18T00:00:00.000Z'),
+        {
+          empty: null,
+          choices: ['Forms', '', 'Sheets'],
+          enabled: true,
+          metadata: { source: 'builder' },
+        },
+      ),
+    ).toEqual(['', 'Forms, Sheets', 'Yes', '{"source":"builder"}'])
+  })
 })

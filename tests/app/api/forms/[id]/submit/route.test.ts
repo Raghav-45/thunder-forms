@@ -224,4 +224,29 @@ describe('POST /api/forms/[id]/submit', () => {
     await mocks.after.mock.calls[0][0]()
     expect(mocks.drainGoogleSheetsDeliveries).toHaveBeenCalledTimes(1)
   })
+
+  it('does not queue a Sheets delivery while the integration is paused', async () => {
+    mocks.findForm.mockResolvedValue(
+      storedForm({
+        googleSheetsIntegration: {
+          id: 'integration-1',
+          status: 'PAUSED',
+          headers: [
+            { key: '__response_id', label: 'Submission ID' },
+            { key: '__submitted_at', label: 'Submitted At' },
+            { key: 'email', label: 'Email' },
+          ],
+        },
+      }),
+    )
+
+    const response = await POST(
+      requestFor({ email: 'person@example.com' }),
+      { params },
+    )
+
+    expect(response.status).toBe(201)
+    expect(mocks.createDelivery).not.toHaveBeenCalled()
+    expect(mocks.after).not.toHaveBeenCalled()
+  })
 })

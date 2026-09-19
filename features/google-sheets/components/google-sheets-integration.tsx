@@ -1,25 +1,19 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import type { GoogleSheetsIntegrationSummary } from '@/features/google-sheets/types'
 import { Loader2, Pause, Play, Plus, Sheet, Unplug } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { useCallback, useState } from 'react'
+import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 interface IntegrationResponse {
   connection: { status: 'ACTIVE' | 'REAUTH_REQUIRED' } | null
-  integration: {
-    status: 'ACTIVE' | 'PAUSED'
-    spreadsheetTitle: string
-    spreadsheetUrl: string
-    sheetTitle: string
-    lastSyncedAt: string | null
-    lastError: string | null
-    pendingCount: number
-    failedCount: number
-  } | null
+  integration: GoogleSheetsIntegrationSummary | null
 }
+
+type IntegrationAction = 'choose' | 'connect' | 'create' | 'remove' | 'status'
 
 interface PickerDocument {
   id?: string
@@ -68,6 +62,15 @@ function pickerConfig() {
     apiKey: process.env.NEXT_PUBLIC_GOOGLE_PICKER_API_KEY,
     projectNumber: process.env.NEXT_PUBLIC_GOOGLE_CLOUD_PROJECT_NUMBER,
   }
+}
+
+function IntegrationHeader({ children }: { children: ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <h1 className="text-2xl font-bold">Google Sheets</h1>
+      <p className="text-sm text-muted-foreground">{children}</p>
+    </div>
+  )
 }
 
 function loadGooglePicker(): Promise<GooglePickerApi> {
@@ -149,8 +152,11 @@ async function chooseSpreadsheet(accessToken: string): Promise<string | null> {
 
 export function GoogleSheetsIntegration({ formId }: { formId: string | null }) {
   const queryClient = useQueryClient()
-  const [action, setAction] = useState<string | null>(null)
-  const queryKey = ['google-sheets-integration', formId]
+  const [action, setAction] = useState<IntegrationAction | null>(null)
+  const queryKey = useMemo(
+    () => ['google-sheets-integration', formId] as const,
+    [formId],
+  )
   const integration = useQuery({
     queryKey,
     enabled: Boolean(formId),
@@ -168,7 +174,7 @@ export function GoogleSheetsIntegration({ formId }: { formId: string | null }) {
   )
 
   const run = useCallback(
-    async (name: string, task: () => Promise<void>) => {
+    async (name: IntegrationAction, task: () => Promise<void>) => {
       setAction(name)
       try {
         await task()
@@ -207,12 +213,9 @@ export function GoogleSheetsIntegration({ formId }: { formId: string | null }) {
   if (!data?.connection || data.connection.status === 'REAUTH_REQUIRED') {
     return (
       <div className="space-y-5">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold">Google Sheets</h1>
-          <p className="text-sm text-muted-foreground">
-            Send new responses to a Sheet you create or choose.
-          </p>
-        </div>
+        <IntegrationHeader>
+          Send new responses to a Sheet you create or choose.
+        </IntegrationHeader>
         <Button
           type="button"
           onClick={() =>
@@ -235,12 +238,9 @@ export function GoogleSheetsIntegration({ formId }: { formId: string | null }) {
   if (!data.integration) {
     return (
       <div className="space-y-5">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold">Google Sheets</h1>
-          <p className="text-sm text-muted-foreground">
-            Google connected. Choose where new responses go.
-          </p>
-        </div>
+        <IntegrationHeader>
+          Google connected. Choose where new responses go.
+        </IntegrationHeader>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button
             type="button"
@@ -288,12 +288,9 @@ export function GoogleSheetsIntegration({ formId }: { formId: string | null }) {
   const isPaused = destination.status === 'PAUSED'
   return (
     <div className="space-y-5">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold">Google Sheets</h1>
-        <p className="text-sm text-muted-foreground">
-          New responses sync to a ThunderForms-managed tab.
-        </p>
-      </div>
+      <IntegrationHeader>
+        New responses sync to a ThunderForms-managed tab.
+      </IntegrationHeader>
       <div className="space-y-2 rounded-lg border p-4 text-sm">
         <a
           className="font-medium underline-offset-4 hover:underline"
