@@ -155,7 +155,7 @@ features/form-builder/                 # form-building domain feature
 │   └── index.ts                        # FIELD_DEFINITIONS and FIELD_REGISTRY
 ├── store.ts                            # builder state
 ├── types/
-│   └── types.ts                        # shared config and prop types
+│   └── index.ts                        # shared config and prop types
 └── utils/                              # registry dispatch and small helpers
     ├── formValidation.ts
     └── helperFunctions.ts
