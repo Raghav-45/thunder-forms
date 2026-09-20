@@ -7,7 +7,7 @@ export type FieldType = { name: string; isAvailable: boolean; index?: number }
  */
 export interface BaseFieldConfig {
   id: string
-  uniqueIdentifier: avaliableFieldsType
+  uniqueIdentifier: AvailableFieldsType
   label: string
   placeholder?: string
   required?: boolean
@@ -32,7 +32,7 @@ export interface EditorProps<T extends BaseFieldConfig = BaseFieldConfig> {
 }
 
 /** Represents all available field identifiers. */
-export type avaliableFieldsType = keyof typeof FIELD_REGISTRY
+export type AvailableFieldsType = keyof typeof FIELD_REGISTRY
 
 /** Mutable list retained for existing builder consumers. */
 export const AVAILABLE_FIELDS: string[] = Object.keys(FIELD_REGISTRY)

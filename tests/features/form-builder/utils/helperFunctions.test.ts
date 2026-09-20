@@ -5,10 +5,10 @@ import {
   getFieldEditor,
   validateFieldConfig,
 } from '@/features/form-builder/utils/helperFunctions'
-import type { avaliableFieldsType } from '@/features/form-builder/types'
+import type { AvailableFieldsType } from '@/features/form-builder/types'
 import { describe, expect, it } from 'vitest'
 
-const identifiers = Object.keys(FIELD_REGISTRY) as avaliableFieldsType[]
+const identifiers = Object.keys(FIELD_REGISTRY) as AvailableFieldsType[]
 
 describe('form builder registry helpers', () => {
   it.each(identifiers)('creates a valid default config for %s', (identifier) => {
@@ -28,13 +28,13 @@ describe('form builder registry helpers', () => {
   })
 
   it('rejects an unknown field type from registry access', () => {
-    expect(() => getFieldComponent('unknown' as avaliableFieldsType)).toThrow(
+    expect(() => getFieldComponent('unknown' as AvailableFieldsType)).toThrow(
       'Unknown field uniqueIdentifier: unknown',
     )
-    expect(() => getFieldEditor('unknown' as avaliableFieldsType)).toThrow(
+    expect(() => getFieldEditor('unknown' as AvailableFieldsType)).toThrow(
       'Unknown field uniqueIdentifier: unknown',
     )
-    expect(() => createDefaultFieldConfig('unknown' as avaliableFieldsType)).toThrow(
+    expect(() => createDefaultFieldConfig('unknown' as AvailableFieldsType)).toThrow(
       'Unknown field uniqueIdentifier: unknown',
     )
   })

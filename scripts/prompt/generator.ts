@@ -1,4 +1,4 @@
-import type { avaliableFieldsType } from '@/features/form-builder/types'
+import type { AvailableFieldsType } from '@/features/form-builder/types'
 import fs from 'fs'
 import path from 'path'
 
@@ -86,7 +86,7 @@ async function generatePrompt() {
 
     const SOME_DEFAULT_VALUES_CONFIGRATIONS = `## SOME DEFAULT FIELD CONFIGURATIONS (YOU CAN USE THESE VALUES): ${JSON.stringify(
       AVAILABLE_FIELDS.map((field) =>
-        createDefaultFieldConfig(field as avaliableFieldsType)
+        createDefaultFieldConfig(field as AvailableFieldsType)
       ),
       null,
       2

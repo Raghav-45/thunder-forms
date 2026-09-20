@@ -5,7 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import {
   AVAILABLE_FIELDS,
-  type avaliableFieldsType,
+  type AvailableFieldsType,
 } from '@/features/form-builder/types'
 import { cn } from '@/lib/utils'
 import { GripVerticalIcon } from 'lucide-react'
@@ -25,7 +25,7 @@ const COMING_SOON_FIELDS = [
 
 const PALETTE = AVAILABLE_FIELDS.map((fieldType, index) => ({
   id: `builder-palette-${fieldType}-${index}`,
-  fieldType: fieldType as avaliableFieldsType,
+  fieldType: fieldType as AvailableFieldsType,
 }))
 
 const PaletteFieldRow = memo(function PaletteFieldRow({
@@ -33,9 +33,9 @@ const PaletteFieldRow = memo(function PaletteFieldRow({
   id,
   onAdd,
 }: {
-  fieldType: avaliableFieldsType
+  fieldType: AvailableFieldsType
   id: string
-  onAdd: (fieldType: avaliableFieldsType) => void
+  onAdd: (fieldType: AvailableFieldsType) => void
 }) {
   const { isDragSource, ref } = useSortable({
     id,
@@ -99,7 +99,7 @@ const PaletteSectionRow = memo(function PaletteSectionRow({
 })
 
 interface BuilderPaletteProps {
-  onAddField: (fieldType: avaliableFieldsType) => void
+  onAddField: (fieldType: AvailableFieldsType) => void
   onAddSection: () => void
 }
 

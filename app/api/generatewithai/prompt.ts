@@ -28,7 +28,7 @@ const SYSTEM_PROMPT = `You are ThunderForms AI - an elite form generation engine
  */
 export interface BaseFieldConfig {
   id: string
-  uniqueIdentifier: avaliableFieldsType
+  uniqueIdentifier: AvailableFieldsType
   label: string
   placeholder?: string
   required?: boolean

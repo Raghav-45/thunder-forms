@@ -1,11 +1,11 @@
 import type { FieldConfig } from '@/features/form-builder/elements'
-import type { avaliableFieldsType } from '@/features/form-builder/types'
+import type { AvailableFieldsType } from '@/features/form-builder/types'
 import { validateFormFields } from '@/features/form-builder/utils/formValidation'
 import { describe, expect, it } from 'vitest'
 
 const field = (
   id: string,
-  uniqueIdentifier: avaliableFieldsType,
+  uniqueIdentifier: AvailableFieldsType,
   extra: Record<string, unknown> = {},
   required = false,
 ): FieldConfig =>

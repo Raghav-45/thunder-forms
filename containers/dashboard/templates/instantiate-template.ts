@@ -7,7 +7,7 @@ import {
   type FormSection,
   type FormStructure,
 } from '@/features/form-builder/form-structure'
-import type { avaliableFieldsType } from '@/features/form-builder/types'
+import type { AvailableFieldsType } from '@/features/form-builder/types'
 import { createDefaultFieldConfig } from '@/features/form-builder/utils/helperFunctions'
 import type { FormTemplateSpec } from './types'
 
@@ -32,7 +32,7 @@ export function instantiateTemplate(
           createFormSection(
             section.fields.map((spec) => {
               const field = createDefaultFieldConfig(
-                spec.type as avaliableFieldsType,
+                spec.type as AvailableFieldsType,
               ) as unknown as Record<string, unknown>
 
               field.id = `${spec.type}_${crypto.randomUUID().slice(0, 8)}`

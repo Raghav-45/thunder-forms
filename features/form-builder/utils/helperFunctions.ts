@@ -1,5 +1,5 @@
 import { FIELD_REGISTRY, FieldConfig } from '@/features/form-builder/elements'
-import type { avaliableFieldsType } from '@/features/form-builder/types'
+import type { AvailableFieldsType } from '@/features/form-builder/types'
 
 /**
  * HELPER FUNCTIONS FOR FORM BUILDER
@@ -12,7 +12,7 @@ import type { avaliableFieldsType } from '@/features/form-builder/types'
  */
 
 // Get the component for a specific field type
-export const getFieldComponent = (uniqueIdentifier: avaliableFieldsType) => {
+export const getFieldComponent = (uniqueIdentifier: AvailableFieldsType) => {
   const registry = FIELD_REGISTRY[uniqueIdentifier]
   if (!registry) {
     throw new Error(`Unknown field uniqueIdentifier: ${uniqueIdentifier}`)
@@ -21,7 +21,7 @@ export const getFieldComponent = (uniqueIdentifier: avaliableFieldsType) => {
 }
 
 // Get the editor for a specific field type
-export const getFieldEditor = (uniqueIdentifier: avaliableFieldsType) => {
+export const getFieldEditor = (uniqueIdentifier: AvailableFieldsType) => {
   const registry = FIELD_REGISTRY[uniqueIdentifier]
   if (!registry) {
     throw new Error(`Unknown field uniqueIdentifier: ${uniqueIdentifier}`)
@@ -31,7 +31,7 @@ export const getFieldEditor = (uniqueIdentifier: avaliableFieldsType) => {
 
 // Create a default configuration for a specific field type
 export const createDefaultFieldConfig = (
-  uniqueIdentifier: avaliableFieldsType
+  uniqueIdentifier: AvailableFieldsType
 ): FieldConfig => {
   const registry = FIELD_REGISTRY[uniqueIdentifier]
   if (!registry) {

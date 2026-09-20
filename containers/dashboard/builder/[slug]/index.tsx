@@ -12,7 +12,7 @@ import { CopyButton } from '@/features/form-builder/components/copy-button'
 import { IMMORTAL_SENTINEL_DATE } from '@/features/form-builder/components/date-picker-with-presets'
 import { useFormStore } from '@/features/form-builder/store'
 import {
-  type avaliableFieldsType,
+  type AvailableFieldsType,
 } from '@/features/form-builder/types'
 import {
   createDefaultFieldConfig,
@@ -499,7 +499,7 @@ function BuilderContent({
   }, [resolvedActivePageId])
 
   const addField = useCallback(
-    (fieldType: avaliableFieldsType) => {
+    (fieldType: AvailableFieldsType) => {
       const field = createDefaultFieldConfig(fieldType)
       setFormStructure((prev) => {
         const page = getPage(prev, resolvedActivePageId)
@@ -648,7 +648,7 @@ function BuilderContent({
         const fieldType = sourceData?.fieldType
         if (typeof fieldType !== 'string') return
 
-        const field = createDefaultFieldConfig(fieldType as avaliableFieldsType)
+        const field = createDefaultFieldConfig(fieldType as AvailableFieldsType)
         field.id = `palette_${crypto.randomUUID().slice(0, 8)}`
         paletteFieldClone.current = field
         setPaletteFieldPlaceholderId(field.id)
