@@ -1,4 +1,4 @@
-import { GoogleSheetsIntegrationStatus } from '@prisma/client'
+import { FileUploadStatus, GoogleSheetsIntegrationStatus } from '@prisma/client'
 import { randomUUID } from 'node:crypto'
 import {
   getOrderedFormFields,
@@ -10,6 +10,11 @@ import {
 } from '@/features/google-sheets/server/schema'
 import { drainGoogleSheetsDeliveries } from '@/features/google-sheets/server/deliveries'
 import { validateFormFields } from '@/features/form-builder/utils/formValidation'
+import {
+  isFileUploadReceiptList,
+  type FileUploadReceipt,
+} from '@/features/file-uploads/types'
+import { fileUploadSessionCookieName } from '@/features/file-uploads/server/session'
 import { prisma } from '@/lib/prisma'
 import { after, NextRequest, NextResponse } from 'next/server'
 
@@ -104,12 +109,103 @@ export async function POST(
               if (allowedFieldIds.has(key)) sanitizedData[key] = value
             }
 
+            const fileUploadFields = fields.filter(
+              (field) => field.uniqueIdentifier === 'file-upload',
+            )
+            const requestedUploads = fileUploadFields.flatMap((field) => {
+              const value = sanitizedData[field.id]
+              if (value === undefined || value === null) return []
+              if (!isFileUploadReceiptList(value)) {
+                submissionError(422, {
+                  error: 'Validation failed',
+                  validationErrors: { [field.id]: 'Invalid uploaded file' },
+                })
+              }
+              return value.map((receipt) => ({ fieldId: field.id, receipt }))
+            })
+            const requestedUploadIds = requestedUploads.map(
+              ({ receipt }) => receipt.id,
+            )
+            if (new Set(requestedUploadIds).size !== requestedUploadIds.length) {
+              submissionError(422, { error: 'An uploaded file was used more than once' })
+            }
+
+            const uploadSessionId = requestedUploadIds.length
+              ? request.cookies.get(fileUploadSessionCookieName(formId))?.value
+              : undefined
+            const uploadSession = uploadSessionId
+              ? await transaction.file_upload_sessions.findFirst({
+                  where: {
+                    id: uploadSessionId,
+                    formId,
+                    expiresAt: { gt: new Date() },
+                  },
+                })
+              : null
+            if (requestedUploadIds.length > 0 && !uploadSession) {
+              submissionError(422, { error: 'Uploaded files are no longer available' })
+            }
+
+            const uploadedFiles = requestedUploadIds.length
+              ? await transaction.file_uploads.findMany({
+                  where: {
+                    id: { in: requestedUploadIds },
+                    formId,
+                    sessionId: uploadSession?.id,
+                    status: FileUploadStatus.PENDING,
+                  },
+                })
+              : []
+            const uploadsById = new Map(uploadedFiles.map((upload) => [upload.id, upload]))
+            if (
+              uploadedFiles.length !== requestedUploadIds.length ||
+              requestedUploads.some(({ fieldId, receipt }) =>
+                uploadsById.get(receipt.id)?.fieldId !== fieldId,
+              )
+            ) {
+              submissionError(422, { error: 'An uploaded file is invalid or unavailable' })
+            }
+
+            for (const field of fileUploadFields) {
+              const value = sanitizedData[field.id]
+              if (!isFileUploadReceiptList(value)) continue
+              sanitizedData[field.id] = value.map((receipt: FileUploadReceipt) => {
+                const upload = uploadsById.get(receipt.id)
+                if (!upload) throw new Error('Validated upload is missing')
+                return {
+                  id: upload.id,
+                  name: upload.fileName,
+                  mimeType: upload.mimeType,
+                  sizeBytes: upload.sizeBytes,
+                }
+              })
+            }
+
             const createdResponse = await transaction.responses.create({
               data: {
                 formsId: formId,
                 data: JSON.parse(JSON.stringify(sanitizedData)),
               },
             })
+
+            if (requestedUploadIds.length > 0) {
+              const attached = await transaction.file_uploads.updateMany({
+                where: {
+                  id: { in: requestedUploadIds },
+                  formId,
+                  sessionId: uploadSession?.id,
+                  status: FileUploadStatus.PENDING,
+                },
+                data: {
+                  status: FileUploadStatus.ATTACHED,
+                  responseId: createdResponse.id,
+                  sessionId: null,
+                },
+              })
+              if (attached.count !== requestedUploadIds.length) {
+                throw new Error('An uploaded file was already attached')
+              }
+            }
 
             const integration = form.googleSheetsIntegration
             const shouldSyncGoogleSheets =

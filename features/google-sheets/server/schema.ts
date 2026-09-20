@@ -6,6 +6,7 @@ import {
   getOrderedFormFields,
   type FormStructure,
 } from '@/features/form-builder/form-structure'
+import { isFileUploadReceipt } from '@/features/file-uploads/types'
 
 function fieldLabel(label: string | undefined): string {
   return label?.trim() || 'Untitled field'
@@ -73,6 +74,7 @@ export function reconcileGoogleSheetsHeaders(
 
 function formatValue(value: unknown): string {
   if (value === null || value === undefined || value === '') return ''
+  if (isFileUploadReceipt(value)) return value.name
   if (Array.isArray(value)) return value.map(formatValue).filter(Boolean).join(', ')
   if (typeof value === 'boolean') return value ? 'Yes' : 'No'
   if (typeof value === 'object') return JSON.stringify(value)

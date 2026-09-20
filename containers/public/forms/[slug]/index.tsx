@@ -121,6 +121,7 @@ export default function FormPage({ params }: FormPageProps) {
             value={formData[field.id]}
             onChange={(value) => handleFieldChange(field.id, value)}
             error={errors[field.id]}
+            formId={currentFormId}
           />
         </div>
       </div>
@@ -182,7 +183,10 @@ export default function FormPage({ params }: FormPageProps) {
         if (field.uniqueIdentifier === 'switch-field' || field.uniqueIdentifier === 'checkbox') {
           // Start as undefined (unanswered) so required validation can detect no interaction
           initialFormData[field.id] = undefined
-        } else if (field.uniqueIdentifier === 'multi-select') {
+        } else if (
+          field.uniqueIdentifier === 'multi-select' ||
+          field.uniqueIdentifier === 'file-upload'
+        ) {
           initialFormData[field.id] = []
         } else if (field.uniqueIdentifier === 'slider') {
           // Slider starts at its default value (or min)

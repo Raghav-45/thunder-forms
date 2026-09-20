@@ -27,6 +27,7 @@ import { SingleSelectFieldDefinition } from './fields/single-select'
 import { RadioGroupFieldDefinition } from './fields/radio-group'
 import { SliderFieldDefinition } from './fields/slider'
 import { DateTimePickerFieldDefinition } from './fields/datetime-picker'
+import { FileUploadFieldDefinition } from './fields/file-upload'
 
 const FIELD_DEFINITIONS = [
   new TextInputFieldDefinition(),
@@ -40,6 +41,7 @@ const FIELD_DEFINITIONS = [
   new RadioGroupFieldDefinition(),
   new SliderFieldDefinition(),
   new DateTimePickerFieldDefinition(),
+  new FileUploadFieldDefinition(),
 ] as const
 
 /**

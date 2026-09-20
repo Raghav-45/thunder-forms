@@ -31,6 +31,7 @@ import { Input } from "@/components/ui/input"
 import { useFormStore } from "@/features/form-builder/store"
 import { DatePickerWithPresets } from "@/features/form-builder/components/date-picker-with-presets"
 import { GoogleSheetsIntegration } from '@/features/google-sheets/components/google-sheets-integration'
+import { GoogleDriveUploadIntegration } from '@/features/file-uploads/components/google-drive-upload-integration'
 
 const data = {
   nav: [
@@ -222,7 +223,10 @@ export function SettingsDialog({ formId }: { formId: string | null }) {
               )}
 
               {activeTab === "Integrations" && (
-                <GoogleSheetsIntegration formId={formId} />
+                <div className="space-y-10">
+                  <GoogleSheetsIntegration formId={formId} />
+                  <GoogleDriveUploadIntegration formId={formId} />
+                </div>
               )}
             </div>
           </main>

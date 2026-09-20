@@ -28,6 +28,7 @@ describe('validateFormFields with untouched optional fields', () => {
       field('contact', 'radio-group'),
       field('tags', 'multi-select'),
       field('bio', 'text-area'),
+      field('portfolio', 'file-upload'),
     ]
     const data: Record<string, unknown> = {
       name: '',
@@ -38,6 +39,7 @@ describe('validateFormFields with untouched optional fields', () => {
       contact: '',
       tags: [],
       bio: '',
+      portfolio: [],
     }
 
     expect(validateFormFields(fields, data)).toEqual({})
@@ -78,5 +80,23 @@ describe('validateFormFields with untouched optional fields', () => {
       name: 'Invalid email address',
     })
     expect(validateFormFields(fields, { name: 'a@b.co' })).toEqual({})
+  })
+
+  it('requires valid server-issued file upload receipts', () => {
+    const files = [field('portfolio', 'file-upload', { maxFiles: 1 }, true)]
+    const validReceipt = {
+      id: 'upload-1',
+      name: 'portfolio.pdf',
+      mimeType: 'application/pdf',
+      sizeBytes: 100,
+    }
+
+    expect(validateFormFields(files, { portfolio: [] })).toEqual({
+      portfolio: 'portfolio is required',
+    })
+    expect(validateFormFields(files, { portfolio: [validReceipt] })).toEqual({})
+    expect(validateFormFields(files, { portfolio: [{ id: 'upload-1' }] })).toEqual({
+      portfolio: 'Required',
+    })
   })
 })

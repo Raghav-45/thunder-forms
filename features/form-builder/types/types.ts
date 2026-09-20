@@ -21,6 +21,8 @@ export interface FieldProps<T extends BaseFieldConfig = BaseFieldConfig> {
   onChange: (value: unknown) => void
   onBlur?: () => void
   error?: string
+  /** Present only when a field needs the public form's server API. */
+  formId?: string
 }
 
 export interface EditorProps<T extends BaseFieldConfig = BaseFieldConfig> {

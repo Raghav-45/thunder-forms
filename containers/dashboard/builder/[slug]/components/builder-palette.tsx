@@ -16,7 +16,6 @@ import { PALETTE_FIELD_TYPE, PALETTE_SECTION_TYPE } from '../drag-model'
 
 const COMING_SOON_FIELDS = [
   'Combobox',
-  'File Input',
   'Input OTP',
   'Location Input',
   'Password',
@@ -59,7 +58,7 @@ const PaletteFieldRow = memo(function PaletteFieldRow({
       onClick={() => onAdd(fieldType)}
     >
       <span className="overflow-hidden truncate text-[0.625rem] md:text-xs">
-        {fieldType}
+        {fieldType === 'file-upload' ? 'File upload' : fieldType}
       </span>
       <GripVerticalIcon className="ml-auto size-4" />
     </button>

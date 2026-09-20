@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { chooseGoogleSpreadsheet } from '@/features/google-picker/client'
 import type { GoogleSheetsIntegrationSummary } from '@/features/google-sheets/types'
 import { Loader2, Pause, Play, Plus, Sheet, Unplug } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -15,55 +16,6 @@ interface IntegrationResponse {
 
 type IntegrationAction = 'choose' | 'connect' | 'create' | 'remove' | 'status'
 
-interface PickerDocument {
-  id?: string
-}
-
-interface PickerResponse {
-  action: string
-  docs?: PickerDocument[]
-}
-
-interface GooglePickerBuilder {
-  addView: (view: unknown) => GooglePickerBuilder
-  setAppId: (appId: string) => GooglePickerBuilder
-  setCallback: (callback: (response: PickerResponse) => void) => GooglePickerBuilder
-  setDeveloperKey: (developerKey: string) => GooglePickerBuilder
-  setOAuthToken: (oauthToken: string) => GooglePickerBuilder
-  setOrigin: (origin: string) => GooglePickerBuilder
-  build: () => { setVisible: (visible: boolean) => void }
-}
-
-interface GooglePickerApi {
-  Action: { PICKED: string; CANCEL: string }
-  DocsView: new (viewId: string) => {
-    setMimeTypes: (mimeTypes: string) => unknown
-    setMode: (mode: string) => unknown
-  }
-  DocsViewMode: { LIST: string }
-  PickerBuilder: new () => GooglePickerBuilder
-  ViewId: { SPREADSHEETS: string }
-}
-
-declare global {
-  interface Window {
-    gapi?: {
-      load: (
-        name: string,
-        options: { callback: () => void; onerror: () => void },
-      ) => void
-    }
-    google?: { picker?: GooglePickerApi }
-  }
-}
-
-function pickerConfig() {
-  return {
-    apiKey: process.env.NEXT_PUBLIC_GOOGLE_PICKER_API_KEY,
-    projectNumber: process.env.NEXT_PUBLIC_GOOGLE_CLOUD_PROJECT_NUMBER,
-  }
-}
-
 function IntegrationHeader({ children }: { children: ReactNode }) {
   return (
     <div className="space-y-1">
@@ -71,83 +23,6 @@ function IntegrationHeader({ children }: { children: ReactNode }) {
       <p className="text-sm text-muted-foreground">{children}</p>
     </div>
   )
-}
-
-function loadGooglePicker(): Promise<GooglePickerApi> {
-  if (window.google?.picker) return Promise.resolve(window.google.picker)
-
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(
-      'script[data-google-picker]',
-    )
-    const loadPicker = () => {
-      if (!window.gapi) {
-        reject(new Error('Google Picker failed to load'))
-        return
-      }
-      window.gapi.load('picker', {
-        callback: () => {
-          if (window.google?.picker) resolve(window.google.picker)
-          else reject(new Error('Google Picker is unavailable'))
-        },
-        onerror: () => reject(new Error('Google Picker failed to initialize')),
-      })
-    }
-
-    if (existing) {
-      if (window.gapi) {
-        loadPicker()
-        return
-      }
-      existing.addEventListener('load', loadPicker, { once: true })
-      existing.addEventListener(
-        'error',
-        () => reject(new Error('Google Picker failed to load')),
-        { once: true },
-      )
-      return
-    }
-
-    const script = document.createElement('script')
-    script.src = 'https://apis.google.com/js/api.js'
-    script.async = true
-    script.dataset.googlePicker = 'true'
-    script.addEventListener('load', loadPicker, { once: true })
-    script.addEventListener(
-      'error',
-      () => reject(new Error('Google Picker failed to load')),
-      { once: true },
-    )
-    document.head.appendChild(script)
-  })
-}
-
-async function chooseSpreadsheet(accessToken: string): Promise<string | null> {
-  const { apiKey, projectNumber } = pickerConfig()
-  if (!apiKey || !projectNumber) {
-    throw new Error('Google Picker is not configured')
-  }
-
-  const picker = await loadGooglePicker()
-  return new Promise((resolve) => {
-    const view = new picker.DocsView(picker.ViewId.SPREADSHEETS)
-    view.setMimeTypes('application/vnd.google-apps.spreadsheet')
-    view.setMode(picker.DocsViewMode.LIST)
-    const builder = new picker.PickerBuilder()
-      .addView(view)
-      .setAppId(projectNumber)
-      .setDeveloperKey(apiKey)
-      .setOAuthToken(accessToken)
-      .setOrigin(window.location.origin)
-      .setCallback((response) => {
-        if (response.action === picker.Action.PICKED) {
-          resolve(response.docs?.[0]?.id || null)
-          return
-        }
-        if (response.action === picker.Action.CANCEL) resolve(null)
-      })
-    builder.build().setVisible(true)
-  })
 }
 
 export function GoogleSheetsIntegration({ formId }: { formId: string | null }) {
@@ -265,11 +140,11 @@ export function GoogleSheetsIntegration({ formId }: { formId: string | null }) {
                 const { data: token } = await axios.get<{ accessToken: string }>(
                   `/api/forms/${formId}/integrations/google-sheets/picker-token`,
                 )
-                const spreadsheetId = await chooseSpreadsheet(token.accessToken)
-                if (!spreadsheetId) return
+                const spreadsheet = await chooseGoogleSpreadsheet(token.accessToken)
+                if (!spreadsheet) return
                 await axios.post(
                   `/api/forms/${formId}/integrations/google-sheets/selection`,
-                  { spreadsheetId },
+                  { spreadsheetId: spreadsheet.id },
                 )
                 toast.success('Response tab added to selected spreadsheet')
               })

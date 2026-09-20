@@ -72,6 +72,7 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { isFileUploadReceipt, isFileUploadReceiptList } from '@/features/file-uploads/types'
 
 interface FormResponse {
   id: string
@@ -86,7 +87,14 @@ interface FormResponsesData {
   responses: FormResponse[]
 }
 
-function ResponseDetailsDrawer({ response }: { response: FormResponse }) {
+function formatResponseValue(value: unknown): string {
+  if (isFileUploadReceipt(value)) return value.name
+  if (Array.isArray(value)) return value.map(formatResponseValue).join(', ')
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+  return String(value)
+}
+
+function ResponseDetailsDrawer({ response, formId }: { response: FormResponse; formId: string }) {
   const isMobile = useIsMobile()
 
   const formatFieldName = (fieldName: string) => {
@@ -94,16 +102,6 @@ function ResponseDetailsDrawer({ response }: { response: FormResponse }) {
       .replace(/_\d+$/, '')
       .replace(/_/g, ' ')
       .replace(/\b\w/g, (l) => l.toUpperCase())
-  }
-
-  const formatFieldValue = (value: unknown) => {
-    if (Array.isArray(value)) {
-      return value.join(', ')
-    }
-    if (typeof value === 'boolean') {
-      return value ? 'Yes' : 'No'
-    }
-    return String(value)
   }
 
   return (
@@ -135,9 +133,17 @@ function ResponseDetailsDrawer({ response }: { response: FormResponse }) {
       {/* Use the Label component for accessibility */}
       {formatFieldName(key)}
     </Label>
-    <input
+    {isFileUploadReceiptList(value) ? (
+      <div className="flex flex-wrap gap-2">
+        {value.map((file) => (
+          <Button key={file.id} asChild size="sm" variant="outline">
+            <a href={`/api/forms/${formId}/uploads/${file.id}`}>{file.name}</a>
+          </Button>
+        ))}
+      </div>
+    ) : <input
       type="text" // Use 'text' type for standard data display
-      value={formatFieldValue(value)} // Display the value
+      value={formatResponseValue(value)} // Display the value
       disabled // This makes the input read-only and applies a disabled style
       className="
         flex 
@@ -163,7 +169,7 @@ function ResponseDetailsDrawer({ response }: { response: FormResponse }) {
         disabled:cursor-not-allowed 
         disabled:opacity-50
       "
-    />
+    />}
   </div>
 ))}
           </div>
@@ -178,7 +184,7 @@ function ResponseDetailsDrawer({ response }: { response: FormResponse }) {
   )
 }
 
-function ResponsesDataTable({ data: responses }: { data: FormResponse[] }) {
+function ResponsesDataTable({ data: responses, formId }: { data: FormResponse[]; formId: string }) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
@@ -199,16 +205,11 @@ function ResponsesDataTable({ data: responses }: { data: FormResponse[] }) {
   }
 
   const formatFieldValue = (value: unknown) => {
-    if (Array.isArray(value)) {
-      return value.join(', ')
-    }
-    if (typeof value === 'boolean') {
-      return value ? 'Yes' : 'No'
-    }
+    if (isFileUploadReceiptList(value)) return value.map((file) => file.name).join(', ')
     if (typeof value === 'string' && value.length > 50) {
       return value.substring(0, 50) + '...'
     }
-    return String(value)
+    return formatResponseValue(value)
   }
 
   // Get all unique field names from responses
@@ -254,7 +255,7 @@ function ResponsesDataTable({ data: responses }: { data: FormResponse[] }) {
         accessorKey: 'id',
         header: 'Response ID',
         cell: ({ row }) => {
-          return <ResponseDetailsDrawer response={row.original} />
+          return <ResponseDetailsDrawer response={row.original} formId={formId} />
         },
         enableHiding: false,
       },
@@ -344,8 +345,7 @@ function ResponsesDataTable({ data: responses }: { data: FormResponse[] }) {
       ...allFields.map((field) => {
         const value = response.data[field]
         if (value == null) return ''
-        if (Array.isArray(value)) return value.join('; ')
-        const str = String(value)
+        const str = formatResponseValue(value)
         // Escape quotes and wrap in quotes if it contains commas, quotes, or newlines
         if (str.includes(',') || str.includes('"') || str.includes('\n')) {
           return `"${str.replace(/"/g, '""')}"`
@@ -608,7 +608,7 @@ function ResponsesDataTable({ data: responses }: { data: FormResponse[] }) {
                       <Checkbox />
                     </TableCell>
                     <TableCell>
-                      <ResponseDetailsDrawer response={response} />
+                      <ResponseDetailsDrawer response={response} formId={formId} />
                     </TableCell>
                     {allFields.slice(0, 3).map((field) => (
                       <TableCell key={field} className="max-w-48 truncate">
@@ -720,5 +720,5 @@ export default function FormResponsesPage() {
     )
   }
 
-  return <ResponsesDataTable data={formData.responses} />
+  return <ResponsesDataTable data={formData.responses} formId={formData.formId} />
 }

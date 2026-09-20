@@ -31,6 +31,16 @@ enum GoogleSheetsDeliveryStatus {
   FAILED
 }
 
+enum FileUploadConnectionStatus {
+  ACTIVE
+  REAUTH_REQUIRED
+}
+
+enum FileUploadStatus {
+  PENDING
+  ATTACHED
+}
+
 /// Better Auth: Core user table
 model user {
   id            String    @id @default(uuid())
@@ -49,6 +59,8 @@ model user {
   googleSheetsOAuthAttempts google_sheets_oauth_attempts[]
   googleSheetsSetupLocks google_sheets_setup_locks[]
   googleFormsImportAttempts google_forms_import_attempts[]
+  fileUploadConnection file_upload_connections?
+  fileUploadOAuthAttempts file_upload_oauth_attempts[]
 }
 
 /// Better Auth: Session management
@@ -120,6 +132,10 @@ model forms {
   googleSheetsIntegration google_sheets_integrations?
   googleSheetsOAuthAttempts google_sheets_oauth_attempts[]
   googleSheetsSetupLock google_sheets_setup_locks?
+  fileUploadOAuthAttempts file_upload_oauth_attempts[]
+  fileUploadDestination file_upload_destinations?
+  fileUploads file_uploads[]
+  fileUploadSessions file_upload_sessions[]
 }
 
 model responses {
@@ -130,6 +146,85 @@ model responses {
   forms   forms  @relation(fields: [formsId], references: [id], onDelete: Cascade)
   formsId String // References forms.id
   googleSheetsDeliveries google_sheets_deliveries[]
+  fileUploads file_uploads[]
+}
+
+model file_upload_connections {
+  id                    String                     @id @default(cuid())
+  userId                String                     @unique
+  encryptedRefreshToken String
+  grantedScopes         String
+  status                FileUploadConnectionStatus @default(ACTIVE)
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
+
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destinations file_upload_destinations[]
+}
+
+model file_upload_oauth_attempts {
+  state                 String   @id
+  encryptedCodeVerifier String
+  userId                String
+  formId                String
+  expiresAt             DateTime
+  createdAt             DateTime @default(now())
+
+  user user  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  form forms @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+}
+
+model file_upload_destinations {
+  id           String   @id @default(cuid())
+  formId       String   @unique
+  connectionId String
+  provider     String
+  folderId     String
+  folderName   String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  form       forms                   @relation(fields: [formId], references: [id], onDelete: Cascade)
+  connection file_upload_connections @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  uploads    file_uploads[]
+}
+
+model file_uploads {
+  id            String           @id @default(cuid())
+  formId        String
+  fieldId       String
+  sessionId     String?
+  destinationId String
+  storageKey    String
+  fileName      String
+  mimeType      String
+  sizeBytes     Int
+  status        FileUploadStatus @default(PENDING)
+  responseId    String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  form        forms                    @relation(fields: [formId], references: [id], onDelete: Cascade)
+  destination file_upload_destinations @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  response    responses?                @relation(fields: [responseId], references: [id], onDelete: SetNull)
+  session     file_upload_sessions?     @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([formId, fieldId, status])
+  @@index([status, createdAt])
+}
+
+model file_upload_sessions {
+  id        String   @id
+  formId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  form    forms          @relation(fields: [formId], references: [id], onDelete: Cascade)
+  uploads file_uploads[]
+
+  @@index([formId, expiresAt])
 }
 
 model google_sheets_connections {

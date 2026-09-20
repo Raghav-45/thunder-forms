@@ -76,6 +76,24 @@ describe('form structure', () => {
     ).toBe(true)
   })
 
+  it('accepts registered file-upload fields', () => {
+    expect(
+      isFormStructure({
+        pages: [{
+          id: 'page',
+          sections: [{
+            id: 'section',
+            fields: [{
+              id: 'portfolio',
+              label: 'Portfolio',
+              uniqueIdentifier: 'file-upload',
+            }],
+          }],
+        }],
+      }),
+    ).toBe(true)
+  })
+
   it('rejects section metadata that is not text', () => {
     expect(
       isFormStructure({
