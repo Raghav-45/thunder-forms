@@ -2,7 +2,7 @@ import {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
-} from '@/features/form-builder/types/types'
+} from '@/features/form-builder/types'
 import { z } from 'zod'
 
 /**

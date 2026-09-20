@@ -1,5 +1,5 @@
 import type { FieldConfig } from '@/features/form-builder/elements'
-import type { avaliableFieldsType } from '@/features/form-builder/types/types'
+import type { avaliableFieldsType } from '@/features/form-builder/types'
 import { validateFormFields } from '@/features/form-builder/utils/formValidation'
 import { describe, expect, it } from 'vitest'
 

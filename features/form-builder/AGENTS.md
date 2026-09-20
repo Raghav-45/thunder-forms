@@ -51,7 +51,7 @@ import type {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
-} from '@/features/form-builder/types/types'
+} from '@/features/form-builder/types'
 import React from 'react'
 import { z } from 'zod'
 

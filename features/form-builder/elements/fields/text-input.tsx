@@ -5,7 +5,7 @@ import {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
-} from '@/features/form-builder/types/types'
+} from '@/features/form-builder/types'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import React, { useState } from 'react'

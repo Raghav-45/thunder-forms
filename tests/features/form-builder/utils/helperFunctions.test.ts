@@ -5,7 +5,7 @@ import {
   getFieldEditor,
   validateFieldConfig,
 } from '@/features/form-builder/utils/helperFunctions'
-import type { avaliableFieldsType } from '@/features/form-builder/types/types'
+import type { avaliableFieldsType } from '@/features/form-builder/types'
 import { describe, expect, it } from 'vitest'
 
 const identifiers = Object.keys(FIELD_REGISTRY) as avaliableFieldsType[]

@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator'
 import {
   AVAILABLE_FIELDS,
   type avaliableFieldsType,
-} from '@/features/form-builder/types/types'
+} from '@/features/form-builder/types'
 import { cn } from '@/lib/utils'
 import { GripVerticalIcon } from 'lucide-react'
 import { memo } from 'react'

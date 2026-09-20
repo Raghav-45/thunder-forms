@@ -1,4 +1,4 @@
-import type { avaliableFieldsType } from '@/features/form-builder/types/types'
+import type { avaliableFieldsType } from '@/features/form-builder/types'
 
 export interface TemplateFieldSpec {
   type: avaliableFieldsType

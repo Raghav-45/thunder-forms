@@ -13,7 +13,7 @@ import { IMMORTAL_SENTINEL_DATE } from '@/features/form-builder/components/date-
 import { useFormStore } from '@/features/form-builder/store'
 import {
   type avaliableFieldsType,
-} from '@/features/form-builder/types/types'
+} from '@/features/form-builder/types'
 import {
   createDefaultFieldConfig,
   getFieldEditor,

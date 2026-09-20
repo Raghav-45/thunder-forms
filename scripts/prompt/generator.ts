@@ -1,4 +1,4 @@
-import { avaliableFieldsType } from '@/features/form-builder/types/types'
+import type { avaliableFieldsType } from '@/features/form-builder/types'
 import fs from 'fs'
 import path from 'path'
 
@@ -66,7 +66,7 @@ async function generatePrompt() {
     // Import your types (adjust path as needed)
     const { BASE_PROMPT } = await import('./base-prompt')
     const { AVAILABLE_FIELDS } = await import(
-      '@/features/form-builder/types/types'
+      '@/features/form-builder/types'
     )
     const { createDefaultFieldConfig } = await import(
       '@/features/form-builder/utils/helperFunctions'
@@ -74,7 +74,7 @@ async function generatePrompt() {
 
     // Extract BaseFieldConfig from the types file
     const typesFilePath = path.resolve(
-      './features/form-builder/types/types.ts'
+      './features/form-builder/types/index.ts'
     )
     const baseFieldConfigInterface = await extractBaseFieldConfig(typesFilePath)
 

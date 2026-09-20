@@ -24,7 +24,7 @@ import type {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
-} from '@/features/form-builder/types/types'
+} from '@/features/form-builder/types'
 import {
   FILE_UPLOAD_MAX_FILES,
   FILE_UPLOAD_MAX_SIZE_BYTES,
