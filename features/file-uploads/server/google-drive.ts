@@ -3,6 +3,7 @@ import { Readable } from 'node:stream'
 import { CodeChallengeMethod } from 'google-auth-library'
 import { google } from 'googleapis'
 import { decryptGoogleSheetsSecret } from '@/features/google-sheets/server/crypto'
+import { prisma } from '@/lib/prisma'
 
 const GOOGLE_DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file'
 
@@ -81,25 +82,41 @@ export function createGoogleDriveAuthorizationUrl(
   })
 }
 
-function createGoogleDriveClient(encryptedRefreshToken: string) {
+function createGoogleDriveOAuthClientWithRefreshToken(encryptedRefreshToken: string) {
   const auth = createGoogleDriveOAuthClient()
   auth.setCredentials({
     refresh_token: decryptGoogleSheetsSecret(encryptedRefreshToken),
   })
 
+  return auth
+}
+
+function createGoogleDriveClient(encryptedRefreshToken: string) {
+  const auth = createGoogleDriveOAuthClientWithRefreshToken(encryptedRefreshToken)
   return google.drive({ version: 'v3', auth })
 }
 
 export async function getGoogleDriveAccessToken(
   encryptedRefreshToken: string,
 ) {
-  const auth = createGoogleDriveOAuthClient()
-  auth.setCredentials({
-    refresh_token: decryptGoogleSheetsSecret(encryptedRefreshToken),
-  })
+  const auth = createGoogleDriveOAuthClientWithRefreshToken(encryptedRefreshToken)
   const { token } = await auth.getAccessToken()
   if (!token) throw new Error('Google did not provide an access token')
   return token
+}
+
+export async function markGoogleDriveConnectionForReauthentication(
+  connectionId: string | null,
+  error: unknown,
+) {
+  if (!connectionId || !isGoogleDriveAuthorizationError(error)) return
+
+  await prisma.file_upload_connections.update({
+    where: { id: connectionId },
+    data: { status: 'REAUTH_REQUIRED' },
+  }).catch((updateError) => {
+    console.error('Failed to mark Google Drive connection for reauthentication:', updateError)
+  })
 }
 
 export async function getGoogleDriveFolder(

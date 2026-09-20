@@ -4,7 +4,7 @@ import {
   isFormStructure,
 } from '@/features/form-builder/form-structure'
 import type { FileUploadConfig } from '@/features/form-builder/elements/fields/file-upload'
-import { isGoogleDriveAuthorizationError } from '@/features/file-uploads/server/google-drive'
+import { markGoogleDriveConnectionForReauthentication } from '@/features/file-uploads/server/google-drive'
 import { getFileStorageProvider } from '@/features/file-uploads/server/storage'
 import {
   deleteExpiredFileUploadSessions,
@@ -12,6 +12,10 @@ import {
   getOrCreateFileUploadSession,
   FILE_UPLOAD_SESSION_MAX_AGE,
 } from '@/features/file-uploads/server/session'
+import {
+  normalizeFileUploadMaxFiles,
+  normalizeFileUploadMaxSizeBytes,
+} from '@/features/file-uploads/types'
 import { prisma } from '@/lib/prisma'
 import { after, NextRequest, NextResponse } from 'next/server'
 
@@ -92,10 +96,7 @@ export async function POST(
     if (uploadField.disabled) {
       return NextResponse.json({ error: 'File uploads are disabled for this field' }, { status: 422 })
     }
-    const sizeLimit = Math.min(
-      Math.max(uploadField.maxSizeBytes ?? 4 * 1024 * 1024, 1),
-      4 * 1024 * 1024,
-    )
+    const sizeLimit = normalizeFileUploadMaxSizeBytes(uploadField)
     if (file.size === 0 || file.size > sizeLimit) {
       return NextResponse.json(
         { error: `Files must be between 1 byte and ${Math.ceil(sizeLimit / (1024 * 1024))} MB` },
@@ -130,7 +131,7 @@ export async function POST(
         status: FileUploadStatus.PENDING,
       },
     })
-    const maxFiles = Math.min(Math.max(uploadField.maxFiles ?? 1, 1), 10)
+    const maxFiles = normalizeFileUploadMaxFiles(uploadField)
     if (pendingCount >= maxFiles) {
       return NextResponse.json(
         { error: 'This field already has its maximum number of uploaded files' },
@@ -191,14 +192,7 @@ export async function POST(
       throw error
     }
   } catch (error) {
-    if (connectionId && isGoogleDriveAuthorizationError(error)) {
-      await prisma.file_upload_connections.update({
-        where: { id: connectionId },
-        data: { status: 'REAUTH_REQUIRED' },
-      }).catch((updateError) => {
-        console.error('Failed to mark Google Drive connection for reauthentication:', updateError)
-      })
-    }
+    await markGoogleDriveConnectionForReauthentication(connectionId, error)
     console.error('Public file upload failed:', error)
     return NextResponse.json(
       {

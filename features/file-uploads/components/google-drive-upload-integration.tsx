@@ -7,11 +7,21 @@ import axios from 'axios'
 import { FolderUp, Loader2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import type { ReactNode } from 'react'
 
 interface UploadIntegrationResponse {
   connection: { status: 'ACTIVE' | 'REAUTH_REQUIRED' } | null
   destination: { folderName: string } | null
   ready: boolean
+}
+
+function IntegrationHeader({ children }: { children: ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <h1 className="text-2xl font-bold">File uploads</h1>
+      <p className="text-sm text-muted-foreground">{children}</p>
+    </div>
+  )
 }
 
 export function GoogleDriveUploadIntegration({ formId }: { formId: string | null }) {
@@ -52,10 +62,7 @@ export function GoogleDriveUploadIntegration({ formId }: { formId: string | null
 
   if (!formId) {
     return (
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold">File uploads</h1>
-        <p className="text-sm text-muted-foreground">Save this form before connecting Google Drive.</p>
-      </div>
+      <IntegrationHeader>Save this form before connecting Google Drive.</IntegrationHeader>
     )
   }
 
@@ -64,24 +71,18 @@ export function GoogleDriveUploadIntegration({ formId }: { formId: string | null
   const data = integration.data
   if (data?.ready && data.destination) {
     return (
-      <div className="space-y-1">
-          <h1 className="text-2xl font-bold">File uploads</h1>
-          <p className="text-sm text-muted-foreground">
-          Respondent files upload to your Google Drive folder “{data.destination.folderName}”.
-        </p>
-      </div>
+      <IntegrationHeader>
+        Respondent files upload to your Google Drive folder “{data.destination.folderName}”.
+      </IntegrationHeader>
     )
   }
 
   if (!data?.connection || data.connection.status === 'REAUTH_REQUIRED') {
     return (
       <div className="space-y-5">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold">File uploads</h1>
-          <p className="text-sm text-muted-foreground">
-            Connect Google Drive. ThunderForms creates one private folder for this form.
-          </p>
-        </div>
+        <IntegrationHeader>
+          Connect Google Drive. ThunderForms creates one private folder for this form.
+        </IntegrationHeader>
         <Button
           type="button"
           disabled={Boolean(action)}
@@ -101,12 +102,9 @@ export function GoogleDriveUploadIntegration({ formId }: { formId: string | null
 
   return (
     <div className="space-y-5">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold">File uploads</h1>
-        <p className="text-sm text-muted-foreground">
-          Choose a folder only you control. Public or domain-shared folders are blocked.
-        </p>
-      </div>
+      <IntegrationHeader>
+        Choose a folder only you control. Public or domain-shared folders are blocked.
+      </IntegrationHeader>
       <Button
         type="button"
         disabled={Boolean(action)}

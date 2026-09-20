@@ -171,4 +171,19 @@ describe('POST /api/forms/[id]/uploads', () => {
     expect(response.status).toBe(422)
     expect(mocks.providerUpload).not.toHaveBeenCalled()
   })
+
+  it('removes Drive file when receipt persistence fails', async () => {
+    mocks.createUpload.mockRejectedValueOnce(new Error('Database unavailable'))
+
+    const response = await POST(
+      requestFor('portfolio', new File(['pdf'], 'portfolio.pdf', { type: 'application/pdf' })),
+      { params },
+    )
+
+    expect(response.status).toBe(500)
+    expect(mocks.providerDelete).toHaveBeenCalledWith({
+      encryptedRefreshToken: 'encrypted-token',
+      storageKey: 'drive-file-1',
+    })
+  })
 })

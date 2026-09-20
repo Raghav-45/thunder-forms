@@ -20,6 +20,9 @@ import type {
   FieldProps,
 } from '@/features/form-builder/types/types'
 import {
+  FILE_UPLOAD_MAX_SIZE_BYTES,
+  normalizeFileUploadMaxFiles,
+  normalizeFileUploadMaxSizeBytes,
   isFileUploadReceiptList,
   type FileUploadReceipt,
 } from '@/features/file-uploads/types'
@@ -28,7 +31,6 @@ import { useState } from 'react'
 import { z } from 'zod'
 
 const FIELD_IDENTIFIER = 'file-upload'
-const DEFAULT_MAX_SIZE_BYTES = 4 * 1024 * 1024
 
 export interface FileUploadConfig extends BaseFieldConfig {
   uniqueIdentifier: typeof FIELD_IDENTIFIER
@@ -38,14 +40,11 @@ export interface FileUploadConfig extends BaseFieldConfig {
 }
 
 function maxFiles(field: FileUploadConfig) {
-  return Math.min(Math.max(field.maxFiles ?? 1, 1), 10)
+  return normalizeFileUploadMaxFiles(field)
 }
 
 function maxSizeBytes(field: FileUploadConfig) {
-  return Math.min(
-    Math.max(field.maxSizeBytes ?? DEFAULT_MAX_SIZE_BYTES, 1),
-    DEFAULT_MAX_SIZE_BYTES,
-  )
+  return normalizeFileUploadMaxSizeBytes(field)
 }
 
 function formatSize(bytes: number) {
@@ -277,7 +276,7 @@ export class FileUploadFieldDefinition extends FormFieldDefinition<FileUploadCon
       required: false,
       disabled: false,
       maxFiles: 1,
-      maxSizeBytes: DEFAULT_MAX_SIZE_BYTES,
+      maxSizeBytes: FILE_UPLOAD_MAX_SIZE_BYTES,
     }
   }
 
