@@ -31,7 +31,7 @@ import {
   isFileUploadReceiptList,
   type FileUploadReceipt,
 } from '@/features/file-uploads/types'
-import { FileUp, Loader2, X } from 'lucide-react'
+import { Loader2, X } from 'lucide-react'
 import { useState } from 'react'
 import { z } from 'zod'
 
@@ -226,6 +226,9 @@ const FileUploadEditor = ({
                 value={maxFiles(config)}
                 onChange={(event) => update('maxFiles', Number(event.target.value) || 1)}
               />
+              <p className="text-xs text-muted-foreground">
+                Per respondent submission for this field.
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="file-upload-size">Maximum size (MB)</Label>
@@ -235,8 +238,16 @@ const FileUploadEditor = ({
                 min={FILE_UPLOAD_MIN_SIZE_BYTES / (1024 * 1024)}
                 max={FILE_UPLOAD_MAX_SIZE_BYTES / (1024 * 1024)}
                 value={Math.round(maxSizeBytes(config) / (1024 * 1024))}
-                onChange={(event) => update('maxSizeBytes', (Number(event.target.value) || 1) * 1024 * 1024)}
+                onChange={(event) => update(
+                  'maxSizeBytes',
+                  normalizeFileUploadMaxSizeBytes({
+                    maxSizeBytes: (Number(event.target.value) || 1) * 1024 * 1024,
+                  }),
+                )}
               />
+              <p className="text-xs text-muted-foreground">
+                Up to {formatSize(FILE_UPLOAD_MAX_SIZE_BYTES)} per file is supported. You can set a lower limit, but not a higher one.
+              </p>
             </div>
           </div>
           <div className="flex items-center justify-between">

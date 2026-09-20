@@ -182,6 +182,28 @@ describe('POST /api/forms/[id]/uploads', () => {
     expect(mocks.providerUpload).not.toHaveBeenCalled()
   })
 
+  it('counts only uploads from the current respondent session', async () => {
+    mocks.getUploadSession.mockResolvedValue({
+      session: { id: 'session-2' },
+      created: false,
+    })
+
+    const response = await POST(
+      requestFor('portfolio', new File(['pdf'], 'portfolio.pdf', { type: 'application/pdf' })),
+      { params },
+    )
+
+    expect(response.status).toBe(201)
+    expect(mocks.countUploads).toHaveBeenCalledWith({
+      where: {
+        formId: 'form-1',
+        fieldId: 'portfolio',
+        sessionId: 'session-2',
+        status: 'PENDING',
+      },
+    })
+  })
+
   it('removes Drive file when receipt persistence fails', async () => {
     mocks.createUpload.mockRejectedValueOnce(new Error('Database unavailable'))
 
@@ -199,7 +221,7 @@ describe('POST /api/forms/[id]/uploads', () => {
 
   it('rejects an oversized stream before creating an upload receipt', async () => {
     const oversizedFile = new File(
-      [new Uint8Array(4 * 1024 * 1024 + 1)],
+      [new Uint8Array(5 * 1024 * 1024 + 1)],
       'portfolio.pdf',
       { type: 'application/pdf' },
     )
@@ -208,7 +230,7 @@ describe('POST /api/forms/[id]/uploads', () => {
 
     expect(response.status).toBe(422)
     await expect(response.json()).resolves.toEqual({
-      error: 'Files must be between 1 byte and 4 MB',
+      error: 'Files must be between 1 byte and 5 MB',
     })
     expect(mocks.createUpload).not.toHaveBeenCalled()
   })

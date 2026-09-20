@@ -211,7 +211,7 @@ model file_uploads {
   response    responses?                @relation(fields: [responseId], references: [id], onDelete: SetNull)
   session     file_upload_sessions?     @relation(fields: [sessionId], references: [id], onDelete: SetNull)
 
-  @@index([formId, fieldId, status])
+  @@index([formId, fieldId, sessionId, status])
   @@index([status, createdAt])
 }
 
