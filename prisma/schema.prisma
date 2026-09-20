@@ -37,6 +37,7 @@ enum FileUploadConnectionStatus {
 }
 
 enum FileUploadStatus {
+  UPLOADING
   PENDING
   ATTACHED
 }

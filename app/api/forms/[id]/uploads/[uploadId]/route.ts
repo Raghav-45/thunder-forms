@@ -38,7 +38,7 @@ export async function GET(
       Readable.toWeb(stream as Readable) as unknown as ReadableStream<Uint8Array>,
       {
       headers: {
-        'Content-Type': upload.mimeType,
+        'Content-Type': 'application/octet-stream',
         'Content-Disposition': contentDisposition(upload.fileName),
         'Cache-Control': 'private, no-store',
         'X-Content-Type-Options': 'nosniff',

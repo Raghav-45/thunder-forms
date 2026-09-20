@@ -1,0 +1,1 @@
+ALTER TYPE "FileUploadStatus" ADD VALUE 'UPLOADING';

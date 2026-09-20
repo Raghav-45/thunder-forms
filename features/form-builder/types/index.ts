@@ -19,6 +19,7 @@ export interface FieldProps<T extends BaseFieldConfig = BaseFieldConfig> {
   field: T
   value: unknown
   onChange: (value: unknown) => void
+  onUploadStateChange?: (fieldId: string, isUploading: boolean) => void
   onBlur?: () => void
   error?: string
   /** Present only when a field needs the public form's server API. */

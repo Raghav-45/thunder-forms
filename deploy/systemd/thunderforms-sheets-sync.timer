@@ -1,0 +1,10 @@
+[Unit]
+Description=Run the ThunderForms Google Sheets delivery worker every minute
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+Persistent=true
+Unit=thunderforms-sheets-sync.service
+
+[Install]
+WantedBy=timers.target

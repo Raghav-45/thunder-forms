@@ -14,7 +14,7 @@ import { FormClosedDialog } from '../components/form-closed-dialog'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
-import { use, useEffect, useState } from 'react'
+import { use, useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 interface FormPageProps {
@@ -39,8 +39,10 @@ export default function FormPage({ params }: FormPageProps) {
   const [formData, setFormData] = useState<Record<string, unknown>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [uploadingFieldCount, setUploadingFieldCount] = useState(0)
   const [formStatus, setFormStatus] = useState<string>("Active")
   const [showClosedDialog, setShowClosedDialog] = useState(false)
+  const uploadingFieldIds = useRef(new Set<string>())
 
   // Check if form is closed based on status
   const checkIsFormClosed = (status: string) => {
@@ -63,7 +65,26 @@ export default function FormPage({ params }: FormPageProps) {
     }
   }
 
+  const handleUploadStateChange = useCallback(
+    (fieldId: string, isUploading: boolean) => {
+      const nextUploadingFieldIds = new Set(uploadingFieldIds.current)
+      if (isUploading) {
+        nextUploadingFieldIds.add(fieldId)
+      } else {
+        nextUploadingFieldIds.delete(fieldId)
+      }
+      uploadingFieldIds.current = nextUploadingFieldIds
+      setUploadingFieldCount(nextUploadingFieldIds.size)
+    },
+    [],
+  )
+
   const handleSubmit = async () => {
+    if (uploadingFieldIds.current.size > 0) {
+      toast.error('Wait for file uploads to finish before submitting')
+      return
+    }
+
     const newErrors = validateFormFields(fields, formData)
     setErrors(newErrors)
     
@@ -120,6 +141,7 @@ export default function FormPage({ params }: FormPageProps) {
             field={fieldConfig as never}
             value={formData[field.id]}
             onChange={(value) => handleFieldChange(field.id, value)}
+            onUploadStateChange={handleUploadStateChange}
             error={errors[field.id]}
             formId={currentFormId}
           />
@@ -267,7 +289,11 @@ export default function FormPage({ params }: FormPageProps) {
         <Button
           className="w-full md:w-auto"
           onClick={handleSubmit}
-          disabled={isSubmitting || checkIsFormClosed(formStatus)}
+          disabled={
+            isSubmitting ||
+            uploadingFieldCount > 0 ||
+            checkIsFormClosed(formStatus)
+          }
         >
           {isSubmitting ? 'Submitting...' : (formSettings.submitButtonText || 'Submit')}
         </Button>

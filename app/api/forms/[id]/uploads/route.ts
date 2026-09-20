@@ -7,6 +7,7 @@ import type { FileUploadConfig } from '@/features/form-builder/elements/fields/f
 import { markGoogleDriveConnectionForReauthentication } from '@/features/file-uploads/server/google-drive'
 import {
   createSizeLimitedFileStream,
+  FileUploadContentError,
   FileUploadRequestError,
   FileUploadSizeLimitError,
   parseStreamedFileUpload,
@@ -35,6 +36,96 @@ class PublicFileUploadError extends Error {
   }
 }
 
+const MAX_UPLOAD_RESERVATION_AGE_MS = 30 * 60 * 1000
+const SERIALIZABLE_TRANSACTION_ATTEMPTS = 3
+
+function isSerializationFailure(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { code?: unknown }).code === 'P2034'
+  )
+}
+
+async function reserveFileUpload({
+  formId,
+  fieldId,
+  sessionId,
+  destinationId,
+  fileName,
+  mimeType,
+  maxFiles,
+}: {
+  formId: string
+  fieldId: string
+  sessionId: string
+  destinationId: string
+  fileName: string
+  mimeType: string
+  maxFiles: number
+}) {
+  for (let attempt = 0; attempt < SERIALIZABLE_TRANSACTION_ATTEMPTS; attempt += 1) {
+    try {
+      return await prisma.$transaction(
+        async (transaction) => {
+          await transaction.file_uploads.deleteMany({
+            where: {
+              formId,
+              fieldId,
+              sessionId,
+              status: FileUploadStatus.UPLOADING,
+              createdAt: {
+                lt: new Date(Date.now() - MAX_UPLOAD_RESERVATION_AGE_MS),
+              },
+            },
+          })
+          const occupiedSlots = await transaction.file_uploads.count({
+            where: {
+              formId,
+              fieldId,
+              sessionId,
+              status: {
+                in: [
+                  FileUploadStatus.UPLOADING,
+                  FileUploadStatus.PENDING,
+                ],
+              },
+            },
+          })
+          if (occupiedSlots >= maxFiles) {
+            throw new PublicFileUploadError(
+              'This field already has its maximum number of uploaded files',
+              422,
+            )
+          }
+
+          return transaction.file_uploads.create({
+            data: {
+              formId,
+              fieldId,
+              sessionId,
+              destinationId,
+              storageKey: '',
+              fileName,
+              mimeType,
+              sizeBytes: 0,
+              status: FileUploadStatus.UPLOADING,
+            },
+          })
+        },
+        { isolationLevel: 'Serializable' },
+      )
+    } catch (error) {
+      if (isSerializationFailure(error) && attempt + 1 < SERIALIZABLE_TRANSACTION_ATTEMPTS) {
+        continue
+      }
+      throw error
+    }
+  }
+
+  throw new Error('File upload reservation did not complete')
+}
+
 function acceptedByField(
   file: Pick<File, 'name' | 'type'>,
   acceptedTypes?: string,
@@ -57,6 +148,8 @@ export async function POST(
   let connectionId: string | null = null
   let incomingUpload: StreamedFileUpload | null = null
   let sizeLimit: number | null = null
+  let reservedUploadId: string | null = null
+  let uploadPersisted = false
   try {
     const { id: formId } = await params
     incomingUpload = await parseStreamedFileUpload(request, FILE_UPLOAD_MAX_SIZE_BYTES)
@@ -113,21 +206,17 @@ export async function POST(
       formId,
       request.cookies.get(fileUploadSessionCookieName(formId))?.value,
     )
-    const pendingCount = await prisma.file_uploads.count({
-      where: {
-        formId,
-        fieldId,
-        sessionId: session.id,
-        status: FileUploadStatus.PENDING,
-      },
-    })
     const maxFiles = normalizeFileUploadMaxFiles(uploadField)
-    if (pendingCount >= maxFiles) {
-      throw new PublicFileUploadError(
-        'This field already has its maximum number of uploaded files',
-        422,
-      )
-    }
+    const reservedUpload = await reserveFileUpload({
+      formId,
+      fieldId,
+      sessionId: session.id,
+      destinationId: destination.id,
+      fileName,
+      mimeType,
+      maxFiles,
+    })
+    reservedUploadId = reservedUpload.id
 
     const storageProvider = getFileStorageProvider(destination.provider)
     const limitedFile = createSizeLimitedFileStream(incomingUpload.stream, sizeLimit)
@@ -150,24 +239,27 @@ export async function POST(
         throw new FileUploadSizeLimitError()
       }
 
-      const upload = await prisma.file_uploads.create({
+      const finalized = await prisma.file_uploads.updateMany({
+        where: {
+          id: reservedUpload.id,
+          status: FileUploadStatus.UPLOADING,
+        },
         data: {
-          formId,
-          fieldId,
-          sessionId: session.id,
-          destinationId: destination.id,
           storageKey: stored.storageKey,
-          fileName,
-          mimeType,
           sizeBytes: limitedFile.getSizeBytes(),
+          status: FileUploadStatus.PENDING,
         },
       })
+      if (finalized.count !== 1) {
+        throw new Error('File upload reservation expired before it could be saved')
+      }
+      uploadPersisted = true
       const response = NextResponse.json({
         upload: {
-          id: upload.id,
-          name: upload.fileName,
-          mimeType: upload.mimeType,
-          sizeBytes: upload.sizeBytes,
+          id: reservedUpload.id,
+          name: fileName,
+          mimeType,
+          sizeBytes: limitedFile.getSizeBytes(),
         },
       }, { status: 201 })
       if (created) {
@@ -197,6 +289,16 @@ export async function POST(
   } catch (error) {
     incomingUpload?.abort()
     await incomingUpload?.completed.catch(() => undefined)
+    if (reservedUploadId && !uploadPersisted) {
+      await prisma.file_uploads.deleteMany({
+        where: {
+          id: reservedUploadId,
+          status: FileUploadStatus.UPLOADING,
+        },
+      }).catch((cleanupError) => {
+        console.error('Failed to release file upload reservation:', cleanupError)
+      })
+    }
     if (error instanceof PublicFileUploadError) {
       return NextResponse.json({ error: error.message }, { status: error.status })
     }
@@ -210,6 +312,9 @@ export async function POST(
         },
         { status: 422 },
       )
+    }
+    if (error instanceof FileUploadContentError) {
+      return NextResponse.json({ error: error.message }, { status: 422 })
     }
     await markGoogleDriveConnectionForReauthentication(connectionId, error)
     console.error('Public file upload failed:', error)

@@ -38,7 +38,7 @@ import {
   type FileUploadReceipt,
 } from '@/features/file-uploads/types'
 import { Loader2, X } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
 const FIELD_IDENTIFIER = 'file-upload'
@@ -66,6 +66,7 @@ const FileUploadComponent = ({
   field,
   value,
   onChange,
+  onUploadStateChange,
   error,
   formId,
 }: FieldProps<FileUploadConfig>) => {
@@ -74,6 +75,11 @@ const FileUploadComponent = ({
   const files = isFileUploadReceiptList(value) ? value : []
   const limit = maxFiles(field)
   const sizeLimit = maxSizeBytes(field)
+
+  useEffect(
+    () => () => onUploadStateChange?.(field.id, false),
+    [field.id, onUploadStateChange],
+  )
 
   const uploadFiles = async (selectedFiles: File[]) => {
     if (!formId || selectedFiles.length === 0) return
@@ -89,6 +95,7 @@ const FileUploadComponent = ({
     }
 
     setIsUploading(true)
+    onUploadStateChange?.(field.id, true)
     setUploadError(null)
     try {
       const uploaded: FileUploadReceipt[] = []
@@ -100,8 +107,21 @@ const FileUploadComponent = ({
           method: 'POST',
           body: data,
         })
-        const result = await response.json()
-        if (!response.ok) throw new Error(result.error || 'File upload failed')
+        const result = await response.json().catch(() => null) as
+          | { error?: unknown; upload?: FileUploadReceipt }
+          | null
+        if (!response.ok) {
+          const message =
+            typeof result?.error === 'string'
+              ? result.error
+              : response.status === 429
+                ? 'Upload capacity is busy. Try again in a few seconds.'
+                : response.status === 413
+                  ? `Files must be no larger than ${formatSize(sizeLimit)}`
+                  : 'File upload failed'
+          throw new Error(message)
+        }
+        if (!result?.upload) throw new Error('File upload failed')
         uploaded.push(result.upload)
       }
       onChange([...files, ...uploaded])
@@ -111,6 +131,7 @@ const FileUploadComponent = ({
       )
     } finally {
       setIsUploading(false)
+      onUploadStateChange?.(field.id, false)
     }
   }
 

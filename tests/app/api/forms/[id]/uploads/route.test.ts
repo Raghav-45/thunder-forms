@@ -5,11 +5,14 @@ const mocks = vi.hoisted(() => ({
   after: vi.fn(),
   createUpload: vi.fn(),
   countUploads: vi.fn(),
+  deleteUpload: vi.fn(),
   deleteExpiredUploads: vi.fn(),
   findForm: vi.fn(),
   getUploadSession: vi.fn(),
   providerUpload: vi.fn(),
   providerDelete: vi.fn(),
+  transaction: vi.fn(),
+  updateUpload: vi.fn(),
 }))
 
 vi.mock('next/server', async (importOriginal) => {
@@ -20,7 +23,11 @@ vi.mock('next/server', async (importOriginal) => {
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     forms: { findUnique: mocks.findForm },
-    file_uploads: { create: mocks.createUpload, count: mocks.countUploads },
+    file_uploads: {
+      deleteMany: mocks.deleteUpload,
+      updateMany: mocks.updateUpload,
+    },
+    $transaction: mocks.transaction,
   },
 }))
 
@@ -99,6 +106,17 @@ describe('POST /api/forms/[id]/uploads', () => {
       created: true,
     })
     mocks.countUploads.mockResolvedValue(0)
+    mocks.deleteUpload.mockResolvedValue({ count: 1 })
+    mocks.updateUpload.mockResolvedValue({ count: 1 })
+    mocks.transaction.mockImplementation(async (callback) =>
+      callback({
+        file_uploads: {
+          create: mocks.createUpload,
+          count: mocks.countUploads,
+          deleteMany: mocks.deleteUpload,
+        },
+      }),
+    )
     mocks.providerUpload.mockImplementation(async ({ stream }) => {
       await new Promise<void>((resolve, reject) => {
         stream.once('end', resolve)
@@ -109,9 +127,6 @@ describe('POST /api/forms/[id]/uploads', () => {
     })
     mocks.createUpload.mockResolvedValue({
       id: 'upload-1',
-      fileName: 'portfolio.pdf',
-      mimeType: 'application/pdf',
-      sizeBytes: 3,
     })
   })
 
@@ -145,7 +160,16 @@ describe('POST /api/forms/[id]/uploads', () => {
         fieldId: 'portfolio',
         sessionId: 'session-1',
         destinationId: 'destination-1',
+        storageKey: '',
+        sizeBytes: 0,
+        status: 'UPLOADING',
+      }),
+    })
+    expect(mocks.updateUpload).toHaveBeenCalledWith({
+      where: { id: 'upload-1', status: 'UPLOADING' },
+      data: expect.objectContaining({
         storageKey: 'drive-file-1',
+        status: 'PENDING',
       }),
     })
   })
@@ -182,7 +206,7 @@ describe('POST /api/forms/[id]/uploads', () => {
     expect(mocks.providerUpload).not.toHaveBeenCalled()
   })
 
-  it('counts only uploads from the current respondent session', async () => {
+  it('reserves a slot only for the current respondent session', async () => {
     mocks.getUploadSession.mockResolvedValue({
       session: { id: 'session-2' },
       created: false,
@@ -199,13 +223,13 @@ describe('POST /api/forms/[id]/uploads', () => {
         formId: 'form-1',
         fieldId: 'portfolio',
         sessionId: 'session-2',
-        status: 'PENDING',
+        status: { in: ['UPLOADING', 'PENDING'] },
       },
     })
   })
 
-  it('removes Drive file when receipt persistence fails', async () => {
-    mocks.createUpload.mockRejectedValueOnce(new Error('Database unavailable'))
+  it('removes Drive file and releases its reservation when finalization fails', async () => {
+    mocks.updateUpload.mockRejectedValueOnce(new Error('Database unavailable'))
 
     const response = await POST(
       requestFor('portfolio', new File(['pdf'], 'portfolio.pdf', { type: 'application/pdf' })),
@@ -219,7 +243,7 @@ describe('POST /api/forms/[id]/uploads', () => {
     })
   })
 
-  it('rejects an oversized stream before creating an upload receipt', async () => {
+  it('rejects an oversized stream and releases its reservation', async () => {
     const oversizedFile = new File(
       [new Uint8Array(5 * 1024 * 1024 + 1)],
       'portfolio.pdf',
@@ -232,6 +256,29 @@ describe('POST /api/forms/[id]/uploads', () => {
     await expect(response.json()).resolves.toEqual({
       error: 'Files must be between 1 byte and 5 MB',
     })
-    expect(mocks.createUpload).not.toHaveBeenCalled()
+    expect(mocks.updateUpload).not.toHaveBeenCalled()
+    expect(mocks.deleteUpload).toHaveBeenCalledWith({
+      where: { id: 'upload-1', status: 'UPLOADING' },
+    })
+  })
+
+  it('rejects executable content even when its name and declared type are accepted', async () => {
+    const response = await POST(
+      requestFor(
+        'portfolio',
+        new File([new Uint8Array([0x4d, 0x5a, 0x90, 0x00])], 'portfolio.pdf', {
+          type: 'application/pdf',
+        }),
+      ),
+      { params },
+    )
+
+    expect(response.status).toBe(422)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Executable file content is not allowed',
+    })
+    expect(mocks.deleteUpload).toHaveBeenCalledWith({
+      where: { id: 'upload-1', status: 'UPLOADING' },
+    })
   })
 })

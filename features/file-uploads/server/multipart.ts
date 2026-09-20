@@ -18,6 +18,12 @@ export class FileUploadSizeLimitError extends Error {
   }
 }
 
+export class FileUploadContentError extends Error {
+  constructor() {
+    super('Executable file content is not allowed')
+  }
+}
+
 export type StreamedFileUpload = {
   fieldId: string
   fileName: string
@@ -34,8 +40,19 @@ export function createSizeLimitedFileStream(
 ) {
   let sizeBytes = 0
   let exceededLimit = false
+  let signature = Buffer.alloc(0)
   const stream = new Transform({
     transform(chunk: Buffer, _encoding, callback) {
+      if (signature.length < 4) {
+        signature = Buffer.concat([signature, chunk.subarray(0, 4 - signature.length)])
+        const isWindowsExecutable = signature.length >= 2 && signature[0] === 0x4d && signature[1] === 0x5a
+        const isElfExecutable = signature.length >= 4 && signature.subarray(0, 4).equals(Buffer.from([0x7f, 0x45, 0x4c, 0x46]))
+        const isMachOExecutable = signature.length >= 4 && [0xfeedface, 0xfeedfacf, 0xcefaedfe, 0xcffaedfe].includes(signature.readUInt32BE(0))
+        if (isWindowsExecutable || isElfExecutable || isMachOExecutable) {
+          callback(new FileUploadContentError())
+          return
+        }
+      }
       sizeBytes += chunk.length
       if (sizeBytes > maximumFileSizeBytes) {
         exceededLimit = true
