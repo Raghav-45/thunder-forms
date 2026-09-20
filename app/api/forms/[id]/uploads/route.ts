@@ -5,6 +5,13 @@ import {
 } from '@/features/form-builder/form-structure'
 import type { FileUploadConfig } from '@/features/form-builder/elements/fields/file-upload'
 import { markGoogleDriveConnectionForReauthentication } from '@/features/file-uploads/server/google-drive'
+import {
+  createSizeLimitedFileStream,
+  FileUploadRequestError,
+  FileUploadSizeLimitError,
+  parseStreamedFileUpload,
+  type StreamedFileUpload,
+} from '@/features/file-uploads/server/multipart'
 import { getFileStorageProvider } from '@/features/file-uploads/server/storage'
 import {
   deleteExpiredFileUploadSessions,
@@ -13,6 +20,7 @@ import {
   FILE_UPLOAD_SESSION_MAX_AGE,
 } from '@/features/file-uploads/server/session'
 import {
+  FILE_UPLOAD_MAX_SIZE_BYTES,
   normalizeFileUploadMaxFiles,
   normalizeFileUploadMaxSizeBytes,
 } from '@/features/file-uploads/constants'
@@ -21,7 +29,16 @@ import { after, NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
 
-function acceptedByField(file: File, acceptedTypes?: string): boolean {
+class PublicFileUploadError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message)
+  }
+}
+
+function acceptedByField(
+  file: Pick<File, 'name' | 'type'>,
+  acceptedTypes?: string,
+): boolean {
   if (!acceptedTypes?.trim()) return true
 
   return acceptedTypes.split(',').some((rawType) => {
@@ -33,35 +50,17 @@ function acceptedByField(file: File, acceptedTypes?: string): boolean {
   })
 }
 
-function isUploadedFile(value: FormDataEntryValue | null): value is File {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'arrayBuffer' in value &&
-    typeof value.arrayBuffer === 'function' &&
-    'name' in value &&
-    typeof value.name === 'string' &&
-    'size' in value &&
-    typeof value.size === 'number'
-  )
-}
-
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   let connectionId: string | null = null
+  let incomingUpload: StreamedFileUpload | null = null
+  let sizeLimit: number | null = null
   try {
     const { id: formId } = await params
-    const body = await request.formData()
-    const fieldId = body.get('fieldId')
-    const file = body.get('file')
-    if (typeof fieldId !== 'string' || !fieldId || !isUploadedFile(file)) {
-      return NextResponse.json(
-        { error: 'A field and file are required' },
-        { status: 400 },
-      )
-    }
+    incomingUpload = await parseStreamedFileUpload(request, FILE_UPLOAD_MAX_SIZE_BYTES)
+    const { fieldId, fileName, mimeType } = incomingUpload
 
     const form = await prisma.forms.findUnique({
       where: { id: formId },
@@ -75,36 +74,30 @@ export async function POST(
         },
       },
     })
-    if (!form) return NextResponse.json({ error: 'Form not found' }, { status: 404 })
+    if (!form) throw new PublicFileUploadError('Form not found', 404)
     if (!isFormStructure(form.fields)) {
-      return NextResponse.json({ error: 'Form structure is invalid' }, { status: 422 })
+      throw new PublicFileUploadError('Form structure is invalid', 422)
     }
     if (form.expiresAt && form.expiresAt < new Date()) {
-      return NextResponse.json({ error: 'Form has expired' }, { status: 410 })
+      throw new PublicFileUploadError('Form has expired', 410)
     }
     if (form.maxSubmissions && form._count.responses >= form.maxSubmissions) {
-      return NextResponse.json({ error: 'Form has reached maximum submissions limit' }, { status: 410 })
+      throw new PublicFileUploadError('Form has reached maximum submissions limit', 410)
     }
 
     const field = getOrderedFormFields(form.fields).find(
       (candidate) => candidate.id === fieldId,
     )
     if (!field || field.uniqueIdentifier !== 'file-upload') {
-      return NextResponse.json({ error: 'File uploads are not enabled for this field' }, { status: 422 })
+      throw new PublicFileUploadError('File uploads are not enabled for this field', 422)
     }
     const uploadField = field as FileUploadConfig
     if (uploadField.disabled) {
-      return NextResponse.json({ error: 'File uploads are disabled for this field' }, { status: 422 })
+      throw new PublicFileUploadError('File uploads are disabled for this field', 422)
     }
-    const sizeLimit = normalizeFileUploadMaxSizeBytes(uploadField)
-    if (file.size === 0 || file.size > sizeLimit) {
-      return NextResponse.json(
-        { error: `Files must be between 1 byte and ${Math.ceil(sizeLimit / (1024 * 1024))} MB` },
-        { status: 422 },
-      )
-    }
-    if (!acceptedByField(file, uploadField.acceptedTypes)) {
-      return NextResponse.json({ error: 'This file type is not accepted' }, { status: 422 })
+    sizeLimit = normalizeFileUploadMaxSizeBytes(uploadField)
+    if (!acceptedByField({ name: fileName, type: mimeType }, uploadField.acceptedTypes)) {
+      throw new PublicFileUploadError('This file type is not accepted', 422)
     }
 
     const destination = form.fileUploadDestination
@@ -112,10 +105,7 @@ export async function POST(
       !destination ||
       destination.connection.status !== FileUploadConnectionStatus.ACTIVE
     ) {
-      return NextResponse.json(
-        { error: 'File uploads are not configured for this form' },
-        { status: 409 },
-      )
+      throw new PublicFileUploadError('File uploads are not configured for this form', 409)
     }
     connectionId = destination.connection.id
 
@@ -133,22 +123,33 @@ export async function POST(
     })
     const maxFiles = normalizeFileUploadMaxFiles(uploadField)
     if (pendingCount >= maxFiles) {
-      return NextResponse.json(
-        { error: 'This field already has its maximum number of uploaded files' },
-        { status: 422 },
+      throw new PublicFileUploadError(
+        'This field already has its maximum number of uploaded files',
+        422,
       )
     }
 
     const storageProvider = getFileStorageProvider(destination.provider)
-    const stored = await storageProvider.upload({
-      encryptedRefreshToken: destination.connection.encryptedRefreshToken,
-      folderId: destination.folderId,
-      fileName: file.name,
-      mimeType: file.type || 'application/octet-stream',
-      bytes: Buffer.from(await file.arrayBuffer()),
-    })
+    const limitedFile = createSizeLimitedFileStream(incomingUpload.stream, sizeLimit)
+    let stored: { storageKey: string } | null = null
 
     try {
+      stored = await storageProvider.upload({
+        encryptedRefreshToken: destination.connection.encryptedRefreshToken,
+        folderId: destination.folderId,
+        fileName,
+        mimeType,
+        stream: limitedFile.stream,
+      })
+      await incomingUpload.completed
+      if (
+        incomingUpload.isTruncated() ||
+        limitedFile.exceededLimit() ||
+        limitedFile.getSizeBytes() === 0
+      ) {
+        throw new FileUploadSizeLimitError()
+      }
+
       const upload = await prisma.file_uploads.create({
         data: {
           formId,
@@ -156,9 +157,9 @@ export async function POST(
           sessionId: session.id,
           destinationId: destination.id,
           storageKey: stored.storageKey,
-          fileName: file.name,
-          mimeType: file.type || 'application/octet-stream',
-          sizeBytes: file.size,
+          fileName,
+          mimeType,
+          sizeBytes: limitedFile.getSizeBytes(),
         },
       })
       const response = NextResponse.json({
@@ -183,15 +184,33 @@ export async function POST(
       }))
       return response
     } catch (error) {
-      await storageProvider.delete({
-        encryptedRefreshToken: destination.connection.encryptedRefreshToken,
-        storageKey: stored.storageKey,
-      }).catch((cleanupError) => {
-        console.error('Failed to remove orphaned Google Drive file:', cleanupError)
-      })
+      if (stored) {
+        await storageProvider.delete({
+          encryptedRefreshToken: destination.connection.encryptedRefreshToken,
+          storageKey: stored.storageKey,
+        }).catch((cleanupError) => {
+          console.error('Failed to remove orphaned Google Drive file:', cleanupError)
+        })
+      }
       throw error
     }
   } catch (error) {
+    incomingUpload?.abort()
+    await incomingUpload?.completed.catch(() => undefined)
+    if (error instanceof PublicFileUploadError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+    if (error instanceof FileUploadRequestError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+    if (error instanceof FileUploadSizeLimitError) {
+      return NextResponse.json(
+        {
+          error: `Files must be between 1 byte and ${Math.ceil((sizeLimit || FILE_UPLOAD_MAX_SIZE_BYTES) / (1024 * 1024))} MB`,
+        },
+        { status: 422 },
+      )
+    }
     await markGoogleDriveConnectionForReauthentication(connectionId, error)
     console.error('Public file upload failed:', error)
     return NextResponse.json(

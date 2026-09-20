@@ -99,7 +99,14 @@ describe('POST /api/forms/[id]/uploads', () => {
       created: true,
     })
     mocks.countUploads.mockResolvedValue(0)
-    mocks.providerUpload.mockResolvedValue({ storageKey: 'drive-file-1' })
+    mocks.providerUpload.mockImplementation(async ({ stream }) => {
+      await new Promise<void>((resolve, reject) => {
+        stream.once('end', resolve)
+        stream.once('error', reject)
+        stream.resume()
+      })
+      return { storageKey: 'drive-file-1' }
+    })
     mocks.createUpload.mockResolvedValue({
       id: 'upload-1',
       fileName: 'portfolio.pdf',
@@ -129,6 +136,9 @@ describe('POST /api/forms/[id]/uploads', () => {
       fileName: 'portfolio.pdf',
       mimeType: 'application/pdf',
     }))
+    const [uploadInput] = mocks.providerUpload.mock.calls[0]
+    expect(uploadInput.stream).toEqual(expect.objectContaining({ pipe: expect.any(Function) }))
+    expect(uploadInput).not.toHaveProperty('bytes')
     expect(mocks.createUpload).toHaveBeenCalledWith({
       data: expect.objectContaining({
         formId: 'form-1',
@@ -185,5 +195,21 @@ describe('POST /api/forms/[id]/uploads', () => {
       encryptedRefreshToken: 'encrypted-token',
       storageKey: 'drive-file-1',
     })
+  })
+
+  it('rejects an oversized stream before creating an upload receipt', async () => {
+    const oversizedFile = new File(
+      [new Uint8Array(4 * 1024 * 1024 + 1)],
+      'portfolio.pdf',
+      { type: 'application/pdf' },
+    )
+
+    const response = await POST(requestFor('portfolio', oversizedFile), { params })
+
+    expect(response.status).toBe(422)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Files must be between 1 byte and 4 MB',
+    })
+    expect(mocks.createUpload).not.toHaveBeenCalled()
   })
 })

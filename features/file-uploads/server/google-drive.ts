@@ -1,5 +1,4 @@
 import { createHash, randomBytes } from 'node:crypto'
-import { Readable } from 'node:stream'
 import { CodeChallengeMethod } from 'google-auth-library'
 import { google } from 'googleapis'
 import { decryptGoogleOAuthSecret } from '@/features/google-auth/server/crypto'
@@ -150,18 +149,18 @@ export async function uploadGoogleDriveFile({
   folderId,
   fileName,
   mimeType,
-  bytes,
+  stream,
 }: {
   encryptedRefreshToken: string
   folderId: string
   fileName: string
   mimeType: string
-  bytes: Buffer
+  stream: NodeJS.ReadableStream
 }) {
   const drive = createGoogleDriveClient(encryptedRefreshToken)
   const response = await drive.files.create({
     requestBody: { name: fileName, parents: [folderId] },
-    media: { mimeType, body: Readable.from(bytes) },
+    media: { mimeType, body: stream },
     fields: 'id',
   })
   if (!response.data.id) throw new Error('Google Drive did not store the file')

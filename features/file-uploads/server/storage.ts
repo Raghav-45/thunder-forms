@@ -11,7 +11,7 @@ export interface FileStorageProvider {
     folderId: string
     fileName: string
     mimeType: string
-    bytes: Buffer
+    stream: NodeJS.ReadableStream
   }): Promise<{ storageKey: string }>
   download(input: {
     encryptedRefreshToken: string
