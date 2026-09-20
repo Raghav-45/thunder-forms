@@ -1,6 +1,12 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -176,10 +182,20 @@ const FileUploadEditor = ({
   onClose,
   isOpen,
 }: EditorProps<FileUploadConfig> & { isOpen: boolean }) => {
-  const [config, setConfig] = useState(field)
+  const [config, setConfig] = useState<FileUploadConfig>(field)
 
   const update = (key: keyof FileUploadConfig, value: unknown) => {
     setConfig((current) => ({ ...current, [key]: value }))
+  }
+
+  const handleSave = () => {
+    onUpdate(config)
+    onClose()
+  }
+
+  const handleCancel = () => {
+    setConfig(field)
+    onClose()
   }
 
   return (
@@ -188,88 +204,123 @@ const FileUploadEditor = ({
         <SheetHeader>
           <SheetTitle className="text-lg">Configure File Upload</SheetTitle>
         </SheetHeader>
-        <div className="space-y-4 px-4">
-          <div className="space-y-2">
-            <Label htmlFor="file-upload-label">Field Label *</Label>
-            <Input
-              id="file-upload-label"
-              value={config.label}
-              onChange={(event) => update('label', event.target.value)}
-            />
-          </div>
-          <AccordionWithSwitch text="Description" defaultOpen={!!config.description}>
-            <Textarea
-              value={config.description || ''}
-              onChange={(event) => update('description', event.target.value)}
-              placeholder="Tell respondents what to upload"
-              rows={3}
-            />
-          </AccordionWithSwitch>
-          <div className="space-y-2">
-            <Label htmlFor="file-upload-types">Accepted file types</Label>
-            <Input
-              id="file-upload-types"
-              value={config.acceptedTypes || ''}
-              onChange={(event) => update('acceptedTypes', event.target.value)}
-              placeholder="image/*,.pdf"
-            />
-            <p className="text-xs text-muted-foreground">Leave empty to allow every file type.</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="file-upload-count">Maximum files</Label>
-              <Input
-                id="file-upload-count"
-                type="number"
-                min={FILE_UPLOAD_MIN_FILES}
-                max={FILE_UPLOAD_MAX_FILES}
-                value={maxFiles(config)}
-                onChange={(event) => update('maxFiles', Number(event.target.value) || 1)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Per respondent submission for this field.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="file-upload-size">Maximum size (MB)</Label>
-              <Input
-                id="file-upload-size"
-                type="number"
-                min={FILE_UPLOAD_MIN_SIZE_BYTES / (1024 * 1024)}
-                max={FILE_UPLOAD_MAX_SIZE_BYTES / (1024 * 1024)}
-                value={Math.round(maxSizeBytes(config) / (1024 * 1024))}
-                onChange={(event) => update(
-                  'maxSizeBytes',
-                  normalizeFileUploadMaxSizeBytes({
-                    maxSizeBytes: (Number(event.target.value) || 1) * 1024 * 1024,
-                  }),
-                )}
-              />
-              <p className="text-xs text-muted-foreground">
-                Up to {formatSize(FILE_UPLOAD_MAX_SIZE_BYTES)} per file is supported. You can set a lower limit, but not a higher one.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="file-upload-required">Required field</Label>
-            <Switch
-              id="file-upload-required"
-              checked={config.required || false}
-              onCheckedChange={(checked) => update('required', checked)}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="file-upload-disabled">Disabled</Label>
-            <Switch
-              id="file-upload-disabled"
-              checked={config.disabled || false}
-              onCheckedChange={(checked) => update('disabled', checked)}
-            />
-          </div>
+        <div className="space-y-2 px-4">
+          <Accordion type="multiple" defaultValue={['basic']}>
+            <AccordionItem value="basic">
+              <AccordionTrigger className="text-base">
+                Basic Properties
+              </AccordionTrigger>
+              <AccordionContent className="flex flex-col gap-y-2">
+                <div className="space-y-2">
+                  <Label htmlFor="file-upload-label">Field Label *</Label>
+                  <Input
+                    id="file-upload-label"
+                    value={config.label}
+                    onChange={(event) => update('label', event.target.value)}
+                    placeholder="Enter field label"
+                    required
+                  />
+                </div>
+
+                <AccordionWithSwitch
+                  text="Description"
+                  defaultOpen={!!config.description}
+                >
+                  <Textarea
+                    id="file-upload-description"
+                    value={config.description || ''}
+                    onChange={(event) => update('description', event.target.value)}
+                    placeholder="Tell respondents what to upload"
+                    rows={3}
+                  />
+                </AccordionWithSwitch>
+
+                <AccordionWithSwitch
+                  text="Accepted File Types"
+                  defaultOpen={!!config.acceptedTypes}
+                >
+                  <Input
+                    id="file-upload-types"
+                    value={config.acceptedTypes || ''}
+                    onChange={(event) => update('acceptedTypes', event.target.value)}
+                    placeholder="image/*,.pdf"
+                  />
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Leave empty to allow every file type.
+                  </p>
+                </AccordionWithSwitch>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="limits">
+              <AccordionTrigger className="text-base">
+                Upload Limits
+              </AccordionTrigger>
+              <AccordionContent className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="file-upload-count">Maximum Files</Label>
+                  <Input
+                    id="file-upload-count"
+                    type="number"
+                    min={FILE_UPLOAD_MIN_FILES}
+                    max={FILE_UPLOAD_MAX_FILES}
+                    value={maxFiles(config)}
+                    onChange={(event) => update('maxFiles', Number(event.target.value) || 1)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Per respondent submission for this field.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="file-upload-size">Maximum Size (MB)</Label>
+                  <Input
+                    id="file-upload-size"
+                    type="number"
+                    min={FILE_UPLOAD_MIN_SIZE_BYTES / (1024 * 1024)}
+                    max={FILE_UPLOAD_MAX_SIZE_BYTES / (1024 * 1024)}
+                    value={Math.round(maxSizeBytes(config) / (1024 * 1024))}
+                    onChange={(event) => update(
+                      'maxSizeBytes',
+                      normalizeFileUploadMaxSizeBytes({
+                        maxSizeBytes: (Number(event.target.value) || 1) * 1024 * 1024,
+                      }),
+                    )}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Up to {formatSize(FILE_UPLOAD_MAX_SIZE_BYTES)} per file is supported.
+                  </p>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="validation">
+              <AccordionTrigger className="text-base">
+                Validation Properties
+              </AccordionTrigger>
+              <AccordionContent className="flex flex-col gap-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="file-upload-required">Required Field</Label>
+                  <Switch
+                    id="file-upload-required"
+                    checked={config.required || false}
+                    onCheckedChange={(checked) => update('required', checked)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="file-upload-disabled">Disabled</Label>
+                  <Switch
+                    id="file-upload-disabled"
+                    checked={config.disabled || false}
+                    onCheckedChange={(checked) => update('disabled', checked)}
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
         <SheetFooter className="gap-2">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => { onUpdate(config); onClose() }} disabled={!config.label.trim()}>
+          <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+          <Button onClick={handleSave} disabled={!config.label.trim()}>
             Save Changes
           </Button>
         </SheetFooter>
