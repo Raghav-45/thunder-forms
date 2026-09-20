@@ -162,7 +162,7 @@ export async function POST(
         expiresAt: true,
         maxSubmissions: true,
         _count: { select: { responses: true } },
-        fileUploadDestination: {
+        fileUploadDestinations: {
           include: { connection: true },
         },
       },
@@ -193,12 +193,14 @@ export async function POST(
       throw new PublicFileUploadError('This file type is not accepted', 422)
     }
 
-    const destination = form.fileUploadDestination
+    const destination = form.fileUploadDestinations.find(
+      (candidate) => candidate.fieldId === fieldId,
+    )
     if (
       !destination ||
       destination.connection.status !== FileUploadConnectionStatus.ACTIVE
     ) {
-      throw new PublicFileUploadError('File uploads are not configured for this form', 409)
+      throw new PublicFileUploadError('File uploads are not configured for this field', 409)
     }
     connectionId = destination.connection.id
 

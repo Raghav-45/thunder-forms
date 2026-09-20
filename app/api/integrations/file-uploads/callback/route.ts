@@ -85,11 +85,21 @@ export async function GET(request: NextRequest) {
       },
     })
     const existingDestination = await prisma.file_upload_destinations.findUnique({
-      where: { formId: attempt.formId },
+      where: {
+        formId_fieldId: {
+          formId: attempt.formId,
+          fieldId: attempt.fieldId,
+        },
+      },
     })
     if (existingDestination) {
       await prisma.file_upload_destinations.update({
-        where: { formId: attempt.formId },
+        where: {
+          formId_fieldId: {
+            formId: attempt.formId,
+            fieldId: attempt.fieldId,
+          },
+        },
         data: { connectionId: connection.id },
       })
     }

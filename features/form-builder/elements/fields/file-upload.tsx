@@ -37,6 +37,7 @@ import {
   isFileUploadReceiptList,
   type FileUploadReceipt,
 } from '@/features/file-uploads/types'
+import { GoogleDriveUploadIntegration } from '@/features/file-uploads/components/google-drive-upload-integration'
 import { Loader2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
@@ -202,8 +203,12 @@ const FileUploadEditor = ({
   onUpdate,
   onClose,
   isOpen,
+  formId,
+  isPersisted,
 }: EditorProps<FileUploadConfig> & { isOpen: boolean }) => {
   const [config, setConfig] = useState<FileUploadConfig>(field)
+  const [googlePickerOpen, setGooglePickerOpen] = useState(false)
+  const [openSections, setOpenSections] = useState(['basic'])
 
   const update = (key: keyof FileUploadConfig, value: unknown) => {
     setConfig((current) => ({ ...current, [key]: value }))
@@ -220,13 +225,31 @@ const FileUploadEditor = ({
   }
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="gap-y-0 overflow-y-auto sm:max-w-md">
+    <Sheet
+      modal={!googlePickerOpen}
+      open={isOpen}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          setGooglePickerOpen(false)
+          onClose()
+        }
+      }}
+    >
+      <SheetContent
+        className="gap-y-0 overflow-y-auto sm:max-w-md"
+        onEscapeKeyDown={googlePickerOpen ? (event) => event.preventDefault() : undefined}
+        onFocusOutside={googlePickerOpen ? (event) => event.preventDefault() : undefined}
+        onInteractOutside={googlePickerOpen ? (event) => event.preventDefault() : undefined}
+      >
         <SheetHeader>
           <SheetTitle className="text-lg">Configure File Upload</SheetTitle>
         </SheetHeader>
         <div className="space-y-2 px-4">
-          <Accordion type="multiple" defaultValue={['basic']}>
+          <Accordion
+            type="multiple"
+            value={openSections}
+            onValueChange={setOpenSections}
+          >
             <AccordionItem value="basic">
               <AccordionTrigger className="text-base">
                 Basic Properties
@@ -311,6 +334,26 @@ const FileUploadEditor = ({
                     Up to {formatSize(FILE_UPLOAD_MAX_SIZE_BYTES)} per file is supported.
                   </p>
                 </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="destination">
+              <AccordionTrigger className="text-base">
+                Upload Destination
+              </AccordionTrigger>
+              <AccordionContent className="space-y-3">
+                {openSections.includes('destination') && formId && isPersisted ? (
+                  <GoogleDriveUploadIntegration
+                    fieldId={field.id}
+                    formId={formId}
+                    onPickerOpenChange={setGooglePickerOpen}
+                  />
+                ) : openSections.includes('destination') ? (
+                  <p className="rounded-lg border border-dashed p-3 text-sm leading-5 text-muted-foreground">
+                    Save this form after adding this field, then reopen its editor to
+                    choose where its files are stored.
+                  </p>
+                ) : null}
               </AccordionContent>
             </AccordionItem>
 

@@ -88,6 +88,19 @@ function loadGooglePicker(): Promise<GooglePickerApi> {
   })
 }
 
+/**
+ * Google Picker appends its iframe outside the component that launches it.
+ * Give a parent dialog a paint to release its modal pointer-event lock before
+ * making that iframe visible.
+ */
+export function waitForGooglePickerLayer() {
+  return new Promise<void>((resolve) => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => resolve())
+    })
+  })
+}
+
 export async function chooseGoogleSpreadsheet(accessToken: string) {
   return chooseGoogleDriveItem(accessToken, { viewId: 'SPREADSHEETS' })
 }

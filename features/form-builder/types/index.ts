@@ -30,6 +30,10 @@ export interface EditorProps<T extends BaseFieldConfig = BaseFieldConfig> {
   field: T
   onUpdate: (field: T) => void
   onClose: () => void
+  /** Present when the field belongs to a form already saved by the builder. */
+  formId?: string
+  /** Whether this field itself is included in the saved form structure. */
+  isPersisted?: boolean
 }
 
 /** Represents all available field identifiers. */

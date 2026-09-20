@@ -1,10 +1,10 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { chooseGoogleDriveFolder } from '@/features/google-picker/client'
+import { GoogleDriveFolderPicker } from './google-drive-folder-picker'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { FolderUp, Loader2 } from 'lucide-react'
+import { CheckCircle2, FolderUp, Loader2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import type { ReactNode } from 'react'
@@ -24,25 +24,33 @@ function IntegrationHeader({ children }: { children: ReactNode }) {
   )
 }
 
-export function GoogleDriveUploadIntegration({ formId }: { formId: string | null }) {
+export function GoogleDriveUploadIntegration({
+  formId,
+  fieldId,
+  onPickerOpenChange,
+}: {
+  formId: string | null
+  fieldId: string
+  onPickerOpenChange?: (isOpen: boolean) => void
+}) {
   const queryClient = useQueryClient()
-  const [action, setAction] = useState<'connect' | 'choose' | null>(null)
+  const [action, setAction] = useState<'connect' | null>(null)
   const queryKey = useMemo(
-    () => ['file-upload-integration', formId] as const,
-    [formId],
+    () => ['file-upload-integration', formId, fieldId] as const,
+    [fieldId, formId],
   )
   const integration = useQuery({
     queryKey,
     enabled: Boolean(formId),
     queryFn: async () => {
       const { data } = await axios.get<UploadIntegrationResponse>(
-        `/api/forms/${formId}/uploads/integration`,
+        `/api/forms/${formId}/uploads/fields/${fieldId}/integration`,
       )
       return data
     },
   })
 
-  const run = useCallback(async (name: 'connect' | 'choose', task: () => Promise<void>) => {
+  const run = useCallback(async (name: 'connect', task: () => Promise<void>) => {
     setAction(name)
     try {
       await task()
@@ -71,9 +79,18 @@ export function GoogleDriveUploadIntegration({ formId }: { formId: string | null
   const data = integration.data
   if (data?.ready && data.destination) {
     return (
-      <IntegrationHeader>
-        Respondent files upload to your Google Drive folder “{data.destination.folderName}”.
-      </IntegrationHeader>
+      <div className="space-y-5">
+        <IntegrationHeader>
+          Respondent files upload directly to the folder you selected.
+        </IntegrationHeader>
+        <div className="flex items-center gap-3 rounded-xl border bg-muted/20 p-4 text-sm">
+          <CheckCircle2 className="size-5 shrink-0 text-primary" />
+          <div className="min-w-0">
+            <p className="font-medium">{data.destination.folderName}</p>
+            <p className="text-muted-foreground">Google Drive upload destination</p>
+          </div>
+        </div>
+      </div>
     )
   }
 
@@ -81,14 +98,14 @@ export function GoogleDriveUploadIntegration({ formId }: { formId: string | null
     return (
       <div className="space-y-5">
         <IntegrationHeader>
-          Connect Google Drive. ThunderForms creates one private folder for this form.
+          Connect the Google account that owns the upload destination.
         </IntegrationHeader>
         <Button
           type="button"
           disabled={Boolean(action)}
           onClick={() => run('connect', async () => {
             const { data: result } = await axios.post<{ authorizationUrl: string }>(
-              `/api/forms/${formId}/uploads/connect`,
+              `/api/forms/${formId}/uploads/fields/${fieldId}/connect`,
             )
             window.location.assign(result.authorizationUrl)
           })}
@@ -103,26 +120,16 @@ export function GoogleDriveUploadIntegration({ formId }: { formId: string | null
   return (
     <div className="space-y-5">
       <IntegrationHeader>
-        Choose a folder only you control. Public or domain-shared folders are blocked.
+        Choose where respondent files are stored. A destination is required
+        before this field can receive uploads.
       </IntegrationHeader>
-      <Button
-        type="button"
+      <GoogleDriveFolderPicker
+        fieldId={fieldId}
+        formId={formId}
         disabled={Boolean(action)}
-        onClick={() => run('choose', async () => {
-          const { data: token } = await axios.get<{ accessToken: string }>(
-            `/api/forms/${formId}/uploads/picker-token`,
-          )
-          const folder = await chooseGoogleDriveFolder(token.accessToken)
-          if (!folder) return
-          await axios.post(`/api/forms/${formId}/uploads/selection`, {
-            folderId: folder.id,
-          })
-          toast.success('Google Drive upload folder selected')
-        })}
-      >
-        {action === 'choose' ? <Loader2 className="animate-spin" /> : <FolderUp />}
-        Choose upload folder
-      </Button>
+        onFolderSelected={() => queryClient.invalidateQueries({ queryKey })}
+        onPickerOpenChange={onPickerOpenChange}
+      />
     </div>
   )
 }

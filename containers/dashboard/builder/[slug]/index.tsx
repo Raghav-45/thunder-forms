@@ -4,6 +4,7 @@ import ImportGoogleForm from '@/features/form-builder/core/import-google-form'
 import GenerateWithAiPrompt from '@/features/form-builder/core/generate-with-ai'
 import type { FieldConfig } from '@/features/form-builder/elements'
 import {
+  getOrderedFormFields,
   isFormStructure,
   sanitizeImportedFields,
   type FormStructure as PersistedFormStructure,
@@ -105,16 +106,22 @@ type FieldEditorComponent = ComponentType<{
   onUpdate: (field: FieldConfig) => void
   onClose: () => void
   isOpen: boolean
+  formId?: string
+  isPersisted?: boolean
 }>
 
 function FieldEditor({
   field,
   onUpdate,
   onClose,
+  formId,
+  isPersisted,
 }: {
   field: FieldConfig
   onUpdate: (field: FieldConfig) => void
   onClose: () => void
+  formId?: string
+  isPersisted?: boolean
 }) {
   const EditorComponent = getFieldEditor(
     field.uniqueIdentifier,
@@ -125,6 +132,8 @@ function FieldEditor({
     onUpdate,
     onClose,
     isOpen: true,
+    formId,
+    isPersisted,
   })
 }
 
@@ -389,6 +398,7 @@ function BuilderContent({
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   })
+  const refetchForm = form.refetch
 
   useEffect(() => {
     if (!isExistingForm) return
@@ -596,6 +606,7 @@ function BuilderContent({
         toast.success('Form created successfully')
       } else {
         await axios.post(`/api/forms/${currentFormId}/update`, payload)
+        await refetchForm()
         toast.success('Form updated successfully')
       }
     } catch (error) {
@@ -622,6 +633,7 @@ function BuilderContent({
     formStructure,
     hasInvalidPersistedStructure,
     isNewForm,
+    refetchForm,
   ])
 
   const resetPaletteDrag = useCallback(() => {
@@ -1015,6 +1027,14 @@ function BuilderContent({
             setEditingField(null)
           }}
           onClose={() => setEditingField(null)}
+          formId={isExistingForm ? currentFormId : undefined}
+          isPersisted={Boolean(
+            form.data &&
+            isFormStructure(form.data.fields) &&
+            getOrderedFormFields(form.data.fields).some(
+              (field) => field.id === editingField.field.id,
+            ),
+          )}
         />
       ) : null}
 

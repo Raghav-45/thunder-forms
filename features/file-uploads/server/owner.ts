@@ -1,5 +1,9 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import {
+  getOrderedFormFields,
+  isFormStructure,
+} from '@/features/form-builder/form-structure'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 
@@ -25,6 +29,24 @@ export async function getOwnedFileUploadForm(formId: string) {
   }
 
   return { form, userId: session.user.id }
+}
+
+/**
+ * Destination setup is meaningful only for a saved File Upload field. Keeping
+ * this check beside the ownership guard prevents setup routes from accepting
+ * arbitrary field IDs.
+ */
+export async function getOwnedFileUploadField(formId: string, fieldId: string) {
+  const { form, userId } = await getOwnedFileUploadForm(formId)
+  const field = isFormStructure(form.fields)
+    ? getOrderedFormFields(form.fields).find((candidate) => candidate.id === fieldId)
+    : undefined
+
+  if (!field || field.uniqueIdentifier !== 'file-upload') {
+    throw new FileUploadRouteError('File upload field not found', 404)
+  }
+
+  return { form, userId }
 }
 
 export function fileUploadErrorResponse(error: unknown) {

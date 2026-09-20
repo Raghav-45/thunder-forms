@@ -2,7 +2,7 @@ import { FileUploadConnectionStatus } from '@prisma/client'
 import { getGoogleDriveFolder } from '@/features/file-uploads/server/google-drive'
 import {
   fileUploadErrorResponse,
-  getOwnedFileUploadForm,
+  getOwnedFileUploadField,
 } from '@/features/file-uploads/server/owner'
 import { GOOGLE_DRIVE_STORAGE_PROVIDER } from '@/features/file-uploads/constants'
 import { prisma } from '@/lib/prisma'
@@ -10,17 +10,17 @@ import { NextResponse } from 'next/server'
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string; fieldId: string }> },
 ) {
   try {
-    const { id: formId } = await params
+    const { id: formId, fieldId } = await params
     const body = await request.json()
     const folderId = body?.folderId
     if (typeof folderId !== 'string' || !folderId) {
       return NextResponse.json({ error: 'Google Drive folder is required' }, { status: 400 })
     }
 
-    const { userId } = await getOwnedFileUploadForm(formId)
+    const { userId } = await getOwnedFileUploadField(formId, fieldId)
     const connection = await prisma.file_upload_connections.findUnique({
       where: { userId },
     })
@@ -33,7 +33,7 @@ export async function POST(
       folderId,
     )
     const destination = await prisma.file_upload_destinations.upsert({
-      where: { formId },
+      where: { formId_fieldId: { formId, fieldId } },
       update: {
         connectionId: connection.id,
         provider: GOOGLE_DRIVE_STORAGE_PROVIDER,
@@ -42,6 +42,7 @@ export async function POST(
       },
       create: {
         formId,
+        fieldId,
         connectionId: connection.id,
         provider: GOOGLE_DRIVE_STORAGE_PROVIDER,
         folderId: folder.folderId,

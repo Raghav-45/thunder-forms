@@ -2,18 +2,18 @@ import { FileUploadConnectionStatus } from '@prisma/client'
 import { getGoogleDriveAccessToken } from '@/features/file-uploads/server/google-drive'
 import {
   fileUploadErrorResponse,
-  getOwnedFileUploadForm,
+  getOwnedFileUploadField,
 } from '@/features/file-uploads/server/owner'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string; fieldId: string }> },
 ) {
   try {
-    const { id: formId } = await params
-    const { userId } = await getOwnedFileUploadForm(formId)
+    const { id: formId, fieldId } = await params
+    const { userId } = await getOwnedFileUploadField(formId, fieldId)
     const connection = await prisma.file_upload_connections.findUnique({
       where: { userId },
     })

@@ -31,7 +31,6 @@ import { Input } from "@/components/ui/input"
 import { useFormStore } from "@/features/form-builder/store"
 import { DatePickerWithPresets } from "@/features/form-builder/components/date-picker-with-presets"
 import { GoogleSheetsIntegration } from '@/features/google-sheets/components/google-sheets-integration'
-import { GoogleDriveUploadIntegration } from '@/features/file-uploads/components/google-drive-upload-integration'
 
 const data = {
   nav: [
@@ -45,10 +44,18 @@ const data = {
 export function SettingsDialog({ formId }: { formId: string | null }) {
   const [open, setOpen] = React.useState(false)
   const [activeTab, setActiveTab] = React.useState("Access & Control")
+  const [googlePickerOpen, setGooglePickerOpen] = React.useState(false)
   const { formSettings, setFormSettings } = useFormStore()
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      modal={!googlePickerOpen}
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen)
+        if (!nextOpen) setGooglePickerOpen(false)
+      }}
+    >
       <DialogTrigger asChild>
         <Button variant="outline" className="w-full mt-2 font-medium">
           <Settings className="mr-2 h-4 w-4" />
@@ -58,6 +65,9 @@ export function SettingsDialog({ formId }: { formId: string | null }) {
       <DialogContent
         className="overflow-hidden p-0 md:max-h-[600px] md:max-w-[800px] lg:max-w-[900px]"
         overlayClassName="bg-black/60 backdrop-blur-md"
+        onEscapeKeyDown={googlePickerOpen ? (event) => event.preventDefault() : undefined}
+        onFocusOutside={googlePickerOpen ? (event) => event.preventDefault() : undefined}
+        onInteractOutside={googlePickerOpen ? (event) => event.preventDefault() : undefined}
       >
         <DialogTitle className="sr-only">Settings</DialogTitle>
         <DialogDescription className="sr-only">
@@ -224,8 +234,10 @@ export function SettingsDialog({ formId }: { formId: string | null }) {
 
               {activeTab === "Integrations" && (
                 <div className="space-y-10">
-                  <GoogleSheetsIntegration formId={formId} />
-                  <GoogleDriveUploadIntegration formId={formId} />
+                  <GoogleSheetsIntegration
+                    formId={formId}
+                    onPickerOpenChange={setGooglePickerOpen}
+                  />
                 </div>
               )}
             </div>

@@ -1,7 +1,10 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { chooseGoogleSpreadsheet } from '@/features/google-picker/client'
+import {
+  chooseGoogleSpreadsheet,
+  waitForGooglePickerLayer,
+} from '@/features/google-picker/client'
 import type { GoogleSheetsIntegrationSummary } from '@/features/google-sheets/types'
 import { Loader2, Pause, Play, Plus, Sheet, Unplug } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -25,7 +28,13 @@ function IntegrationHeader({ children }: { children: ReactNode }) {
   )
 }
 
-export function GoogleSheetsIntegration({ formId }: { formId: string | null }) {
+export function GoogleSheetsIntegration({
+  formId,
+  onPickerOpenChange,
+}: {
+  formId: string | null
+  onPickerOpenChange?: (isOpen: boolean) => void
+}) {
   const queryClient = useQueryClient()
   const [action, setAction] = useState<IntegrationAction | null>(null)
   const queryKey = useMemo(
@@ -140,13 +149,19 @@ export function GoogleSheetsIntegration({ formId }: { formId: string | null }) {
                 const { data: token } = await axios.get<{ accessToken: string }>(
                   `/api/forms/${formId}/integrations/google-sheets/picker-token`,
                 )
-                const spreadsheet = await chooseGoogleSpreadsheet(token.accessToken)
-                if (!spreadsheet) return
-                await axios.post(
-                  `/api/forms/${formId}/integrations/google-sheets/selection`,
-                  { spreadsheetId: spreadsheet.id },
-                )
-                toast.success('Response tab added to selected spreadsheet')
+                onPickerOpenChange?.(true)
+                try {
+                  await waitForGooglePickerLayer()
+                  const spreadsheet = await chooseGoogleSpreadsheet(token.accessToken)
+                  if (!spreadsheet) return
+                  await axios.post(
+                    `/api/forms/${formId}/integrations/google-sheets/selection`,
+                    { spreadsheetId: spreadsheet.id },
+                  )
+                  toast.success('Response tab added to selected spreadsheet')
+                } finally {
+                  onPickerOpenChange?.(false)
+                }
               })
             }
             disabled={Boolean(action)}

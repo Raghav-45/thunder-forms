@@ -73,15 +73,16 @@ const form = (overrides: Record<string, unknown> = {}) => ({
   expiresAt: null,
   maxSubmissions: null,
   _count: { responses: 0 },
-  fileUploadDestination: {
+  fileUploadDestinations: [{
     id: 'destination-1',
+    fieldId: 'portfolio',
     provider: 'google-drive',
     folderId: 'folder-1',
     connection: {
       status: 'ACTIVE',
       encryptedRefreshToken: 'encrypted-token',
     },
-  },
+  }],
   ...overrides,
 })
 
@@ -181,6 +182,21 @@ describe('POST /api/forms/[id]/uploads', () => {
     )
 
     expect(response.status).toBe(422)
+    expect(mocks.providerUpload).not.toHaveBeenCalled()
+  })
+
+  it('requires a destination configured for the submitted upload field', async () => {
+    mocks.findForm.mockResolvedValue(form({ fileUploadDestinations: [] }))
+
+    const response = await POST(
+      requestFor('portfolio', new File(['pdf'], 'portfolio.pdf', { type: 'application/pdf' })),
+      { params },
+    )
+
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toEqual({
+      error: 'File uploads are not configured for this field',
+    })
     expect(mocks.providerUpload).not.toHaveBeenCalled()
   })
 

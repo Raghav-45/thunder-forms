@@ -134,7 +134,7 @@ model forms {
   googleSheetsOAuthAttempts google_sheets_oauth_attempts[]
   googleSheetsSetupLock google_sheets_setup_locks?
   fileUploadOAuthAttempts file_upload_oauth_attempts[]
-  fileUploadDestination file_upload_destinations?
+  fileUploadDestinations file_upload_destinations[]
   fileUploads file_uploads[]
   fileUploadSessions file_upload_sessions[]
 }
@@ -168,6 +168,7 @@ model file_upload_oauth_attempts {
   encryptedCodeVerifier String
   userId                String
   formId                String
+  fieldId               String
   expiresAt             DateTime
   createdAt             DateTime @default(now())
 
@@ -179,7 +180,8 @@ model file_upload_oauth_attempts {
 
 model file_upload_destinations {
   id           String   @id @default(cuid())
-  formId       String   @unique
+  formId       String
+  fieldId      String
   connectionId String
   provider     String
   folderId     String
@@ -190,6 +192,9 @@ model file_upload_destinations {
   form       forms                   @relation(fields: [formId], references: [id], onDelete: Cascade)
   connection file_upload_connections @relation(fields: [connectionId], references: [id], onDelete: Cascade)
   uploads    file_uploads[]
+
+  @@unique([formId, fieldId])
+  @@index([formId])
 }
 
 model file_uploads {
