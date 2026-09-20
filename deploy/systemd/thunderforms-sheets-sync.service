@@ -1,9 +1,0 @@
-[Unit]
-Description=ThunderForms Google Sheets delivery worker
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=oneshot
-EnvironmentFile=/etc/thunderforms/thunderforms.env
-ExecStart=/bin/sh -c 'printf "Authorization: Bearer %s\\n" "$GOOGLE_SHEETS_SYNC_SECRET" | /usr/bin/curl --fail --silent --show-error --max-time 55 --request POST --header @- --header "Content-Type: application/json" --data "{\\"limit\\":25}" "${THUNDERFORMS_INTERNAL_URL}/api/internal/google-sheets/sync"'
