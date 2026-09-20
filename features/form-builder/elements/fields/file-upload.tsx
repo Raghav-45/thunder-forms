@@ -268,7 +268,7 @@ const FileUploadEditor = ({
                     onChange={(event) => update('maxFiles', Number(event.target.value) || 1)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Per respondent submission for this field.
+                    Per respondent submission.
                   </p>
                 </div>
                 <div className="space-y-2">
