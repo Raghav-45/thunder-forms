@@ -38,6 +38,7 @@ import {
   type FileUploadReceipt,
 } from '@/features/file-uploads/types'
 import { GoogleDriveUploadIntegration } from '@/features/file-uploads/components/google-drive-upload-integration'
+import { enableGooglePickerPointerEvents } from '@/features/google-picker/client'
 import { Loader2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
@@ -210,6 +211,11 @@ const FileUploadEditor = ({
   const [googlePickerOpen, setGooglePickerOpen] = useState(false)
   const [openSections, setOpenSections] = useState(['basic'])
 
+  useEffect(() => {
+    if (!googlePickerOpen) return
+    return enableGooglePickerPointerEvents()
+  }, [googlePickerOpen])
+
   const update = (key: keyof FileUploadConfig, value: unknown) => {
     setConfig((current) => ({ ...current, [key]: value }))
   }
@@ -226,7 +232,6 @@ const FileUploadEditor = ({
 
   return (
     <Sheet
-      modal={!googlePickerOpen}
       open={isOpen}
       onOpenChange={(nextOpen) => {
         if (!nextOpen) {

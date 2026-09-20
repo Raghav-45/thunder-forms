@@ -31,6 +31,7 @@ import { Input } from "@/components/ui/input"
 import { useFormStore } from "@/features/form-builder/store"
 import { DatePickerWithPresets } from "@/features/form-builder/components/date-picker-with-presets"
 import { GoogleSheetsIntegration } from '@/features/google-sheets/components/google-sheets-integration'
+import { enableGooglePickerPointerEvents } from '@/features/google-picker/client'
 
 const data = {
   nav: [
@@ -47,9 +48,13 @@ export function SettingsDialog({ formId }: { formId: string | null }) {
   const [googlePickerOpen, setGooglePickerOpen] = React.useState(false)
   const { formSettings, setFormSettings } = useFormStore()
 
+  React.useEffect(() => {
+    if (!googlePickerOpen) return
+    return enableGooglePickerPointerEvents()
+  }, [googlePickerOpen])
+
   return (
     <Dialog
-      modal={!googlePickerOpen}
       open={open}
       onOpenChange={(nextOpen) => {
         setOpen(nextOpen)

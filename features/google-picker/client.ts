@@ -88,17 +88,27 @@ function loadGooglePicker(): Promise<GooglePickerApi> {
   })
 }
 
-/**
- * Google Picker appends its iframe outside the component that launches it.
- * Give a parent dialog a paint to release its modal pointer-event lock before
- * making that iframe visible.
- */
+/** Give the parent UI time to render its Google Picker interaction state. */
 export function waitForGooglePickerLayer() {
   return new Promise<void>((resolve) => {
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => resolve())
     })
   })
+}
+
+/**
+ * Radix modal dialogs disable pointer events on document.body. Google Picker
+ * appends its own dialog outside that modal tree, so allow pointer events only
+ * while the picker owns the screen, then restore Radix's original value.
+ */
+export function enableGooglePickerPointerEvents() {
+  const previousValue = document.body.style.pointerEvents
+  document.body.style.pointerEvents = 'auto'
+
+  return () => {
+    document.body.style.pointerEvents = previousValue
+  }
 }
 
 export async function chooseGoogleSpreadsheet(accessToken: string) {
