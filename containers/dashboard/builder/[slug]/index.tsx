@@ -20,6 +20,7 @@ import {
 } from '@/features/form-builder/utils/helperFunctions'
 import { SettingsDialog } from '@/features/form-builder/components/settings-dialog'
 import { googleSheetsOAuthResultMessage } from '@/features/google-sheets/oauth-result'
+import { GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM } from '@/features/google-sheets/constants'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -189,7 +190,7 @@ function BuilderContent({
   const router = useRouter()
   const searchParams = useSearchParams()
   const templateSlug = searchParams.get('template')
-  const googleSheetsResult = searchParams.get('googleSheets')
+  const googleSheetsResult = searchParams.get(GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM)
   const { formSettings, setFormSettings } = useFormStore()
   const [currentFormId, setCurrentFormId] = useState(paramFormId)
   const [activePageId, setActivePageId] = useState(initialState.activePageId)
@@ -229,7 +230,7 @@ function BuilderContent({
     toast[result.type](result.message)
 
     const nextParams = new URLSearchParams(searchParams.toString())
-    nextParams.delete('googleSheets')
+    nextParams.delete(GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM)
     const query = nextParams.toString()
     router.replace(`/dashboard/builder/${paramFormId}${query ? `?${query}` : ''}`)
   }, [googleSheetsResult, paramFormId, router, searchParams])

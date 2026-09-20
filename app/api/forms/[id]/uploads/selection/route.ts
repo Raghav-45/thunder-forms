@@ -4,7 +4,7 @@ import {
   fileUploadErrorResponse,
   getOwnedFileUploadForm,
 } from '@/features/file-uploads/server/owner'
-import { GOOGLE_DRIVE_STORAGE_PROVIDER } from '@/features/file-uploads/types'
+import { GOOGLE_DRIVE_STORAGE_PROVIDER } from '@/features/file-uploads/constants'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 

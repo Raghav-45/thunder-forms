@@ -1,12 +1,13 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { encryptGoogleSheetsSecret } from '@/features/google-sheets/server/crypto'
+import { encryptGoogleOAuthSecret } from '@/features/google-auth/server/crypto'
 import {
   createGoogleFormsImportAuthorizationUrl,
   createGoogleFormsImportOAuthAttempt,
 } from '@/features/google-forms-import/server/oauth'
 import {
   GOOGLE_FORMS_IMPORT_SESSION_COOKIE,
+  GOOGLE_FORMS_IMPORT_SESSION_MAX_AGE_SECONDS,
   googleFormsImportCookieOptions,
   googleFormsImportSessionExpiresAt,
 } from '@/features/google-forms-import/server/session'
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
       prisma.google_forms_import_attempts.create({
         data: {
           state,
-          encryptedCodeVerifier: encryptGoogleSheetsSecret(codeVerifier),
+          encryptedCodeVerifier: encryptGoogleOAuthSecret(codeVerifier),
           userId: session.user.id,
           returnTo,
           expiresAt,
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
     response.cookies.set(
       GOOGLE_FORMS_IMPORT_SESSION_COOKIE,
       state,
-      googleFormsImportCookieOptions(10 * 60),
+      googleFormsImportCookieOptions(GOOGLE_FORMS_IMPORT_SESSION_MAX_AGE_SECONDS),
     )
     return response
   } catch (error) {

@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   createGoogleFormsImportAuthorizationUrl,
   createGoogleFormsImportOAuthAttempt,
-  GOOGLE_FORMS_IMPORT_SCOPES,
 } from '@/features/google-forms-import/server/oauth'
+import { GOOGLE_FORMS_IMPORT_SCOPES } from '@/features/google-forms-import/constants'
 
 describe('Google Forms import OAuth', () => {
   afterEach(() => vi.unstubAllEnvs())

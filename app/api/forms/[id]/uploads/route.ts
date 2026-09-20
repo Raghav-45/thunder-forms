@@ -15,7 +15,7 @@ import {
 import {
   normalizeFileUploadMaxFiles,
   normalizeFileUploadMaxSizeBytes,
-} from '@/features/file-uploads/types'
+} from '@/features/file-uploads/constants'
 import { prisma } from '@/lib/prisma'
 import { after, NextRequest, NextResponse } from 'next/server'
 

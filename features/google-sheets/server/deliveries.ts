@@ -4,6 +4,7 @@ import {
   GoogleSheetsIntegrationStatus,
 } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
+import { GOOGLE_SHEETS_SYNC_BATCH_LIMIT } from '@/features/google-sheets/constants'
 import {
   appendGoogleSheetsRow,
   hasGoogleSheetsSubmission,
@@ -186,7 +187,7 @@ export async function syncGoogleSheetsDelivery(deliveryId: string, workerId: str
 
 export async function drainGoogleSheetsDeliveries(
   workerId: string,
-  limit = 25,
+  limit = GOOGLE_SHEETS_SYNC_BATCH_LIMIT,
 ) {
   const now = new Date()
   const staleLock = new Date(now.getTime() - LOCK_TIMEOUT_MS)

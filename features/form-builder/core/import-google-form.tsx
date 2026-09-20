@@ -1,6 +1,7 @@
 'use client'
 
 import type { FieldConfig } from '@/features/form-builder/elements'
+import { GOOGLE_FORMS_IMPORT_OAUTH_RESULT_QUERY_PARAM } from '@/features/google-forms-import/constants'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -59,7 +60,7 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const googleFormsImportResult = searchParams.get('googleFormsImport')
+  const googleFormsImportResult = searchParams.get(GOOGLE_FORMS_IMPORT_OAUTH_RESULT_QUERY_PARAM)
   const [isOpen, setIsOpen] = useState(false)
   const [forms, setForms] = useState<GoogleFormSummary[]>([])
   const [nextPageToken, setNextPageToken] = useState<string | null>(null)
@@ -109,7 +110,7 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
     if (!googleFormsImportResult) return
 
     const nextParams = new URLSearchParams(searchParams.toString())
-    nextParams.delete('googleFormsImport')
+    nextParams.delete(GOOGLE_FORMS_IMPORT_OAUTH_RESULT_QUERY_PARAM)
     router.replace(`${pathname}${nextParams.size ? `?${nextParams}` : ''}`)
 
     if (googleFormsImportResult === 'connected') {

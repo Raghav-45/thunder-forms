@@ -1,7 +1,7 @@
 import { google } from 'googleapis'
 import { randomBytes } from 'node:crypto'
 import type { GoogleSheetsColumn } from '@/features/google-sheets/types'
-import { decryptGoogleSheetsSecret } from './crypto'
+import { decryptGoogleOAuthSecret } from '@/features/google-auth/server/crypto'
 import { createGoogleSheetsOAuthClient } from './oauth'
 
 export interface GoogleSpreadsheetTarget {
@@ -19,7 +19,7 @@ function quoteSheetTitle(title: string): string {
 export function createGoogleSheetsClient(encryptedRefreshToken: string) {
   const auth = createGoogleSheetsOAuthClient()
   auth.setCredentials({
-    refresh_token: decryptGoogleSheetsSecret(encryptedRefreshToken),
+    refresh_token: decryptGoogleOAuthSecret(encryptedRefreshToken),
   })
 
   return {

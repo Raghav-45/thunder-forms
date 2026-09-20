@@ -1,4 +1,4 @@
-import { encryptGoogleSheetsSecret } from '@/features/google-sheets/server/crypto'
+import { encryptGoogleOAuthSecret } from '@/features/google-auth/server/crypto'
 import {
   createGoogleDriveAuthorizationUrl,
   createGoogleDriveAuthorizationValues,
@@ -25,7 +25,7 @@ export async function POST(
     await prisma.file_upload_oauth_attempts.create({
       data: {
         state,
-        encryptedCodeVerifier: encryptGoogleSheetsSecret(codeVerifier),
+        encryptedCodeVerifier: encryptGoogleOAuthSecret(codeVerifier),
         userId,
         formId,
         expiresAt: new Date(Date.now() + 10 * 60 * 1000),

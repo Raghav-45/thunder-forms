@@ -16,7 +16,7 @@ function getEncryptionKey(): Buffer {
   return key
 }
 
-export function encryptGoogleSheetsSecret(value: string): string {
+export function encryptGoogleOAuthSecret(value: string): string {
   const iv = randomBytes(12)
   const cipher = createCipheriv('aes-256-gcm', getEncryptionKey(), iv)
   const ciphertext = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()])
@@ -30,7 +30,7 @@ export function encryptGoogleSheetsSecret(value: string): string {
   ].join('.')
 }
 
-export function decryptGoogleSheetsSecret(value: string): string {
+export function decryptGoogleOAuthSecret(value: string): string {
   const [version, encodedIv, encodedTag, encodedCiphertext, ...rest] = value.split('.')
   if (
     version !== VERSION ||

@@ -1,7 +1,8 @@
 import { FileUploadConnectionStatus } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { decryptGoogleSheetsSecret, encryptGoogleSheetsSecret } from '@/features/google-sheets/server/crypto'
+import { decryptGoogleOAuthSecret, encryptGoogleOAuthSecret } from '@/features/google-auth/server/crypto'
+import { GOOGLE_DRIVE_FILE_SCOPE } from '@/features/file-uploads/constants'
 import {
   createGoogleDriveOAuthClient,
 } from '@/features/file-uploads/server/google-drive'
@@ -50,12 +51,12 @@ export async function GET(request: NextRequest) {
     const client = createGoogleDriveOAuthClient()
     const { tokens } = await client.getToken({
       code,
-      codeVerifier: decryptGoogleSheetsSecret(attempt.encryptedCodeVerifier),
+      codeVerifier: decryptGoogleOAuthSecret(attempt.encryptedCodeVerifier),
     })
     if (!tokens.access_token) return redirectToBuilder(request, attempt.formId, 'scope-denied')
 
     const tokenInfo = await client.getTokenInfo(tokens.access_token)
-    if (!tokenInfo.scopes.includes('https://www.googleapis.com/auth/drive.file')) {
+    if (!tokenInfo.scopes.includes(GOOGLE_DRIVE_FILE_SCOPE)) {
       return redirectToBuilder(request, attempt.formId, 'scope-denied')
     }
 
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
       where: { userId: attempt.userId },
     })
     const encryptedRefreshToken = tokens.refresh_token
-      ? encryptGoogleSheetsSecret(tokens.refresh_token)
+      ? encryptGoogleOAuthSecret(tokens.refresh_token)
       : existing?.encryptedRefreshToken
     if (!encryptedRefreshToken) {
       return redirectToBuilder(request, attempt.formId, 'missing-refresh-token')

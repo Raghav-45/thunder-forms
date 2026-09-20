@@ -2,10 +2,9 @@ import { createHash, randomBytes } from 'node:crypto'
 import { Readable } from 'node:stream'
 import { CodeChallengeMethod } from 'google-auth-library'
 import { google } from 'googleapis'
-import { decryptGoogleSheetsSecret } from '@/features/google-sheets/server/crypto'
+import { decryptGoogleOAuthSecret } from '@/features/google-auth/server/crypto'
+import { GOOGLE_DRIVE_FILE_SCOPE } from '@/features/file-uploads/constants'
 import { prisma } from '@/lib/prisma'
-
-const GOOGLE_DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file'
 
 export function isGoogleDriveAuthorizationError(error: unknown) {
   if (error instanceof Error && error.message === 'invalid_grant') return true
@@ -77,7 +76,7 @@ export function createGoogleDriveAuthorizationUrl(
     code_challenge_method: CodeChallengeMethod.S256,
     include_granted_scopes: true,
     prompt: 'consent select_account',
-    scope: [GOOGLE_DRIVE_SCOPE],
+    scope: [GOOGLE_DRIVE_FILE_SCOPE],
     state,
   })
 }
@@ -85,7 +84,7 @@ export function createGoogleDriveAuthorizationUrl(
 function createGoogleDriveOAuthClientWithRefreshToken(encryptedRefreshToken: string) {
   const auth = createGoogleDriveOAuthClient()
   auth.setCredentials({
-    refresh_token: decryptGoogleSheetsSecret(encryptedRefreshToken),
+    refresh_token: decryptGoogleOAuthSecret(encryptedRefreshToken),
   })
 
   return auth

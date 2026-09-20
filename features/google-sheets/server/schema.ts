@@ -1,7 +1,7 @@
 import {
-  GOOGLE_SHEETS_FIXED_COLUMNS,
   type GoogleSheetsColumn,
 } from '@/features/google-sheets/types'
+import { GOOGLE_SHEETS_FIXED_COLUMNS } from '@/features/google-sheets/constants'
 import {
   getOrderedFormFields,
   type FormStructure,

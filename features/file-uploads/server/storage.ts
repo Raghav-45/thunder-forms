@@ -3,7 +3,7 @@ import {
   downloadGoogleDriveFile,
   uploadGoogleDriveFile,
 } from './google-drive'
-import { GOOGLE_DRIVE_STORAGE_PROVIDER } from '../types'
+import { GOOGLE_DRIVE_STORAGE_PROVIDER } from '../constants'
 
 export interface FileStorageProvider {
   upload(input: {

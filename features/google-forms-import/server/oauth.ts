@@ -1,11 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto'
 import { CodeChallengeMethod } from 'google-auth-library'
 import { google } from 'googleapis'
-
-export const GOOGLE_FORMS_IMPORT_SCOPES = [
-  'https://www.googleapis.com/auth/forms.body.readonly',
-  'https://www.googleapis.com/auth/drive.metadata.readonly',
-] as const
+import { GOOGLE_FORMS_IMPORT_SCOPES } from '@/features/google-forms-import/constants'
 
 interface GoogleFormsImportConfig {
   clientId: string

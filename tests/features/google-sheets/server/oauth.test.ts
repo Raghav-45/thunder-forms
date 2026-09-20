@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { GOOGLE_SHEETS_SCOPE } from '@/features/google-sheets/types'
+import { GOOGLE_SHEETS_SCOPE } from '@/features/google-sheets/constants'
 import {
   createGoogleSheetsAuthorizationUrl,
   createOAuthAttemptValues,

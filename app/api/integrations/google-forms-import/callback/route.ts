@@ -1,9 +1,12 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { decryptGoogleSheetsSecret } from '@/features/google-sheets/server/crypto'
+import { decryptGoogleOAuthSecret } from '@/features/google-auth/server/crypto'
+import {
+  GOOGLE_FORMS_IMPORT_OAUTH_RESULT_QUERY_PARAM,
+  GOOGLE_FORMS_IMPORT_SCOPES,
+} from '@/features/google-forms-import/constants'
 import {
   createGoogleFormsImportOAuthClient,
-  GOOGLE_FORMS_IMPORT_SCOPES,
 } from '@/features/google-forms-import/server/oauth'
 import {
   createGoogleFormsImportSessionId,
@@ -17,7 +20,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 function redirectToBuilder(request: NextRequest, returnTo: string, result: string) {
   const url = new URL(returnTo, request.url)
-  url.searchParams.set('googleFormsImport', result)
+  url.searchParams.set(GOOGLE_FORMS_IMPORT_OAUTH_RESULT_QUERY_PARAM, result)
   return NextResponse.redirect(url)
 }
 
@@ -70,7 +73,7 @@ export async function GET(request: NextRequest) {
     const client = createGoogleFormsImportOAuthClient()
     const { tokens } = await client.getToken({
       code,
-      codeVerifier: decryptGoogleSheetsSecret(encryptedCodeVerifier),
+      codeVerifier: decryptGoogleOAuthSecret(encryptedCodeVerifier),
     })
     if (!tokens.access_token) {
       return redirectToBuilder(request, attempt.returnTo, 'scope-denied')

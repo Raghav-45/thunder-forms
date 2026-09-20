@@ -1,15 +1,18 @@
 import { GoogleSheetsConnectionStatus } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { decryptGoogleSheetsSecret, encryptGoogleSheetsSecret } from '@/features/google-sheets/server/crypto'
+import { decryptGoogleOAuthSecret, encryptGoogleOAuthSecret } from '@/features/google-auth/server/crypto'
+import {
+  GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM,
+  GOOGLE_SHEETS_SCOPE,
+} from '@/features/google-sheets/constants'
 import { createGoogleSheetsOAuthClient } from '@/features/google-sheets/server/oauth'
-import { GOOGLE_SHEETS_SCOPE } from '@/features/google-sheets/types'
 import { headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 function redirectToBuilder(request: NextRequest, formId: string, result: string) {
   const url = new URL(`/dashboard/builder/${formId}`, request.url)
-  url.searchParams.set('googleSheets', result)
+  url.searchParams.set(GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM, result)
   return NextResponse.redirect(url)
 }
 
@@ -64,7 +67,7 @@ export async function GET(request: NextRequest) {
     const client = createGoogleSheetsOAuthClient()
     const { tokens } = await client.getToken({
       code,
-      codeVerifier: decryptGoogleSheetsSecret(attempt.encryptedCodeVerifier),
+      codeVerifier: decryptGoogleOAuthSecret(attempt.encryptedCodeVerifier),
     })
     if (!tokens.access_token) {
       return redirectToBuilder(request, attempt.formId, 'scope-denied')
@@ -79,7 +82,7 @@ export async function GET(request: NextRequest) {
       where: { userId: attempt.userId },
     })
     const encryptedRefreshToken = tokens.refresh_token
-      ? encryptGoogleSheetsSecret(tokens.refresh_token)
+      ? encryptGoogleOAuthSecret(tokens.refresh_token)
       : existing?.encryptedRefreshToken
     if (!encryptedRefreshToken) {
       return redirectToBuilder(request, attempt.formId, 'missing-refresh-token')

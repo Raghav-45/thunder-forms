@@ -1,11 +1,12 @@
 import { randomBytes } from 'node:crypto'
-import { decryptGoogleSheetsSecret, encryptGoogleSheetsSecret } from '@/features/google-sheets/server/crypto'
+import { decryptGoogleOAuthSecret, encryptGoogleOAuthSecret } from '@/features/google-auth/server/crypto'
 import { prisma } from '@/lib/prisma'
 
 const IMPORT_SESSION_COOKIE = 'thunderforms_google_forms_import'
 const IMPORT_SESSION_DURATION_MS = 10 * 60 * 1000
 
 export const GOOGLE_FORMS_IMPORT_SESSION_COOKIE = IMPORT_SESSION_COOKIE
+export const GOOGLE_FORMS_IMPORT_SESSION_MAX_AGE_SECONDS = IMPORT_SESSION_DURATION_MS / 1000
 
 export function googleFormsImportSessionExpiresAt(): Date {
   return new Date(Date.now() + IMPORT_SESSION_DURATION_MS)
@@ -48,7 +49,7 @@ export async function getGoogleFormsImportAccessToken(
   })
   if (!attempt?.encryptedAccessToken) return null
 
-  return decryptGoogleSheetsSecret(attempt.encryptedAccessToken)
+  return decryptGoogleOAuthSecret(attempt.encryptedAccessToken)
 }
 
 export async function consumeGoogleFormsImportSession(
@@ -64,7 +65,7 @@ export async function consumeGoogleFormsImportSession(
 }
 
 export function encryptTemporaryGoogleFormsAccessToken(accessToken: string) {
-  return encryptGoogleSheetsSecret(accessToken)
+  return encryptGoogleOAuthSecret(accessToken)
 }
 
 export function googleFormsImportCookieOptions(maxAge = 0) {

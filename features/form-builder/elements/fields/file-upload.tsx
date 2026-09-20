@@ -20,9 +20,14 @@ import type {
   FieldProps,
 } from '@/features/form-builder/types/types'
 import {
+  FILE_UPLOAD_MAX_FILES,
   FILE_UPLOAD_MAX_SIZE_BYTES,
+  FILE_UPLOAD_MIN_FILES,
+  FILE_UPLOAD_MIN_SIZE_BYTES,
   normalizeFileUploadMaxFiles,
   normalizeFileUploadMaxSizeBytes,
+} from '@/features/file-uploads/constants'
+import {
   isFileUploadReceiptList,
   type FileUploadReceipt,
 } from '@/features/file-uploads/types'
@@ -216,8 +221,8 @@ const FileUploadEditor = ({
               <Input
                 id="file-upload-count"
                 type="number"
-                min="1"
-                max="10"
+                min={FILE_UPLOAD_MIN_FILES}
+                max={FILE_UPLOAD_MAX_FILES}
                 value={maxFiles(config)}
                 onChange={(event) => update('maxFiles', Number(event.target.value) || 1)}
               />
@@ -227,8 +232,8 @@ const FileUploadEditor = ({
               <Input
                 id="file-upload-size"
                 type="number"
-                min="1"
-                max="4"
+                min={FILE_UPLOAD_MIN_SIZE_BYTES / (1024 * 1024)}
+                max={FILE_UPLOAD_MAX_SIZE_BYTES / (1024 * 1024)}
                 value={Math.round(maxSizeBytes(config) / (1024 * 1024))}
                 onChange={(event) => update('maxSizeBytes', (Number(event.target.value) || 1) * 1024 * 1024)}
               />
