@@ -1,4 +1,8 @@
 import { google } from 'googleapis'
+import {
+  normalizeFileUploadMaxFiles,
+  normalizeFileUploadMaxSizeBytes,
+} from '@/features/file-uploads/constants'
 import type { ImportedGoogleFormPage } from '@/features/google-forms-import/types'
 
 interface GoogleFormItem {
@@ -23,7 +27,11 @@ interface GoogleFormItem {
       dateQuestion?: { includeTime?: boolean; includeYear?: boolean }
       timeQuestion?: { duration?: boolean }
       ratingQuestion?: { ratingScaleLevel?: number; iconType?: string }
-      fileUploadQuestion?: Record<string, unknown>
+      fileUploadQuestion?: {
+        maxFiles?: number
+        maxFileSize?: string
+        types?: string[]
+      }
     }
   }
   questionGroupItem?: {
@@ -144,6 +152,50 @@ function nextId(prefix: string): string {
   return `${prefix}_${crypto.randomUUID()}`
 }
 
+const GOOGLE_FILE_TYPE_ACCEPTS: Record<string, string> = {
+  AUDIO: 'audio/*',
+  DOCUMENT: '.doc,.docx,.odt,.rtf,.txt',
+  IMAGE: 'image/*',
+  PDF: '.pdf',
+  PRESENTATION: '.odp,.ppt,.pptx',
+  SPREADSHEET: '.csv,.ods,.xls,.xlsx',
+  VIDEO: 'video/*',
+}
+
+function acceptedFileTypes(types: string[] | undefined): string | undefined {
+  if (!types?.length || types.includes('ANY')) return undefined
+
+  const accepts = types.flatMap((type) => GOOGLE_FILE_TYPE_ACCEPTS[type]?.split(',') ?? [])
+  return accepts.length ? [...new Set(accepts)].join(',') : undefined
+}
+
+function uploadMaxFiles(maxFiles: number | undefined): number | undefined {
+  return typeof maxFiles === 'number' && Number.isInteger(maxFiles) && maxFiles > 0
+    ? normalizeFileUploadMaxFiles({ maxFiles })
+    : undefined
+}
+
+function uploadMaxSizeBytes(maxFileSize: string | undefined): number | undefined {
+  if (!maxFileSize || !/^\d+$/.test(maxFileSize)) return undefined
+
+  const parsed = Number(maxFileSize)
+  return Number.isSafeInteger(parsed) && parsed > 0
+    ? normalizeFileUploadMaxSizeBytes({ maxSizeBytes: parsed })
+    : undefined
+}
+
+function ratingStyle(iconType: string | undefined) {
+  if (iconType === 'HEART') return 'heart'
+  if (iconType === 'THUMB_UP') return 'thumb'
+  return 'star'
+}
+
+function ratingMaxScore(value: number | undefined) {
+  return typeof value === 'number' && Number.isInteger(value)
+    ? Math.min(Math.max(value, 2), 10)
+    : 5
+}
+
 function mapQuestionItem(item: GoogleFormItem): ImportedGoogleFormField | null {
   const question = item.questionItem?.question
   if (!question) return null
@@ -238,14 +290,48 @@ function mapQuestionItem(item: GoogleFormItem): ImportedGoogleFormField | null {
         }
   }
 
+  if (question.timeQuestion) {
+    return {
+      ...base,
+      id: nextId('time'),
+      uniqueIdentifier: 'time-picker',
+      mode: question.timeQuestion.duration ? 'duration' : 'time',
+      minuteStep: 1,
+    }
+  }
+
+  if (question.fileUploadQuestion) {
+    const upload = question.fileUploadQuestion
+    const acceptedTypes = acceptedFileTypes(upload.types)
+    const maxFiles = uploadMaxFiles(upload.maxFiles)
+    const maxSizeBytes = uploadMaxSizeBytes(upload.maxFileSize)
+
+    return {
+      ...base,
+      id: nextId('file'),
+      uniqueIdentifier: 'file-upload',
+      ...(acceptedTypes ? { acceptedTypes } : {}),
+      ...(maxFiles ? { maxFiles } : {}),
+      ...(maxSizeBytes ? { maxSizeBytes } : {}),
+    }
+  }
+
+  if (question.ratingQuestion) {
+    return {
+      ...base,
+      id: nextId('rating'),
+      uniqueIdentifier: 'rating',
+      style: ratingStyle(question.ratingQuestion.iconType),
+      maxRating: ratingMaxScore(question.ratingQuestion.ratingScaleLevel),
+      step: 1,
+      showValue: false,
+    }
+  }
+
   return null
 }
 
 function getSkippedReason(item: GoogleFormItem): string | null {
-  const question = item.questionItem?.question
-  if (question?.timeQuestion) return `\"${item.title || 'Untitled'}\" (Time question — not supported)`
-  if (question?.fileUploadQuestion) return `\"${item.title || 'Untitled'}\" (File upload — not supported)`
-  if (question?.ratingQuestion) return `\"${item.title || 'Untitled'}\" (Rating — not supported)`
   if (item.questionGroupItem) return `\"${item.title || 'Untitled'}\" (Grid/matrix — not supported)`
   if (item.imageItem) return `\"${item.title || 'Image'}\" (Image — not supported)`
   if (item.videoItem) return `\"${item.title || 'Video'}\" (Video — not supported)`

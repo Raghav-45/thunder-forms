@@ -27,16 +27,6 @@ describe('Google Forms conversion', () => {
             },
           },
         },
-        {
-          itemId: 'upload',
-          title: 'Portfolio',
-          questionItem: {
-            question: {
-              questionId: 'upload-question',
-              fileUploadQuestion: {},
-            },
-          },
-        },
       ],
     })
 
@@ -56,9 +46,77 @@ describe('Google Forms conversion', () => {
       }),
       ],
     }])
-    expect(result.skippedItems).toEqual([
-      '"Portfolio" (File upload — not supported)',
+    expect(result.skippedItems).toEqual([])
+  })
+
+  it('maps time and file-upload questions to supported ThunderForms fields', () => {
+    const result = convertGoogleForm({
+      formId: 'google-form-time-and-files',
+      info: { title: 'Appointment' },
+      items: [
+        {
+          itemId: 'start-time',
+          title: 'Start time',
+          questionItem: {
+            question: {
+              questionId: 'start-time-question',
+              timeQuestion: { duration: false },
+            },
+          },
+        },
+        {
+          itemId: 'duration',
+          title: 'Duration',
+          questionItem: {
+            question: {
+              questionId: 'duration-question',
+              timeQuestion: { duration: true },
+            },
+          },
+        },
+        {
+          itemId: 'portfolio',
+          title: 'Portfolio',
+          questionItem: {
+            question: {
+              questionId: 'portfolio-question',
+              fileUploadQuestion: {
+                maxFiles: 2,
+                maxFileSize: '1048576',
+                types: ['PDF', 'IMAGE'],
+              },
+            },
+          },
+        },
+        {
+          itemId: 'satisfaction',
+          title: 'Satisfaction',
+          questionItem: {
+            question: {
+              questionId: 'satisfaction-question',
+              ratingQuestion: { iconType: 'HEART', ratingScaleLevel: 7 },
+            },
+          },
+        },
+      ],
+    })
+
+    expect(result.pages[0].fields).toEqual([
+      expect.objectContaining({ uniqueIdentifier: 'time-picker', mode: 'time' }),
+      expect.objectContaining({ uniqueIdentifier: 'time-picker', mode: 'duration' }),
+      expect.objectContaining({
+        uniqueIdentifier: 'file-upload',
+        acceptedTypes: '.pdf,image/*',
+        maxFiles: 2,
+        maxSizeBytes: 1048576,
+      }),
+      expect.objectContaining({
+        uniqueIdentifier: 'rating',
+        style: 'heart',
+        maxRating: 7,
+      }),
     ])
+    expect(result.skippedItems).toEqual([])
   })
 
   it('keeps choice values unique and preserves a zero-based scale', () => {

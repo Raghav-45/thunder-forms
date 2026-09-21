@@ -40,6 +40,8 @@ const KNOWN_FIELD_IDENTIFIERS = new Set<string>([
   'slider',
   'datetime-picker',
   'file-upload',
+  'time-picker',
+  'rating',
 ])
 
 const createId = () => crypto.randomUUID()

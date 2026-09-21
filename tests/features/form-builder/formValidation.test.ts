@@ -24,6 +24,8 @@ describe('validateFormFields with untouched optional fields', () => {
       field('age', 'number-input'),
       field('day', 'date-picker'),
       field('moment', 'datetime-picker'),
+      field('time', 'time-picker'),
+      field('rating', 'rating'),
       field('plan', 'single-select'),
       field('contact', 'radio-group'),
       field('tags', 'multi-select'),
@@ -35,6 +37,8 @@ describe('validateFormFields with untouched optional fields', () => {
       age: '',
       day: '',
       moment: '',
+      time: '',
+      rating: '',
       plan: '',
       contact: '',
       tags: [],
@@ -80,6 +84,33 @@ describe('validateFormFields with untouched optional fields', () => {
       name: 'Invalid email address',
     })
     expect(validateFormFields(fields, { name: 'a@b.co' })).toEqual({})
+  })
+
+  it('validates time-of-day and elapsed-duration values', () => {
+    const fields = [
+      field('time', 'time-picker', { mode: 'time', minuteStep: 15 }, true),
+      field('duration', 'time-picker', { mode: 'duration' }, true),
+    ]
+
+    expect(validateFormFields(fields, { time: '09:30', duration: '2:45' })).toEqual({})
+    expect(validateFormFields(fields, { time: '09:17', duration: '2:61' })).toEqual({
+      time: 'Enter a valid time',
+      duration: 'Enter a valid duration',
+    })
+  })
+
+  it('validates whole and half ratings within their configured scale', () => {
+    const fields = [
+      field('rating', 'rating', { maxRating: 5, step: 0.5 }, true),
+    ]
+
+    expect(validateFormFields(fields, { rating: 3.5 })).toEqual({})
+    expect(validateFormFields(fields, { rating: 3.2 })).toEqual({
+      rating: 'Choose a rating from 1 to 5',
+    })
+    expect(validateFormFields(fields, { rating: 6 })).toEqual({
+      rating: 'Choose a rating from 1 to 5',
+    })
   })
 
   it('requires valid server-issued file upload receipts', () => {

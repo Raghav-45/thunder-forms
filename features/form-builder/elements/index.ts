@@ -28,6 +28,8 @@ import { RadioGroupFieldDefinition } from './fields/radio-group'
 import { SliderFieldDefinition } from './fields/slider'
 import { DateTimePickerFieldDefinition } from './fields/datetime-picker'
 import { FileUploadFieldDefinition } from './fields/file-upload'
+import { TimePickerFieldDefinition } from './fields/time-picker'
+import { RatingFieldDefinition } from './fields/rating'
 
 const FIELD_DEFINITIONS = [
   new TextInputFieldDefinition(),
@@ -42,6 +44,8 @@ const FIELD_DEFINITIONS = [
   new SliderFieldDefinition(),
   new DateTimePickerFieldDefinition(),
   new FileUploadFieldDefinition(),
+  new TimePickerFieldDefinition(),
+  new RatingFieldDefinition(),
 ] as const
 
 /**
