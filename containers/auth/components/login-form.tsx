@@ -12,6 +12,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+import { authClient } from '@/lib/auth-client'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2Icon } from 'lucide-react'
 import { useState } from 'react'
@@ -22,8 +23,9 @@ import { ContinueWithOAuthButtonsGroup } from './oauth-buttons'
 
 export function LoginForm({
   className,
+  onSuccess,
   ...props
-}: React.ComponentPropsWithoutRef<'div'>) {
+}: React.ComponentPropsWithoutRef<'div'> & { onSuccess?: () => void }) {
   const [isLoading, setIsLoading] = useState(false)
 
   const AuthCredentialsValidator = z.object({
@@ -43,6 +45,28 @@ export function LoginForm({
 
   const onSubmit = async ({ email, password }: TAuthCredentials) => {
     setIsLoading(true)
+
+    if (onSuccess) {
+      try {
+        const result = await authClient.signIn.email({ email, password })
+        if (result.error) {
+          toast.error(
+            result.error.message === 'Invalid email or password'
+              ? 'Invalid login credentials'
+              : result.error.message || 'Login failed. Please try again.',
+          )
+          return
+        }
+
+        toast.success('Login successful!')
+        onSuccess()
+      } catch {
+        toast.error('Login failed. Please try again.')
+      } finally {
+        setIsLoading(false)
+      }
+      return
+    }
 
     const result = await login({ email, password })
 

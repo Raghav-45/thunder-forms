@@ -30,6 +30,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
 import { siteConfig } from '@/config/site'
 import { cn } from '@/lib/utils'
+import { authClient } from '@/lib/auth-client'
 import type { CreateFormPayload } from '@/lib/validators/form'
 import { getTemplateBySlug } from '@/containers/dashboard/templates/constants'
 import { instantiateTemplate } from '@/containers/dashboard/templates/instantiate-template'
@@ -38,6 +39,7 @@ import { ChromeTabStrip } from './components/chrome-tab-strip'
 import { BuilderDragOverlay } from './components/builder-drag-overlay'
 import { BuilderPalette } from './components/builder-palette'
 import { SectionEditor } from './components/section-editor'
+import { SaveFormLoginDialog } from './components/save-form-login-dialog'
 import { KeyboardSensor, PointerSensor } from '@dnd-kit/dom'
 import { move } from '@dnd-kit/helpers'
 import {
@@ -201,6 +203,7 @@ function BuilderContent({
   const templateSlug = searchParams.get('template')
   const googleSheetsResult = searchParams.get(GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM)
   const { formSettings, setFormSettings } = useFormStore()
+  const { data: session, isPending: isSessionPending } = authClient.useSession()
   const [currentFormId, setCurrentFormId] = useState(paramFormId)
   const [activePageId, setActivePageId] = useState(initialState.activePageId)
   const [editingField, setEditingField] = useState<EditingField | null>(null)
@@ -209,6 +212,7 @@ function BuilderContent({
     initialState.formStructure,
   )
   const [isSaving, setIsSaving] = useState(false)
+  const [isSaveLoginOpen, setIsSaveLoginOpen] = useState(false)
   const [hasInvalidPersistedStructure, setHasInvalidPersistedStructure] =
     useState(false)
   const [paletteFieldPlaceholderId, setPaletteFieldPlaceholderId] = useState<
@@ -568,7 +572,18 @@ function BuilderContent({
     [formSettings, setFormSettings],
   )
 
-  const handleSaveForm = useCallback(async () => {
+  const handleSaveForm = useCallback(async (afterSignIn = false) => {
+    if (!afterSignIn) {
+      if (isSessionPending) {
+        toast.message('Checking your sign-in status…')
+        return
+      }
+      if (!session?.user) {
+        setIsSaveLoginOpen(true)
+        return
+      }
+    }
+
     if (hasInvalidPersistedStructure) {
       toast.error('Fix the form structure before saving')
       return
@@ -634,6 +649,8 @@ function BuilderContent({
     hasInvalidPersistedStructure,
     isNewForm,
     refetchForm,
+    isSessionPending,
+    session?.user,
   ])
 
   const resetPaletteDrag = useCallback(() => {
@@ -914,7 +931,7 @@ function BuilderContent({
                 type="button"
                 variant="secondary"
                 className="h-8 cursor-pointer"
-                onClick={handleSaveForm}
+                onClick={() => void handleSaveForm()}
                 disabled={isSaving || hasInvalidPersistedStructure}
               >
                 {isSaving ? (
@@ -1037,6 +1054,12 @@ function BuilderContent({
           )}
         />
       ) : null}
+
+      <SaveFormLoginDialog
+        open={isSaveLoginOpen}
+        onOpenChange={setIsSaveLoginOpen}
+        onSignedIn={() => void handleSaveForm(true)}
+      />
 
       {editingSection ? (
         <SectionEditor
