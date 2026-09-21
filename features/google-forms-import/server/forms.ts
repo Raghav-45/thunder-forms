@@ -1,4 +1,5 @@
 import { google } from 'googleapis'
+import type { ImportedGoogleFormPage } from '@/features/google-forms-import/types'
 
 interface GoogleFormItem {
   itemId: string
@@ -41,7 +42,7 @@ interface GoogleForm {
   items?: GoogleFormItem[]
 }
 
-interface ImportedField {
+interface ImportedGoogleFormField {
   id: string
   uniqueIdentifier: string
   label: string
@@ -55,7 +56,7 @@ interface ImportedField {
 export interface GoogleFormsImportResult {
   title: string
   description: string
-  fields: ImportedField[]
+  pages: ImportedGoogleFormPage[]
   skippedItems: string[]
 }
 
@@ -143,7 +144,7 @@ function nextId(prefix: string): string {
   return `${prefix}_${crypto.randomUUID()}`
 }
 
-function mapQuestionItem(item: GoogleFormItem): ImportedField | null {
+function mapQuestionItem(item: GoogleFormItem): ImportedGoogleFormField | null {
   const question = item.questionItem?.question
   if (!question) return null
 
@@ -252,17 +253,27 @@ function getSkippedReason(item: GoogleFormItem): string | null {
 }
 
 export function convertGoogleForm(form: GoogleForm): GoogleFormsImportResult {
-  const fields: ImportedField[] = []
+  const pages: ImportedGoogleFormPage[] = [{ fields: [] }]
   const skippedItems: string[] = []
+  let currentPage = pages[0]
 
   for (const item of form.items || []) {
-    if (item.pageBreakItem || item.textItem) {
-      skippedItems.push(`\"${item.title || 'Untitled'}\" (Page break or text item — not supported)`)
+    if (item.pageBreakItem) {
+      currentPage = {
+        ...(item.title ? { title: item.title } : {}),
+        ...(item.description ? { description: item.description } : {}),
+        fields: [],
+      }
+      pages.push(currentPage)
+      continue
+    }
+    if (item.textItem) {
+      skippedItems.push(`\"${item.title || 'Untitled'}\" (Text item — not supported)`)
       continue
     }
     if (item.questionItem) {
       const mapped = mapQuestionItem(item)
-      if (mapped) fields.push(mapped)
+      if (mapped) currentPage.fields.push(mapped)
       else {
         const reason = getSkippedReason(item)
         skippedItems.push(reason || `\"${item.title || 'Untitled'}\" (Unsupported question type)`)
@@ -278,7 +289,7 @@ export function convertGoogleForm(form: GoogleForm): GoogleFormsImportResult {
   return {
     title: form.info.title || 'Imported Form',
     description: form.info.description || '',
-    fields,
+    pages,
     skippedItems,
   }
 }

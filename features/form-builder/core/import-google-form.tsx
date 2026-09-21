@@ -1,7 +1,7 @@
 'use client'
 
-import type { FieldConfig } from '@/features/form-builder/elements'
 import { GOOGLE_FORMS_IMPORT_OAUTH_RESULT_QUERY_PARAM } from '@/features/google-forms-import/constants'
+import type { ImportedGoogleFormPage } from '@/features/google-forms-import/types'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -26,7 +26,7 @@ interface ImportGoogleFormProps {
   onImported: (
     title: string,
     description: string,
-    fields: FieldConfig[],
+    pages: ImportedGoogleFormPage[],
   ) => void
   hasExistingContent?: boolean
 }
@@ -46,7 +46,7 @@ interface GoogleFormsListResponse {
 interface GoogleFormsImportResponse {
   title: string
   description: string
-  fields: FieldConfig[]
+  pages: ImportedGoogleFormPage[]
   skippedItems: string[]
 }
 
@@ -204,7 +204,11 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({
       }
 
       const data = await response.json() as GoogleFormsImportResponse
-      if (data.fields.length === 0) {
+      const importedFieldCount = data.pages.reduce(
+        (count, page) => count + page.fields.length,
+        0,
+      )
+      if (importedFieldCount === 0) {
         setHasAuthorization(false)
         setForms([])
         setNextPageToken(null)
@@ -216,7 +220,7 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({
         })
         return
       }
-      onImported(data.title, data.description || '', data.fields)
+      onImported(data.title, data.description || '', data.pages)
       setIsOpen(false)
       setForms([])
       setNextPageToken(null)
@@ -229,7 +233,7 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({
           duration: 8_000,
         })
       } else {
-        toast.success(`Imported “${data.title}” with ${data.fields.length} field(s)`)
+        toast.success(`Imported “${data.title}” with ${importedFieldCount} field(s)`)
       }
     } catch (error) {
       toast.error(

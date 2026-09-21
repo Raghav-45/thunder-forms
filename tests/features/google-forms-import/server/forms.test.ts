@@ -42,7 +42,8 @@ describe('Google Forms conversion', () => {
 
     expect(result.title).toBe('Team survey')
     expect(result.description).toBe('Tell us what you think.')
-    expect(result.fields).toEqual([
+    expect(result.pages).toEqual([{
+      fields: [
       expect.objectContaining({
         uniqueIdentifier: 'text-input',
         label: 'Your name',
@@ -53,7 +54,8 @@ describe('Google Forms conversion', () => {
         label: 'Tools',
         options: [{ label: 'Figma', value: 'figma' }],
       }),
-    ])
+      ],
+    }])
     expect(result.skippedItems).toEqual([
       '"Portfolio" (File upload — not supported)',
     ])
@@ -90,7 +92,7 @@ describe('Google Forms conversion', () => {
       ],
     })
 
-    expect(result.fields[0]).toEqual(
+    expect(result.pages[0].fields[0]).toEqual(
       expect.objectContaining({
         options: [
           { label: 'A/B', value: 'a_b' },
@@ -99,8 +101,58 @@ describe('Google Forms conversion', () => {
         ],
       }),
     )
-    expect(result.fields[1]).toEqual(
+    expect(result.pages[0].fields[1]).toEqual(
       expect.objectContaining({ min: 0, max: 10, defaultValue: 0 }),
     )
+  })
+
+  it('preserves Google Form page breaks and their titles', () => {
+    const result = convertGoogleForm({
+      formId: 'google-form-pages',
+      info: { title: 'Application' },
+      items: [
+        {
+          itemId: 'name',
+          title: 'Name',
+          questionItem: {
+            question: { questionId: 'name-question', textQuestion: {} },
+          },
+        },
+        {
+          itemId: 'work',
+          title: 'Work history',
+          description: 'Tell us about your experience.',
+          pageBreakItem: {},
+        },
+        {
+          itemId: 'company',
+          title: 'Company',
+          questionItem: {
+            question: { questionId: 'company-question', textQuestion: {} },
+          },
+        },
+        {
+          itemId: 'review',
+          title: 'Final review',
+          pageBreakItem: {},
+        },
+      ],
+    })
+
+    expect(result.pages).toEqual([
+      {
+        fields: [expect.objectContaining({ label: 'Name' })],
+      },
+      {
+        title: 'Work history',
+        description: 'Tell us about your experience.',
+        fields: [expect.objectContaining({ label: 'Company' })],
+      },
+      {
+        title: 'Final review',
+        fields: [],
+      },
+    ])
+    expect(result.skippedItems).toEqual([])
   })
 })

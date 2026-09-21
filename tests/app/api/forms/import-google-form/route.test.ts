@@ -68,7 +68,7 @@ describe('Google Forms import API', () => {
     mocks.importGoogleForm.mockResolvedValue({
       title: 'Customer survey',
       description: '',
-      fields: [],
+      pages: [{ fields: [] }],
       skippedItems: [],
     })
     const importRequest = request('http://localhost/api/forms/import-google-form', {

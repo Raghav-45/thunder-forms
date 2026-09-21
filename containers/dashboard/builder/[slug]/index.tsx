@@ -22,6 +22,7 @@ import {
 import { SettingsDialog } from '@/features/form-builder/components/settings-dialog'
 import { googleSheetsOAuthResultMessage } from '@/features/google-sheets/oauth-result'
 import { GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM } from '@/features/google-sheets/constants'
+import type { ImportedGoogleFormPage } from '@/features/google-forms-import/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -553,23 +554,49 @@ function BuilderContent({
     [resolvedActivePageId],
   )
 
-  const replaceWithImportedFields = useCallback(
-    (title: string, description: string, fields: FieldConfig[]) => {
+  const replaceWithImportedPages = useCallback(
+    (
+      title: string,
+      description: string,
+      importedPages: ImportedGoogleFormPage[],
+    ) => {
       // AI generation and Google import produce unvalidated payloads. Sanitize
       // before they enter builder state so unknown types or duplicate ids can
       // never brick the canvas.
-      const cleanFields = sanitizeImportedFields(fields)
-      if (cleanFields.length === 0) {
+      const pages = importedPages.map((importedPage, index) => {
+        const importedTitle = importedPage.title?.trim()
+        const sectionTitle = importedTitle || `Page ${index + 1}`
+        const pageDescription = importedPage.description?.trim()
+
+        return {
+          ...createPage(),
+          sections: [
+            {
+              ...createSection(),
+              title: sectionTitle,
+              ...(pageDescription ? { description: pageDescription } : {}),
+              fields: sanitizeImportedFields(importedPage.fields),
+            },
+          ],
+        }
+      })
+      const structure = { pages }
+      if (fieldCount(structure) === 0) {
         toast.error('Import produced no usable fields')
         return
       }
-      const page = createPage()
-      page.sections = [{ ...createSection(), fields: cleanFields }]
-      setFormStructure({ pages: [page] })
-      setActivePageId(page.id)
+      setFormStructure(structure)
+      setActivePageId(pages[0].id)
       setFormSettings({ ...formSettings, title, description })
     },
     [formSettings, setFormSettings],
+  )
+
+  const replaceWithImportedFields = useCallback(
+    (title: string, description: string, fields: FieldConfig[]) => {
+      replaceWithImportedPages(title, description, [{ fields }])
+    },
+    [replaceWithImportedPages],
   )
 
   const handleSaveForm = useCallback(async (afterSignIn = false) => {
@@ -913,7 +940,7 @@ function BuilderContent({
             <SettingsDialog formId={isExistingForm ? currentFormId : null} />
             <div className="flex-grow" />
             <ImportGoogleForm
-              onImported={replaceWithImportedFields}
+              onImported={replaceWithImportedPages}
               hasExistingContent={fieldCount(formStructure) > 0}
             />
             <GenerateWithAiPrompt onGeneratedFields={replaceWithImportedFields} />

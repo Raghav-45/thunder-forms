@@ -10,8 +10,10 @@ export interface FormSection {
 }
 
 export interface FormPage {
+  description?: string
   id: string
   sections: FormSection[]
+  title?: string
 }
 
 export interface FormStructure {
@@ -103,10 +105,12 @@ export function isFormStructure(value: unknown): value is FormStructure {
 
   return value.pages.every((page) => {
     if (
-      !isRecord(page) ||
-      !hasId(page.id) ||
-      !hasUniqueId(ids, page.id) ||
-      !Array.isArray(page.sections)
+        !isRecord(page) ||
+        !hasId(page.id) ||
+        !hasUniqueId(ids, page.id) ||
+        !Array.isArray(page.sections) ||
+        (page.title !== undefined && typeof page.title !== 'string') ||
+        (page.description !== undefined && typeof page.description !== 'string')
     ) {
       return false
     }

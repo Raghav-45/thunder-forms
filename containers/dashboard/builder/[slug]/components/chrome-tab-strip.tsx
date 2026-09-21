@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react'
 
 export interface ChromeTabStripPage {
   id: string
+  title?: string
 }
 
 interface ChromeTabStripProps {
@@ -54,6 +55,7 @@ export function ChromeTabStrip({
     >
       {pages.map((page, index) => {
         const isActive = page.id === activePageId
+        const pageTitle = page.title || `Page ${index + 1}`
 
         return (
           <div
@@ -90,11 +92,11 @@ export function ChromeTabStrip({
               )}
             />
             <span className="pointer-events-none relative z-10 flex-1 truncate font-medium tracking-wide">
-              Page {index + 1}
+              {pageTitle}
             </span>
             <button
               type="button"
-              aria-label={`Page ${index + 1}`}
+              aria-label={pageTitle}
               aria-current={isActive ? 'page' : undefined}
               onClick={() => onSelectPage(page.id)}
               className="absolute inset-0 z-[1] rounded-t-xl focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:outline-[#8ab4f8]"
@@ -102,8 +104,8 @@ export function ChromeTabStrip({
             {canRemovePage ? (
               <button
                 type="button"
-                aria-label={`Delete page ${index + 1}`}
-                title={`Delete page ${index + 1}`}
+                aria-label={`Delete ${pageTitle}`}
+                title={`Delete ${pageTitle}`}
                 onClick={() => onRemovePage(page.id)}
                 className={cn(
                   'relative z-20 -mr-1 grid size-5 shrink-0 place-items-center rounded-full text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-ring pointer-coarse:opacity-100',
