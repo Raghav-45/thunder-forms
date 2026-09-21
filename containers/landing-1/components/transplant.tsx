@@ -27,37 +27,24 @@ export function Transplant() {
       aria-labelledby="landing-1-transplant"
       className="container py-20 md:py-28"
     >
-      <p className="font-mono text-xs tracking-[0.3em] text-muted-foreground uppercase">
-        Thunder Forms — transplant service
-      </p>
       <h2
         id="landing-1-transplant"
-        className="font-anton mt-3 max-w-3xl text-4xl font-normal tracking-tight text-balance md:text-6xl"
+        className="max-w-3xl text-3xl font-semibold tracking-tight text-balance md:text-4xl"
       >
         Repot your Google Form. Roots intact.
       </h2>
-      <p className="mt-3 max-w-xl tracking-tight text-muted-foreground md:text-lg">
+      <p className="mt-3 max-w-xl leading-relaxed text-muted-foreground">
         Bring the form you already have. We move it into a stronger pot —
         same questions, better light.
       </p>
 
       <div className="mt-10 flex max-w-4xl flex-col border-t">
-        {BEDS.map((bed, i) => (
+        {BEDS.map((bed) => (
           <article
             key={bed.title}
-            aria-labelledby={`landing-1-bed-${i}`}
-            className="grid gap-2 border-b py-6 sm:grid-cols-[48px_1fr_2fr] sm:items-baseline sm:gap-6"
+            className="grid gap-2 border-b py-6 sm:grid-cols-[240px_1fr] sm:items-baseline sm:gap-6"
           >
-            <span
-              aria-hidden="true"
-              className="font-mono text-sm text-muted-foreground"
-            >
-              {`0${i + 1}`}
-            </span>
-            <h3
-              id={`landing-1-bed-${i}`}
-              className="flex items-center gap-2.5 text-xl font-semibold tracking-tight md:text-2xl"
-            >
+            <h3 className="flex items-center gap-2.5 text-xl font-semibold tracking-tight md:text-2xl">
               <bed.icon
                 className="size-5 shrink-0 text-muted-foreground"
                 aria-hidden="true"

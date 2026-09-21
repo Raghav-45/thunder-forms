@@ -71,7 +71,7 @@ export function Hero() {
           </header>
           <Badge
             variant="outline"
-            className="mx-auto mt-8 flex w-fit cursor-pointer items-center justify-center rounded-full border bg-black/60 py-1 pr-3 pl-2 font-normal shadow-[0_0_50px_rgba(32,32,32,1)] transition-all ease-in-out hover:gap-3"
+            className="mx-auto mt-8 flex w-fit cursor-pointer items-center justify-center rounded-full border bg-black/60 py-1 pr-3 pl-2 font-normal shadow-[0_8px_30px_rgba(0,0,0,0.45)] transition-all ease-in-out hover:gap-3"
           >
             <Avatar className="relative -mr-5 overflow-hidden rounded-full border md:size-10">
               <AvatarImage

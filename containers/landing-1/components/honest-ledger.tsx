@@ -40,16 +40,13 @@ export function HonestLedger() {
       aria-labelledby="landing-1-ledger"
       className="container py-20 md:py-28"
     >
-      <p className="font-mono text-xs tracking-[0.3em] text-muted-foreground uppercase">
-        Thunder Forms — the honest ledger
-      </p>
       <h2
         id="landing-1-ledger"
-        className="font-anton mt-3 max-w-2xl text-4xl font-normal tracking-tight text-balance md:text-6xl"
+        className="max-w-2xl text-3xl font-semibold tracking-tight text-balance md:text-4xl"
       >
         Retire the spreadsheet
       </h2>
-      <p className="mt-3 max-w-xl tracking-tight text-muted-foreground md:text-lg">
+      <p className="mt-3 max-w-xl leading-relaxed text-muted-foreground">
         Six jobs you do by hand today, and what they become. No rival named,
         no number invented.
       </p>
