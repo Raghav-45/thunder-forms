@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, LayoutTemplate } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -41,7 +41,7 @@ export function Capabilities() {
     <section aria-labelledby="capabilities-heading" className="container py-20 md:py-28">
       <h2
         id="capabilities-heading"
-        className="max-w-2xl text-3xl font-semibold tracking-tight text-balance md:text-4xl"
+        className="font-anton max-w-2xl text-4xl font-normal tracking-tight text-balance md:text-6xl"
       >
         Everything after the first sentence, covered
       </h2>
@@ -96,6 +96,7 @@ export function FinalCta() {
               'px-6'
             )}
           >
+            <LayoutTemplate className="size-4" />
             Browse templates
           </Link>
         </div>

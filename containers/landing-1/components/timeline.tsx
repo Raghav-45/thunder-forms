@@ -50,7 +50,7 @@ export function Timeline() {
             </span>
             <h2
               id={step.id}
-              className="-mt-6 text-3xl font-semibold tracking-tight text-balance md:-mt-8 md:text-4xl"
+              className="font-anton -mt-6 text-4xl font-normal tracking-tight text-balance md:-mt-8 md:text-5xl"
             >
               {step.title}
             </h2>

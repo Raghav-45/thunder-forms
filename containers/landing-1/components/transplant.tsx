@@ -29,7 +29,7 @@ export function Transplant() {
     >
       <h2
         id="landing-1-transplant"
-        className="max-w-3xl text-3xl font-semibold tracking-tight text-balance md:text-4xl"
+        className="font-anton max-w-3xl text-4xl font-normal tracking-tight text-balance md:text-6xl"
       >
         Repot your Google Form. Roots intact.
       </h2>

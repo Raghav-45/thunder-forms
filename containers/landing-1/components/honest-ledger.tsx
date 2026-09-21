@@ -42,7 +42,7 @@ export function HonestLedger() {
     >
       <h2
         id="landing-1-ledger"
-        className="max-w-2xl text-3xl font-semibold tracking-tight text-balance md:text-4xl"
+        className="font-anton max-w-2xl text-4xl font-normal tracking-tight text-balance md:text-6xl"
       >
         Retire the spreadsheet
       </h2>
