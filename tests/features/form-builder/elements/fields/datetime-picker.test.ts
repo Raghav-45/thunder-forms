@@ -1,4 +1,7 @@
-import { updateDateTimePart } from '@/features/form-builder/elements/fields/datetime-picker'
+import {
+  parseValidDate,
+  updateDateTimePart,
+} from '@/features/form-builder/elements/fields/datetime-picker'
 import { describe, expect, it } from 'vitest'
 
 const dateAt = (hours: number, minutes = 30) =>
@@ -52,4 +55,19 @@ describe('updateDateTimePart', () => {
     expect(updatedDate.getHours()).toBe(13)
     expect(updatedDate.getMinutes()).toBe(45)
   })
+})
+
+describe('date-time picker persisted values', () => {
+  it('accepts a valid serialized date-time', () => {
+    const date = parseValidDate('2026-01-15T13:30:00.000Z')
+
+    expect(date?.toISOString()).toBe('2026-01-15T13:30:00.000Z')
+  })
+
+  it.each([undefined, '', 'not-a-date', {}, 0])(
+    'treats malformed persisted values as unselected: %j',
+    (value) => {
+      expect(parseValidDate(value)).toBeUndefined()
+    },
+  )
 })

@@ -54,6 +54,17 @@ export interface DateTimePickerConfig extends BaseFieldConfig {
   maxDateTime?: string
 }
 
+export function parseValidDate(value: unknown): Date | undefined {
+  const date =
+    value instanceof Date
+      ? new Date(value)
+      : typeof value === 'string'
+        ? new Date(value)
+        : undefined
+
+  return date && !Number.isNaN(date.getTime()) ? date : undefined
+}
+
 type TimePart = 'hour' | 'minute' | 'ampm'
 
 export function updateDateTimePart(
@@ -93,16 +104,18 @@ const DateTimePopover: React.FC<{
   error?: boolean
   id?: string
 }> = ({ value, onChange, disabled, isDateDisabled, placeholder, error, id }) => {
+  const selectedDate = parseValidDate(value)
+
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
-      const newDate = value ? new Date(value) : new Date(date)
+      const newDate = selectedDate ? new Date(selectedDate) : new Date(date)
       newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate())
       onChange(newDate)
     }
   }
 
   const handleTimeChange = (type: TimePart, val: string) => {
-    const currentDate = value ? new Date(value) : new Date()
+    const currentDate = selectedDate ? new Date(selectedDate) : new Date()
     onChange(updateDateTimePart(currentDate, type, val))
   }
 
@@ -115,13 +128,13 @@ const DateTimePopover: React.FC<{
           disabled={disabled}
           className={cn(
             'w-full justify-start text-left font-normal',
-            !value && 'text-muted-foreground',
+            !selectedDate && 'text-muted-foreground',
             error && 'border-red-500 focus:border-red-500',
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {value ? (
-            format(value, 'MM/dd/yyyy hh:mm aa')
+          {selectedDate ? (
+            format(selectedDate, 'MM/dd/yyyy hh:mm aa')
           ) : (
             <span>{placeholder || 'Pick a date & time'}</span>
           )}
@@ -131,7 +144,7 @@ const DateTimePopover: React.FC<{
         <div className="sm:flex">
           <Calendar
             mode="single"
-            selected={value}
+            selected={selectedDate}
             onSelect={handleDateSelect}
             disabled={isDateDisabled}
             initialFocus
@@ -146,8 +159,8 @@ const DateTimePopover: React.FC<{
                       key={hour}
                       size="icon"
                       variant={
-                        value &&
-                        value.getHours() % 12 === hour % 12
+                        selectedDate &&
+                        selectedDate.getHours() % 12 === hour % 12
                           ? 'default'
                           : 'ghost'
                       }
@@ -167,7 +180,7 @@ const DateTimePopover: React.FC<{
                     key={minute}
                     size="icon"
                     variant={
-                      value && value.getMinutes() === minute
+                      selectedDate && selectedDate.getMinutes() === minute
                         ? 'default'
                         : 'ghost'
                     }
@@ -189,9 +202,9 @@ const DateTimePopover: React.FC<{
                     key={ampm}
                     size="icon"
                     variant={
-                      value &&
-                      ((ampm === 'AM' && value.getHours() < 12) ||
-                        (ampm === 'PM' && value.getHours() >= 12))
+                      selectedDate &&
+                      ((ampm === 'AM' && selectedDate.getHours() < 12) ||
+                        (ampm === 'PM' && selectedDate.getHours() >= 12))
                         ? 'default'
                         : 'ghost'
                     }
@@ -218,7 +231,7 @@ const DateTimePickerComponent: React.FC<FieldProps<DateTimePickerConfig>> = ({
   onChange,
   error,
 }) => {
-  const selectedDate = value ? new Date(value as string) : undefined
+  const selectedDate = parseValidDate(value)
   const inputId = `field-${field.id}`
 
   const isDateDisabled = (date: Date): boolean => {
@@ -229,15 +242,15 @@ const DateTimePickerComponent: React.FC<FieldProps<DateTimePickerConfig>> = ({
     if (field.disableFutureDates && date > today) return true
 
     // For min/max, disable days that are entirely outside the range
-    if (field.minDateTime) {
-      const minDate = new Date(field.minDateTime)
+    const minDate = parseValidDate(field.minDateTime)
+    if (minDate) {
       const minDay = new Date(minDate)
       minDay.setHours(0, 0, 0, 0)
       // Disable dates before the min date's day
       if (date < minDay) return true
     }
-    if (field.maxDateTime) {
-      const maxDate = new Date(field.maxDateTime)
+    const maxDate = parseValidDate(field.maxDateTime)
+    if (maxDate) {
       const maxDay = new Date(maxDate)
       maxDay.setHours(0, 0, 0, 0)
       // Disable dates after the max date's day
@@ -396,7 +409,7 @@ const DateTimePickerEditorComponent: React.FC<
                   defaultOpen={!!config.minDateTime}
                 >
                   <DateTimePopover
-                    value={config.minDateTime ? new Date(config.minDateTime) : undefined}
+                    value={parseValidDate(config.minDateTime)}
                     onChange={(date) =>
                       handleInputChange('minDateTime', date ? date.toISOString() : undefined)
                     }
@@ -409,7 +422,7 @@ const DateTimePickerEditorComponent: React.FC<
                   defaultOpen={!!config.maxDateTime}
                 >
                   <DateTimePopover
-                    value={config.maxDateTime ? new Date(config.maxDateTime) : undefined}
+                    value={parseValidDate(config.maxDateTime)}
                     onChange={(date) =>
                       handleInputChange('maxDateTime', date ? date.toISOString() : undefined)
                     }
@@ -496,8 +509,8 @@ export class DateTimePickerFieldDefinition extends FormFieldDefinition<DateTimeP
         return
       }
 
-      if (field.minDateTime) {
-        const minDate = new Date(field.minDateTime)
+      const minDate = parseValidDate(field.minDateTime)
+      if (minDate) {
         if (date < minDate) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -506,8 +519,8 @@ export class DateTimePickerFieldDefinition extends FormFieldDefinition<DateTimeP
         }
       }
 
-      if (field.maxDateTime) {
-        const maxDate = new Date(field.maxDateTime)
+      const maxDate = parseValidDate(field.maxDateTime)
+      if (maxDate) {
         if (date > maxDate) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,

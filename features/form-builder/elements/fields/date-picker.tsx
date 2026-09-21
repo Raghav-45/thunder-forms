@@ -62,6 +62,17 @@ export interface DatePickerConfig extends BaseFieldConfig {
   disableFutureDates?: boolean
 }
 
+export function parseValidDate(value: unknown): Date | undefined {
+  const date =
+    value instanceof Date
+      ? new Date(value)
+      : typeof value === 'string'
+        ? new Date(value)
+        : undefined
+
+  return date && !Number.isNaN(date.getTime()) ? date : undefined
+}
+
 // ─── Render Component ────────────────────────────────────
 
 const DatePickerComponent: React.FC<FieldProps<DatePickerConfig>> = ({
@@ -70,8 +81,10 @@ const DatePickerComponent: React.FC<FieldProps<DatePickerConfig>> = ({
   onChange,
   error,
 }) => {
-  const selectedDate = value ? new Date(value as string) : undefined
+  const selectedDate = parseValidDate(value)
   const dateFormat = field.dateFormat || 'PPP'
+  const minDate = parseValidDate(field.minDate)
+  const maxDate = parseValidDate(field.maxDate)
 
   const isDateDisabled = (date: Date): boolean => {
     const today = new Date()
@@ -79,8 +92,8 @@ const DatePickerComponent: React.FC<FieldProps<DatePickerConfig>> = ({
 
     if (field.disablePastDates && date < today) return true
     if (field.disableFutureDates && date > today) return true
-    if (field.minDate && date < new Date(field.minDate)) return true
-    if (field.maxDate && date > new Date(field.maxDate)) return true
+    if (minDate && date < minDate) return true
+    if (maxDate && date > maxDate) return true
 
     return false
   }
@@ -158,6 +171,8 @@ const DatePickerEditorComponent: React.FC<
   EditorProps<DatePickerConfig> & { isOpen: boolean }
 > = ({ field, onUpdate, onClose, isOpen }) => {
   const [config, setConfig] = useState<DatePickerConfig>(field)
+  const minDate = parseValidDate(config.minDate)
+  const maxDate = parseValidDate(config.maxDate)
 
   const handleSave = () => {
     onUpdate(config)
@@ -304,19 +319,17 @@ const DatePickerEditorComponent: React.FC<
                         variant="outline"
                         className={cn(
                           'w-full justify-start text-left font-normal',
-                          !config.minDate && 'text-muted-foreground',
+                          !minDate && 'text-muted-foreground',
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {config.minDate
-                          ? format(new Date(config.minDate), 'PPP')
-                          : 'Pick a date'}
+                        {minDate ? format(minDate, 'PPP') : 'Pick a date'}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={config.minDate ? new Date(config.minDate) : undefined}
+                        selected={minDate}
                         onSelect={(date) =>
                           handleInputChange('minDate', date ? date.toISOString() : undefined)
                         }
@@ -337,19 +350,17 @@ const DatePickerEditorComponent: React.FC<
                         variant="outline"
                         className={cn(
                           'w-full justify-start text-left font-normal',
-                          !config.maxDate && 'text-muted-foreground',
+                          !maxDate && 'text-muted-foreground',
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {config.maxDate
-                          ? format(new Date(config.maxDate), 'PPP')
-                          : 'Pick a date'}
+                        {maxDate ? format(maxDate, 'PPP') : 'Pick a date'}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={config.maxDate ? new Date(config.maxDate) : undefined}
+                        selected={maxDate}
                         onSelect={(date) =>
                           handleInputChange('maxDate', date ? date.toISOString() : undefined)
                         }
@@ -439,17 +450,19 @@ export class DatePickerFieldDefinition extends FormFieldDefinition<DatePickerCon
         return
       }
 
-      if (field.minDate && date < new Date(field.minDate)) {
+      const minDate = parseValidDate(field.minDate)
+      if (minDate && date < minDate) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `Date must be on or after ${format(new Date(field.minDate), 'PPP')}`,
+          message: `Date must be on or after ${format(minDate, 'PPP')}`,
         })
       }
 
-      if (field.maxDate && date > new Date(field.maxDate)) {
+      const maxDate = parseValidDate(field.maxDate)
+      if (maxDate && date > maxDate) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `Date must be on or before ${format(new Date(field.maxDate), 'PPP')}`,
+          message: `Date must be on or before ${format(maxDate, 'PPP')}`,
         })
       }
 
