@@ -46,6 +46,32 @@ Co-locate the config type, renderer, editor, small field-only helpers, and
 definition in the field file. Put reusable domain logic in a shared feature
 location only after a second consumer proves that it is shared.
 
+### File shape and field-specific value handling
+
+Keep the file easy to scan in this order: configuration/type declarations,
+field-only helpers, respondent renderer, editor (and an option-row component
+when needed), then the field definition. Most established fields mark these
+regions with `// ─── Config ───`, `// ─── Render Component ───`,
+`// ─── Editor Component ───`, and `// ─── Field Definition ───`. Use those
+dividers when they make a non-trivial field easier to navigate; do not add
+ceremonial comments to a tiny file.
+
+Answer defaults are semantic, not interchangeable. Copy the closest field's
+approach and verify its exact value shape:
+
+- a tri-state boolean uses `typeof value === 'boolean'` so unanswered is not
+  accidentally displayed as `false`;
+- a numeric text control may retain in-progress strings such as `'-'`, `'.'`,
+  or `'-.'` until blur/change can produce a number;
+- a multi-choice field first confirms `Array.isArray(value)` before treating
+  it as an array;
+- date, time, and datetime fields must round-trip the exact stored string
+  format, not a locale-formatted display value; and
+- a field with a configured default must distinguish an untouched answer from
+  the persisted answer before substituting that default.
+
+Do not copy one of these behaviours into a different answer model by habit.
+
 ### Configuration and answer data
 
 - Persist only JSON-safe configuration and answer values: strings, numbers,
@@ -121,13 +147,17 @@ second form-builder or a place for every imaginable option.
   the draft immediately and visibly. Example: changing a field mode can clear
   constraints that no longer apply. Never leave an impossible combination for
   the renderer or schema to guess about.
-- Namespace new editor DOM IDs with the field identifier (for example,
-  `rating-label`, `rating-required`). Existing generic IDs are legacy; do not
-  copy them into new fields because multiple editors may be mounted over time.
+- Follow the editor DOM-ID convention of the closest shipped field. The
+  existing sheet editors use shared IDs such as `field-label`,
+  `required-switch`, and `disabled-switch`; do not introduce a different
+  naming scheme without a demonstrated collision in the mounted UI.
 - For editable option lists, preserve stable option values while labels change.
-  Use the established dnd-kit sortable pattern only when ordering has product
-  meaning. Buttons need accessible names, and an option list must remain
-  usable without dragging.
+  Use the established dnd-kit shape only when ordering has product meaning:
+  a `SortableOptionItem` owns `useSortable`, its handle receives `handleRef`,
+  `DragDropProvider` owns the collection and `onDragEnd`, and `DragOverlay`
+  renders the active option. Retain the existing pointer distance/touch-delay
+  sensor behaviour, add/remove controls, and accessible button names. An
+  option list must remain usable without dragging.
 - Integrations or network actions in an editor are exceptional. They must be
   clearly scoped to the field, work with the builder's modal stack, handle
   loading/error/retry states, and never require a persisted form before the
@@ -161,8 +191,10 @@ only when it applies to the new field:
 
 1. Add the definition instance to `../index.ts` so it appears in the registry,
    palette, renderer lookup, editor lookup, and schema lookup.
-2. Add its identifier to `../../form-structure.ts` so persisted response
-   values can be recognised safely on the server.
+2. Add its identifier to the server-safe `KNOWN_FIELD_IDENTIFIERS` allow-list
+   in `../../form-structure.ts`. This is intentionally separate from the
+   client registry: API routes use it without importing client field modules.
+   It is not a second palette or renderer registry.
 3. Update `app/api/generatewithai/prompt.ts` only when AI generation can
    express the new field faithfully. Include concrete configuration limits;
    never ask AI to invent an unsupported shape.
