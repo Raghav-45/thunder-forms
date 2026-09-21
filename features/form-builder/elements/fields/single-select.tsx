@@ -2,6 +2,12 @@
 
 import { FormFieldDefinition } from '@/features/form-builder/elements/base'
 import {
+  type ChoiceOption,
+  createChoiceOptionId,
+  hasValidChoiceOptionValues,
+  isChoiceOptionValueInvalid,
+} from '@/features/form-builder/elements/choice-options'
+import {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
@@ -49,11 +55,7 @@ import { PointerSensor, PointerActivationConstraints, type Sensors } from '@dnd-
 
 // ─── Config ──────────────────────────────────────────────
 
-export interface SingleSelectOption {
-  label: string
-  value: string
-  disabled?: boolean
-}
+export type SingleSelectOption = ChoiceOption
 
 const FIELD_IDENTIFIER = 'single-select'
 
@@ -99,7 +101,7 @@ const SingleSelectComponent: React.FC<FieldProps<SingleSelectConfig>> = ({
         <SelectContent>
           {field.options.map((option) => (
             <SelectItem
-              key={option.value}
+              key={option.id}
               value={option.value}
               disabled={option.disabled}
             >
@@ -133,14 +135,16 @@ const SortableOptionItem = ({
   index,
   onUpdate,
   onRemove,
+  isValueInvalid,
 }: {
   option: SingleSelectOption
   index: number
   onUpdate: (index: number, updates: Partial<SingleSelectOption>) => void
   onRemove: (index: number) => void
+  isValueInvalid: boolean
 }) => {
   const { ref, handleRef, isDragging } = useSortable({
-    id: option.value,
+    id: option.id,
     index,
   })
 
@@ -172,8 +176,9 @@ const SortableOptionItem = ({
         onChange={(e) =>
           onUpdate(index, { value: e.target.value })
         }
-        placeholder="Option value"
-        className="text-sm"
+        placeholder="Option value (unique)"
+        className={`text-sm ${isValueInvalid ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+        aria-invalid={isValueInvalid}
       />
 
       <Switch
@@ -202,6 +207,7 @@ const SingleSelectEditorComponent: React.FC<
   EditorProps<SingleSelectConfig> & { isOpen: boolean }
 > = ({ field, onUpdate, onClose, isOpen }) => {
   const [config, setConfig] = useState<SingleSelectConfig>(field)
+  const hasValidOptionValues = hasValidChoiceOptionValues(config.options)
 
   const sensors = (defaults: Sensors) => [
     ...defaults.filter((sensor) => sensor !== PointerSensor),
@@ -221,6 +227,7 @@ const SingleSelectEditorComponent: React.FC<
   ]
 
   const handleSave = () => {
+    if (!hasValidOptionValues) return
     onUpdate(config)
     onClose()
   }
@@ -236,6 +243,7 @@ const SingleSelectEditorComponent: React.FC<
 
   const handleAddOption = () => {
     const newOption: SingleSelectOption = {
+      id: createChoiceOptionId(),
       label: 'New Option',
       value: `option_${crypto.randomUUID()}`,
       disabled: false,
@@ -350,17 +358,26 @@ const SingleSelectEditorComponent: React.FC<
                   </div>
 
                   <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {!hasValidOptionValues && (
+                      <p className="text-sm text-red-500" role="alert">
+                        Option values must be unique and cannot be blank.
+                      </p>
+                    )}
                     <DragDropProvider
                       sensors={sensors}
                       onDragEnd={handleDragEnd}
                     >
                       {config.options.map((option, index) => (
                         <SortableOptionItem
-                          key={option.value}
+                          key={option.id}
                           option={option}
                           index={index}
                           onUpdate={handleUpdateOption}
                           onRemove={handleRemoveOption}
+                          isValueInvalid={isChoiceOptionValueInvalid(
+                            option.value,
+                            config.options,
+                          )}
                         />
                       ))}
                       <DragOverlay>
@@ -368,7 +385,7 @@ const SingleSelectEditorComponent: React.FC<
                           if (!source) return null
 
                           const option = config.options.find(
-                            (o) => o.value === source.id,
+                            (o) => o.id === source.id,
                           )
                           if (!option) return null
 
@@ -377,10 +394,14 @@ const SingleSelectEditorComponent: React.FC<
                               <SortableOptionItem
                                 option={option}
                                 index={config.options.findIndex(
-                                  (o) => o.value === source.id,
+                                  (o) => o.id === source.id,
                                 )}
                                 onUpdate={handleUpdateOption}
-                                onRemove={handleRemoveOption}
+                              onRemove={handleRemoveOption}
+                              isValueInvalid={isChoiceOptionValueInvalid(
+                                option.value,
+                                config.options,
+                              )}
                               />
                             </div>
                           )
@@ -427,7 +448,10 @@ const SingleSelectEditorComponent: React.FC<
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={!config.label.trim()}>
+          <Button
+            onClick={handleSave}
+            disabled={!config.label.trim() || !hasValidOptionValues}
+          >
             Save Changes
           </Button>
         </SheetFooter>
@@ -454,15 +478,17 @@ export class SingleSelectFieldDefinition extends FormFieldDefinition<SingleSelec
       required: false,
       disabled: false,
       options: [
-        { label: 'Option 1', value: 'option_1' },
-        { label: 'Option 2', value: 'option_2' },
-        { label: 'Option 3', value: 'option_3' },
+        { id: createChoiceOptionId(), label: 'Option 1', value: 'option_1' },
+        { id: createChoiceOptionId(), label: 'Option 2', value: 'option_2' },
+        { id: createChoiceOptionId(), label: 'Option 3', value: 'option_3' },
       ],
     }
   }
 
   getValidationSchema(field: SingleSelectConfig): z.ZodTypeAny {
-    const validValues = field.options.map((opt) => opt.value)
+    const validValues = field.options
+      .filter((option) => !option.disabled)
+      .map((option) => option.value)
     const baseSchema = z.string().refine(
       (val) => validValues.includes(val),
       'Please select a valid option',

@@ -2,6 +2,12 @@
 
 import { FormFieldDefinition } from '@/features/form-builder/elements/base'
 import {
+  type ChoiceOption,
+  createChoiceOptionId,
+  hasValidChoiceOptionValues,
+  isChoiceOptionValueInvalid,
+} from '@/features/form-builder/elements/choice-options'
+import {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
@@ -46,11 +52,7 @@ import { PointerSensor, PointerActivationConstraints, type Sensors } from '@dnd-
 
 // ─── Config ──────────────────────────────────────────────
 
-export interface RadioOption {
-  label: string
-  value: string
-  disabled?: boolean
-}
+export type RadioOption = ChoiceOption
 
 const FIELD_IDENTIFIER = 'radio-group'
 
@@ -94,15 +96,15 @@ const RadioGroupComponent: React.FC<FieldProps<RadioGroupConfig>> = ({
         }
       >
         {field.options.map((option) => (
-          <div key={option.value} className="flex items-center space-x-2">
+          <div key={option.id} className="flex items-center space-x-2">
             <RadioGroupItem
               value={option.value}
-              id={`${inputId}-${option.value}`}
+              id={`${inputId}-${option.id}`}
               disabled={option.disabled}
               className={error ? 'border-red-500' : ''}
             />
             <Label
-              htmlFor={`${inputId}-${option.value}`}
+              htmlFor={`${inputId}-${option.id}`}
               className="text-sm font-normal cursor-pointer"
             >
               {option.label}
@@ -135,14 +137,16 @@ const SortableOptionItem = ({
   index,
   onUpdate,
   onRemove,
+  isValueInvalid,
 }: {
   option: RadioOption
   index: number
   onUpdate: (index: number, updates: Partial<RadioOption>) => void
   onRemove: (index: number) => void
+  isValueInvalid: boolean
 }) => {
   const { ref, handleRef, isDragging } = useSortable({
-    id: option.value,
+    id: option.id,
     index,
   })
 
@@ -170,8 +174,9 @@ const SortableOptionItem = ({
       <Input
         value={option.value}
         onChange={(e) => onUpdate(index, { value: e.target.value })}
-        placeholder="Option value"
-        className="text-sm"
+        placeholder="Option value (unique)"
+        className={`text-sm ${isValueInvalid ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+        aria-invalid={isValueInvalid}
       />
 
       <Switch
@@ -200,6 +205,7 @@ const RadioGroupEditorComponent: React.FC<
   EditorProps<RadioGroupConfig> & { isOpen: boolean }
 > = ({ field, onUpdate, onClose, isOpen }) => {
   const [config, setConfig] = useState<RadioGroupConfig>(field)
+  const hasValidOptionValues = hasValidChoiceOptionValues(config.options)
 
   const sensors = (defaults: Sensors) => [
     ...defaults.filter((sensor) => sensor !== PointerSensor),
@@ -219,6 +225,7 @@ const RadioGroupEditorComponent: React.FC<
   ]
 
   const handleSave = () => {
+    if (!hasValidOptionValues) return
     onUpdate(config)
     onClose()
   }
@@ -234,6 +241,7 @@ const RadioGroupEditorComponent: React.FC<
 
   const handleAddOption = () => {
     const newOption: RadioOption = {
+      id: createChoiceOptionId(),
       label: 'New Option',
       value: `option_${crypto.randomUUID()}`,
       disabled: false,
@@ -348,17 +356,26 @@ const RadioGroupEditorComponent: React.FC<
                   </div>
 
                   <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {!hasValidOptionValues && (
+                      <p className="text-sm text-red-500" role="alert">
+                        Option values must be unique and cannot be blank.
+                      </p>
+                    )}
                     <DragDropProvider
                       sensors={sensors}
                       onDragEnd={handleDragEnd}
                     >
                       {config.options.map((option, index) => (
                         <SortableOptionItem
-                          key={option.value}
+                          key={option.id}
                           option={option}
                           index={index}
                           onUpdate={handleUpdateOption}
                           onRemove={handleRemoveOption}
+                          isValueInvalid={isChoiceOptionValueInvalid(
+                            option.value,
+                            config.options,
+                          )}
                         />
                       ))}
                       <DragOverlay>
@@ -366,7 +383,7 @@ const RadioGroupEditorComponent: React.FC<
                           if (!source) return null
 
                           const option = config.options.find(
-                            (o) => o.value === source.id,
+                            (o) => o.id === source.id,
                           )
                           if (!option) return null
 
@@ -375,10 +392,14 @@ const RadioGroupEditorComponent: React.FC<
                               <SortableOptionItem
                                 option={option}
                                 index={config.options.findIndex(
-                                  (o) => o.value === source.id,
+                                  (o) => o.id === source.id,
                                 )}
                                 onUpdate={handleUpdateOption}
-                                onRemove={handleRemoveOption}
+                              onRemove={handleRemoveOption}
+                              isValueInvalid={isChoiceOptionValueInvalid(
+                                option.value,
+                                config.options,
+                              )}
                               />
                             </div>
                           )
@@ -425,7 +446,10 @@ const RadioGroupEditorComponent: React.FC<
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={!config.label.trim()}>
+          <Button
+            onClick={handleSave}
+            disabled={!config.label.trim() || !hasValidOptionValues}
+          >
             Save Changes
           </Button>
         </SheetFooter>
@@ -452,15 +476,17 @@ export class RadioGroupFieldDefinition extends FormFieldDefinition<RadioGroupCon
       disabled: false,
       orientation: 'vertical',
       options: [
-        { label: 'Option A', value: 'option_a' },
-        { label: 'Option B', value: 'option_b' },
-        { label: 'Option C', value: 'option_c' },
+        { id: createChoiceOptionId(), label: 'Option A', value: 'option_a' },
+        { id: createChoiceOptionId(), label: 'Option B', value: 'option_b' },
+        { id: createChoiceOptionId(), label: 'Option C', value: 'option_c' },
       ],
     }
   }
 
   getValidationSchema(field: RadioGroupConfig): z.ZodTypeAny {
-    const validValues = field.options.map((opt) => opt.value)
+    const validValues = field.options
+      .filter((option) => !option.disabled)
+      .map((option) => option.value)
     const baseSchema = z.string().refine(
       (val) => validValues.includes(val),
       'Please select a valid option',

@@ -42,7 +42,11 @@ describe('Google Forms conversion', () => {
       expect.objectContaining({
         uniqueIdentifier: 'multi-select',
         label: 'Tools',
-        options: [{ label: 'Figma', value: 'figma' }],
+        options: [expect.objectContaining({
+          id: expect.any(String),
+          label: 'Figma',
+          value: 'figma',
+        })],
       }),
       ],
     }])
@@ -153,9 +157,21 @@ describe('Google Forms conversion', () => {
     expect(result.pages[0].fields[0]).toEqual(
       expect.objectContaining({
         options: [
-          { label: 'A/B', value: 'a_b' },
-          { label: 'A B', value: 'a_b_2' },
-          { label: ' हिन्दी ', value: 'option_3' },
+          expect.objectContaining({
+            id: expect.any(String),
+            label: 'A/B',
+            value: 'a_b',
+          }),
+          expect.objectContaining({
+            id: expect.any(String),
+            label: 'A B',
+            value: 'a_b_2',
+          }),
+          expect.objectContaining({
+            id: expect.any(String),
+            label: ' हिन्दी ',
+            value: 'option_3',
+          }),
         ],
       }),
     )

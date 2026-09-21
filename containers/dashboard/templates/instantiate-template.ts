@@ -7,6 +7,7 @@ import {
   type FormSection,
   type FormStructure,
 } from '@/features/form-builder/form-structure'
+import { normalizeChoiceOptions } from '@/features/form-builder/elements/choice-options'
 import type { AvailableFieldsType } from '@/features/form-builder/types'
 import { createDefaultFieldConfig } from '@/features/form-builder/utils/helperFunctions'
 import type { FormTemplateSpec } from './types'
@@ -47,7 +48,7 @@ export function instantiateTemplate(
                 field.required = spec.required
               }
               if (spec.options !== undefined && 'options' in field) {
-                field.options = spec.options
+                field.options = normalizeChoiceOptions(spec.options)
               }
               if (spec.inputType !== undefined && 'inputType' in field) {
                 field.inputType = spec.inputType

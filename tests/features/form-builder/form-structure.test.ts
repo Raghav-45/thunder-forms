@@ -150,6 +150,40 @@ describe('form structure', () => {
     ).toBe(false)
   })
 
+  it('rejects choice options without unique nonblank values and IDs', () => {
+    const validChoiceField = {
+      id: 'field',
+      label: 'Choose one',
+      uniqueIdentifier: 'single-select',
+      options: [
+        { id: 'option-a', label: 'A', value: 'a' },
+        { id: 'option-b', label: 'B', value: 'b' },
+      ],
+    }
+    const withOptions = (options: unknown) => ({
+      pages: [{ id: 'page', sections: [{ id: 'section', fields: [{ ...validChoiceField, options }] }] }],
+    })
+
+    expect(isFormStructure(withOptions(validChoiceField.options))).toBe(true)
+    expect(
+      isFormStructure(withOptions([
+        { id: 'option-a', label: 'A', value: 'same' },
+        { id: 'option-b', label: 'B', value: 'same' },
+      ])),
+    ).toBe(false)
+    expect(
+      isFormStructure(withOptions([
+        { id: 'option-a', label: 'A', value: ' ' },
+      ])),
+    ).toBe(false)
+    expect(
+      isFormStructure(withOptions([
+        { id: 'option-a', label: 'A', value: 'a' },
+        { id: 'option-a', label: 'B', value: 'b' },
+      ])),
+    ).toBe(false)
+  })
+
   it('rejects missing collections and every kind of duplicate identifier', () => {
     expect(isFormStructure(null)).toBe(false)
     expect(isFormStructure({ pages: 'not-an-array' })).toBe(false)

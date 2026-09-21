@@ -3,6 +3,7 @@ import {
   normalizeFileUploadMaxFiles,
   normalizeFileUploadMaxSizeBytes,
 } from '@/features/file-uploads/constants'
+import { createChoiceOptionId } from '@/features/form-builder/elements/choice-options'
 import type { ImportedGoogleFormPage } from '@/features/google-forms-import/types'
 
 interface GoogleFormItem {
@@ -144,7 +145,7 @@ function mapChoiceOptions(
         suffix += 1
       }
       usedValues.add(value)
-      return { label, value }
+      return { id: createChoiceOptionId(), label, value }
     })
 }
 

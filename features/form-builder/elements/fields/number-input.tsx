@@ -2,6 +2,10 @@
 
 import { FormFieldDefinition } from '@/features/form-builder/elements/base'
 import {
+  isOnStep,
+  isPositiveFiniteNumber,
+} from '@/features/form-builder/elements/number-constraints'
+import {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
@@ -40,6 +44,11 @@ export interface NumberInputConfig extends BaseFieldConfig {
   allowDecimals?: boolean
 }
 
+function getStep(field: NumberInputConfig): number | undefined {
+  if (isPositiveFiniteNumber(field.step)) return field.step
+  return field.allowDecimals ? undefined : 1
+}
+
 // ─── Render Component ────────────────────────────────────
 
 const NumberInputComponent: React.FC<FieldProps<NumberInputConfig>> = ({
@@ -71,6 +80,7 @@ const NumberInputComponent: React.FC<FieldProps<NumberInputConfig>> = ({
   }
 
   const inputId = `field-${field.id}`
+  const step = getStep(field)
 
   return (
     <div className="space-y-2">
@@ -96,7 +106,7 @@ const NumberInputComponent: React.FC<FieldProps<NumberInputConfig>> = ({
         required={field.required}
         min={field.min}
         max={field.max}
-        step={field.step || (field.allowDecimals ? 'any' : 1)}
+        step={step ?? 'any'}
         className={error ? 'border-red-500 focus:border-red-500' : ''}
       />
 
@@ -325,6 +335,7 @@ export class NumberInputFieldDefinition extends FormFieldDefinition<NumberInputC
 
   getValidationSchema(field: NumberInputConfig): z.ZodTypeAny {
     let schema = z.number({ invalid_type_error: 'Must be a number' })
+    const step = getStep(field)
 
     if (!field.allowDecimals) {
       schema = schema.int('Must be a whole number')
@@ -334,6 +345,13 @@ export class NumberInputFieldDefinition extends FormFieldDefinition<NumberInputC
     }
     if (field.max !== undefined) {
       schema = schema.max(field.max, `Must be at most ${field.max}`)
+    }
+    if (step !== undefined) {
+      const stepBase = field.min ?? 0
+      schema = schema.refine(
+        (value) => isOnStep(value, step, stepBase),
+        `Must increment by ${step}`,
+      )
     }
 
     return field.required ? schema : schema.optional()

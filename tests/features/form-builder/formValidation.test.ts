@@ -113,6 +113,109 @@ describe('validateFormFields with untouched optional fields', () => {
     })
   })
 
+  it('enforces configured number and slider increments', () => {
+    const fields = [
+      field(
+        'amount',
+        'number-input',
+        { allowDecimals: true, min: 0.1, max: 1, step: 0.25 },
+        true,
+      ),
+      field(
+        'volume',
+        'slider',
+        { min: 0.1, max: 1, step: 0.25 },
+        true,
+      ),
+    ]
+
+    expect(validateFormFields(fields, { amount: 0.35, volume: 0.6 })).toEqual({})
+    expect(validateFormFields(fields, { amount: 0.4, volume: 0.4 })).toEqual({
+      amount: 'Must increment by 0.25',
+      volume: 'Value must increment by 0.25',
+    })
+  })
+
+  it('rejects disabled configured choices', () => {
+    const fields = [
+      field(
+        'plan',
+        'single-select',
+        {
+          options: [
+            { id: 'free', label: 'Free', value: 'free' },
+            { id: 'pro', label: 'Pro', value: 'pro', disabled: true },
+          ],
+        },
+        true,
+      ),
+      field(
+        'contact',
+        'radio-group',
+        {
+          options: [
+            { id: 'email', label: 'Email', value: 'email' },
+            { id: 'phone', label: 'Phone', value: 'phone', disabled: true },
+          ],
+        },
+        true,
+      ),
+      field(
+        'tools',
+        'multi-select',
+        {
+          allowCustomValues: false,
+          options: [
+            { id: 'figma', label: 'Figma', value: 'figma' },
+            { id: 'sketch', label: 'Sketch', value: 'sketch', disabled: true },
+          ],
+        },
+        true,
+      ),
+    ]
+
+    expect(
+      validateFormFields(fields, {
+        plan: 'pro',
+        contact: 'phone',
+        tools: ['sketch'],
+      }),
+    ).toEqual({
+      plan: 'Please select a valid option',
+      contact: 'Please select a valid option',
+      tools: 'Invalid option selected',
+    })
+    expect(
+      validateFormFields(fields, {
+        plan: 'free',
+        contact: 'email',
+        tools: ['figma'],
+      }),
+    ).toEqual({})
+  })
+
+  it('allows custom multi-select values but rejects disabled configured values', () => {
+    const fields = [
+      field(
+        'tags',
+        'multi-select',
+        {
+          allowCustomValues: true,
+          options: [
+            { id: 'open', label: 'Open', value: 'open' },
+            { id: 'closed', label: 'Closed', value: 'closed', disabled: true },
+          ],
+        },
+        true,
+      ),
+    ]
+
+    expect(validateFormFields(fields, { tags: ['custom-tag'] })).toEqual({})
+    expect(validateFormFields(fields, { tags: ['closed'] })).toEqual({
+      tags: 'Invalid option selected',
+    })
+  })
+
   it('requires valid server-issued file upload receipts', () => {
     const files = [field('portfolio', 'file-upload', { maxFiles: 1 }, true)]
     const validReceipt = {

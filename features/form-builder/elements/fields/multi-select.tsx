@@ -2,6 +2,12 @@
 
 import { FormFieldDefinition } from '@/features/form-builder/elements/base'
 import {
+  type ChoiceOption,
+  createChoiceOptionId,
+  hasValidChoiceOptionValues,
+  isChoiceOptionValueInvalid,
+} from '@/features/form-builder/elements/choice-options'
+import {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
@@ -58,11 +64,7 @@ import { PointerSensor, PointerActivationConstraints, type Sensors } from '@dnd-
 
 // ─── Config ──────────────────────────────────────────────
 
-export interface SelectOption {
-  label: string
-  value: string
-  disabled?: boolean
-}
+export type SelectOption = ChoiceOption
 
 const FIELD_IDENTIFIER = 'multi-select'
 
@@ -122,7 +124,7 @@ const MultiSelectComponent: React.FC<FieldProps<MultiSelectConfig>> = ({
   const getSelectedOptions = () => {
     return selectedValues.map((val) => {
       const option = field.options.find((opt) => opt.value === val)
-      return option || { label: val, value: val }
+      return option || { id: `custom:${val}`, label: val, value: val }
     })
   }
 
@@ -155,7 +157,7 @@ const MultiSelectComponent: React.FC<FieldProps<MultiSelectConfig>> = ({
         {selectedValues.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {getSelectedOptions().map((option) => (
-              <Badge key={option.value} variant="secondary" className="text-xs">
+              <Badge key={option.id} variant="secondary" className="text-xs">
                 {option.label}
                 <button
                   type="button"
@@ -217,7 +219,7 @@ const MultiSelectComponent: React.FC<FieldProps<MultiSelectConfig>> = ({
               <CommandGroup className="max-h-64 overflow-auto">
                 {getAvailableOptions().map((option) => (
                   <CommandItem
-                    key={option.value}
+                    key={option.id}
                     value={option.value}
                     onSelect={() => handleSelect(option.value)}
                     disabled={option.disabled}
@@ -263,14 +265,16 @@ const SortableOptionItem = ({
   index,
   onUpdate,
   onRemove,
+  isValueInvalid,
 }: {
   option: SelectOption
   index: number
   onUpdate: (index: number, updates: Partial<SelectOption>) => void
   onRemove: (index: number) => void
+  isValueInvalid: boolean
 }) => {
   const { ref, handleRef, isDragging } = useSortable({
-    id: option.value,
+    id: option.id,
     index,
   })
 
@@ -306,8 +310,9 @@ const SortableOptionItem = ({
             value: e.target.value,
           })
         }
-        placeholder="Option value"
-        className="text-sm"
+        placeholder="Option value (unique)"
+        className={`text-sm ${isValueInvalid ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+        aria-invalid={isValueInvalid}
       />
 
       <Switch
@@ -336,6 +341,7 @@ const MultiSelectEditorComponent: React.FC<
   EditorProps<MultiSelectConfig> & { isOpen: boolean }
 > = ({ field, onUpdate, onClose, isOpen }) => {
   const [config, setConfig] = useState<MultiSelectConfig>(field)
+  const hasValidOptionValues = hasValidChoiceOptionValues(config.options)
 
   const sensors = (defaults: Sensors) => [
     ...defaults.filter((sensor) => sensor !== PointerSensor),
@@ -355,6 +361,7 @@ const MultiSelectEditorComponent: React.FC<
   ]
 
   const handleSave = () => {
+    if (!hasValidOptionValues) return
     onUpdate(config)
     onClose()
   }
@@ -373,6 +380,7 @@ const MultiSelectEditorComponent: React.FC<
 
   const handleAddOption = () => {
     const newOption: SelectOption = {
+      id: createChoiceOptionId(),
       label: 'New Option',
       value: `option_${crypto.randomUUID()}`,
       disabled: false,
@@ -491,17 +499,26 @@ const MultiSelectEditorComponent: React.FC<
                   </div>
 
                   <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {!hasValidOptionValues && (
+                      <p className="text-sm text-red-500" role="alert">
+                        Option values must be unique and cannot be blank.
+                      </p>
+                    )}
                     <DragDropProvider
                       sensors={sensors}
                       onDragEnd={handleDragEnd}
                     >
                       {config.options.map((option, index) => (
                         <SortableOptionItem
-                          key={option.value}
+                          key={option.id}
                           option={option}
                           index={index}
                           onUpdate={handleUpdateOption}
                           onRemove={handleRemoveOption}
+                          isValueInvalid={isChoiceOptionValueInvalid(
+                            option.value,
+                            config.options,
+                          )}
                         />
                       ))}
                       <DragOverlay>
@@ -509,7 +526,7 @@ const MultiSelectEditorComponent: React.FC<
                           if (!source) return null
 
                           const option = config.options.find(
-                            (o) => o.value === source.id,
+                            (o) => o.id === source.id,
                           )
                           if (!option) return null
 
@@ -518,10 +535,14 @@ const MultiSelectEditorComponent: React.FC<
                               <SortableOptionItem
                                 option={option}
                                 index={config.options.findIndex(
-                                  (o) => o.value === source.id,
+                                  (o) => o.id === source.id,
                                 )}
                                 onUpdate={handleUpdateOption}
-                                onRemove={handleRemoveOption}
+                              onRemove={handleRemoveOption}
+                              isValueInvalid={isChoiceOptionValueInvalid(
+                                option.value,
+                                config.options,
+                              )}
                               />
                             </div>
                           )
@@ -627,7 +648,10 @@ const MultiSelectEditorComponent: React.FC<
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={!config.label.trim()}>
+          <Button
+            onClick={handleSave}
+            disabled={!config.label.trim() || !hasValidOptionValues}
+          >
             Save Changes
           </Button>
         </SheetFooter>
@@ -654,11 +678,11 @@ export class MultiSelectFieldDefinition extends FormFieldDefinition<MultiSelectC
       required: false,
       disabled: false,
       options: [
-        { label: 'Apple', value: 'apple' },
-        { label: 'Banana', value: 'banana' },
-        { label: 'Blueberry', value: 'blueberry' },
-        { label: 'Grapes', value: 'grapes' },
-        { label: 'Pineapple', value: 'pineapple' },
+        { id: createChoiceOptionId(), label: 'Apple', value: 'apple' },
+        { id: createChoiceOptionId(), label: 'Banana', value: 'banana' },
+        { id: createChoiceOptionId(), label: 'Blueberry', value: 'blueberry' },
+        { id: createChoiceOptionId(), label: 'Grapes', value: 'grapes' },
+        { id: createChoiceOptionId(), label: 'Pineapple', value: 'pineapple' },
       ],
       searchable: true,
       allowCustomValues: false,
@@ -685,14 +709,26 @@ export class MultiSelectFieldDefinition extends FormFieldDefinition<MultiSelectC
       )
     }
 
-    if (!field.allowCustomValues) {
-      const validValues = field.options.map((opt) => opt.value)
-      schema = schema.refine(
-        (values) =>
-          (values as string[]).every((val) => validValues.includes(val)),
-        'Invalid option selected',
-      )
-    }
+    const disabledValues = new Set(
+      field.options
+        .filter((option) => option.disabled)
+        .map((option) => option.value),
+    )
+    const enabledValues = new Set(
+      field.options
+        .filter((option) => !option.disabled)
+        .map((option) => option.value),
+    )
+
+    schema = schema.refine(
+      (values) =>
+        (values as string[]).every(
+          (value) =>
+            !disabledValues.has(value) &&
+            (field.allowCustomValues || enabledValues.has(value)),
+        ),
+      'Invalid option selected',
+    )
 
     return field.required ? schema : schema.optional()
   }

@@ -1,6 +1,10 @@
 import {
   type FieldConfig,
 } from '@/features/form-builder/elements'
+import {
+  hasValidChoiceOptions,
+  normalizeChoiceOptions,
+} from '@/features/form-builder/elements/choice-options'
 
 export interface FormSection {
   description?: string
@@ -44,6 +48,12 @@ const KNOWN_FIELD_IDENTIFIERS = new Set<string>([
   'rating',
 ])
 
+const CHOICE_FIELD_IDENTIFIERS = new Set<string>([
+  'multi-select',
+  'single-select',
+  'radio-group',
+])
+
 const createId = () => crypto.randomUUID()
 
 const isRecord = (value: unknown): value is UnknownRecord =>
@@ -57,7 +67,12 @@ const isKnownField = (value: unknown): value is FieldConfig => {
     return false
   }
 
-  return KNOWN_FIELD_IDENTIFIERS.has(value.uniqueIdentifier)
+  if (!KNOWN_FIELD_IDENTIFIERS.has(value.uniqueIdentifier)) return false
+
+  return (
+    !CHOICE_FIELD_IDENTIFIERS.has(value.uniqueIdentifier) ||
+    hasValidChoiceOptions(value.options)
+  )
 }
 
 export function isKnownFieldIdentifier(value: unknown): boolean {
@@ -163,6 +178,10 @@ export function sanitizeImportedFields(value: unknown): FieldConfig[] {
     const field = entry as unknown as FieldConfig
     if (!hasId(field.id) || seen.has(field.id)) {
       field.id = `imported_${createId()}`
+    }
+    if (CHOICE_FIELD_IDENTIFIERS.has(field.uniqueIdentifier)) {
+      const mutableField = field as unknown as UnknownRecord
+      mutableField.options = normalizeChoiceOptions(mutableField.options)
     }
     seen.add(field.id)
     clean.push(field)

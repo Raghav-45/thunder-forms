@@ -2,6 +2,10 @@
 
 import { FormFieldDefinition } from '@/features/form-builder/elements/base'
 import {
+  isOnStep,
+  isPositiveFiniteNumber,
+} from '@/features/form-builder/elements/number-constraints'
+import {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
@@ -46,6 +50,10 @@ export interface SliderConfig extends BaseFieldConfig {
   defaultValue?: number
 }
 
+function getStep(field: SliderConfig): number {
+  return isPositiveFiniteNumber(field.step) ? field.step : 1
+}
+
 // ─── Render Component ────────────────────────────────────
 
 const SliderComponent: React.FC<FieldProps<SliderConfig>> = ({
@@ -56,7 +64,7 @@ const SliderComponent: React.FC<FieldProps<SliderConfig>> = ({
 }) => {
   const min = field.min ?? 0
   const max = field.max ?? 100
-  const step = field.step ?? 1
+  const step = getStep(field)
   const currentValue = typeof value === 'number' ? value : (field.defaultValue ?? min)
   const inputId = `field-${field.id}`
 
@@ -344,11 +352,16 @@ export class SliderFieldDefinition extends FormFieldDefinition<SliderConfig> {
   getValidationSchema(field: SliderConfig): z.ZodTypeAny {
     const min = field.min ?? 0
     const max = field.max ?? 100
+    const step = getStep(field)
 
     const schema = z
       .number({ required_error: `${field.label} is required` })
       .min(min, `Value must be at least ${min}`)
       .max(max, `Value must be at most ${max}`)
+      .refine(
+        (value) => isOnStep(value, step, min),
+        `Value must increment by ${step}`,
+      )
 
     return field.required ? schema : (schema as z.ZodTypeAny).optional()
   }
