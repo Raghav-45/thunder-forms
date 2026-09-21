@@ -27,7 +27,8 @@ export function SaveFormLoginDialog({
           Sign in without leaving your unfinished form.
         </DialogDescription>
         <LoginForm
-          className="gap-0 [&>div:first-child]:rounded-b-none [&>div:first-child]:border-0 [&>div:first-child]:shadow-none [&>div:last-child]:px-6 [&>div:last-child]:pb-6"
+          className="gap-0 [&>div:first-child]:rounded-b-none [&>div:first-child]:border-0 [&>div:first-child]:shadow-none"
+          showLegalNotice={false}
           onSuccess={() => {
             onOpenChange(false)
             onSignedIn()
