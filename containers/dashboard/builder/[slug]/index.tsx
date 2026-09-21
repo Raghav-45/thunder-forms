@@ -6,7 +6,6 @@ import type { FieldConfig } from '@/features/form-builder/elements'
 import {
   getOrderedFormFields,
   isFormStructure,
-  sanitizeImportedFields,
   type FormStructure as PersistedFormStructure,
 } from '@/features/form-builder/form-structure'
 import { CopyButton } from '@/features/form-builder/components/copy-button'
@@ -81,6 +80,7 @@ import {
   PALETTE_SECTION_TYPE,
   SECTION_TYPE,
   createPage,
+  createImportedGoogleFormStructure,
   createSection,
   fieldCount,
   findField,
@@ -563,30 +563,13 @@ function BuilderContent({
       // AI generation and Google import produce unvalidated payloads. Sanitize
       // before they enter builder state so unknown types or duplicate ids can
       // never brick the canvas.
-      const pages = importedPages.map((importedPage, index) => {
-        const importedTitle = importedPage.title?.trim()
-        const sectionTitle = importedTitle || `Page ${index + 1}`
-        const pageDescription = importedPage.description?.trim()
-
-        return {
-          ...createPage(),
-          sections: [
-            {
-              ...createSection(),
-              title: sectionTitle,
-              ...(pageDescription ? { description: pageDescription } : {}),
-              fields: sanitizeImportedFields(importedPage.fields),
-            },
-          ],
-        }
-      })
-      const structure = { pages }
+      const structure = createImportedGoogleFormStructure(importedPages)
       if (fieldCount(structure) === 0) {
         toast.error('Import produced no usable fields')
         return
       }
       setFormStructure(structure)
-      setActivePageId(pages[0].id)
+      setActivePageId(structure.pages[0].id)
       setFormSettings({ ...formSettings, title, description })
     },
     [formSettings, setFormSettings],

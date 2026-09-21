@@ -2,10 +2,12 @@ import type { FieldConfig } from '@/features/form-builder/elements'
 import {
   createFormPage,
   createFormSection,
+  sanitizeImportedFields,
   type FormPage,
   type FormSection,
   type FormStructure,
 } from '@/features/form-builder/form-structure'
+import type { ImportedGoogleFormPage } from '@/features/google-forms-import/types'
 
 export type { FormPage, FormSection, FormStructure }
 
@@ -33,6 +35,40 @@ const isString = (value: unknown): value is string => typeof value === 'string'
 export const createSection = (): FormSection => createFormSection()
 
 export const createPage = (): FormPage => createFormPage()
+
+const hasVisibleText = (value: string | undefined): value is string =>
+  Boolean(value?.trim())
+
+/**
+ * Google Forms page breaks become one builder page with one section. Empty
+ * source pages contain nothing ThunderForms can render, so omit them rather
+ * than creating a blank step for respondents.
+ */
+export function createImportedGoogleFormStructure(
+  importedPages: ImportedGoogleFormPage[],
+): FormStructure {
+  const pages: FormPage[] = []
+
+  for (const importedPage of importedPages) {
+    const fields = sanitizeImportedFields(importedPage.fields)
+    const hasTitle = hasVisibleText(importedPage.title)
+    const hasDescription = hasVisibleText(importedPage.description)
+
+    if (fields.length === 0 && !hasTitle && !hasDescription) continue
+
+    const pageNumber = pages.length + 1
+    const section: FormSection = {
+      ...createSection(),
+      title: hasTitle ? importedPage.title : `Page ${pageNumber}`,
+      ...(hasDescription ? { description: importedPage.description } : {}),
+      fields,
+    }
+
+    pages.push({ ...createPage(), sections: [section] })
+  }
+
+  return { pages }
+}
 
 export function getPage(
   structure: FormStructure,
