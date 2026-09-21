@@ -3,7 +3,15 @@ import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "@/lib/prisma"
 import { nextCookies } from "better-auth/next-js"
 
+const trustedOrigins = ["https://thunderforms.in", "https://www.thunderforms.in"]
+
+if (process.env.NODE_ENV !== "production") {
+  trustedOrigins.push("http://localhost:3000", "http://localhost:3001")
+}
+
 export const auth = betterAuth({
+  baseURL: process.env.BETTER_AUTH_URL,
+  trustedOrigins,
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
