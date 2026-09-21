@@ -15,7 +15,9 @@ import { NextRequest, NextResponse } from 'next/server'
 function googleErrorStatus(error: unknown): number | null {
   if (typeof error !== 'object' || error === null) return null
   const response = (error as { response?: { status?: unknown } }).response
-  return typeof response?.status === 'number' ? response.status : null
+  if (typeof response?.status === 'number') return response.status
+  const code = (error as { code?: unknown }).code
+  return typeof code === 'number' ? code : null
 }
 
 function isGoogleFormId(value: unknown): value is string {
@@ -83,7 +85,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { formId } = await request.json()
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid import request' },
+        { status: 400 },
+      )
+    }
+    const formId = body && typeof body === 'object' && 'formId' in body
+      ? body.formId
+      : undefined
     if (!isGoogleFormId(formId)) {
       return NextResponse.json(
         { error: 'Invalid Google Form selection' },

@@ -101,4 +101,34 @@ describe('Google Forms import API', () => {
     expect(response.status).toBe(401)
     expect(mocks.importGoogleForm).not.toHaveBeenCalled()
   })
+
+  it('rejects malformed import requests without calling Google', async () => {
+    const response = await POST(
+      request('http://localhost/api/forms/import-google-form', {
+        method: 'POST',
+        body: '{not-json',
+        headers: { 'content-type': 'application/json' },
+      }),
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Invalid import request',
+    })
+    expect(mocks.importGoogleForm).not.toHaveBeenCalled()
+  })
+
+  it('rejects invalid form ids before using the temporary token', async () => {
+    const response = await POST(
+      request('http://localhost/api/forms/import-google-form', {
+        method: 'POST',
+        body: JSON.stringify({ formId: 'not a google id' }),
+        headers: { 'content-type': 'application/json' },
+      }),
+    )
+
+    expect(response.status).toBe(400)
+    expect(mocks.getAccessToken).not.toHaveBeenCalled()
+    expect(mocks.importGoogleForm).not.toHaveBeenCalled()
+  })
 })

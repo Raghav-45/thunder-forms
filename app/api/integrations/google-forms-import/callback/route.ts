@@ -80,7 +80,8 @@ export async function GET(request: NextRequest) {
     }
 
     const tokenInfo = await client.getTokenInfo(tokens.access_token)
-    if (!GOOGLE_FORMS_IMPORT_SCOPES.every((scope) => tokenInfo.scopes.includes(scope))) {
+    const grantedScopes = tokenInfo.scopes || []
+    if (!GOOGLE_FORMS_IMPORT_SCOPES.every((scope) => grantedScopes.includes(scope))) {
       return redirectToBuilder(request, attempt.returnTo, 'scope-denied')
     }
 

@@ -18,7 +18,7 @@ import {
   Loader2,
   RefreshCw,
 } from 'lucide-react'
-import { type FC, useCallback, useEffect, useState } from 'react'
+import { type FC, useCallback, useEffect, useRef, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 
@@ -28,6 +28,7 @@ interface ImportGoogleFormProps {
     description: string,
     fields: FieldConfig[],
   ) => void
+  hasExistingContent?: boolean
 }
 
 interface GoogleFormSummary {
@@ -51,12 +52,17 @@ interface GoogleFormsImportResponse {
 
 function formatModifiedTime(value: string | null): string {
   if (!value) return 'Last edited date unavailable'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Last edited date unavailable'
   return `Last edited ${new Intl.DateTimeFormat(undefined, {
     dateStyle: 'medium',
-  }).format(new Date(value))}`
+  }).format(date)}`
 }
 
-const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
+const ImportGoogleForm: FC<ImportGoogleFormProps> = ({
+  onImported,
+  hasExistingContent = false,
+}) => {
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -65,34 +71,55 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
   const [forms, setForms] = useState<GoogleFormSummary[]>([])
   const [nextPageToken, setNextPageToken] = useState<string | null>(null)
   const [hasAuthorization, setHasAuthorization] = useState<boolean | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const loadRequestId = useRef(0)
   const [isLoadingForms, setIsLoadingForms] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const [importingFormId, setImportingFormId] = useState<string | null>(null)
 
   const loadForms = useCallback(async (pageToken?: string) => {
+    const requestId = ++loadRequestId.current
     setIsLoadingForms(true)
+    setLoadError(null)
     try {
       const query = pageToken
         ? `?${new URLSearchParams({ pageToken }).toString()}`
         : ''
       const response = await fetch(`/api/forms/import-google-form${query}`)
+      const data = await response.json().catch(() => null) as
+        | GoogleFormsListResponse
+        | { error?: string }
+        | null
+      if (requestId !== loadRequestId.current) return
       if (response.status === 401) {
         setHasAuthorization(false)
         setForms([])
         setNextPageToken(null)
+        setLoadError(data && 'error' in data && data.error
+          ? data.error
+          : 'Google authorization expired. Connect Google again.')
         return
       }
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Could not load Google Forms')
+        throw new Error(
+          data && 'error' in data && data.error
+            ? data.error
+            : 'Could not load Google Forms',
+        )
       }
 
-      const data = await response.json() as GoogleFormsListResponse
+      if (!data || !('forms' in data) || !Array.isArray(data.forms)) {
+        throw new Error('Google returned an invalid forms list')
+      }
       setHasAuthorization(true)
       setForms((current) => pageToken ? [...current, ...data.forms] : data.forms)
       setNextPageToken(data.nextPageToken)
     } catch (error) {
-      setHasAuthorization(false)
+      if (requestId !== loadRequestId.current) return
+      setHasAuthorization(null)
+      setLoadError(
+        error instanceof Error ? error.message : 'Could not load Google Forms',
+      )
       toast.error(
         error instanceof Error ? error.message : 'Could not load Google Forms',
       )
@@ -152,6 +179,15 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
   }
 
   async function importSelectedForm(form: GoogleFormSummary) {
+    if (
+      hasExistingContent &&
+      !window.confirm(
+        'Importing this Google Form will replace the fields currently in your builder. Continue?',
+      )
+    ) {
+      return
+    }
+
     setImportingFormId(form.id)
     try {
       const response = await fetch('/api/forms/import-google-form', {
@@ -168,6 +204,18 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
       }
 
       const data = await response.json() as GoogleFormsImportResponse
+      if (data.fields.length === 0) {
+        setHasAuthorization(false)
+        setForms([])
+        setNextPageToken(null)
+        toast.error('This form has no supported questions to import.', {
+          description: data.skippedItems.join('\n') ||
+            'Try a form with text, choice, scale, or date questions.',
+          style: { whiteSpace: 'pre-line' },
+          duration: 8_000,
+        })
+        return
+      }
       onImported(data.title, data.description || '', data.fields)
       setIsOpen(false)
       setForms([])
@@ -216,7 +264,24 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
           </DialogDescription>
         </DialogHeader>
 
-        {hasAuthorization === false ? (
+        {loadError && hasAuthorization !== false ? (
+          <div className="space-y-4 px-6 py-7">
+            <div className="space-y-1.5">
+              <p className="font-medium">Could not load your Google Forms</p>
+              <p className="text-sm leading-6 text-muted-foreground">{loadError}</p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="cursor-pointer"
+              onClick={() => void loadForms()}
+              disabled={isLoadingForms}
+            >
+              {isLoadingForms ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+              Try again
+            </Button>
+          </div>
+        ) : hasAuthorization === false ? (
           <div className="space-y-5 px-6 py-7">
             <div className="flex size-10 items-center justify-center rounded-md border bg-muted">
               <FileText className="size-5 text-muted-foreground" />
@@ -227,6 +292,9 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({ onImported }) => {
                 ThunderForms will show the forms you can access, then read only
                 the one you select. It does not save a reusable Google connection.
               </p>
+              {loadError ? (
+                <p className="text-sm text-amber-600">{loadError}</p>
+              ) : null}
             </div>
             <Button
               type="button"

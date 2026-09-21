@@ -92,6 +92,8 @@ export async function listGoogleForms(
     orderBy: 'modifiedTime desc',
     fields: 'nextPageToken,files(id,name,modifiedTime,ownedByMe)',
     spaces: 'drive',
+    includeItemsFromAllDrives: true,
+    supportsAllDrives: true,
   })
 
   return {
@@ -114,6 +116,27 @@ function slugify(text: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_|_$/g, '')
+}
+
+function mapChoiceOptions(
+  options: { value: string; isOther?: boolean }[],
+) {
+  const usedValues = new Set<string>()
+
+  return options
+    .filter((option) => !option.isOther)
+    .map((option, index) => {
+      const label = option.value || `Option ${index + 1}`
+      const baseValue = slugify(label) || `option_${index + 1}`
+      let value = baseValue
+      let suffix = 2
+      while (usedValues.has(value)) {
+        value = `${baseValue}_${suffix}`
+        suffix += 1
+      }
+      usedValues.add(value)
+      return { label, value }
+    })
 }
 
 function nextId(prefix: string): string {
@@ -145,9 +168,7 @@ function mapQuestionItem(item: GoogleFormItem): ImportedField | null {
 
   if (question.choiceQuestion) {
     const { type, options } = question.choiceQuestion
-    const mappedOptions = options
-      .filter((option) => !option.isOther)
-      .map((option) => ({ label: option.value, value: slugify(option.value) }))
+    const mappedOptions = mapChoiceOptions(options || [])
 
     if (type === 'RADIO') {
       return {
@@ -187,11 +208,11 @@ function mapQuestionItem(item: GoogleFormItem): ImportedField | null {
       id: nextId('slider'),
       uniqueIdentifier: 'slider',
       description: [lowLabel, highLabel].filter(Boolean).join(' — ') || base.description,
-      min: low || 1,
-      max: high || 5,
+      min: low ?? 1,
+      max: high ?? 5,
       step: 1,
       showValue: true,
-      defaultValue: low || 1,
+      defaultValue: low ?? 1,
     }
   }
 

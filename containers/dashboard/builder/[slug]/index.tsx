@@ -912,7 +912,10 @@ function BuilderContent({
 
             <SettingsDialog formId={isExistingForm ? currentFormId : null} />
             <div className="flex-grow" />
-            <ImportGoogleForm onImported={replaceWithImportedFields} />
+            <ImportGoogleForm
+              onImported={replaceWithImportedFields}
+              hasExistingContent={fieldCount(formStructure) > 0}
+            />
             <GenerateWithAiPrompt onGeneratedFields={replaceWithImportedFields} />
           </CardContent>
         </Card>
