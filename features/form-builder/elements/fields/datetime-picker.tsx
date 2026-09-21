@@ -54,6 +54,33 @@ export interface DateTimePickerConfig extends BaseFieldConfig {
   maxDateTime?: string
 }
 
+type TimePart = 'hour' | 'minute' | 'ampm'
+
+export function updateDateTimePart(
+  currentDate: Date,
+  type: TimePart,
+  value: string,
+): Date {
+  const newDate = new Date(currentDate)
+
+  if (type === 'hour') {
+    const hour = parseInt(value, 10)
+    const isPm = newDate.getHours() >= 12
+    newDate.setHours((hour % 12) + (isPm ? 12 : 0))
+  } else if (type === 'minute') {
+    newDate.setMinutes(parseInt(value, 10))
+  } else {
+    const hours = newDate.getHours()
+    if (value === 'AM' && hours >= 12) {
+      newDate.setHours(hours - 12)
+    } else if (value === 'PM' && hours < 12) {
+      newDate.setHours(hours + 12)
+    }
+  }
+
+  return newDate
+}
+
 // ─── Shared DateTime Popover ─────────────────────────────
 // Used in the main component and also in the editor for min/max pickers
 
@@ -74,25 +101,9 @@ const DateTimePopover: React.FC<{
     }
   }
 
-  const handleTimeChange = (type: 'hour' | 'minute' | 'ampm', val: string) => {
+  const handleTimeChange = (type: TimePart, val: string) => {
     const currentDate = value ? new Date(value) : new Date()
-    const newDate = new Date(currentDate)
-
-    if (type === 'hour') {
-      const hour = parseInt(val, 10)
-      newDate.setHours(newDate.getHours() >= 12 ? hour + 12 : hour)
-    } else if (type === 'minute') {
-      newDate.setMinutes(parseInt(val, 10))
-    } else if (type === 'ampm') {
-      const hours = newDate.getHours()
-      if (val === 'AM' && hours >= 12) {
-        newDate.setHours(hours - 12)
-      } else if (val === 'PM' && hours < 12) {
-        newDate.setHours(hours + 12)
-      }
-    }
-
-    onChange(newDate)
+    onChange(updateDateTimePart(currentDate, type, val))
   }
 
   return (
