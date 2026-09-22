@@ -81,6 +81,10 @@ export interface GoogleFormsImportList {
   nextPageToken: string | null
 }
 
+function escapeDriveQueryValue(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+}
+
 function createAccessTokenClient(accessToken: string) {
   const auth = new google.auth.OAuth2()
   auth.setCredentials({ access_token: accessToken })
@@ -90,13 +94,18 @@ function createAccessTokenClient(accessToken: string) {
 export async function listGoogleForms(
   accessToken: string,
   pageToken?: string,
+  search?: string,
 ): Promise<GoogleFormsImportList> {
   const drive = google.drive({
     version: 'v3',
     auth: createAccessTokenClient(accessToken),
   })
   const response = await drive.files.list({
-    q: "mimeType = 'application/vnd.google-apps.form' and trashed = false",
+    q: [
+      "mimeType = 'application/vnd.google-apps.form'",
+      'trashed = false',
+      search ? `name contains '${escapeDriveQueryValue(search)}'` : null,
+    ].filter(Boolean).join(' and '),
     pageSize: 50,
     pageToken,
     orderBy: 'modifiedTime desc',

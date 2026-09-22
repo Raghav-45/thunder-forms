@@ -3,6 +3,7 @@
 import { GOOGLE_FORMS_IMPORT_OAUTH_RESULT_QUERY_PARAM } from '@/features/google-forms-import/constants'
 import type { ImportedGoogleFormPage } from '@/features/google-forms-import/types'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
@@ -69,6 +70,8 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({
   const googleFormsImportResult = searchParams.get(GOOGLE_FORMS_IMPORT_OAUTH_RESULT_QUERY_PARAM)
   const [isOpen, setIsOpen] = useState(false)
   const [forms, setForms] = useState<GoogleFormSummary[]>([])
+  const [search, setSearch] = useState('')
+  const [activeSearch, setActiveSearch] = useState('')
   const [nextPageToken, setNextPageToken] = useState<string | null>(null)
   const [hasAuthorization, setHasAuthorization] = useState<boolean | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -77,14 +80,15 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({
   const [isConnecting, setIsConnecting] = useState(false)
   const [importingFormId, setImportingFormId] = useState<string | null>(null)
 
-  const loadForms = useCallback(async (pageToken?: string) => {
+  const loadForms = useCallback(async (pageToken?: string, searchQuery?: string) => {
     const requestId = ++loadRequestId.current
     setIsLoadingForms(true)
     setLoadError(null)
     try {
-      const query = pageToken
-        ? `?${new URLSearchParams({ pageToken }).toString()}`
-        : ''
+      const queryParams = new URLSearchParams()
+      if (pageToken) queryParams.set('pageToken', pageToken)
+      if (searchQuery?.trim()) queryParams.set('search', searchQuery.trim())
+      const query = queryParams.size ? `?${queryParams.toString()}` : ''
       const response = await fetch(`/api/forms/import-google-form${query}`)
       const data = await response.json().catch(() => null) as
         | GoogleFormsListResponse
@@ -130,8 +134,15 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({
 
   useEffect(() => {
     if (!isOpen) return
-    void loadForms()
-  }, [isOpen, loadForms])
+
+    const searchQuery = search.trim()
+    const timeout = window.setTimeout(() => {
+      setActiveSearch(searchQuery)
+      void loadForms(undefined, searchQuery)
+    }, 300)
+
+    return () => window.clearTimeout(timeout)
+  }, [isOpen, loadForms, search])
 
   useEffect(() => {
     if (!googleFormsImportResult) return
@@ -258,12 +269,12 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({
           Import from Google Forms
         </Button>
       </DialogTrigger>
-      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[580px]">
+      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[680px]">
         <DialogHeader className="border-b px-6 py-5">
           <DialogTitle className="text-lg font-semibold">
             Import a Google Form
           </DialogTitle>
-          <DialogDescription className="max-w-md">
+          <DialogDescription className="max-w-lg">
             Choose an existing form and copy its supported questions into this builder.
           </DialogDescription>
         </DialogHeader>
@@ -278,7 +289,7 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({
               type="button"
               variant="outline"
               className="cursor-pointer"
-              onClick={() => void loadForms()}
+              onClick={() => void loadForms(undefined, activeSearch)}
               disabled={isLoadingForms}
             >
               {isLoadingForms ? <Loader2 className="animate-spin" /> : <RefreshCw />}
@@ -323,7 +334,7 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({
                 size="sm"
                 variant="ghost"
                 className="cursor-pointer"
-                onClick={() => void loadForms()}
+                onClick={() => void loadForms(undefined, activeSearch)}
                 disabled={isLoadingForms || importingFormId !== null}
               >
                 <RefreshCw className={isLoadingForms ? 'animate-spin' : ''} />
@@ -331,15 +342,29 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({
               </Button>
             </div>
 
+            <Input
+              type="search"
+              className="mb-4"
+              aria-label="Search Google Forms"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search your Google Forms by title"
+              disabled={importingFormId !== null}
+            />
+
             {forms.length === 0 && !isLoadingForms ? (
               <div className="rounded-lg border border-dashed px-5 py-10 text-center">
-                <p className="text-sm font-medium">No Google Forms found</p>
+                <p className="text-sm font-medium">
+                  {activeSearch ? 'No matching Google Forms found' : 'No Google Forms found'}
+                </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Create a form in Google Forms, or check that you are using the right Google account.
+                  {activeSearch
+                    ? 'Try another title or clear your search.'
+                    : 'Create a form in Google Forms, or check that you are using the right Google account.'}
                 </p>
               </div>
             ) : (
-              <div className="max-h-[360px] divide-y overflow-y-auto rounded-lg border">
+              <div className="max-h-[440px] divide-y overflow-y-auto rounded-lg border">
                 {forms.map((form) => (
                   <div
                     key={form.id}
@@ -380,7 +405,7 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({
                 type="button"
                 variant="outline"
                 className="mt-4 w-full cursor-pointer"
-                onClick={() => void loadForms(nextPageToken)}
+                onClick={() => void loadForms(nextPageToken, activeSearch)}
                 disabled={isLoadingForms || importingFormId !== null}
               >
                 Load more forms

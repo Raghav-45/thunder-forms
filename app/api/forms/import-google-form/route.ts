@@ -59,9 +59,13 @@ export async function GET(request: NextRequest) {
     if (pageToken && pageToken.length > 1_000) {
       return NextResponse.json({ error: 'Invalid page token' }, { status: 400 })
     }
+    const search = request.nextUrl.searchParams.get('search')?.trim()
+    if (search && search.length > 200) {
+      return NextResponse.json({ error: 'Search query is too long' }, { status: 400 })
+    }
 
     return NextResponse.json(
-      await listGoogleForms(accessToken, pageToken || undefined),
+      await listGoogleForms(accessToken, pageToken || undefined, search || undefined),
     )
   } catch (error) {
     console.error('Google Forms listing failed:', error)

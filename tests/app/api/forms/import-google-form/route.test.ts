@@ -61,7 +61,35 @@ describe('Google Forms import API', () => {
     expect(mocks.listGoogleForms).toHaveBeenCalledWith(
       'temporary-access-token',
       undefined,
+      undefined,
     )
+  })
+
+  it('passes a title search to Google Forms listing', async () => {
+    mocks.listGoogleForms.mockResolvedValue({ forms: [], nextPageToken: null })
+
+    const response = await GET(
+      request('http://localhost/api/forms/import-google-form?search=customer%20survey'),
+    )
+
+    expect(response.status).toBe(200)
+    expect(mocks.listGoogleForms).toHaveBeenCalledWith(
+      'temporary-access-token',
+      undefined,
+      'customer survey',
+    )
+  })
+
+  it('rejects an overly long title search', async () => {
+    const response = await GET(
+      request(`http://localhost/api/forms/import-google-form?search=${'a'.repeat(201)}`),
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Search query is too long',
+    })
+    expect(mocks.listGoogleForms).not.toHaveBeenCalled()
   })
 
   it('imports the selected form then consumes the temporary authorization', async () => {
