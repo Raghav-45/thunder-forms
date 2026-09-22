@@ -348,10 +348,11 @@ export class NumberInputFieldDefinition extends FormFieldDefinition<NumberInputC
     }
     if (step !== undefined) {
       const stepBase = field.min ?? 0
-      schema = schema.refine(
+      const steppedSchema = schema.refine(
         (value) => isOnStep(value, step, stepBase),
         `Must increment by ${step}`,
       )
+      return field.required ? steppedSchema : steppedSchema.optional()
     }
 
     return field.required ? schema : schema.optional()
