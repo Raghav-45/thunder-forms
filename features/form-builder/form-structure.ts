@@ -22,6 +22,16 @@ export interface FormPage {
 
 export interface FormStructure {
   pages: FormPage[]
+  quiz?: QuizSettings
+}
+
+export type QuizGradeRelease = 'immediately' | 'after-review'
+
+export interface QuizSettings {
+  defaultPoints?: number
+  enabled: boolean
+  gradeRelease?: QuizGradeRelease
+  recipientEmailFieldId?: string
 }
 
 export type FormStructureIdFactory = () => string
@@ -54,6 +64,13 @@ const CHOICE_FIELD_IDENTIFIERS = new Set<string>([
   'radio-group',
 ])
 
+const QUIZ_ANSWER_FIELD_IDENTIFIERS = new Set<string>([
+  'multi-select',
+  'single-select',
+  'radio-group',
+  'text-input',
+])
+
 const createId = () => crypto.randomUUID()
 
 const isRecord = (value: unknown): value is UnknownRecord =>
@@ -61,6 +78,68 @@ const isRecord = (value: unknown): value is UnknownRecord =>
 
 const hasId = (value: unknown): value is string =>
   typeof value === 'string' && value.length > 0
+
+function hasValidQuizQuestion(value: unknown, field: UnknownRecord): boolean {
+  if (value === undefined) return true
+  if (!isRecord(value)) {
+    return false
+  }
+  if (
+    !Number.isInteger(value.points) ||
+    typeof value.points !== 'number' ||
+    value.points < 1
+  ) {
+    return false
+  }
+  if (value.correctAnswers === undefined) return true
+  if (
+    !QUIZ_ANSWER_FIELD_IDENTIFIERS.has(String(field.uniqueIdentifier)) ||
+    !Array.isArray(value.correctAnswers) ||
+    !value.correctAnswers.every((answer) => typeof answer === 'string' && answer.trim())
+  ) return false
+
+  const correctAnswers = value.correctAnswers as string[]
+  if (new Set(correctAnswers).size !== correctAnswers.length || correctAnswers.length === 0) {
+    return false
+  }
+
+  if (field.uniqueIdentifier === 'text-input') {
+    return (field.inputType ?? 'text') === 'text'
+  }
+
+  const options = Array.isArray(field.options) ? field.options : []
+  const optionValues = new Set(
+    options.flatMap((option) =>
+      isRecord(option) && typeof option.value === 'string' ? [option.value] : [],
+    ),
+  )
+  return correctAnswers.every((answer) => optionValues.has(answer))
+}
+
+function hasValidQuizSettings(value: unknown): value is QuizSettings | undefined {
+  if (value === undefined) return true
+  if (!isRecord(value) || typeof value.enabled !== 'boolean') return false
+  if (
+    value.defaultPoints !== undefined &&
+    (!Number.isInteger(value.defaultPoints) ||
+      typeof value.defaultPoints !== 'number' ||
+      value.defaultPoints < 1)
+  ) return false
+  if (
+    value.gradeRelease !== undefined &&
+    value.gradeRelease !== 'immediately' &&
+    value.gradeRelease !== 'after-review'
+  ) return false
+  return value.recipientEmailFieldId === undefined || hasId(value.recipientEmailFieldId)
+}
+
+export function getQuizDefaultPoints(settings: QuizSettings | undefined): number {
+  return settings?.defaultPoints ?? 1
+}
+
+export function getQuizGradeRelease(settings: QuizSettings | undefined): QuizGradeRelease {
+  return settings?.gradeRelease ?? 'immediately'
+}
 
 const isKnownField = (value: unknown): value is FieldConfig => {
   if (!isRecord(value) || !hasId(value.id) || !hasId(value.uniqueIdentifier)) {
@@ -72,7 +151,7 @@ const isKnownField = (value: unknown): value is FieldConfig => {
   return (
     !CHOICE_FIELD_IDENTIFIERS.has(value.uniqueIdentifier) ||
     hasValidChoiceOptions(value.options)
-  )
+  ) && hasValidQuizQuestion(value.quiz, value)
 }
 
 export function isKnownFieldIdentifier(value: unknown): boolean {
@@ -113,7 +192,8 @@ export function isFormStructure(value: unknown): value is FormStructure {
   if (
     !isRecord(value) ||
     !Array.isArray(value.pages) ||
-    value.pages.length === 0
+    value.pages.length === 0 ||
+    !hasValidQuizSettings(value.quiz)
   ) {
     return false
   }
@@ -150,6 +230,39 @@ export function isFormStructure(value: unknown): value is FormStructure {
       )
     })
   })
+}
+
+export function isAutoGradableQuizField(field: FieldConfig): boolean {
+  if (!QUIZ_ANSWER_FIELD_IDENTIFIERS.has(field.uniqueIdentifier)) return false
+  return field.uniqueIdentifier !== 'text-input' ||
+    ((field as { inputType?: string }).inputType ?? 'text') === 'text'
+}
+
+export function hasQuizAnswerKey(field: FieldConfig): boolean {
+  return isAutoGradableQuizField(field) && Boolean(field.quiz?.correctAnswers?.length)
+}
+
+export function isQuizScoredField(
+  field: FieldConfig,
+  settings: QuizSettings | undefined,
+): boolean {
+  return Boolean(field.quiz) && field.id !== settings?.recipientEmailFieldId
+}
+
+export function stripQuizAnswerKeys(structure: FormStructure): FormStructure {
+  return {
+    ...structure,
+    pages: structure.pages.map((page) => ({
+      ...page,
+      sections: page.sections.map((section) => ({
+        ...section,
+        fields: section.fields.map((field) => {
+          if (!field.quiz) return field
+          return { ...field, quiz: undefined } as FieldConfig
+        }),
+      })),
+    })),
+  }
 }
 
 export function getOrderedFormFields(

@@ -4,6 +4,7 @@ import {
   getOrderedFormFields,
   isFormStructure,
   sanitizeImportedFields,
+  stripQuizAnswerKeys,
   type FormStructure,
 } from '@/features/form-builder/form-structure'
 import { describe, expect, it } from 'vitest'
@@ -182,6 +183,85 @@ describe('form structure', () => {
         { id: 'option-a', label: 'B', value: 'b' },
       ])),
     ).toBe(false)
+  })
+
+  it('accepts valid quiz answer keys and removes them from public form data', () => {
+    const quizStructure = {
+      quiz: { enabled: true },
+      pages: [{
+        id: 'page',
+        sections: [{
+          id: 'section',
+          fields: [{
+            id: 'field',
+            label: 'Choose one',
+            uniqueIdentifier: 'single-select',
+            options: [
+              { id: 'option-a', label: 'A', value: 'a' },
+              { id: 'option-b', label: 'B', value: 'b' },
+            ],
+            quiz: { correctAnswers: ['a'], points: 2 },
+          }],
+        }],
+      }],
+    }
+
+    expect(isFormStructure(quizStructure)).toBe(true)
+    expect(JSON.stringify(stripQuizAnswerKeys(quizStructure as FormStructure)))
+      .not.toContain('correctAnswers')
+  })
+
+  it('supports manual points for every question type and text answer keys only for text fields', () => {
+    const manualQuestion = {
+      quiz: { enabled: true },
+      pages: [{
+        id: 'page',
+        sections: [{
+          id: 'section',
+          fields: [{
+            id: 'essay',
+            label: 'Explain',
+            uniqueIdentifier: 'text-area',
+            quiz: { points: 4 },
+          }],
+        }],
+      }],
+    }
+
+    expect(isFormStructure(manualQuestion)).toBe(true)
+    expect(isFormStructure({
+      ...manualQuestion,
+      pages: [{
+        ...manualQuestion.pages[0],
+        sections: [{
+          ...manualQuestion.pages[0].sections[0],
+          fields: [{
+            id: 'email',
+            label: 'Email',
+            uniqueIdentifier: 'text-input',
+            inputType: 'email',
+            quiz: { correctAnswers: ['student@example.com'], points: 1 },
+          }],
+        }],
+      }],
+    })).toBe(false)
+  })
+
+  it('accepts quiz release and default-point settings', () => {
+    expect(isFormStructure({
+      quiz: {
+        enabled: true,
+        gradeRelease: 'after-review',
+        defaultPoints: 3,
+        recipientEmailFieldId: 'email',
+      },
+      pages: [{ id: 'page', sections: [{ id: 'section', fields: [] }] }],
+    })).toBe(true)
+
+    expect(isFormStructure({
+      quiz: { enabled: true, gradeRelease: 'later', defaultPoints: 0 },
+      pages: [{ id: 'page', sections: [{ id: 'section', fields: [] }] }],
+    })).toBe(false)
   })
 
   it('rejects missing collections and every kind of duplicate identifier', () => {

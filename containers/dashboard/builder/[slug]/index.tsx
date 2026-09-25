@@ -4,15 +4,18 @@ import ImportGoogleForm from '@/features/form-builder/core/import-google-form'
 import GenerateWithAiPrompt from '@/features/form-builder/core/generate-with-ai'
 import type { FieldConfig } from '@/features/form-builder/elements'
 import {
+  getQuizDefaultPoints,
   getOrderedFormFields,
   isFormStructure,
   type FormStructure as PersistedFormStructure,
+  type QuizSettings,
 } from '@/features/form-builder/form-structure'
 import { CopyButton } from '@/features/form-builder/components/copy-button'
 import { IMMORTAL_SENTINEL_DATE } from '@/features/form-builder/components/date-picker-with-presets'
 import { useFormStore } from '@/features/form-builder/store'
 import {
   type AvailableFieldsType,
+  type QuizQuestionConfig,
 } from '@/features/form-builder/types'
 import {
   createDefaultFieldConfig,
@@ -167,6 +170,16 @@ function createInitialState() {
 // Stable fallback for unreachable empty-pages state (see activePage below).
 // Module scope keeps hook deps stable; never written, only read.
 const EMPTY_PAGE_FALLBACK: FormPage = { id: '', sections: [] }
+
+function createQuizAwareField(
+  fieldType: AvailableFieldsType,
+  quiz: QuizSettings | undefined,
+): FieldConfig {
+  const field = createDefaultFieldConfig(fieldType)
+  return quiz?.enabled
+    ? { ...field, quiz: { points: getQuizDefaultPoints(quiz) } } as FieldConfig
+    : field
+}
 
 export default function BuilderPage({ params }: FormBuilderProps) {
   return (
@@ -515,11 +528,11 @@ function BuilderContent({
 
   const addField = useCallback(
     (fieldType: AvailableFieldsType) => {
-      const field = createDefaultFieldConfig(fieldType)
       setFormStructure((prev) => {
         const page = getPage(prev, resolvedActivePageId)
         if (!page) return prev
 
+        const field = createQuizAwareField(fieldType, prev.quiz)
         const target: DropTarget = { id: CANVAS_DROP_ID }
         return stagePaletteField(prev, resolvedActivePageId, field, target)
           .structure
@@ -580,6 +593,28 @@ function BuilderContent({
       replaceWithImportedPages(title, description, [{ fields }])
     },
     [replaceWithImportedPages],
+  )
+
+  const updateQuizSettings = useCallback((quiz: QuizSettings | undefined) => {
+    setFormStructure((current) => ({ ...current, quiz }))
+  }, [])
+
+  const updateQuizQuestion = useCallback(
+    (fieldId: string, quiz: QuizQuestionConfig | undefined) => {
+      setFormStructure((current) => ({
+        ...current,
+        pages: current.pages.map((page) => ({
+          ...page,
+          sections: page.sections.map((section) => ({
+            ...section,
+            fields: section.fields.map((field) =>
+              field.id === fieldId ? { ...field, quiz } as FieldConfig : field,
+            ),
+          })),
+        })),
+      }))
+    },
+    [],
   )
 
   const handleSaveForm = useCallback(async (afterSignIn = false) => {
@@ -687,7 +722,10 @@ function BuilderContent({
         const fieldType = sourceData?.fieldType
         if (typeof fieldType !== 'string') return
 
-        const field = createDefaultFieldConfig(fieldType as AvailableFieldsType)
+        const field = createQuizAwareField(
+          fieldType as AvailableFieldsType,
+          formStructure.quiz,
+        )
         field.id = `palette_${crypto.randomUUID().slice(0, 8)}`
         paletteFieldClone.current = field
         setPaletteFieldPlaceholderId(field.id)
@@ -920,7 +958,12 @@ function BuilderContent({
               />
             </div>
 
-            <SettingsDialog formId={isExistingForm ? currentFormId : null} />
+            <SettingsDialog
+              formId={isExistingForm ? currentFormId : null}
+              formStructure={formStructure}
+              onQuizSettingsChange={updateQuizSettings}
+              onQuizQuestionChange={updateQuizQuestion}
+            />
             <div className="flex-grow" />
             <ImportGoogleForm
               onImported={replaceWithImportedPages}

@@ -1,7 +1,10 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { getFormStatus } from '../../utils'
-import { isFormStructure } from '@/features/form-builder/form-structure'
+import {
+  isFormStructure,
+  stripQuizAnswerKeys,
+} from '@/features/form-builder/form-structure'
 
 export async function GET(
   request: Request,
@@ -50,6 +53,7 @@ export async function GET(
     // Add status to form response (without _count)
     const formWithStatus = {
       ...formWithoutCount,
+      fields: stripQuizAnswerKeys(form.fields),
       status,
     }
 

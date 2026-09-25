@@ -32,20 +32,18 @@ import { useEffect, useState } from 'react'
 
 import LoadingScreen from '../../components/loading-screen'
 import NoResponsesYetCard from './components/no-responses-yet-card'
+import {
+  formatResponseValue,
+  getQuizResult,
+  QuestionGrading,
+  ResponseDetailsDrawer,
+  responseFields,
+  type FormResponse,
+} from './components/quiz-grading'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -71,120 +69,39 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useIsMobile } from '@/hooks/use-mobile'
-import { isFileUploadReceipt, isFileUploadReceiptList } from '@/features/file-uploads/types'
-
-interface FormResponse {
-  id: string
-  data: Record<string, unknown>
-  createdAt: string
-  formsId: string
-}
+import { isFileUploadReceiptList } from '@/features/file-uploads/types'
+import type { FieldConfig } from '@/features/form-builder/elements'
+import {
+  getOrderedFormFields,
+  hasQuizAnswerKey,
+  isFormStructure,
+  isQuizScoredField,
+  type FormStructure,
+  type QuizSettings,
+} from '@/features/form-builder/form-structure'
 
 interface FormResponsesData {
+  fields: FormStructure
   formId: string
   title: string
   responses: FormResponse[]
 }
 
-function formatResponseValue(value: unknown): string {
-  if (isFileUploadReceipt(value)) return value.name
-  if (Array.isArray(value)) return value.map(formatResponseValue).join(', ')
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
-  return String(value)
-}
-
-function ResponseDetailsDrawer({ response, formId }: { response: FormResponse; formId: string }) {
-  const isMobile = useIsMobile()
-
-  const formatFieldName = (fieldName: string) => {
-    return fieldName
-      .replace(/_\d+$/, '')
-      .replace(/_/g, ' ')
-      .replace(/\b\w/g, (l) => l.toUpperCase())
-  }
-
-  return (
-    <Drawer direction={isMobile ? 'bottom' : 'right'}>
-      <DrawerTrigger asChild>
-        <Button variant="link" className="text-foreground w-fit px-0 text-left cursor-pointer">
-          #{response.id}
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader className="gap-1">
-          <DrawerTitle>Response Details</DrawerTitle>
-          <DrawerDescription>
-            Submitted on{' '}
-            {new Date(response.createdAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
-          <div className="grid gap-4">
-            {Object.entries(response.data).map(([key, value]) => (
-  <div key={key} className="flex flex-col gap-2">
-    <Label className="text-sm font-medium">
-      {/* Use the Label component for accessibility */}
-      {formatFieldName(key)}
-    </Label>
-    {isFileUploadReceiptList(value) ? (
-      <div className="flex flex-wrap gap-2">
-        {value.map((file) => (
-          <Button key={file.id} asChild size="sm" variant="outline">
-            <a href={`/api/forms/${formId}/uploads/${file.id}`}>{file.name}</a>
-          </Button>
-        ))}
-      </div>
-    ) : <input
-      type="text" // Use 'text' type for standard data display
-      value={formatResponseValue(value)} // Display the value
-      disabled // This makes the input read-only and applies a disabled style
-      className="
-        flex 
-        h-10 
-        w-full 
-        rounded-md 
-        border 
-        border-input 
-        bg-background 
-        px-3 
-        py-2 
-        text-sm 
-        ring-offset-background 
-        file:border-0 
-        file:bg-transparent 
-        file:text-sm 
-        file:font-medium 
-        placeholder:text-muted-foreground 
-        focus-visible:outline-none 
-        focus-visible:ring-2 
-        focus-visible:ring-ring 
-        focus-visible:ring-offset-2 
-        disabled:cursor-not-allowed 
-        disabled:opacity-50
-      "
-    />}
-  </div>
-))}
-          </div>
-        </div>
-        <DrawerFooter>
-          <DrawerClose asChild>
-            <Button variant="outline">Close</Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
-  )
-}
-
-function ResponsesDataTable({ data: responses, formId }: { data: FormResponse[]; formId: string }) {
+function ResponsesDataTable({
+  data: responses,
+  formId,
+  manualQuizFields,
+  quizFields,
+  onResponseUpdated,
+  quizSettings,
+}: {
+  data: FormResponse[]
+  formId: string
+  manualQuizFields: FieldConfig[]
+  quizFields: FieldConfig[]
+  onResponseUpdated: (response: FormResponse) => void
+  quizSettings: QuizSettings | undefined
+}) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
@@ -216,7 +133,7 @@ function ResponsesDataTable({ data: responses, formId }: { data: FormResponse[];
   const allFields = React.useMemo(() => {
     const fieldsSet = new Set<string>()
     responses.forEach((response) => {
-      Object.keys(response.data).forEach((key) => fieldsSet.add(key))
+      responseFields(response.data).forEach(([key]) => fieldsSet.add(key))
     })
     return Array.from(fieldsSet).sort()
   }, [responses])
@@ -255,7 +172,15 @@ function ResponsesDataTable({ data: responses, formId }: { data: FormResponse[];
         accessorKey: 'id',
         header: 'Response ID',
         cell: ({ row }) => {
-          return <ResponseDetailsDrawer response={row.original} formId={formId} />
+          return (
+            <ResponseDetailsDrawer
+              response={row.original}
+              formId={formId}
+              manualQuizFields={manualQuizFields}
+              onResponseUpdated={onResponseUpdated}
+              quizSettings={quizSettings}
+            />
+          )
         },
         enableHiding: false,
       },
@@ -272,6 +197,17 @@ function ResponsesDataTable({ data: responses, formId }: { data: FormResponse[];
           </div>
         ),
       })),
+      ...(quizSettings?.enabled ? [{
+        id: 'quizScore',
+        header: 'Quiz score',
+        cell: ({ row }: { row: { original: FormResponse } }) => {
+          const quizResult = getQuizResult(row.original.data)
+          if (!quizResult) return '—'
+          return quizResult.pendingPoints
+            ? `${quizResult.score} / ${quizResult.maxScore} pending`
+            : `${quizResult.score} / ${quizResult.maxScore}`
+        },
+      }] : []),
       {
         accessorKey: 'createdAt',
         header: 'Submitted',
@@ -310,7 +246,7 @@ function ResponsesDataTable({ data: responses, formId }: { data: FormResponse[];
         ),
       },
     ],
-    [allFields]
+    [allFields, formId, manualQuizFields, onResponseUpdated, quizSettings]
   )
 
   const table = useReactTable({
@@ -387,6 +323,9 @@ function ResponsesDataTable({ data: responses, formId }: { data: FormResponse[];
           <TabsTrigger value="recent">
             Recent <Badge variant="secondary">{recentResponses}</Badge>
           </TabsTrigger>
+          {quizFields.length ? (
+            <TabsTrigger value="question">By question</TabsTrigger>
+          ) : null}
         </TabsList>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={downloadCSV}>
@@ -608,7 +547,13 @@ function ResponsesDataTable({ data: responses, formId }: { data: FormResponse[];
                       <Checkbox />
                     </TableCell>
                     <TableCell>
-                      <ResponseDetailsDrawer response={response} formId={formId} />
+                      <ResponseDetailsDrawer
+                        response={response}
+                        formId={formId}
+                        manualQuizFields={manualQuizFields}
+                        onResponseUpdated={onResponseUpdated}
+                        quizSettings={quizSettings}
+                      />
                     </TableCell>
                     {allFields.slice(0, 3).map((field) => (
                       <TableCell key={field} className="max-w-48 truncate">
@@ -658,6 +603,16 @@ function ResponsesDataTable({ data: responses, formId }: { data: FormResponse[];
           </Table>
         </div>
       </TabsContent>
+      {quizFields.length ? (
+        <TabsContent value="question" className="relative overflow-auto">
+          <QuestionGrading
+            responses={responses}
+            formId={formId}
+            quizFields={quizFields}
+            onResponseUpdated={onResponseUpdated}
+          />
+        </TabsContent>
+      ) : null}
     </Tabs>
   )
 }
@@ -720,5 +675,29 @@ export default function FormResponsesPage() {
     )
   }
 
-  return <ResponsesDataTable data={formData.responses} formId={formData.formId} />
+  const quizStructure = isFormStructure(formData.fields) ? formData.fields : null
+  const quizFields = quizStructure
+    ? getOrderedFormFields(quizStructure).filter(
+        (field) => isQuizScoredField(field, quizStructure.quiz),
+      )
+    : []
+  const manualQuizFields = quizFields.filter((field) => !hasQuizAnswerKey(field))
+
+  return (
+    <ResponsesDataTable
+      data={formData.responses}
+      formId={formData.formId}
+      manualQuizFields={manualQuizFields}
+      quizFields={quizFields}
+      quizSettings={quizStructure?.quiz}
+      onResponseUpdated={(response) =>
+        setFormData((current) => current ? {
+          ...current,
+          responses: current.responses.map((item) =>
+            item.id === response.id ? response : item,
+          ),
+        } : current)
+      }
+    />
+  )
 }

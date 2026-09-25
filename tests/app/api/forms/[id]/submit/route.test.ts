@@ -89,6 +89,31 @@ const fileFields = {
   ],
 }
 
+const quizFields = {
+  quiz: { enabled: true },
+  pages: [{
+    id: 'page-1',
+    sections: [{
+      id: 'section-1',
+      fields: [{
+        id: 'answer',
+        label: 'Answer',
+        uniqueIdentifier: 'radio-group',
+        options: [
+          { id: 'option-a', label: 'A', value: 'a' },
+          { id: 'option-b', label: 'B', value: 'b' },
+        ],
+        quiz: { correctAnswers: ['a'], points: 2 },
+      }],
+    }],
+  }],
+}
+
+const delayedQuizFields = {
+  ...quizFields,
+  quiz: { enabled: true, gradeRelease: 'after-review' },
+}
+
 const requestFor = (data: unknown, uploadSession?: string) =>
   new NextRequest('http://localhost/api/forms/form-1/submit', {
     method: 'POST',
@@ -206,6 +231,50 @@ describe('POST /api/forms/[id]/submit', () => {
     })
     expect(mocks.createResponse).toHaveBeenCalledWith({
       data: { formsId: 'form-1', data: { email: 'person@example.com' } },
+    })
+  })
+
+  it('scores quiz responses on the server without trusting the browser', async () => {
+    mocks.findForm.mockResolvedValue(storedForm({ fields: quizFields }))
+
+    const response = await POST(requestFor({ answer: 'a' }), { params })
+
+    expect(response.status).toBe(201)
+    await expect(response.json()).resolves.toEqual({
+      message: 'Form submitted successfully',
+      responseId: 'response-1',
+      quizResult: { manualScores: {}, pendingPoints: 0, score: 2, maxScore: 2 },
+    })
+    expect(mocks.createResponse).toHaveBeenCalledWith({
+      data: {
+        formsId: 'form-1',
+        data: {
+          answer: 'a',
+          __quiz: { manualScores: {}, pendingPoints: 0, score: 2, maxScore: 2 },
+        },
+      },
+    })
+  })
+
+  it('withholds delayed quiz grades until the teacher releases them', async () => {
+    mocks.findForm.mockResolvedValue(storedForm({ fields: delayedQuizFields }))
+
+    const response = await POST(requestFor({ answer: 'a' }), { params })
+
+    expect(response.status).toBe(201)
+    await expect(response.json()).resolves.toEqual({
+      message: 'Form submitted successfully',
+      responseId: 'response-1',
+      quizPendingReview: true,
+    })
+    expect(mocks.createResponse).toHaveBeenCalledWith({
+      data: {
+        formsId: 'form-1',
+        data: {
+          answer: 'a',
+          __quiz: { manualScores: {}, pendingPoints: 0, score: 2, maxScore: 2 },
+        },
+      },
     })
   })
 

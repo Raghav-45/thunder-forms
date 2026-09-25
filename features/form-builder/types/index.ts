@@ -2,6 +2,11 @@ import { FIELD_REGISTRY } from '@/features/form-builder/elements'
 
 export type FieldType = { name: string; isAvailable: boolean; index?: number }
 
+export interface QuizQuestionConfig {
+  correctAnswers?: string[]
+  points: number
+}
+
 /**
  * Serves as the foundational interface & specifies common properties like id, label, placeholder, required, disabled, and description.
  */
@@ -13,6 +18,7 @@ export interface BaseFieldConfig {
   required?: boolean
   disabled?: boolean
   description?: string
+  quiz?: QuizQuestionConfig
 }
 
 export interface FieldProps<T extends BaseFieldConfig = BaseFieldConfig> {

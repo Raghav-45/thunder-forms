@@ -3,6 +3,7 @@
 import { Icons } from '@/components/Icons'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import type { QuizResult } from '@/features/form-builder/utils/quiz'
 import { FileIcon, HomeIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
@@ -88,10 +89,14 @@ const DEFAULT_REDIRECT_URL =
 
 interface FormSubmittedContentProps {
   redirectUrl?: string
+  quizPendingReview?: boolean
+  quizResult?: QuizResult | null
 }
 
 export const FormSubmittedPage: FC<FormSubmittedContentProps> = ({
   redirectUrl,
+  quizPendingReview = false,
+  quizResult,
 }) => {
   const pathname = usePathname()
   const router = useRouter()
@@ -186,12 +191,25 @@ export const FormSubmittedPage: FC<FormSubmittedContentProps> = ({
                 >
                   <div className="flex flex-col items-center gap-3">
                     <p className="text-sm text-neutral-100">
-                      Thank you for your submission! We&apos;ve received your
-                      request.
+                      {quizPendingReview
+                        ? 'Your quiz has been submitted. Your teacher will release your grade after review.'
+                        : quizResult
+                        ? quizResult.pendingPoints > 0
+                          ? 'Your quiz has been submitted. Part of your score needs review.'
+                          : 'Your quiz has been submitted.'
+                        : 'Thank you for your submission! We\'ve received your request.'}
                     </p>
+                    {quizResult && quizResult.pendingPoints === 0 ? (
+                      <div className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-center">
+                        <p className="text-xs text-neutral-300">Your score</p>
+                        <p className="mt-1 text-2xl font-semibold text-primary">
+                          {quizResult.score} / {quizResult.maxScore}
+                        </p>
+                      </div>
+                    ) : null}
                     <div className="w-full h-px bg-gradient-to-r from-transparent via-neutral-700 to-transparent" />
                     <p className="text-xs text-neutral-400">
-                      You will receive a confirmation email shortly.
+                      Your response has been recorded.
                     </p>
                     {finalRedirectUrl && (
                       <p className="text-xs text-neutral-400">

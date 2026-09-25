@@ -9,6 +9,7 @@ import {
 } from '@/features/form-builder/form-structure'
 import { validateFormFields } from '@/features/form-builder/utils/formValidation'
 import { getFieldComponent } from '@/features/form-builder/utils/helperFunctions'
+import type { QuizResult } from '@/features/form-builder/utils/quiz'
 import { FormSubmittedPage } from '../components/form-submitted-page'
 import { FormClosedDialog } from '../components/form-closed-dialog'
 import { Button } from '@/components/ui/button'
@@ -37,6 +38,8 @@ export default function FormPage({ params }: FormPageProps) {
   const [activePageIndex, setActivePageIndex] = useState(0)
   const [formSettings, setFormSettings] = useState<PublicFormSettings | null>(null)
   const [isFormSubmitted, setIsFormSubmitted] = useState(false)
+  const [quizResult, setQuizResult] = useState<QuizResult | null>(null)
+  const [quizPendingReview, setQuizPendingReview] = useState(false)
   const [formData, setFormData] = useState<Record<string, unknown>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -102,9 +105,11 @@ export default function FormPage({ params }: FormPageProps) {
 
     setIsSubmitting(true)
     try {
-      await axios.post(`/api/forms/${currentFormId}/submit`, {
+      const response = await axios.post(`/api/forms/${currentFormId}/submit`, {
         data: formData
       })
+      setQuizResult(response.data.quizResult ?? null)
+      setQuizPendingReview(response.data.quizPendingReview === true)
       setIsFormSubmitted(true)
       toast.success('Form submitted successfully!')
     } catch (error) {
@@ -264,7 +269,13 @@ export default function FormPage({ params }: FormPageProps) {
   }
 
   if (isFormSubmitted) {
-    return <FormSubmittedPage redirectUrl={formSettings.redirectUrl} />
+    return (
+      <FormSubmittedPage
+        redirectUrl={formSettings.redirectUrl}
+        quizPendingReview={quizPendingReview}
+        quizResult={quizResult}
+      />
+    )
   }
 
   const activePage = pages[activePageIndex]

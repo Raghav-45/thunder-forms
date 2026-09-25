@@ -1,8 +1,10 @@
 import { FileUploadStatus, GoogleSheetsIntegrationStatus } from '@prisma/client'
 import { randomUUID } from 'node:crypto'
 import {
+  getQuizGradeRelease,
   getOrderedFormFields,
   isFormStructure,
+  type QuizGradeRelease,
 } from '@/features/form-builder/form-structure'
 import {
   createGoogleSheetsRow,
@@ -10,6 +12,10 @@ import {
 } from '@/features/google-sheets/server/schema'
 import { drainGoogleSheetsDeliveries } from '@/features/google-sheets/server/deliveries'
 import { validateFormFields } from '@/features/form-builder/utils/formValidation'
+import {
+  calculateQuizResult,
+  type QuizResult,
+} from '@/features/form-builder/utils/quiz'
 import {
   isFileUploadReceiptList,
   type FileUploadReceipt,
@@ -58,6 +64,8 @@ export async function POST(
     let submission: {
       response: { id: string }
       shouldSyncGoogleSheets: boolean
+      quizGradeRelease: QuizGradeRelease
+      quizResult: QuizResult | null
     } | null = null
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
@@ -181,10 +189,13 @@ export async function POST(
               })
             }
 
+            const quizResult = calculateQuizResult(form.fields, sanitizedData)
             const createdResponse = await transaction.responses.create({
               data: {
                 formsId: formId,
-                data: JSON.parse(JSON.stringify(sanitizedData)),
+                data: JSON.parse(JSON.stringify(
+                  quizResult ? { ...sanitizedData, __quiz: quizResult } : sanitizedData,
+                )),
               },
             })
 
@@ -229,7 +240,12 @@ export async function POST(
               })
             }
 
-            return { response: createdResponse, shouldSyncGoogleSheets }
+            return {
+              response: createdResponse,
+              shouldSyncGoogleSheets,
+              quizGradeRelease: getQuizGradeRelease(form.fields.quiz),
+              quizResult,
+            }
           },
           { isolationLevel: 'Serializable' },
         )
@@ -258,6 +274,12 @@ export async function POST(
       {
         message: 'Form submitted successfully',
         responseId: submission.response.id,
+        ...(submission.quizResult && submission.quizGradeRelease === 'immediately'
+          ? { quizResult: submission.quizResult }
+          : {}),
+        ...(submission.quizResult && submission.quizGradeRelease === 'after-review'
+          ? { quizPendingReview: true }
+          : {}),
       },
       { status: 201 },
     )
