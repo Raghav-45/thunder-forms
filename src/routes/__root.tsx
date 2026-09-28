@@ -5,8 +5,8 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import Footer from '../components/Footer'
-import Header from '../components/Header'
+import { SiteHeader } from '#/components/site-header'
+import { SiteFooter } from '#/components/site-footer'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
@@ -52,9 +52,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-[rgba(79,184,178,0.24)]">
-        <Header />
-        {children}
-        <Footer />
+        <SiteHeader />
+        <main className="flex-1">{children}</main>
+        <SiteFooter />
         <TanStackDevtools
           config={{
             position: 'bottom-right',
