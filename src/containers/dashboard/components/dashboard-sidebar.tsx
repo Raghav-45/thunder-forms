@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/sidebar'
 import { siteConfig } from '@/config/site'
 import { authClient } from '@/lib/auth-client'
-import Link from 'next/link'
 import { SidebarSections } from './sidebar'
 import { NavUser } from './sidebar/nav-user'
 
@@ -38,7 +37,7 @@ export function DashboardSidebar({
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <Link
+              <a
                 href={siteConfig.url}
                 className="flex items-center gap-2 self-center"
               >
@@ -46,7 +45,7 @@ export function DashboardSidebar({
                 <span className="text-base font-semibold">
                   {siteConfig.name}
                 </span>
-              </Link>
+              </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

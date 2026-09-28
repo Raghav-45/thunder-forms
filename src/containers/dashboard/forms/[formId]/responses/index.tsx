@@ -26,7 +26,7 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table'
-import { useParams } from 'next/navigation'
+import { useParams } from '@tanstack/react-router'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 
@@ -618,7 +618,7 @@ function ResponsesDataTable({
 }
 
 export default function FormResponsesPage() {
-  const { formId } = useParams()
+  const { formId } = useParams({ strict: false }) as { formId?: string }
   const [formData, setFormData] = useState<FormResponsesData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

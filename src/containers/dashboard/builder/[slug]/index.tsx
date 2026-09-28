@@ -50,6 +50,7 @@ import {
   DragDropProvider,
 } from '@dnd-kit/react'
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import axios from 'axios'
 import {
   AnimatePresence,
@@ -58,7 +59,6 @@ import {
   useReducedMotion,
 } from 'motion/react'
 import { Loader2Icon, SaveIcon } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import type { ComponentType } from 'react'
 import {
   Suspense,
@@ -212,10 +212,10 @@ function BuilderContent({
   paramFormId: string
 }) {
   const initialState = useState(createInitialState)[0]
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const templateSlug = searchParams.get('template')
-  const googleSheetsResult = searchParams.get(GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM)
+  const navigate = useNavigate()
+  const search = useSearch({ strict: false }) as Record<string, string | undefined>
+  const templateSlug = search.template
+  const googleSheetsResult = search[GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM]
   const { formSettings, setFormSettings } = useFormStore()
   const { data: session, isPending: isSessionPending } = authClient.useSession()
   const [currentFormId, setCurrentFormId] = useState(paramFormId)
@@ -256,11 +256,10 @@ function BuilderContent({
     const result = googleSheetsOAuthResultMessage(googleSheetsResult)
     toast[result.type](result.message)
 
-    const nextParams = new URLSearchParams(searchParams.toString())
-    nextParams.delete(GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM)
-    const query = nextParams.toString()
-    router.replace(`/dashboard/builder/${paramFormId}${query ? `?${query}` : ''}`)
-  }, [googleSheetsResult, paramFormId, router, searchParams])
+    const nextSearch = { ...search }
+    delete nextSearch[GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM]
+    void navigate({ to: '.', search: nextSearch, replace: true })
+  }, [googleSheetsResult, navigate, search])
 
   const activePage =
     getPage(formStructure, activePageId) ??

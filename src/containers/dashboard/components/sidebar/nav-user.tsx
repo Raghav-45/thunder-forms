@@ -1,6 +1,6 @@
 'use client'
 
-import { logout } from '@/app/(auth)/auth/logout/actions'
+// import { logout } from '@/app/(auth)/auth/logout/actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -94,7 +94,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <form action={logout}>
+            <form action={()=> {}}>
               <DropdownMenuItem
                 className="cursor-pointer"
                 variant="destructive"

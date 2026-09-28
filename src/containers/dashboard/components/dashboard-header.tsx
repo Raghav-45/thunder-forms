@@ -10,8 +10,7 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useLocation } from '@tanstack/react-router'
 import { Fragment } from 'react'
 
 const PAGE_LABELS: Record<string, string> = {
@@ -40,7 +39,7 @@ function getBreadcrumbItems(pathname: string) {
 }
 
 export function DashboardHeader() {
-  const pathname = usePathname()
+  const { pathname } = useLocation()
   const breadcrumbItems = getBreadcrumbItems(pathname)
 
   return (
@@ -64,7 +63,7 @@ export function DashboardHeader() {
                       <BreadcrumbPage>{item.label}</BreadcrumbPage>
                     ) : (
                       <BreadcrumbLink asChild>
-                        <Link href={item.href}>{item.label}</Link>
+                        <a href={item.href}>{item.label}</a>
                       </BreadcrumbLink>
                     )}
                   </BreadcrumbItem>

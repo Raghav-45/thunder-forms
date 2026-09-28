@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/drawer'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { ChartLineIcon, DatabaseIcon, Edit2Icon } from 'lucide-react'
-import Link from 'next/link'
 import { AnalyticsGraph } from './analytics-graph'
 import type { FormTableRow } from '../types/form'
 
@@ -44,13 +43,13 @@ export function FormTableCellViewer({ item }: FormTableCellViewerProps) {
         <AnalyticsGraph formId={item.id} intervalMinutes={60} />
         <DrawerFooter>
           <div className="flex flex-row gap-2 w-full">
-            <Link href={`/dashboard/builder/${item.id}`} className="flex-1">
+            <a href={`/dashboard/builder/${item.id}`} className="flex-1">
               <Button className="w-full cursor-pointer">
                 <Edit2Icon />
                 Edit Form
               </Button>
-            </Link>
-            <Link
+            </a>
+            <a
               href={`/dashboard/forms/${item.id}/analytics`}
               className="flex-1"
             >
@@ -58,10 +57,10 @@ export function FormTableCellViewer({ item }: FormTableCellViewerProps) {
                 <ChartLineIcon />
                 View Detailed Analytics
               </Button>
-            </Link>
+            </a>
           </div>
           <DrawerClose asChild>
-            <Link
+            <a
               href={`/dashboard/forms/${item.id}/responses`}
               className="flex-1"
             >
@@ -69,7 +68,7 @@ export function FormTableCellViewer({ item }: FormTableCellViewerProps) {
                 <DatabaseIcon />
                 View Responses
               </Button>
-            </Link>
+            </a>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

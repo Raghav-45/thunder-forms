@@ -12,8 +12,7 @@ import {
   IconCirclePlusFilled,
   IconMail
 } from '@tabler/icons-react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useLocation } from '@tanstack/react-router'
 import { ComponentType, FC } from 'react'
 import { sidebarSections } from '../../constants'
 
@@ -31,16 +30,16 @@ interface SidebarNavItemProps {
 const SidebarNavItem: FC<SidebarNavItemProps> = ({ item, isActive }) => (
   <SidebarMenuItem>
     <SidebarMenuButton tooltip={item.title} asChild>
-      <Link href={item.url} className={cn(isActive ? 'bg-sidebar-accent' : '')}>
+      <a href={item.url} className={cn(isActive ? 'bg-sidebar-accent' : '')}>
         {item.icon && <item.icon />}
         <span>{item.title}</span>
-      </Link>
+      </a>
     </SidebarMenuButton>
   </SidebarMenuItem>
 )
 
 export const SidebarSections: FC<SidebarSectionsProps> = ({}) => {
-  const pathname = usePathname()
+  const { pathname } = useLocation()
   const checkIsActive = (link: string) => {
     const isActive = pathname === link
     return isActive
@@ -51,7 +50,7 @@ export const SidebarSections: FC<SidebarSectionsProps> = ({}) => {
         <SidebarGroupContent className="flex flex-col gap-2">
           <SidebarMenu>
             <SidebarMenuItem className="flex items-center gap-2">
-              <Link href="/dashboard/builder/new-form" className="w-full">
+              <a href="/dashboard/builder/new-form" className="w-full">
                 <SidebarMenuButton
                   tooltip="Quick Create"
                   className="bg-primary cursor-pointer text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
@@ -59,7 +58,7 @@ export const SidebarSections: FC<SidebarSectionsProps> = ({}) => {
                   <IconCirclePlusFilled />
                   <span>New Form</span>
                 </SidebarMenuButton>
-              </Link>
+              </a>
               <Button
                 size="icon"
                 className="size-8 group-data-[collapsible=icon]:opacity-0"

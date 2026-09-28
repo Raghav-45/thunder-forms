@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Bell } from 'lucide-react'
-import { useParams } from 'next/navigation'
+import { useParams } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import {
   BrowserRadialChart,
@@ -65,7 +65,7 @@ function ErrorScreen({ error }: { error: string }) {
 }
 
 export default function FormAnalyticsPage() {
-  const { formId } = useParams()
+  const { formId } = useParams({ strict: false }) as { formId?: string }
   const [analyticsData, setAnalyticsData] = useState<FormAnalyticsData | null>(
     null
   )

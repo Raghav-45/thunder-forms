@@ -24,7 +24,6 @@ import {
 } from '../constants'
 import type { FormTemplateSpec } from '../types'
 import { ArrowRightIcon, EyeIcon, FileTextIcon } from 'lucide-react'
-import Link from 'next/link'
 import { useState } from 'react'
 
 function TemplateCard({ template }: { template: FormTemplateSpec }) {
@@ -70,10 +69,10 @@ function TemplateCard({ template }: { template: FormTemplateSpec }) {
           Preview
         </Button>
         <Button size="sm" className="flex-1 cursor-pointer" asChild>
-          <Link href={`/dashboard/builder/new-form?template=${template.slug}`}>
+          <a href={`/dashboard/builder/new-form?template=${template.slug}`}>
             Use template
             <ArrowRightIcon className="ml-1 size-4" />
-          </Link>
+          </a>
         </Button>
       </CardFooter>
 
@@ -128,10 +127,10 @@ function TemplateCard({ template }: { template: FormTemplateSpec }) {
               Close
             </Button>
             <Button className="cursor-pointer" asChild>
-              <Link href={`/dashboard/builder/new-form?template=${template.slug}`}>
+              <a href={`/dashboard/builder/new-form?template=${template.slug}`}>
                 Use this template
                 <ArrowRightIcon className="ml-1 size-4" />
-              </Link>
+              </a>
             </Button>
           </DialogFooter>
         </DialogContent>
