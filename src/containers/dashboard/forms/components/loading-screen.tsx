@@ -1,0 +1,45 @@
+'use client'
+
+import { Icons } from '@/components/Icons'
+import { Progress } from '@/components/ui/progress'
+import { useEffect, useState } from 'react'
+
+export default function LoadingScreen() {
+  const [progress, setProgress] = useState(8)
+  const [showProgress, setShowProgress] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowProgress(true)
+    }, 100)
+
+    const interval = setInterval(() => {
+      setProgress((prevProgress) => {
+        if (prevProgress >= 100) {
+          clearInterval(interval)
+          return 100
+        }
+        return prevProgress + 4
+      })
+    }, 100)
+
+    return () => {
+      clearTimeout(timer)
+      clearInterval(interval)
+    }
+  }, [])
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md">
+      <div className="text-3xl mb-6 font-semibold animate-pulse inline-flex align-center text-center">
+        <Icons.Logo className="h-auto w-8 mr-2" />
+        Thunder Forms
+      </div>
+      {showProgress && (
+        <div className="w-72 space-y-3">
+          <Progress value={progress} className="h-1.5 w-full" />
+        </div>
+      )}
+    </div>
+  )
+}
