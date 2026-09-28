@@ -8,9 +8,9 @@ import {
   isChoiceOptionValueInvalid,
 } from '@/features/form-builder/elements/choice-options'
 import {
-  BaseFieldConfig,
-  EditorProps,
-  FieldProps,
+  type BaseFieldConfig,
+  type EditorProps,
+  type FieldProps,
 } from '@/features/form-builder/types'
 import { Label } from '@/components/ui/label'
 import React, { useState } from 'react'

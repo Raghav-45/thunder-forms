@@ -2,9 +2,9 @@
 
 import { FormFieldDefinition } from '@/features/form-builder/elements/base'
 import {
-  BaseFieldConfig,
-  EditorProps,
-  FieldProps,
+  type BaseFieldConfig,
+  type EditorProps,
+  type FieldProps,
 } from '@/features/form-builder/types'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
