@@ -6,9 +6,9 @@ import {
   isPositiveFiniteNumber,
 } from '@/features/form-builder/elements/number-constraints'
 import {
-  BaseFieldConfig,
-  EditorProps,
-  FieldProps,
+  type BaseFieldConfig,
+  type EditorProps,
+  type FieldProps,
 } from '@/features/form-builder/types'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'

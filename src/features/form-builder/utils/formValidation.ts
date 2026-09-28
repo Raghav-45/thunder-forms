@@ -1,4 +1,4 @@
-import { FieldConfig, FIELD_REGISTRY } from '@/features/form-builder/elements'
+import { type FieldConfig, FIELD_REGISTRY } from '@/features/form-builder/elements'
 
 /**
  * Form validation dispatcher.

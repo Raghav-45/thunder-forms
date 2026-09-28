@@ -1,4 +1,4 @@
-import { FIELD_REGISTRY, FieldConfig } from '@/features/form-builder/elements'
+import { FIELD_REGISTRY, type FieldConfig } from '@/features/form-builder/elements'
 import type { AvailableFieldsType } from '@/features/form-builder/types'
 
 /**
