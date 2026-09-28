@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react'
-import { FC } from 'react'
+import { type FC } from 'react'
 
 export interface MetricCardProps {
   title: string

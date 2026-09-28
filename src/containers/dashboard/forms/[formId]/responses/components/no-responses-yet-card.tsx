@@ -1,5 +1,5 @@
 import { InboxIcon } from 'lucide-react'
-import { FC } from 'react'
+import { type FC } from 'react'
 
 const NoResponsesYetCard: FC = ({}) => {
   return (

@@ -13,7 +13,7 @@ import {
   IconMail
 } from '@tabler/icons-react'
 import { useLocation } from '@tanstack/react-router'
-import { ComponentType, FC } from 'react'
+import { type ComponentType, type FC } from 'react'
 import { sidebarSections } from '../../constants'
 
 interface SidebarSectionsProps {}

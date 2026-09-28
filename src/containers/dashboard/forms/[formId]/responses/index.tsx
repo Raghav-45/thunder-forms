@@ -13,8 +13,8 @@ import {
   IconLayoutColumns,
 } from '@tabler/icons-react'
 import {
-  ColumnDef,
-  ColumnFiltersState,
+  type ColumnDef,
+  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFacetedRowModel,
@@ -22,9 +22,9 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  SortingState,
+  type SortingState,
   useReactTable,
-  VisibilityState,
+  type VisibilityState,
 } from '@tanstack/react-table'
 import { useParams } from '@tanstack/react-router'
 import * as React from 'react'

@@ -6,7 +6,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { IconTrendingUp } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
-import { FC } from 'react'
+import { type FC } from 'react'
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 
 // Types for the analytics data
