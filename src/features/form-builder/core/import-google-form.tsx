@@ -20,7 +20,7 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import { type FC, useCallback, useEffect, useRef, useState } from 'react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useLocation, useNavigate, useSearch } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
 interface ImportGoogleFormProps {
@@ -64,10 +64,14 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({
   onImported,
   hasExistingContent = false,
 }) => {
-  const pathname = usePathname()
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const googleFormsImportResult = searchParams.get(GOOGLE_FORMS_IMPORT_OAUTH_RESULT_QUERY_PARAM)
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const searchParams = useSearch({ strict: false }) as Record<
+    string,
+    string | undefined
+  >
+  const googleFormsImportResult =
+    searchParams[GOOGLE_FORMS_IMPORT_OAUTH_RESULT_QUERY_PARAM]
   const [isOpen, setIsOpen] = useState(false)
   const [forms, setForms] = useState<GoogleFormSummary[]>([])
   const [search, setSearch] = useState('')
@@ -147,9 +151,9 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({
   useEffect(() => {
     if (!googleFormsImportResult) return
 
-    const nextParams = new URLSearchParams(searchParams.toString())
-    nextParams.delete(GOOGLE_FORMS_IMPORT_OAUTH_RESULT_QUERY_PARAM)
-    router.replace(`${pathname}${nextParams.size ? `?${nextParams}` : ''}`)
+    const nextSearch = { ...searchParams }
+    delete nextSearch[GOOGLE_FORMS_IMPORT_OAUTH_RESULT_QUERY_PARAM]
+    void navigate({ to: '.', search: nextSearch, replace: true })
 
     if (googleFormsImportResult === 'connected') {
       setIsOpen(true)
@@ -162,7 +166,7 @@ const ImportGoogleForm: FC<ImportGoogleFormProps> = ({
         ? 'Google access was not granted'
         : 'Could not connect to Google Forms',
     )
-  }, [googleFormsImportResult, pathname, router, searchParams])
+  }, [googleFormsImportResult, navigate, searchParams])
 
   async function connectGoogle() {
     setIsConnecting(true)

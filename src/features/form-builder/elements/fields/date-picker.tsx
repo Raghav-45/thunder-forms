@@ -143,7 +143,7 @@ const DatePickerComponent: React.FC<FieldProps<DatePickerConfig>> = ({
             selected={selectedDate}
             onSelect={handleSelect}
             disabled={isDateDisabled}
-            initialFocus
+            autoFocus
           />
         </PopoverContent>
       </Popover>
@@ -333,7 +333,7 @@ const DatePickerEditorComponent: React.FC<
                         onSelect={(date) =>
                           handleInputChange('minDate', date ? date.toISOString() : undefined)
                         }
-                        initialFocus
+                        autoFocus
                       />
                     </PopoverContent>
                   </Popover>
@@ -364,7 +364,7 @@ const DatePickerEditorComponent: React.FC<
                         onSelect={(date) =>
                           handleInputChange('maxDate', date ? date.toISOString() : undefined)
                         }
-                        initialFocus
+                        autoFocus
                       />
                     </PopoverContent>
                   </Popover>

@@ -212,7 +212,7 @@ const SingleSelectEditorComponent: React.FC<
   const sensors = (defaults: Sensors) => [
     ...defaults.filter((sensor) => sensor !== PointerSensor),
     PointerSensor.configure({
-      activationConstraints(event: PointerEvent, source) {
+      activationConstraints(event: PointerEvent, _source) {
         if (event.pointerType === 'touch') {
           return [
             new PointerActivationConstraints.Delay({

@@ -1,6 +1,7 @@
 'use client'
 
 import { FormFieldDefinition } from '@/features/form-builder/elements/base'
+import { cn } from '@/lib/utils'
 import {
   type BaseFieldConfig,
   type EditorProps,
@@ -92,7 +93,10 @@ const SwitchFieldComponent: React.FC<FieldProps<SwitchConfig>> = ({
             disabled={field.disabled}
             aria-label={field.label}
             tabIndex={0}
-            indeterminate={!isAnswered}
+            className={cn(
+              !isAnswered &&
+                'opacity-50 data-[state=unchecked]:bg-muted-foreground/40 [&_[data-slot=switch-thumb]]:!translate-x-[calc(50%-1px)] [&_[data-slot=switch-thumb]]:scale-75',
+            )}
           />
         </div>
       </div>

@@ -3,10 +3,8 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardDescription } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import {
-  AVAILABLE_FIELDS,
-  type AvailableFieldsType,
-} from '@/features/form-builder/types'
+import { FIELD_REGISTRY } from '@/features/form-builder/elements'
+import type { AvailableFieldsType } from '@/features/form-builder/types'
 import { cn } from '@/lib/utils'
 import { GripVerticalIcon } from 'lucide-react'
 import { memo } from 'react'
@@ -23,7 +21,7 @@ const COMING_SOON_FIELDS = [
   'Signature Input',
 ]
 
-const PALETTE = AVAILABLE_FIELDS.map((fieldType, index) => ({
+const PALETTE = Object.keys(FIELD_REGISTRY).map((fieldType, index) => ({
   id: `builder-palette-${fieldType}-${index}`,
   fieldType: fieldType as AvailableFieldsType,
 }))

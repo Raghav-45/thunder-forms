@@ -1,4 +1,4 @@
-import { FIELD_REGISTRY } from '@/features/form-builder/elements'
+import type { FIELD_REGISTRY } from '@/features/form-builder/elements'
 
 export type FieldType = { name: string; isAvailable: boolean; index?: number }
 
@@ -44,6 +44,3 @@ export interface EditorProps<T extends BaseFieldConfig = BaseFieldConfig> {
 
 /** Represents all available field identifiers. */
 export type AvailableFieldsType = keyof typeof FIELD_REGISTRY
-
-/** Mutable list retained for existing builder consumers. */
-export const AVAILABLE_FIELDS: string[] = Object.keys(FIELD_REGISTRY)

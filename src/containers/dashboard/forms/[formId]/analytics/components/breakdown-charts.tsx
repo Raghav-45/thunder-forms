@@ -241,7 +241,6 @@ export function ReferrerGraph({ data }: ReferrerGraphProps) {
             />
             <Bar
               dataKey="value"
-              layout="vertical"
               fill="var(--color-value)"
               radius={4}
             >
@@ -258,7 +257,9 @@ export function ReferrerGraph({ data }: ReferrerGraphProps) {
                 offset={8}
                 className="fill-foreground"
                 fontSize={12}
-                formatter={(value: number) => (value > 0 ? value : '')}
+                formatter={(value) =>
+                  typeof value === 'number' && value > 0 ? value : ''
+                }
               />
             </Bar>
           </BarChart>

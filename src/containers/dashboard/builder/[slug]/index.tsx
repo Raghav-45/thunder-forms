@@ -63,7 +63,6 @@ import type { ComponentType } from 'react'
 import {
   Suspense,
   createElement,
-  use,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -154,10 +153,6 @@ interface EditingSection {
   section: FormSection
 }
 
-interface FormBuilderProps {
-  params: Promise<{ slug: string }>
-}
-
 function createInitialState() {
   const firstPage = createPage()
 
@@ -181,7 +176,7 @@ function createQuizAwareField(
     : field
 }
 
-export default function BuilderPage({ params }: FormBuilderProps) {
+export default function BuilderPage({ slug }: { slug: string }) {
   return (
     <Suspense
       fallback={
@@ -190,19 +185,8 @@ export default function BuilderPage({ params }: FormBuilderProps) {
         </div>
       }
     >
-      <Builder params={params} />
+      <BuilderContent key={slug} paramFormId={slug} />
     </Suspense>
-  )
-}
-
-function Builder({ params }: FormBuilderProps) {
-  const { slug: paramFormId } = use(params)
-
-  return (
-    <BuilderContent
-      key={paramFormId}
-      paramFormId={paramFormId}
-    />
   )
 }
 
@@ -218,7 +202,7 @@ function BuilderContent({
   const googleSheetsResult = search[GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM]
   const { formSettings, setFormSettings } = useFormStore()
   const { data: session, isPending: isSessionPending } = authClient.useSession()
-  const [currentFormId, setCurrentFormId] = useState(paramFormId)
+  const currentFormId = paramFormId
   const [activePageId, setActivePageId] = useState(initialState.activePageId)
   const [editingField, setEditingField] = useState<EditingField | null>(null)
   const [editingSection, setEditingSection] = useState<EditingSection | null>(null)
@@ -660,8 +644,10 @@ function BuilderContent({
       }
       if (isNewForm) {
         const { data } = await axios.post('/api/forms/new', payload)
-        setCurrentFormId(data.id)
-        window.history.replaceState(null, '', `/dashboard/builder/${data.id}`)
+        await navigate({
+          to: '/dashboard/builder/$slug',
+          params: { slug: data.id },
+        })
         toast.success('Form created successfully')
       } else {
         await axios.post(`/api/forms/${currentFormId}/update`, payload)
@@ -692,6 +678,7 @@ function BuilderContent({
     formStructure,
     hasInvalidPersistedStructure,
     isNewForm,
+    navigate,
     refetchForm,
     isSessionPending,
     session?.user,

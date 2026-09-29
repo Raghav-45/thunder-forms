@@ -90,7 +90,7 @@ export function FinalCta() {
             <ArrowRight className="size-4" />
           </Link>
           <Link
-            to="/templates"
+            to="/dashboard/templates"
             className={cn(
               buttonVariants({ variant: 'outline', size: 'lg' }),
               'px-6'

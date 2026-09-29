@@ -1,4 +1,4 @@
-import { FieldConfig } from '@/features/form-builder/elements'
+import type { FieldConfig } from '@/features/form-builder/elements'
 import { Icons } from '@/components/Icons'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { ShineBorder } from '@/components/ui/shine-border'
 import { Textarea } from '@/components/ui/textarea'
-import { FC, useState } from 'react'
+import { type FC, useState } from 'react'
 import { toast } from 'sonner'
 
 interface GenerateWithAiPromptProps {

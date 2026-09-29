@@ -15,10 +15,11 @@ export function MainNav() {
       </Link>
       <nav className="ml-6 flex items-center gap-4 text-sm lg:gap-6">
         <Link
-          to="/dashboard/builder/new-form"
+          to="/dashboard/builder/$slug"
+          params={{ slug: 'new-form' }}
           className={cn(
             'transition-colors hover:text-foreground/80',
-            pathname?.startsWith('/forms/new-form')
+            pathname?.startsWith('/dashboard/builder')
               ? 'text-foreground'
               : 'text-foreground/60'
           )}
@@ -26,16 +27,16 @@ export function MainNav() {
           Build a form
         </Link>
         <Link
-          to="/templates"
+          to="/dashboard/templates"
           className={cn(
             'transition-colors hover:text-foreground/80 flex',
-            pathname?.startsWith('/templates')
+            pathname?.startsWith('/dashboard/templates')
               ? 'text-foreground'
               : 'text-foreground/60'
           )}
         >
           Templates{' '}
-          {!pathname?.startsWith('/templates') && (
+          {!pathname?.startsWith('/dashboard/templates') && (
             <Badge
               variant="outline"
               className="ml-1 h-full bg-blue-500 px-1.5 py-0.5 text-blue-100 align-middle text-xs leading-none"
