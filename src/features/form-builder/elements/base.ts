@@ -1,9 +1,9 @@
-import {
-  type BaseFieldConfig,
-  type EditorProps,
-  type FieldProps,
-} from '@/features/form-builder/types'
-import { z } from 'zod'
+import type { z } from "zod";
+import type {
+	BaseFieldConfig,
+	EditorProps,
+	FieldProps,
+} from "@/features/form-builder/types";
 
 /**
  * Abstract base class for all form field definitions.
@@ -24,20 +24,22 @@ import { z } from 'zod'
  *
  */
 export abstract class FormFieldDefinition<
-  TConfig extends BaseFieldConfig = BaseFieldConfig,
+	TConfig extends BaseFieldConfig = BaseFieldConfig,
 > {
-  /** Unique string key for this field type (e.g. 'text-input', 'multi-select') */
-  abstract readonly identifier: TConfig['uniqueIdentifier']
+	/** Unique string key for this field type (e.g. 'text-input', 'multi-select') */
+	abstract readonly identifier: TConfig["uniqueIdentifier"];
 
-  /** The React component that renders this field in a live form */
-  abstract readonly component: React.FC<FieldProps<TConfig>>
+	/** The React component that renders this field in a live form */
+	abstract readonly component: React.FC<FieldProps<TConfig>>;
 
-  /** The React component that renders the editor panel for configuring this field */
-  abstract readonly editor: React.FC<EditorProps<TConfig> & { isOpen: boolean }>
+	/** The React component that renders the editor panel for configuring this field */
+	abstract readonly editor: React.FC<
+		EditorProps<TConfig> & { isOpen: boolean }
+	>;
 
-  /** Creates a fresh default configuration for a new instance of this field */
-  abstract defaultConfig(): TConfig
+	/** Creates a fresh default configuration for a new instance of this field */
+	abstract defaultConfig(): TConfig;
 
-  /** Builds a Zod validation schema based on the field's current configuration */
-  abstract getValidationSchema(field: TConfig): z.ZodTypeAny
+	/** Builds a Zod validation schema based on the field's current configuration */
+	abstract getValidationSchema(field: TConfig): z.ZodTypeAny;
 }

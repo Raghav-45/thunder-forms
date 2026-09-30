@@ -1,97 +1,97 @@
-import { randomUUID } from 'node:crypto'
+import { randomUUID } from "node:crypto";
+import { prisma } from "@/db";
+import { FileUploadStatus } from "@/generated/prisma/client";
+import { GOOGLE_DRIVE_STORAGE_PROVIDER } from "../constants";
+import { googleDriveStorageProvider } from "./storage";
 
-import { FileUploadStatus } from '@/generated/prisma/client'
-import { prisma } from '@/db'
-import { GOOGLE_DRIVE_STORAGE_PROVIDER } from '../constants'
-import { googleDriveStorageProvider } from './storage'
-
-const SESSION_LIFETIME_MS = 2 * 60 * 60 * 1000
+const SESSION_LIFETIME_MS = 2 * 60 * 60 * 1000;
 
 export function fileUploadSessionCookieName(formId: string) {
-  return `file-upload-session-${formId}`
+	return `file-upload-session-${formId}`;
 }
 
 export function getFileUploadSessionCookie(request: Request, formId: string) {
-  const name = `${fileUploadSessionCookieName(formId)}=`
-  return request.headers
-    .get('cookie')
-    ?.split(';')
-    .map((part) => part.trim())
-    .find((part) => part.startsWith(name))
-    ?.slice(name.length)
+	const name = `${fileUploadSessionCookieName(formId)}=`;
+	return request.headers
+		.get("cookie")
+		?.split(";")
+		.map((part) => part.trim())
+		.find((part) => part.startsWith(name))
+		?.slice(name.length);
 }
 
 export function setFileUploadSessionCookie(
-  response: Response,
-  formId: string,
-  sessionId: string,
+	response: Response,
+	formId: string,
+	sessionId: string,
 ) {
-  const attributes = [
-    `${fileUploadSessionCookieName(formId)}=${encodeURIComponent(sessionId)}`,
-    `Max-Age=${FILE_UPLOAD_SESSION_MAX_AGE}`,
-    `Path=/api/forms/${formId}`,
-    'HttpOnly',
-    'SameSite=Lax',
-  ]
-  if (process.env.NODE_ENV === 'production') attributes.push('Secure')
-  response.headers.append('Set-Cookie', attributes.join('; '))
-  return response
+	const attributes = [
+		`${fileUploadSessionCookieName(formId)}=${encodeURIComponent(sessionId)}`,
+		`Max-Age=${FILE_UPLOAD_SESSION_MAX_AGE}`,
+		`Path=/api/forms/${formId}`,
+		"HttpOnly",
+		"SameSite=Lax",
+	];
+	if (process.env.NODE_ENV === "production") attributes.push("Secure");
+	response.headers.append("Set-Cookie", attributes.join("; "));
+	return response;
 }
 
 export async function getOrCreateFileUploadSession(
-  formId: string,
-  sessionId?: string,
+	formId: string,
+	sessionId?: string,
 ) {
-  if (sessionId) {
-    const existing = await prisma.file_upload_sessions.findFirst({
-      where: { id: sessionId, formId, expiresAt: { gt: new Date() } },
-    })
-    if (existing) return { session: existing, created: false }
-  }
+	if (sessionId) {
+		const existing = await prisma.file_upload_sessions.findFirst({
+			where: { id: sessionId, formId, expiresAt: { gt: new Date() } },
+		});
+		if (existing) return { session: existing, created: false };
+	}
 
-  const session = await prisma.file_upload_sessions.create({
-    data: {
-      id: randomUUID(),
-      formId,
-      expiresAt: new Date(Date.now() + SESSION_LIFETIME_MS),
-    },
-  })
-  return { session, created: true }
+	const session = await prisma.file_upload_sessions.create({
+		data: {
+			id: randomUUID(),
+			formId,
+			expiresAt: new Date(Date.now() + SESSION_LIFETIME_MS),
+		},
+	});
+	return { session, created: true };
 }
 
 export async function deleteExpiredFileUploadSessions() {
-  const sessions = await prisma.file_upload_sessions.findMany({
-    where: { expiresAt: { lte: new Date() } },
-    include: {
-      uploads: {
-        where: { status: FileUploadStatus.PENDING },
-        include: { destination: { include: { connection: true } } },
-      },
-    },
-    take: 25,
-  })
+	const sessions = await prisma.file_upload_sessions.findMany({
+		where: { expiresAt: { lte: new Date() } },
+		include: {
+			uploads: {
+				where: { status: FileUploadStatus.PENDING },
+				include: { destination: { include: { connection: true } } },
+			},
+		},
+		take: 25,
+	});
 
-  for (const session of sessions) {
-    let deletionFailed = false
-    for (const upload of session.uploads) {
-      if (upload.destination.provider !== GOOGLE_DRIVE_STORAGE_PROVIDER) {
-        deletionFailed = true
-        continue
-      }
-      try {
-        await googleDriveStorageProvider.delete({
-          encryptedRefreshToken: upload.destination.connection.encryptedRefreshToken,
-          storageKey: upload.storageKey,
-        })
-      } catch (error) {
-        console.error('Failed to remove expired Google Drive upload:', error)
-        deletionFailed = true
-      }
-    }
-    if (!deletionFailed) {
-      await prisma.file_upload_sessions.delete({ where: { id: session.id } })
-    }
-  }
+	for (const session of sessions) {
+		let deletionFailed = false;
+		for (const upload of session.uploads) {
+			if (upload.destination.provider !== GOOGLE_DRIVE_STORAGE_PROVIDER) {
+				deletionFailed = true;
+				continue;
+			}
+			try {
+				await googleDriveStorageProvider.delete({
+					encryptedRefreshToken:
+						upload.destination.connection.encryptedRefreshToken,
+					storageKey: upload.storageKey,
+				});
+			} catch (error) {
+				console.error("Failed to remove expired Google Drive upload:", error);
+				deletionFailed = true;
+			}
+		}
+		if (!deletionFailed) {
+			await prisma.file_upload_sessions.delete({ where: { id: session.id } });
+		}
+	}
 }
 
-export const FILE_UPLOAD_SESSION_MAX_AGE = SESSION_LIFETIME_MS / 1000
+export const FILE_UPLOAD_SESSION_MAX_AGE = SESSION_LIFETIME_MS / 1000;

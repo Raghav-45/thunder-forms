@@ -1,10 +1,10 @@
-import AuthPage from '#/containers/auth'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
+import AuthPage from "#/containers/auth";
 
-export const Route = createFileRoute('/auth/')({
-  component: RouteComponent,
-})
+export const Route = createFileRoute("/auth/")({
+	component: RouteComponent,
+});
 
 function RouteComponent() {
-  return <AuthPage />
+	return <AuthPage />;
 }

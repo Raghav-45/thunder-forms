@@ -1,108 +1,126 @@
-import { Button } from '@/components/ui/button'
+import { IconCirclePlusFilled, IconMail } from "@tabler/icons-react";
+import { Link, useLocation } from "@tanstack/react-router";
+import type { ComponentType, FC } from "react";
+import { Button } from "@/components/ui/button";
 import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem
-} from '@/components/ui/sidebar'
-import { cn } from '@/lib/utils'
-import {
-  IconCirclePlusFilled,
-  IconMail
-} from '@tabler/icons-react'
-import { useLocation } from '@tanstack/react-router'
-import { type ComponentType, type FC } from 'react'
-import { sidebarSections } from '../../constants'
+	SidebarGroup,
+	SidebarGroupContent,
+	SidebarGroupLabel,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
+import { sidebarSections } from "../../constants";
 
-interface SidebarSectionsProps {}
+type SidebarSectionsProps = {};
 
 interface SidebarNavItemProps {
-  item: {
-    title: string
-    url: string
-    icon?: ComponentType
-  }
-  isActive: boolean
+	item: {
+		title: string;
+		url: string;
+		icon?: ComponentType;
+	};
+	isActive: boolean;
 }
 
 const SidebarNavItem: FC<SidebarNavItemProps> = ({ item, isActive }) => (
-  <SidebarMenuItem>
-    <SidebarMenuButton tooltip={item.title} asChild>
-      <a href={item.url} className={cn(isActive ? 'bg-sidebar-accent' : '')}>
-        {item.icon && <item.icon />}
-        <span>{item.title}</span>
-      </a>
-    </SidebarMenuButton>
-  </SidebarMenuItem>
-)
+	<SidebarMenuItem>
+		<SidebarMenuButton tooltip={item.title} asChild>
+			{item.url.startsWith("/") ? (
+				<Link to={item.url} className={cn(isActive ? "bg-sidebar-accent" : "")}>
+					{item.icon && <item.icon />}
+					<span>{item.title}</span>
+				</Link>
+			) : (
+				<a href={item.url} className={cn(isActive ? "bg-sidebar-accent" : "")}>
+					{item.icon && <item.icon />}
+					<span>{item.title}</span>
+				</a>
+			)}
+		</SidebarMenuButton>
+	</SidebarMenuItem>
+);
 
 export const SidebarSections: FC<SidebarSectionsProps> = ({}) => {
-  const { pathname } = useLocation()
-  const checkIsActive = (link: string) => {
-    const isActive = pathname === link
-    return isActive
-  }
-  return (
-    <>
-      <SidebarGroup>
-        <SidebarGroupContent className="flex flex-col gap-2">
-          <SidebarMenu>
-            <SidebarMenuItem className="flex items-center gap-2">
-              <a href="/dashboard/builder/new-form" className="w-full">
-                <SidebarMenuButton
-                  tooltip="Quick Create"
-                  className="bg-primary cursor-pointer text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
-                >
-                  <IconCirclePlusFilled />
-                  <span>New Form</span>
-                </SidebarMenuButton>
-              </a>
-              <Button
-                size="icon"
-                className="size-8 group-data-[collapsible=icon]:opacity-0"
-                variant="outline"
-              >
-                <IconMail />
-                <span className="sr-only">Inbox</span>
-              </Button>
-            </SidebarMenuItem>
-          </SidebarMenu>
-          <SidebarMenu>
-            {sidebarSections[0].items.map((item) => (
-              <SidebarNavItem key={item.title} item={item} isActive={checkIsActive(item.url)} />
-            ))}
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
-      {sidebarSections.slice(1).map((section, index) => (
-        <SidebarGroup
-          key={section.title ?? index}
-          className={cn(
-            'group-data-[collapsible=icon]:hidden',
-            index === sidebarSections.length - 2 && 'mt-auto',
-          )}
-        >
-          <SidebarGroupContent>
-            {section.title && <SidebarGroupLabel>{section.title}</SidebarGroupLabel>}
-            <SidebarMenu>
-              {/* //NOTE: The following code is commented out because it was not being
+	const { pathname } = useLocation();
+	const checkIsActive = (link: string) => {
+		const isActive = pathname === link;
+		return isActive;
+	};
+	return (
+		<>
+			<SidebarGroup>
+				<SidebarGroupContent className="flex flex-col gap-2">
+					<SidebarMenu>
+						<SidebarMenuItem className="flex items-center gap-2">
+							<Link
+								to="/dashboard/builder/$slug"
+								params={{ slug: "new-form" }}
+								className="w-full"
+							>
+								<SidebarMenuButton
+									tooltip="Quick Create"
+									className="bg-primary cursor-pointer text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
+								>
+									<IconCirclePlusFilled />
+									<span>New Form</span>
+								</SidebarMenuButton>
+							</Link>
+							<Button
+								size="icon"
+								className="size-8 group-data-[collapsible=icon]:opacity-0"
+								variant="outline"
+							>
+								<IconMail />
+								<span className="sr-only">Inbox</span>
+							</Button>
+						</SidebarMenuItem>
+					</SidebarMenu>
+					<SidebarMenu>
+						{sidebarSections[0].items.map((item) => (
+							<SidebarNavItem
+								key={item.title}
+								item={item}
+								isActive={checkIsActive(item.url)}
+							/>
+						))}
+					</SidebarMenu>
+				</SidebarGroupContent>
+			</SidebarGroup>
+			{sidebarSections.slice(1).map((section, index) => (
+				<SidebarGroup
+					key={section.title ?? index}
+					className={cn(
+						"group-data-[collapsible=icon]:hidden",
+						index === sidebarSections.length - 2 && "mt-auto",
+					)}
+				>
+					<SidebarGroupContent>
+						{section.title && (
+							<SidebarGroupLabel>{section.title}</SidebarGroupLabel>
+						)}
+						<SidebarMenu>
+							{/* //NOTE: The following code is commented out because it was not being
               used as we dont have lots of items to display. It can be uncommented
               and used later if needed. */}
-              {/* <SidebarMenuItem>
+							{/* <SidebarMenuItem>
                 <SidebarMenuButton className="text-sidebar-foreground/70">
                   <IconDots className="text-sidebar-foreground/70" />
                   <span>More</span>
                 </SidebarMenuButton>
               </SidebarMenuItem> */}
-              {section.items.map((item) => (
-                <SidebarNavItem key={item.title} item={item} isActive={checkIsActive(item.url)} />
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      ))}
-    </>
-  )
-}
+							{section.items.map((item) => (
+								<SidebarNavItem
+									key={item.title}
+									item={item}
+									isActive={checkIsActive(item.url)}
+								/>
+							))}
+						</SidebarMenu>
+					</SidebarGroupContent>
+				</SidebarGroup>
+			))}
+		</>
+	);
+};

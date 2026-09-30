@@ -10,12 +10,16 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
+import { Route as ApiFormsRouteImport } from './routes/api/forms'
 import { Route as ApiGeneratewithaiRouteRouteImport } from './routes/api/generatewithai/route'
+import { Route as ApiHealthcheckRouteImport } from './routes/api/healthcheck'
+import { Route as ApiTemplatesRouteImport } from './routes/api/templates'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
-import { Route as DemoBetterAuthRouteImport } from './routes/demo/better-auth'
-import { Route as DemoPrismaRouteImport } from './routes/demo/prisma'
-import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
+import { Route as Landing1IndexRouteImport } from './routes/landing-1/index'
+import { Route as TemplatesIndexRouteImport } from './routes/templates/index'
+import { Route as ApiAnalyticsOverviewRouteImport } from './routes/api/analytics/overview'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiFormsIdRouteImport } from './routes/api/forms/$id'
 import { Route as ApiFormsImportGoogleFormRouteImport } from './routes/api/forms/import-google-form'
@@ -24,14 +28,29 @@ import { Route as AuthLoginIndexRouteImport } from './routes/auth/login/index'
 import { Route as AuthSignupIndexRouteImport } from './routes/auth/signup/index'
 import { Route as DashboardFormsIndexRouteImport } from './routes/dashboard/forms/index'
 import { Route as DashboardTemplatesIndexRouteImport } from './routes/dashboard/templates/index'
+import { Route as FormsSlugIndexRouteImport } from './routes/forms/$slug/index'
+import { Route as ApiAnalyticsFormsIdRouteImport } from './routes/api/analytics/forms/$id'
+import { Route as ApiFormsIdDeleteRouteImport } from './routes/api/forms/$id/delete'
+import { Route as ApiFormsIdDuplicateRouteImport } from './routes/api/forms/$id/duplicate'
+import { Route as ApiFormsIdResponsesRouteImport } from './routes/api/forms/$id/responses'
+import { Route as ApiFormsIdSubmitRouteImport } from './routes/api/forms/$id/submit'
 import { Route as ApiFormsIdUpdateRouteImport } from './routes/api/forms/$id/update'
 import { Route as ApiFormsIdUploadsRouteImport } from './routes/api/forms/$id/uploads'
+import { Route as ApiFormsIdViewFormRouteImport } from './routes/api/forms/$id/viewForm'
 import { Route as ApiFormsImportGoogleFormConnectRouteImport } from './routes/api/forms/import-google-form/connect'
 import { Route as ApiIntegrationsFileUploadsCallbackRouteImport } from './routes/api/integrations/file-uploads/callback'
 import { Route as ApiIntegrationsGoogleFormsImportCallbackRouteImport } from './routes/api/integrations/google-forms-import/callback'
 import { Route as ApiIntegrationsGoogleSheetsCallbackRouteImport } from './routes/api/integrations/google-sheets/callback'
+import { Route as ApiInternalGoogleSheetsSyncRouteImport } from './routes/api/internal/google-sheets/sync'
 import { Route as DashboardBuilderSlugIndexRouteImport } from './routes/dashboard/builder/$slug/index'
+import { Route as DashboardFormsFormIdAnalyticsRouteImport } from './routes/dashboard/forms/$formId/analytics'
+import { Route as DashboardFormsFormIdResponsesRouteImport } from './routes/dashboard/forms/$formId/responses'
+import { Route as ApiAnalyticsFormsIdOverviewRouteImport } from './routes/api/analytics/forms/$id/overview'
+import { Route as ApiAnalyticsFormsIdTodayRouteImport } from './routes/api/analytics/forms/$id/today'
+import { Route as ApiAnalyticsFormsIdV2RouteImport } from './routes/api/analytics/forms/$id/v2'
 import { Route as ApiFormsIdIntegrationsGoogleSheetsRouteImport } from './routes/api/forms/$id/integrations/google-sheets'
+import { Route as ApiFormsIdUploadsUploadIdRouteImport } from './routes/api/forms/$id/uploads/$uploadId'
+import { Route as ApiAnalyticsFormsIdV2DetailedRouteImport } from './routes/api/analytics/forms/$id/v2/detailed'
 import { Route as ApiFormsIdIntegrationsGoogleSheetsConnectRouteImport } from './routes/api/forms/$id/integrations/google-sheets/connect'
 import { Route as ApiFormsIdIntegrationsGoogleSheetsCreateRouteImport } from './routes/api/forms/$id/integrations/google-sheets/create'
 import { Route as ApiFormsIdIntegrationsGoogleSheetsPickerTokenRouteImport } from './routes/api/forms/$id/integrations/google-sheets/picker-token'
@@ -46,9 +65,29 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRouteRoute = DashboardRouteRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFormsRoute = ApiFormsRouteImport.update({
+  id: '/api/forms',
+  path: '/api/forms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGeneratewithaiRouteRoute = ApiGeneratewithaiRouteRouteImport.update({
   id: '/api/generatewithai',
   path: '/api/generatewithai',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthcheckRoute = ApiHealthcheckRouteImport.update({
+  id: '/api/healthcheck',
+  path: '/api/healthcheck',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTemplatesRoute = ApiTemplatesRouteImport.update({
+  id: '/api/templates',
+  path: '/api/templates',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthIndexRoute = AuthIndexRouteImport.update({
@@ -57,23 +96,23 @@ const AuthIndexRoute = AuthIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
-  id: '/dashboard/',
-  path: '/dashboard/',
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const Landing1IndexRoute = Landing1IndexRouteImport.update({
+  id: '/landing-1/',
+  path: '/landing-1/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoBetterAuthRoute = DemoBetterAuthRouteImport.update({
-  id: '/demo/better-auth',
-  path: '/demo/better-auth',
+const TemplatesIndexRoute = TemplatesIndexRouteImport.update({
+  id: '/templates/',
+  path: '/templates/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoPrismaRoute = DemoPrismaRouteImport.update({
-  id: '/demo/prisma',
-  path: '/demo/prisma',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
-  id: '/demo/tanstack-query',
-  path: '/demo/tanstack-query',
+const ApiAnalyticsOverviewRoute = ApiAnalyticsOverviewRouteImport.update({
+  id: '/api/analytics/overview',
+  path: '/api/analytics/overview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -82,20 +121,20 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiFormsIdRoute = ApiFormsIdRouteImport.update({
-  id: '/api/forms/$id',
-  path: '/api/forms/$id',
-  getParentRoute: () => rootRouteImport,
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiFormsRoute,
 } as any)
 const ApiFormsImportGoogleFormRoute =
   ApiFormsImportGoogleFormRouteImport.update({
-    id: '/api/forms/import-google-form',
-    path: '/api/forms/import-google-form',
-    getParentRoute: () => rootRouteImport,
+    id: '/import-google-form',
+    path: '/import-google-form',
+    getParentRoute: () => ApiFormsRoute,
   } as any)
 const ApiFormsNewRoute = ApiFormsNewRouteImport.update({
-  id: '/api/forms/new',
-  path: '/api/forms/new',
-  getParentRoute: () => rootRouteImport,
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => ApiFormsRoute,
 } as any)
 const AuthLoginIndexRoute = AuthLoginIndexRouteImport.update({
   id: '/auth/login/',
@@ -108,14 +147,44 @@ const AuthSignupIndexRoute = AuthSignupIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardFormsIndexRoute = DashboardFormsIndexRouteImport.update({
-  id: '/dashboard/forms/',
-  path: '/dashboard/forms/',
-  getParentRoute: () => rootRouteImport,
+  id: '/forms/',
+  path: '/forms/',
+  getParentRoute: () => DashboardRouteRoute,
 } as any)
 const DashboardTemplatesIndexRoute = DashboardTemplatesIndexRouteImport.update({
-  id: '/dashboard/templates/',
-  path: '/dashboard/templates/',
+  id: '/templates/',
+  path: '/templates/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const FormsSlugIndexRoute = FormsSlugIndexRouteImport.update({
+  id: '/forms/$slug/',
+  path: '/forms/$slug/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAnalyticsFormsIdRoute = ApiAnalyticsFormsIdRouteImport.update({
+  id: '/api/analytics/forms/$id',
+  path: '/api/analytics/forms/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFormsIdDeleteRoute = ApiFormsIdDeleteRouteImport.update({
+  id: '/delete',
+  path: '/delete',
+  getParentRoute: () => ApiFormsIdRoute,
+} as any)
+const ApiFormsIdDuplicateRoute = ApiFormsIdDuplicateRouteImport.update({
+  id: '/duplicate',
+  path: '/duplicate',
+  getParentRoute: () => ApiFormsIdRoute,
+} as any)
+const ApiFormsIdResponsesRoute = ApiFormsIdResponsesRouteImport.update({
+  id: '/responses',
+  path: '/responses',
+  getParentRoute: () => ApiFormsIdRoute,
+} as any)
+const ApiFormsIdSubmitRoute = ApiFormsIdSubmitRouteImport.update({
+  id: '/submit',
+  path: '/submit',
+  getParentRoute: () => ApiFormsIdRoute,
 } as any)
 const ApiFormsIdUpdateRoute = ApiFormsIdUpdateRouteImport.update({
   id: '/update',
@@ -125,6 +194,11 @@ const ApiFormsIdUpdateRoute = ApiFormsIdUpdateRouteImport.update({
 const ApiFormsIdUploadsRoute = ApiFormsIdUploadsRouteImport.update({
   id: '/uploads',
   path: '/uploads',
+  getParentRoute: () => ApiFormsIdRoute,
+} as any)
+const ApiFormsIdViewFormRoute = ApiFormsIdViewFormRouteImport.update({
+  id: '/viewForm',
+  path: '/viewForm',
   getParentRoute: () => ApiFormsIdRoute,
 } as any)
 const ApiFormsImportGoogleFormConnectRoute =
@@ -151,17 +225,64 @@ const ApiIntegrationsGoogleSheetsCallbackRoute =
     path: '/api/integrations/google-sheets/callback',
     getParentRoute: () => rootRouteImport,
   } as any)
-const DashboardBuilderSlugIndexRoute =
-  DashboardBuilderSlugIndexRouteImport.update({
-    id: '/dashboard/builder/$slug/',
-    path: '/dashboard/builder/$slug/',
+const ApiInternalGoogleSheetsSyncRoute =
+  ApiInternalGoogleSheetsSyncRouteImport.update({
+    id: '/api/internal/google-sheets/sync',
+    path: '/api/internal/google-sheets/sync',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DashboardBuilderSlugIndexRoute =
+  DashboardBuilderSlugIndexRouteImport.update({
+    id: '/builder/$slug/',
+    path: '/builder/$slug/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardFormsFormIdAnalyticsRoute =
+  DashboardFormsFormIdAnalyticsRouteImport.update({
+    id: '/forms/$formId/analytics',
+    path: '/forms/$formId/analytics',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardFormsFormIdResponsesRoute =
+  DashboardFormsFormIdResponsesRouteImport.update({
+    id: '/forms/$formId/responses',
+    path: '/forms/$formId/responses',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const ApiAnalyticsFormsIdOverviewRoute =
+  ApiAnalyticsFormsIdOverviewRouteImport.update({
+    id: '/overview',
+    path: '/overview',
+    getParentRoute: () => ApiAnalyticsFormsIdRoute,
+  } as any)
+const ApiAnalyticsFormsIdTodayRoute =
+  ApiAnalyticsFormsIdTodayRouteImport.update({
+    id: '/today',
+    path: '/today',
+    getParentRoute: () => ApiAnalyticsFormsIdRoute,
+  } as any)
+const ApiAnalyticsFormsIdV2Route = ApiAnalyticsFormsIdV2RouteImport.update({
+  id: '/v2',
+  path: '/v2',
+  getParentRoute: () => ApiAnalyticsFormsIdRoute,
+} as any)
 const ApiFormsIdIntegrationsGoogleSheetsRoute =
   ApiFormsIdIntegrationsGoogleSheetsRouteImport.update({
     id: '/integrations/google-sheets',
     path: '/integrations/google-sheets',
     getParentRoute: () => ApiFormsIdRoute,
+  } as any)
+const ApiFormsIdUploadsUploadIdRoute =
+  ApiFormsIdUploadsUploadIdRouteImport.update({
+    id: '/$uploadId',
+    path: '/$uploadId',
+    getParentRoute: () => ApiFormsIdUploadsRoute,
+  } as any)
+const ApiAnalyticsFormsIdV2DetailedRoute =
+  ApiAnalyticsFormsIdV2DetailedRouteImport.update({
+    id: '/detailed',
+    path: '/detailed',
+    getParentRoute: () => ApiAnalyticsFormsIdV2Route,
   } as any)
 const ApiFormsIdIntegrationsGoogleSheetsConnectRoute =
   ApiFormsIdIntegrationsGoogleSheetsConnectRouteImport.update({
@@ -214,12 +335,16 @@ const ApiFormsIdUploadsFieldsFieldIdSelectionRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/api/generatewithai': typeof ApiGeneratewithaiRouteRoute
-  '/demo/better-auth': typeof DemoBetterAuthRoute
-  '/demo/prisma': typeof DemoPrismaRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/api/forms': typeof ApiFormsRouteWithChildren
+  '/api/healthcheck': typeof ApiHealthcheckRoute
+  '/api/templates': typeof ApiTemplatesRoute
   '/auth/': typeof AuthIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/landing-1/': typeof Landing1IndexRoute
+  '/templates/': typeof TemplatesIndexRoute
+  '/api/analytics/overview': typeof ApiAnalyticsOverviewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/forms/$id': typeof ApiFormsIdRouteWithChildren
   '/api/forms/import-google-form': typeof ApiFormsImportGoogleFormRouteWithChildren
@@ -228,14 +353,29 @@ export interface FileRoutesByFullPath {
   '/auth/signup/': typeof AuthSignupIndexRoute
   '/dashboard/forms/': typeof DashboardFormsIndexRoute
   '/dashboard/templates/': typeof DashboardTemplatesIndexRoute
+  '/forms/$slug/': typeof FormsSlugIndexRoute
+  '/api/analytics/forms/$id': typeof ApiAnalyticsFormsIdRouteWithChildren
+  '/api/forms/$id/delete': typeof ApiFormsIdDeleteRoute
+  '/api/forms/$id/duplicate': typeof ApiFormsIdDuplicateRoute
+  '/api/forms/$id/responses': typeof ApiFormsIdResponsesRoute
+  '/api/forms/$id/submit': typeof ApiFormsIdSubmitRoute
   '/api/forms/$id/update': typeof ApiFormsIdUpdateRoute
   '/api/forms/$id/uploads': typeof ApiFormsIdUploadsRouteWithChildren
+  '/api/forms/$id/viewForm': typeof ApiFormsIdViewFormRoute
   '/api/forms/import-google-form/connect': typeof ApiFormsImportGoogleFormConnectRoute
   '/api/integrations/file-uploads/callback': typeof ApiIntegrationsFileUploadsCallbackRoute
   '/api/integrations/google-forms-import/callback': typeof ApiIntegrationsGoogleFormsImportCallbackRoute
   '/api/integrations/google-sheets/callback': typeof ApiIntegrationsGoogleSheetsCallbackRoute
+  '/api/internal/google-sheets/sync': typeof ApiInternalGoogleSheetsSyncRoute
+  '/dashboard/forms/$formId/analytics': typeof DashboardFormsFormIdAnalyticsRoute
+  '/dashboard/forms/$formId/responses': typeof DashboardFormsFormIdResponsesRoute
   '/dashboard/builder/$slug/': typeof DashboardBuilderSlugIndexRoute
+  '/api/analytics/forms/$id/overview': typeof ApiAnalyticsFormsIdOverviewRoute
+  '/api/analytics/forms/$id/today': typeof ApiAnalyticsFormsIdTodayRoute
+  '/api/analytics/forms/$id/v2': typeof ApiAnalyticsFormsIdV2RouteWithChildren
   '/api/forms/$id/integrations/google-sheets': typeof ApiFormsIdIntegrationsGoogleSheetsRouteWithChildren
+  '/api/forms/$id/uploads/$uploadId': typeof ApiFormsIdUploadsUploadIdRoute
+  '/api/analytics/forms/$id/v2/detailed': typeof ApiAnalyticsFormsIdV2DetailedRoute
   '/api/forms/$id/integrations/google-sheets/connect': typeof ApiFormsIdIntegrationsGoogleSheetsConnectRoute
   '/api/forms/$id/integrations/google-sheets/create': typeof ApiFormsIdIntegrationsGoogleSheetsCreateRoute
   '/api/forms/$id/integrations/google-sheets/picker-token': typeof ApiFormsIdIntegrationsGoogleSheetsPickerTokenRoute
@@ -248,11 +388,14 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/generatewithai': typeof ApiGeneratewithaiRouteRoute
-  '/demo/better-auth': typeof DemoBetterAuthRoute
-  '/demo/prisma': typeof DemoPrismaRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/api/forms': typeof ApiFormsRouteWithChildren
+  '/api/healthcheck': typeof ApiHealthcheckRoute
+  '/api/templates': typeof ApiTemplatesRoute
   '/auth': typeof AuthIndexRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/landing-1': typeof Landing1IndexRoute
+  '/templates': typeof TemplatesIndexRoute
+  '/api/analytics/overview': typeof ApiAnalyticsOverviewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/forms/$id': typeof ApiFormsIdRouteWithChildren
   '/api/forms/import-google-form': typeof ApiFormsImportGoogleFormRouteWithChildren
@@ -261,14 +404,29 @@ export interface FileRoutesByTo {
   '/auth/signup': typeof AuthSignupIndexRoute
   '/dashboard/forms': typeof DashboardFormsIndexRoute
   '/dashboard/templates': typeof DashboardTemplatesIndexRoute
+  '/forms/$slug': typeof FormsSlugIndexRoute
+  '/api/analytics/forms/$id': typeof ApiAnalyticsFormsIdRouteWithChildren
+  '/api/forms/$id/delete': typeof ApiFormsIdDeleteRoute
+  '/api/forms/$id/duplicate': typeof ApiFormsIdDuplicateRoute
+  '/api/forms/$id/responses': typeof ApiFormsIdResponsesRoute
+  '/api/forms/$id/submit': typeof ApiFormsIdSubmitRoute
   '/api/forms/$id/update': typeof ApiFormsIdUpdateRoute
   '/api/forms/$id/uploads': typeof ApiFormsIdUploadsRouteWithChildren
+  '/api/forms/$id/viewForm': typeof ApiFormsIdViewFormRoute
   '/api/forms/import-google-form/connect': typeof ApiFormsImportGoogleFormConnectRoute
   '/api/integrations/file-uploads/callback': typeof ApiIntegrationsFileUploadsCallbackRoute
   '/api/integrations/google-forms-import/callback': typeof ApiIntegrationsGoogleFormsImportCallbackRoute
   '/api/integrations/google-sheets/callback': typeof ApiIntegrationsGoogleSheetsCallbackRoute
+  '/api/internal/google-sheets/sync': typeof ApiInternalGoogleSheetsSyncRoute
+  '/dashboard/forms/$formId/analytics': typeof DashboardFormsFormIdAnalyticsRoute
+  '/dashboard/forms/$formId/responses': typeof DashboardFormsFormIdResponsesRoute
   '/dashboard/builder/$slug': typeof DashboardBuilderSlugIndexRoute
+  '/api/analytics/forms/$id/overview': typeof ApiAnalyticsFormsIdOverviewRoute
+  '/api/analytics/forms/$id/today': typeof ApiAnalyticsFormsIdTodayRoute
+  '/api/analytics/forms/$id/v2': typeof ApiAnalyticsFormsIdV2RouteWithChildren
   '/api/forms/$id/integrations/google-sheets': typeof ApiFormsIdIntegrationsGoogleSheetsRouteWithChildren
+  '/api/forms/$id/uploads/$uploadId': typeof ApiFormsIdUploadsUploadIdRoute
+  '/api/analytics/forms/$id/v2/detailed': typeof ApiAnalyticsFormsIdV2DetailedRoute
   '/api/forms/$id/integrations/google-sheets/connect': typeof ApiFormsIdIntegrationsGoogleSheetsConnectRoute
   '/api/forms/$id/integrations/google-sheets/create': typeof ApiFormsIdIntegrationsGoogleSheetsCreateRoute
   '/api/forms/$id/integrations/google-sheets/picker-token': typeof ApiFormsIdIntegrationsGoogleSheetsPickerTokenRoute
@@ -281,12 +439,16 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/api/generatewithai': typeof ApiGeneratewithaiRouteRoute
-  '/demo/better-auth': typeof DemoBetterAuthRoute
-  '/demo/prisma': typeof DemoPrismaRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/api/forms': typeof ApiFormsRouteWithChildren
+  '/api/healthcheck': typeof ApiHealthcheckRoute
+  '/api/templates': typeof ApiTemplatesRoute
   '/auth/': typeof AuthIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/landing-1/': typeof Landing1IndexRoute
+  '/templates/': typeof TemplatesIndexRoute
+  '/api/analytics/overview': typeof ApiAnalyticsOverviewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/forms/$id': typeof ApiFormsIdRouteWithChildren
   '/api/forms/import-google-form': typeof ApiFormsImportGoogleFormRouteWithChildren
@@ -295,14 +457,29 @@ export interface FileRoutesById {
   '/auth/signup/': typeof AuthSignupIndexRoute
   '/dashboard/forms/': typeof DashboardFormsIndexRoute
   '/dashboard/templates/': typeof DashboardTemplatesIndexRoute
+  '/forms/$slug/': typeof FormsSlugIndexRoute
+  '/api/analytics/forms/$id': typeof ApiAnalyticsFormsIdRouteWithChildren
+  '/api/forms/$id/delete': typeof ApiFormsIdDeleteRoute
+  '/api/forms/$id/duplicate': typeof ApiFormsIdDuplicateRoute
+  '/api/forms/$id/responses': typeof ApiFormsIdResponsesRoute
+  '/api/forms/$id/submit': typeof ApiFormsIdSubmitRoute
   '/api/forms/$id/update': typeof ApiFormsIdUpdateRoute
   '/api/forms/$id/uploads': typeof ApiFormsIdUploadsRouteWithChildren
+  '/api/forms/$id/viewForm': typeof ApiFormsIdViewFormRoute
   '/api/forms/import-google-form/connect': typeof ApiFormsImportGoogleFormConnectRoute
   '/api/integrations/file-uploads/callback': typeof ApiIntegrationsFileUploadsCallbackRoute
   '/api/integrations/google-forms-import/callback': typeof ApiIntegrationsGoogleFormsImportCallbackRoute
   '/api/integrations/google-sheets/callback': typeof ApiIntegrationsGoogleSheetsCallbackRoute
+  '/api/internal/google-sheets/sync': typeof ApiInternalGoogleSheetsSyncRoute
+  '/dashboard/forms/$formId/analytics': typeof DashboardFormsFormIdAnalyticsRoute
+  '/dashboard/forms/$formId/responses': typeof DashboardFormsFormIdResponsesRoute
   '/dashboard/builder/$slug/': typeof DashboardBuilderSlugIndexRoute
+  '/api/analytics/forms/$id/overview': typeof ApiAnalyticsFormsIdOverviewRoute
+  '/api/analytics/forms/$id/today': typeof ApiAnalyticsFormsIdTodayRoute
+  '/api/analytics/forms/$id/v2': typeof ApiAnalyticsFormsIdV2RouteWithChildren
   '/api/forms/$id/integrations/google-sheets': typeof ApiFormsIdIntegrationsGoogleSheetsRouteWithChildren
+  '/api/forms/$id/uploads/$uploadId': typeof ApiFormsIdUploadsUploadIdRoute
+  '/api/analytics/forms/$id/v2/detailed': typeof ApiAnalyticsFormsIdV2DetailedRoute
   '/api/forms/$id/integrations/google-sheets/connect': typeof ApiFormsIdIntegrationsGoogleSheetsConnectRoute
   '/api/forms/$id/integrations/google-sheets/create': typeof ApiFormsIdIntegrationsGoogleSheetsCreateRoute
   '/api/forms/$id/integrations/google-sheets/picker-token': typeof ApiFormsIdIntegrationsGoogleSheetsPickerTokenRoute
@@ -316,12 +493,16 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dashboard'
     | '/api/generatewithai'
-    | '/demo/better-auth'
-    | '/demo/prisma'
-    | '/demo/tanstack-query'
+    | '/api/forms'
+    | '/api/healthcheck'
+    | '/api/templates'
     | '/auth/'
     | '/dashboard/'
+    | '/landing-1/'
+    | '/templates/'
+    | '/api/analytics/overview'
     | '/api/auth/$'
     | '/api/forms/$id'
     | '/api/forms/import-google-form'
@@ -330,14 +511,29 @@ export interface FileRouteTypes {
     | '/auth/signup/'
     | '/dashboard/forms/'
     | '/dashboard/templates/'
+    | '/forms/$slug/'
+    | '/api/analytics/forms/$id'
+    | '/api/forms/$id/delete'
+    | '/api/forms/$id/duplicate'
+    | '/api/forms/$id/responses'
+    | '/api/forms/$id/submit'
     | '/api/forms/$id/update'
     | '/api/forms/$id/uploads'
+    | '/api/forms/$id/viewForm'
     | '/api/forms/import-google-form/connect'
     | '/api/integrations/file-uploads/callback'
     | '/api/integrations/google-forms-import/callback'
     | '/api/integrations/google-sheets/callback'
+    | '/api/internal/google-sheets/sync'
+    | '/dashboard/forms/$formId/analytics'
+    | '/dashboard/forms/$formId/responses'
     | '/dashboard/builder/$slug/'
+    | '/api/analytics/forms/$id/overview'
+    | '/api/analytics/forms/$id/today'
+    | '/api/analytics/forms/$id/v2'
     | '/api/forms/$id/integrations/google-sheets'
+    | '/api/forms/$id/uploads/$uploadId'
+    | '/api/analytics/forms/$id/v2/detailed'
     | '/api/forms/$id/integrations/google-sheets/connect'
     | '/api/forms/$id/integrations/google-sheets/create'
     | '/api/forms/$id/integrations/google-sheets/picker-token'
@@ -350,11 +546,14 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/api/generatewithai'
-    | '/demo/better-auth'
-    | '/demo/prisma'
-    | '/demo/tanstack-query'
+    | '/api/forms'
+    | '/api/healthcheck'
+    | '/api/templates'
     | '/auth'
     | '/dashboard'
+    | '/landing-1'
+    | '/templates'
+    | '/api/analytics/overview'
     | '/api/auth/$'
     | '/api/forms/$id'
     | '/api/forms/import-google-form'
@@ -363,14 +562,29 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/dashboard/forms'
     | '/dashboard/templates'
+    | '/forms/$slug'
+    | '/api/analytics/forms/$id'
+    | '/api/forms/$id/delete'
+    | '/api/forms/$id/duplicate'
+    | '/api/forms/$id/responses'
+    | '/api/forms/$id/submit'
     | '/api/forms/$id/update'
     | '/api/forms/$id/uploads'
+    | '/api/forms/$id/viewForm'
     | '/api/forms/import-google-form/connect'
     | '/api/integrations/file-uploads/callback'
     | '/api/integrations/google-forms-import/callback'
     | '/api/integrations/google-sheets/callback'
+    | '/api/internal/google-sheets/sync'
+    | '/dashboard/forms/$formId/analytics'
+    | '/dashboard/forms/$formId/responses'
     | '/dashboard/builder/$slug'
+    | '/api/analytics/forms/$id/overview'
+    | '/api/analytics/forms/$id/today'
+    | '/api/analytics/forms/$id/v2'
     | '/api/forms/$id/integrations/google-sheets'
+    | '/api/forms/$id/uploads/$uploadId'
+    | '/api/analytics/forms/$id/v2/detailed'
     | '/api/forms/$id/integrations/google-sheets/connect'
     | '/api/forms/$id/integrations/google-sheets/create'
     | '/api/forms/$id/integrations/google-sheets/picker-token'
@@ -382,12 +596,16 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/dashboard'
     | '/api/generatewithai'
-    | '/demo/better-auth'
-    | '/demo/prisma'
-    | '/demo/tanstack-query'
+    | '/api/forms'
+    | '/api/healthcheck'
+    | '/api/templates'
     | '/auth/'
     | '/dashboard/'
+    | '/landing-1/'
+    | '/templates/'
+    | '/api/analytics/overview'
     | '/api/auth/$'
     | '/api/forms/$id'
     | '/api/forms/import-google-form'
@@ -396,14 +614,29 @@ export interface FileRouteTypes {
     | '/auth/signup/'
     | '/dashboard/forms/'
     | '/dashboard/templates/'
+    | '/forms/$slug/'
+    | '/api/analytics/forms/$id'
+    | '/api/forms/$id/delete'
+    | '/api/forms/$id/duplicate'
+    | '/api/forms/$id/responses'
+    | '/api/forms/$id/submit'
     | '/api/forms/$id/update'
     | '/api/forms/$id/uploads'
+    | '/api/forms/$id/viewForm'
     | '/api/forms/import-google-form/connect'
     | '/api/integrations/file-uploads/callback'
     | '/api/integrations/google-forms-import/callback'
     | '/api/integrations/google-sheets/callback'
+    | '/api/internal/google-sheets/sync'
+    | '/dashboard/forms/$formId/analytics'
+    | '/dashboard/forms/$formId/responses'
     | '/dashboard/builder/$slug/'
+    | '/api/analytics/forms/$id/overview'
+    | '/api/analytics/forms/$id/today'
+    | '/api/analytics/forms/$id/v2'
     | '/api/forms/$id/integrations/google-sheets'
+    | '/api/forms/$id/uploads/$uploadId'
+    | '/api/analytics/forms/$id/v2/detailed'
     | '/api/forms/$id/integrations/google-sheets/connect'
     | '/api/forms/$id/integrations/google-sheets/create'
     | '/api/forms/$id/integrations/google-sheets/picker-token'
@@ -416,24 +649,24 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   ApiGeneratewithaiRouteRoute: typeof ApiGeneratewithaiRouteRoute
-  DemoBetterAuthRoute: typeof DemoBetterAuthRoute
-  DemoPrismaRoute: typeof DemoPrismaRoute
-  DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+  ApiFormsRoute: typeof ApiFormsRouteWithChildren
+  ApiHealthcheckRoute: typeof ApiHealthcheckRoute
+  ApiTemplatesRoute: typeof ApiTemplatesRoute
   AuthIndexRoute: typeof AuthIndexRoute
-  DashboardIndexRoute: typeof DashboardIndexRoute
+  Landing1IndexRoute: typeof Landing1IndexRoute
+  TemplatesIndexRoute: typeof TemplatesIndexRoute
+  ApiAnalyticsOverviewRoute: typeof ApiAnalyticsOverviewRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiFormsIdRoute: typeof ApiFormsIdRouteWithChildren
-  ApiFormsImportGoogleFormRoute: typeof ApiFormsImportGoogleFormRouteWithChildren
-  ApiFormsNewRoute: typeof ApiFormsNewRoute
   AuthLoginIndexRoute: typeof AuthLoginIndexRoute
   AuthSignupIndexRoute: typeof AuthSignupIndexRoute
-  DashboardFormsIndexRoute: typeof DashboardFormsIndexRoute
-  DashboardTemplatesIndexRoute: typeof DashboardTemplatesIndexRoute
+  FormsSlugIndexRoute: typeof FormsSlugIndexRoute
+  ApiAnalyticsFormsIdRoute: typeof ApiAnalyticsFormsIdRouteWithChildren
   ApiIntegrationsFileUploadsCallbackRoute: typeof ApiIntegrationsFileUploadsCallbackRoute
   ApiIntegrationsGoogleFormsImportCallbackRoute: typeof ApiIntegrationsGoogleFormsImportCallbackRoute
   ApiIntegrationsGoogleSheetsCallbackRoute: typeof ApiIntegrationsGoogleSheetsCallbackRoute
-  DashboardBuilderSlugIndexRoute: typeof DashboardBuilderSlugIndexRoute
+  ApiInternalGoogleSheetsSyncRoute: typeof ApiInternalGoogleSheetsSyncRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -445,11 +678,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/forms': {
+      id: '/api/forms'
+      path: '/api/forms'
+      fullPath: '/api/forms'
+      preLoaderRoute: typeof ApiFormsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/generatewithai': {
       id: '/api/generatewithai'
       path: '/api/generatewithai'
       fullPath: '/api/generatewithai'
       preLoaderRoute: typeof ApiGeneratewithaiRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/healthcheck': {
+      id: '/api/healthcheck'
+      path: '/api/healthcheck'
+      fullPath: '/api/healthcheck'
+      preLoaderRoute: typeof ApiHealthcheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/templates': {
+      id: '/api/templates'
+      path: '/api/templates'
+      fullPath: '/api/templates'
+      preLoaderRoute: typeof ApiTemplatesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/': {
@@ -461,30 +722,30 @@ declare module '@tanstack/react-router' {
     }
     '/dashboard/': {
       id: '/dashboard/'
-      path: '/dashboard'
+      path: '/'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/landing-1/': {
+      id: '/landing-1/'
+      path: '/landing-1'
+      fullPath: '/landing-1/'
+      preLoaderRoute: typeof Landing1IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/better-auth': {
-      id: '/demo/better-auth'
-      path: '/demo/better-auth'
-      fullPath: '/demo/better-auth'
-      preLoaderRoute: typeof DemoBetterAuthRouteImport
+    '/templates/': {
+      id: '/templates/'
+      path: '/templates'
+      fullPath: '/templates/'
+      preLoaderRoute: typeof TemplatesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/prisma': {
-      id: '/demo/prisma'
-      path: '/demo/prisma'
-      fullPath: '/demo/prisma'
-      preLoaderRoute: typeof DemoPrismaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/tanstack-query': {
-      id: '/demo/tanstack-query'
-      path: '/demo/tanstack-query'
-      fullPath: '/demo/tanstack-query'
-      preLoaderRoute: typeof DemoTanstackQueryRouteImport
+    '/api/analytics/overview': {
+      id: '/api/analytics/overview'
+      path: '/api/analytics/overview'
+      fullPath: '/api/analytics/overview'
+      preLoaderRoute: typeof ApiAnalyticsOverviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -496,24 +757,24 @@ declare module '@tanstack/react-router' {
     }
     '/api/forms/$id': {
       id: '/api/forms/$id'
-      path: '/api/forms/$id'
+      path: '/$id'
       fullPath: '/api/forms/$id'
       preLoaderRoute: typeof ApiFormsIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiFormsRoute
     }
     '/api/forms/import-google-form': {
       id: '/api/forms/import-google-form'
-      path: '/api/forms/import-google-form'
+      path: '/import-google-form'
       fullPath: '/api/forms/import-google-form'
       preLoaderRoute: typeof ApiFormsImportGoogleFormRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiFormsRoute
     }
     '/api/forms/new': {
       id: '/api/forms/new'
-      path: '/api/forms/new'
+      path: '/new'
       fullPath: '/api/forms/new'
       preLoaderRoute: typeof ApiFormsNewRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiFormsRoute
     }
     '/auth/login/': {
       id: '/auth/login/'
@@ -531,17 +792,59 @@ declare module '@tanstack/react-router' {
     }
     '/dashboard/forms/': {
       id: '/dashboard/forms/'
-      path: '/dashboard/forms'
+      path: '/forms'
       fullPath: '/dashboard/forms/'
       preLoaderRoute: typeof DashboardFormsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DashboardRouteRoute
     }
     '/dashboard/templates/': {
       id: '/dashboard/templates/'
-      path: '/dashboard/templates'
+      path: '/templates'
       fullPath: '/dashboard/templates/'
       preLoaderRoute: typeof DashboardTemplatesIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/forms/$slug/': {
+      id: '/forms/$slug/'
+      path: '/forms/$slug'
+      fullPath: '/forms/$slug/'
+      preLoaderRoute: typeof FormsSlugIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/analytics/forms/$id': {
+      id: '/api/analytics/forms/$id'
+      path: '/api/analytics/forms/$id'
+      fullPath: '/api/analytics/forms/$id'
+      preLoaderRoute: typeof ApiAnalyticsFormsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/forms/$id/delete': {
+      id: '/api/forms/$id/delete'
+      path: '/delete'
+      fullPath: '/api/forms/$id/delete'
+      preLoaderRoute: typeof ApiFormsIdDeleteRouteImport
+      parentRoute: typeof ApiFormsIdRoute
+    }
+    '/api/forms/$id/duplicate': {
+      id: '/api/forms/$id/duplicate'
+      path: '/duplicate'
+      fullPath: '/api/forms/$id/duplicate'
+      preLoaderRoute: typeof ApiFormsIdDuplicateRouteImport
+      parentRoute: typeof ApiFormsIdRoute
+    }
+    '/api/forms/$id/responses': {
+      id: '/api/forms/$id/responses'
+      path: '/responses'
+      fullPath: '/api/forms/$id/responses'
+      preLoaderRoute: typeof ApiFormsIdResponsesRouteImport
+      parentRoute: typeof ApiFormsIdRoute
+    }
+    '/api/forms/$id/submit': {
+      id: '/api/forms/$id/submit'
+      path: '/submit'
+      fullPath: '/api/forms/$id/submit'
+      preLoaderRoute: typeof ApiFormsIdSubmitRouteImport
+      parentRoute: typeof ApiFormsIdRoute
     }
     '/api/forms/$id/update': {
       id: '/api/forms/$id/update'
@@ -555,6 +858,13 @@ declare module '@tanstack/react-router' {
       path: '/uploads'
       fullPath: '/api/forms/$id/uploads'
       preLoaderRoute: typeof ApiFormsIdUploadsRouteImport
+      parentRoute: typeof ApiFormsIdRoute
+    }
+    '/api/forms/$id/viewForm': {
+      id: '/api/forms/$id/viewForm'
+      path: '/viewForm'
+      fullPath: '/api/forms/$id/viewForm'
+      preLoaderRoute: typeof ApiFormsIdViewFormRouteImport
       parentRoute: typeof ApiFormsIdRoute
     }
     '/api/forms/import-google-form/connect': {
@@ -585,12 +895,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiIntegrationsGoogleSheetsCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/internal/google-sheets/sync': {
+      id: '/api/internal/google-sheets/sync'
+      path: '/api/internal/google-sheets/sync'
+      fullPath: '/api/internal/google-sheets/sync'
+      preLoaderRoute: typeof ApiInternalGoogleSheetsSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/builder/$slug/': {
       id: '/dashboard/builder/$slug/'
-      path: '/dashboard/builder/$slug'
+      path: '/builder/$slug'
       fullPath: '/dashboard/builder/$slug/'
       preLoaderRoute: typeof DashboardBuilderSlugIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/forms/$formId/analytics': {
+      id: '/dashboard/forms/$formId/analytics'
+      path: '/forms/$formId/analytics'
+      fullPath: '/dashboard/forms/$formId/analytics'
+      preLoaderRoute: typeof DashboardFormsFormIdAnalyticsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/forms/$formId/responses': {
+      id: '/dashboard/forms/$formId/responses'
+      path: '/forms/$formId/responses'
+      fullPath: '/dashboard/forms/$formId/responses'
+      preLoaderRoute: typeof DashboardFormsFormIdResponsesRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/api/analytics/forms/$id/overview': {
+      id: '/api/analytics/forms/$id/overview'
+      path: '/overview'
+      fullPath: '/api/analytics/forms/$id/overview'
+      preLoaderRoute: typeof ApiAnalyticsFormsIdOverviewRouteImport
+      parentRoute: typeof ApiAnalyticsFormsIdRoute
+    }
+    '/api/analytics/forms/$id/today': {
+      id: '/api/analytics/forms/$id/today'
+      path: '/today'
+      fullPath: '/api/analytics/forms/$id/today'
+      preLoaderRoute: typeof ApiAnalyticsFormsIdTodayRouteImport
+      parentRoute: typeof ApiAnalyticsFormsIdRoute
+    }
+    '/api/analytics/forms/$id/v2': {
+      id: '/api/analytics/forms/$id/v2'
+      path: '/v2'
+      fullPath: '/api/analytics/forms/$id/v2'
+      preLoaderRoute: typeof ApiAnalyticsFormsIdV2RouteImport
+      parentRoute: typeof ApiAnalyticsFormsIdRoute
     }
     '/api/forms/$id/integrations/google-sheets': {
       id: '/api/forms/$id/integrations/google-sheets'
@@ -598,6 +950,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/forms/$id/integrations/google-sheets'
       preLoaderRoute: typeof ApiFormsIdIntegrationsGoogleSheetsRouteImport
       parentRoute: typeof ApiFormsIdRoute
+    }
+    '/api/forms/$id/uploads/$uploadId': {
+      id: '/api/forms/$id/uploads/$uploadId'
+      path: '/$uploadId'
+      fullPath: '/api/forms/$id/uploads/$uploadId'
+      preLoaderRoute: typeof ApiFormsIdUploadsUploadIdRouteImport
+      parentRoute: typeof ApiFormsIdUploadsRoute
+    }
+    '/api/analytics/forms/$id/v2/detailed': {
+      id: '/api/analytics/forms/$id/v2/detailed'
+      path: '/detailed'
+      fullPath: '/api/analytics/forms/$id/v2/detailed'
+      preLoaderRoute: typeof ApiAnalyticsFormsIdV2DetailedRouteImport
+      parentRoute: typeof ApiAnalyticsFormsIdV2Route
     }
     '/api/forms/$id/integrations/google-sheets/connect': {
       id: '/api/forms/$id/integrations/google-sheets/connect'
@@ -658,7 +1024,30 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface DashboardRouteRouteChildren {
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardFormsIndexRoute: typeof DashboardFormsIndexRoute
+  DashboardTemplatesIndexRoute: typeof DashboardTemplatesIndexRoute
+  DashboardFormsFormIdAnalyticsRoute: typeof DashboardFormsFormIdAnalyticsRoute
+  DashboardFormsFormIdResponsesRoute: typeof DashboardFormsFormIdResponsesRoute
+  DashboardBuilderSlugIndexRoute: typeof DashboardBuilderSlugIndexRoute
+}
+
+const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardIndexRoute: DashboardIndexRoute,
+  DashboardFormsIndexRoute: DashboardFormsIndexRoute,
+  DashboardTemplatesIndexRoute: DashboardTemplatesIndexRoute,
+  DashboardFormsFormIdAnalyticsRoute: DashboardFormsFormIdAnalyticsRoute,
+  DashboardFormsFormIdResponsesRoute: DashboardFormsFormIdResponsesRoute,
+  DashboardBuilderSlugIndexRoute: DashboardBuilderSlugIndexRoute,
+}
+
+const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
+  DashboardRouteRouteChildren,
+)
+
 interface ApiFormsIdUploadsRouteChildren {
+  ApiFormsIdUploadsUploadIdRoute: typeof ApiFormsIdUploadsUploadIdRoute
   ApiFormsIdUploadsFieldsFieldIdConnectRoute: typeof ApiFormsIdUploadsFieldsFieldIdConnectRoute
   ApiFormsIdUploadsFieldsFieldIdIntegrationRoute: typeof ApiFormsIdUploadsFieldsFieldIdIntegrationRoute
   ApiFormsIdUploadsFieldsFieldIdPickerTokenRoute: typeof ApiFormsIdUploadsFieldsFieldIdPickerTokenRoute
@@ -666,6 +1055,7 @@ interface ApiFormsIdUploadsRouteChildren {
 }
 
 const ApiFormsIdUploadsRouteChildren: ApiFormsIdUploadsRouteChildren = {
+  ApiFormsIdUploadsUploadIdRoute: ApiFormsIdUploadsUploadIdRoute,
   ApiFormsIdUploadsFieldsFieldIdConnectRoute:
     ApiFormsIdUploadsFieldsFieldIdConnectRoute,
   ApiFormsIdUploadsFieldsFieldIdIntegrationRoute:
@@ -704,14 +1094,24 @@ const ApiFormsIdIntegrationsGoogleSheetsRouteWithChildren =
   )
 
 interface ApiFormsIdRouteChildren {
+  ApiFormsIdDeleteRoute: typeof ApiFormsIdDeleteRoute
+  ApiFormsIdDuplicateRoute: typeof ApiFormsIdDuplicateRoute
+  ApiFormsIdResponsesRoute: typeof ApiFormsIdResponsesRoute
+  ApiFormsIdSubmitRoute: typeof ApiFormsIdSubmitRoute
   ApiFormsIdUpdateRoute: typeof ApiFormsIdUpdateRoute
   ApiFormsIdUploadsRoute: typeof ApiFormsIdUploadsRouteWithChildren
+  ApiFormsIdViewFormRoute: typeof ApiFormsIdViewFormRoute
   ApiFormsIdIntegrationsGoogleSheetsRoute: typeof ApiFormsIdIntegrationsGoogleSheetsRouteWithChildren
 }
 
 const ApiFormsIdRouteChildren: ApiFormsIdRouteChildren = {
+  ApiFormsIdDeleteRoute: ApiFormsIdDeleteRoute,
+  ApiFormsIdDuplicateRoute: ApiFormsIdDuplicateRoute,
+  ApiFormsIdResponsesRoute: ApiFormsIdResponsesRoute,
+  ApiFormsIdSubmitRoute: ApiFormsIdSubmitRoute,
   ApiFormsIdUpdateRoute: ApiFormsIdUpdateRoute,
   ApiFormsIdUploadsRoute: ApiFormsIdUploadsRouteWithChildren,
+  ApiFormsIdViewFormRoute: ApiFormsIdViewFormRoute,
   ApiFormsIdIntegrationsGoogleSheetsRoute:
     ApiFormsIdIntegrationsGoogleSheetsRouteWithChildren,
 }
@@ -734,29 +1134,73 @@ const ApiFormsImportGoogleFormRouteWithChildren =
     ApiFormsImportGoogleFormRouteChildren,
   )
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  ApiGeneratewithaiRouteRoute: ApiGeneratewithaiRouteRoute,
-  DemoBetterAuthRoute: DemoBetterAuthRoute,
-  DemoPrismaRoute: DemoPrismaRoute,
-  DemoTanstackQueryRoute: DemoTanstackQueryRoute,
-  AuthIndexRoute: AuthIndexRoute,
-  DashboardIndexRoute: DashboardIndexRoute,
-  ApiAuthSplatRoute: ApiAuthSplatRoute,
+interface ApiFormsRouteChildren {
+  ApiFormsIdRoute: typeof ApiFormsIdRouteWithChildren
+  ApiFormsImportGoogleFormRoute: typeof ApiFormsImportGoogleFormRouteWithChildren
+  ApiFormsNewRoute: typeof ApiFormsNewRoute
+}
+
+const ApiFormsRouteChildren: ApiFormsRouteChildren = {
   ApiFormsIdRoute: ApiFormsIdRouteWithChildren,
   ApiFormsImportGoogleFormRoute: ApiFormsImportGoogleFormRouteWithChildren,
   ApiFormsNewRoute: ApiFormsNewRoute,
+}
+
+const ApiFormsRouteWithChildren = ApiFormsRoute._addFileChildren(
+  ApiFormsRouteChildren,
+)
+
+interface ApiAnalyticsFormsIdV2RouteChildren {
+  ApiAnalyticsFormsIdV2DetailedRoute: typeof ApiAnalyticsFormsIdV2DetailedRoute
+}
+
+const ApiAnalyticsFormsIdV2RouteChildren: ApiAnalyticsFormsIdV2RouteChildren = {
+  ApiAnalyticsFormsIdV2DetailedRoute: ApiAnalyticsFormsIdV2DetailedRoute,
+}
+
+const ApiAnalyticsFormsIdV2RouteWithChildren =
+  ApiAnalyticsFormsIdV2Route._addFileChildren(
+    ApiAnalyticsFormsIdV2RouteChildren,
+  )
+
+interface ApiAnalyticsFormsIdRouteChildren {
+  ApiAnalyticsFormsIdOverviewRoute: typeof ApiAnalyticsFormsIdOverviewRoute
+  ApiAnalyticsFormsIdTodayRoute: typeof ApiAnalyticsFormsIdTodayRoute
+  ApiAnalyticsFormsIdV2Route: typeof ApiAnalyticsFormsIdV2RouteWithChildren
+}
+
+const ApiAnalyticsFormsIdRouteChildren: ApiAnalyticsFormsIdRouteChildren = {
+  ApiAnalyticsFormsIdOverviewRoute: ApiAnalyticsFormsIdOverviewRoute,
+  ApiAnalyticsFormsIdTodayRoute: ApiAnalyticsFormsIdTodayRoute,
+  ApiAnalyticsFormsIdV2Route: ApiAnalyticsFormsIdV2RouteWithChildren,
+}
+
+const ApiAnalyticsFormsIdRouteWithChildren =
+  ApiAnalyticsFormsIdRoute._addFileChildren(ApiAnalyticsFormsIdRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  DashboardRouteRoute: DashboardRouteRouteWithChildren,
+  ApiGeneratewithaiRouteRoute: ApiGeneratewithaiRouteRoute,
+  ApiFormsRoute: ApiFormsRouteWithChildren,
+  ApiHealthcheckRoute: ApiHealthcheckRoute,
+  ApiTemplatesRoute: ApiTemplatesRoute,
+  AuthIndexRoute: AuthIndexRoute,
+  Landing1IndexRoute: Landing1IndexRoute,
+  TemplatesIndexRoute: TemplatesIndexRoute,
+  ApiAnalyticsOverviewRoute: ApiAnalyticsOverviewRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
   AuthLoginIndexRoute: AuthLoginIndexRoute,
   AuthSignupIndexRoute: AuthSignupIndexRoute,
-  DashboardFormsIndexRoute: DashboardFormsIndexRoute,
-  DashboardTemplatesIndexRoute: DashboardTemplatesIndexRoute,
+  FormsSlugIndexRoute: FormsSlugIndexRoute,
+  ApiAnalyticsFormsIdRoute: ApiAnalyticsFormsIdRouteWithChildren,
   ApiIntegrationsFileUploadsCallbackRoute:
     ApiIntegrationsFileUploadsCallbackRoute,
   ApiIntegrationsGoogleFormsImportCallbackRoute:
     ApiIntegrationsGoogleFormsImportCallbackRoute,
   ApiIntegrationsGoogleSheetsCallbackRoute:
     ApiIntegrationsGoogleSheetsCallbackRoute,
-  DashboardBuilderSlugIndexRoute: DashboardBuilderSlugIndexRoute,
+  ApiInternalGoogleSheetsSyncRoute: ApiInternalGoogleSheetsSyncRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

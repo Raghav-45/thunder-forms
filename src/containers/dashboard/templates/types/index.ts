@@ -1,24 +1,24 @@
-import type { AvailableFieldsType } from '@/features/form-builder/types'
+import type { AvailableFieldsType } from "@/features/form-builder/types";
 
 export interface TemplateFieldSpec {
-  type: AvailableFieldsType
-  label: string
-  placeholder?: string
-  description?: string
-  required?: boolean
-  options?: { label: string; value: string }[]
-  inputType?: string
+	type: AvailableFieldsType;
+	label: string;
+	placeholder?: string;
+	description?: string;
+	required?: boolean;
+	options?: { label: string; value: string }[];
+	inputType?: string;
 }
 
 export interface TemplateSectionSpec {
-  fields: TemplateFieldSpec[]
+	fields: TemplateFieldSpec[];
 }
 
 export interface FormTemplateSpec {
-  slug: string
-  title: string
-  description: string
-  category: string
-  submitButtonText?: string
-  sections: TemplateSectionSpec[]
+	slug: string;
+	title: string;
+	description: string;
+	category: string;
+	submitButtonText?: string;
+	sections: TemplateSectionSpec[];
 }

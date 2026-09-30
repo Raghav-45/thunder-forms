@@ -1,82 +1,87 @@
-import { GOOGLE_SHEETS_FIXED_COLUMNS } from '@/features/google-sheets/constants'
+import { isFileUploadReceipt } from "@/features/file-uploads/types";
 import {
-  getOrderedFormFields,
-  type FormStructure,
-} from '@/features/form-builder/form-structure'
-import { isFileUploadReceipt } from '@/features/file-uploads/types'
-import type { GoogleSheetsColumn } from '@/features/google-sheets/types'
+	type FormStructure,
+	getOrderedFormFields,
+} from "@/features/form-builder/form-structure";
+import { GOOGLE_SHEETS_FIXED_COLUMNS } from "@/features/google-sheets/constants";
+import type { GoogleSheetsColumn } from "@/features/google-sheets/types";
 
 function fieldLabel(label: string | undefined): string {
-  return label?.trim() || 'Untitled field'
+	return label?.trim() || "Untitled field";
 }
 
 export function createGoogleSheetsHeaders(
-  structure: FormStructure,
+	structure: FormStructure,
 ): GoogleSheetsColumn[] {
-  return [
-    ...GOOGLE_SHEETS_FIXED_COLUMNS,
-    ...getOrderedFormFields(structure).map((field) => ({
-      key: field.id,
-      label: fieldLabel(field.label),
-    })),
-  ]
+	return [
+		...GOOGLE_SHEETS_FIXED_COLUMNS,
+		...getOrderedFormFields(structure).map((field) => ({
+			key: field.id,
+			label: fieldLabel(field.label),
+		})),
+	];
 }
 
-export function isGoogleSheetsHeaders(value: unknown): value is GoogleSheetsColumn[] {
-  return (
-    Array.isArray(value) &&
-    value.length >= GOOGLE_SHEETS_FIXED_COLUMNS.length &&
-    value.every(
-      (column) =>
-        typeof column === 'object' &&
-        column !== null &&
-        typeof (column as GoogleSheetsColumn).key === 'string' &&
-        typeof (column as GoogleSheetsColumn).label === 'string',
-    )
-  )
+export function isGoogleSheetsHeaders(
+	value: unknown,
+): value is GoogleSheetsColumn[] {
+	return (
+		Array.isArray(value) &&
+		value.length >= GOOGLE_SHEETS_FIXED_COLUMNS.length &&
+		value.every(
+			(column) =>
+				typeof column === "object" &&
+				column !== null &&
+				typeof (column as GoogleSheetsColumn).key === "string" &&
+				typeof (column as GoogleSheetsColumn).label === "string",
+		)
+	);
 }
 
 export function reconcileGoogleSheetsHeaders(
-  currentHeaders: GoogleSheetsColumn[],
-  structure: FormStructure,
+	currentHeaders: GoogleSheetsColumn[],
+	structure: FormStructure,
 ): GoogleSheetsColumn[] {
-  const fields = getOrderedFormFields(structure)
-  const labelsByFieldId = new Map(
-    fields.map((field) => [field.id, fieldLabel(field.label)]),
-  )
-  const headers = currentHeaders.map(({ key, label }) => ({
-    key,
-    label: labelsByFieldId.get(key) || label,
-  }))
-  const knownKeys = new Set(headers.map((header) => header.key))
+	const fields = getOrderedFormFields(structure);
+	const labelsByFieldId = new Map(
+		fields.map((field) => [field.id, fieldLabel(field.label)]),
+	);
+	const headers = currentHeaders.map(({ key, label }) => ({
+		key,
+		// Keep historical columns, but always reflect the exact current label for
+		// a field that still exists in the form.
+		label: labelsByFieldId.get(key) || label,
+	}));
+	const knownKeys = new Set(headers.map((header) => header.key));
 
-  for (const field of fields) {
-    if (knownKeys.has(field.id)) continue
-    headers.push({ key: field.id, label: fieldLabel(field.label) })
-    knownKeys.add(field.id)
-  }
+	for (const field of fields) {
+		if (knownKeys.has(field.id)) continue;
+		headers.push({ key: field.id, label: fieldLabel(field.label) });
+		knownKeys.add(field.id);
+	}
 
-  return headers
+	return headers;
 }
 
 function formatValue(value: unknown): string {
-  if (value === null || value === undefined || value === '') return ''
-  if (isFileUploadReceipt(value)) return value.name
-  if (Array.isArray(value)) return value.map(formatValue).filter(Boolean).join(', ')
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
-  if (typeof value === 'object') return JSON.stringify(value)
-  return String(value)
+	if (value === null || value === undefined || value === "") return "";
+	if (isFileUploadReceipt(value)) return value.name;
+	if (Array.isArray(value))
+		return value.map(formatValue).filter(Boolean).join(", ");
+	if (typeof value === "boolean") return value ? "Yes" : "No";
+	if (typeof value === "object") return JSON.stringify(value);
+	return String(value);
 }
 
 export function createGoogleSheetsRow(
-  headers: GoogleSheetsColumn[],
-  responseId: string,
-  submittedAt: Date,
-  data: Record<string, unknown>,
+	headers: GoogleSheetsColumn[],
+	responseId: string,
+	submittedAt: Date,
+	data: Record<string, unknown>,
 ): string[] {
-  return headers.map(({ key }) => {
-    if (key === '__response_id') return responseId
-    if (key === '__submitted_at') return submittedAt.toISOString()
-    return formatValue(data[key])
-  })
+	return headers.map(({ key }) => {
+		if (key === "__response_id") return responseId;
+		if (key === "__submitted_at") return submittedAt.toISOString();
+		return formatValue(data[key]);
+	});
 }

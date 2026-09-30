@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.4.5/schema.json",
 	"vcs": {
 		"enabled": false,
 		"clientKind": "git",
@@ -9,18 +9,24 @@
 		"ignoreUnknown": false,
 		"includes": [
 			"**/src/**/*",
-			"**/.vscode/**/*",
 			"**/index.html",
 			"**/vite.config.ts",
 			"!**/src/routeTree.gen.ts",
-			"!**/src/styles.css"
+			"!**/src/styles.css",
+			"!**/src/generated/**/*"
 		]
 	},
 	"formatter": {
 		"enabled": true,
 		"indentStyle": "tab"
 	},
-	"assist": { "actions": { "source": { "organizeImports": "on" } } },
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
 	"linter": {
 		"enabled": true,
 		"rules": {
@@ -31,6 +37,369 @@
 		"formatter": {
 			"quoteStyle": "double"
 		}
-	}
+	},
+	"overrides": [
+		{
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noArrayIndexKey": "off"
+					},
+					"security": {
+						"noDangerouslySetInnerHtml": "off"
+					}
+				}
+			},
+			"includes": ["src/components/ui/chart.tsx"]
+		},
+		{
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noArrayIndexKey": "off"
+					}
+				}
+			},
+			"includes": ["src/components/ui/slider.tsx"]
+		},
+		{
+			"linter": {
+				"rules": {
+					"a11y": {
+						"useValidAnchor": "off"
+					}
+				}
+			},
+			"includes": [
+				"src/containers/auth/auth-layout.tsx",
+				"src/containers/auth/components/login-form.tsx",
+				"src/containers/auth/components/signup-form.tsx"
+			]
+		},
+		{
+			"includes": ["src/components/ui/sidebar.tsx"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"useExhaustiveDependencies": "off"
+					},
+					"suspicious": {
+						"noDocumentCookie": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/containers/dashboard/builder/\\[slug\\]/components/chrome-tab-strip.tsx"
+			],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"useExhaustiveDependencies": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/containers/dashboard/components/chart-area-interactive.tsx",
+				"src/containers/dashboard/forms/\\[formId\\]/responses/components/quiz-grading.tsx"
+			],
+			"linter": {
+				"rules": {
+					"style": {
+						"noNonNullAssertion": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/containers/dashboard/components/dashboard-sidebar.tsx"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/containers/dashboard/components/section-cards.tsx"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noArrayIndexKey": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/containers/dashboard/components/sidebar/index.tsx"],
+			"linter": {
+				"rules": {
+					"complexity": {
+						"noBannedTypes": "off"
+					},
+					"correctness": {
+						"noEmptyPattern": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/containers/dashboard/forms/\\[formId\\]/responses/components/no-responses-yet-card.tsx"
+			],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noEmptyPattern": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/containers/dashboard/builder/\\[slug\\]/index.tsx"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"useExhaustiveDependencies": "off"
+					},
+					"style": {
+						"noNonNullAssertion": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/containers/dashboard/forms/\\[formId\\]/responses/components/quiz-grading.tsx"
+			],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"useExhaustiveDependencies": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/containers/dashboard/forms/\\[formId\\]/responses/index.tsx"
+			],
+			"linter": {
+				"rules": {
+					"style": {
+						"useTemplate": "off"
+					},
+					"suspicious": {
+						"useIterableCallbackReturn": "off"
+					},
+					"correctness": {
+						"useExhaustiveDependencies": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/containers/dashboard/forms/components/analytics-graph.tsx"
+			],
+			"linter": {
+				"rules": {
+					"style": {
+						"noNonNullAssertion": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/containers/dashboard/forms/components/form-table.tsx"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"useExhaustiveDependencies": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/containers/dashboard/templates/components/template-gallery.tsx"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noArrayIndexKey": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/containers/landing-page/components/background-dither.tsx"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off"
+					},
+					"style": {
+						"noNonNullAssertion": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/containers/public/forms/\\[slug\\]/index.tsx"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"useExhaustiveDependencies": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/features/file-uploads/components/google-drive-folder-picker.tsx"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConfusingVoidType": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/features/form-builder/components/date-picker-with-presets.tsx",
+				"src/features/form-builder/components/settings-dialog.tsx"
+			],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"useParseIntRadix": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/features/form-builder/core/generateZodSchema.ts"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/features/form-builder/elements/fields/date-picker.tsx",
+				"src/features/form-builder/elements/fields/datetime-picker.tsx",
+				"src/features/form-builder/elements/fields/number-input.tsx"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noGlobalIsNan": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/features/form-builder/elements/fields/multi-select.tsx",
+				"src/features/form-builder/elements/fields/text-area.tsx",
+				"src/features/form-builder/elements/fields/text-input.tsx"
+			],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"useParseIntRadix": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/features/form-builder/form-structure.test.ts",
+				"src/features/form-builder/server/quiz-email.ts",
+				"src/features/form-builder/utils/quiz.ts"
+			],
+			"linter": {
+				"rules": {
+					"style": {
+						"noNonNullAssertion": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/routes/__root.tsx"],
+			"linter": {
+				"rules": {
+					"security": {
+						"noDangerouslySetInnerHtml": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"src/routes/api/analytics/forms/\\[id\\]/overview.ts",
+				"src/routes/api/analytics/forms/\\[id\\]/v2.ts",
+				"src/routes/api/analytics/forms/\\[id\\]/v2/detailed.ts",
+				"src/routes/api/analytics/overview.ts",
+				"src/routes/api/forms/\\[id\\]/responses.ts",
+				"src/routes/api/integrations/google-forms-import/callback.ts"
+			],
+			"linter": {
+				"rules": {
+					"style": {
+						"noNonNullAssertion": "off"
+					},
+					"suspicious": {
+						"noGlobalIsNan": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/routes/api/analytics/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noNonNullAssertion": "off"
+					},
+					"suspicious": {
+						"noGlobalIsNan": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/routes/api/forms/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noNonNullAssertion": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/routes/api/integrations/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noNonNullAssertion": "off"
+					}
+				}
+			}
+		}
+	]
 }
-

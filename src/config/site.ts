@@ -1,22 +1,22 @@
 export const siteConfig = {
-  name: 'Thunder Forms',
-  url: 'https://thunderforms.in/',
-  ogImage: "/og.png",
-  description:
-    'With Thunder Forms, you’re ready to create, customize, and capture insights in a snap.',
-  links: {
-    twitter: 'https://twitter.com/thunderforms',
-    twitter_personal: 'https://twitter.com/adityaxraghav',
-    github: 'https://github.com/raghav-45',
-  },
-  keywords: [
-    'Form Builder',
-    'Tailwind CSS',
-    'Framer Motion',
-    'Landing Page',
-    'Components',
-    'Next.js',
-  ],
-}
+	name: "Thunder Forms",
+	url: "https://thunderforms.in/",
+	ogImage: "/og.png",
+	description:
+		"With Thunder Forms, you’re ready to create, customize, and capture insights in a snap.",
+	links: {
+		twitter: "https://twitter.com/thunderforms",
+		twitter_personal: "https://twitter.com/adityaxraghav",
+		github: "https://github.com/raghav-45",
+	},
+	keywords: [
+		"Form Builder",
+		"Tailwind CSS",
+		"Framer Motion",
+		"Landing Page",
+		"Components",
+		"Next.js",
+	],
+};
 
-export type SiteConfig = typeof siteConfig
+export type SiteConfig = typeof siteConfig;

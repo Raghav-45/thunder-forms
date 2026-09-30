@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FIELD_REGISTRY, type FieldConfig } from '@/features/form-builder/elements'
-import { z } from 'zod'
 
-export const generateZodSchema = (
-  fields: FieldConfig[]
-): z.ZodObject<any> => {
-  const schemaObject: Record<string, z.ZodTypeAny> = {}
+import { z } from "zod";
+import type { FieldConfig } from "@/features/form-builder/elements";
+import { FIELD_REGISTRY } from "@/features/form-builder/elements";
 
-  fields.forEach((field) => {
-    const registry = FIELD_REGISTRY[field.uniqueIdentifier]
-    if (registry?.getValidationSchema) {
-      schemaObject[field.id] = registry.getValidationSchema(field as any)
-    }
-  })
+export const generateZodSchema = (fields: FieldConfig[]): z.ZodObject<any> => {
+	const schemaObject: Record<string, z.ZodTypeAny> = {};
 
-  return z.object(schemaObject)
-}
+	fields.forEach((field) => {
+		const registry = FIELD_REGISTRY[field.uniqueIdentifier];
+		if (registry?.getValidationSchema) {
+			schemaObject[field.id] = registry.getValidationSchema(field as any);
+		}
+	});
+
+	return z.object(schemaObject);
+};

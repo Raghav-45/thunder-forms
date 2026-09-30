@@ -1,4 +1,5 @@
-import { type FieldConfig, FIELD_REGISTRY } from '@/features/form-builder/elements'
+import type { FieldConfig } from "@/features/form-builder/elements";
+import { FIELD_REGISTRY } from "@/features/form-builder/elements";
 
 /**
  * Form validation dispatcher.
@@ -8,76 +9,80 @@ import { type FieldConfig, FIELD_REGISTRY } from '@/features/form-builder/elemen
  * `getValidationSchema` method for both public-form and API validation.
  */
 export const validateFormField = (
-  field: FieldConfig,
-  value: unknown,
+	field: FieldConfig,
+	value: unknown,
 ): string | null => {
-  try {
-    const fieldType = field.uniqueIdentifier
-    const fieldRegistry = FIELD_REGISTRY[fieldType]
+	try {
+		const fieldType = field.uniqueIdentifier;
+		const fieldRegistry = FIELD_REGISTRY[fieldType];
 
-    if (!fieldRegistry?.getValidationSchema) {
-      console.warn(`No validator found for field type: ${fieldType}`)
-      return null
-    }
+		if (!fieldRegistry?.getValidationSchema) {
+			console.warn(`No validator found for field type: ${fieldType}`);
+			return null;
+		}
 
-    // The registry is selected dynamically, so TypeScript cannot infer its
-    // matching concrete field config. The registry lookup guarantees the pair.
-    fieldRegistry.getValidationSchema(field as never).parse(value)
-    return null
-  } catch (error) {
-    if (error && typeof error === 'object' && 'errors' in error) {
-      const zodError = error as { errors: Array<{ message: string }> }
-      if (zodError.errors?.[0]?.message) {
-        return zodError.errors[0].message
-      }
-    }
-    return 'Invalid value'
-  }
-}
+		// The registry is selected dynamically, so TypeScript cannot infer its
+		// matching concrete field config. The registry lookup guarantees the pair.
+		fieldRegistry.getValidationSchema(field as never).parse(value);
+		return null;
+	} catch (error) {
+		if (error && typeof error === "object" && "errors" in error) {
+			const zodError = error as { errors: Array<{ message: string }> };
+			if (zodError.errors?.[0]?.message) {
+				return zodError.errors[0].message;
+			}
+		}
+		return "Invalid value";
+	}
+};
 
 export const validateFormFields = (
-  fields: FieldConfig[],
-  formData: Record<string, unknown>,
+	fields: FieldConfig[],
+	formData: Record<string, unknown>,
 ): Record<string, string> => {
-  const errors: Record<string, string> = {}
+	const errors: Record<string, string> = {};
 
-  fields.forEach((field) => {
-    const value = formData[field.id]
+	fields.forEach((field) => {
+		const value = formData[field.id];
 
-    // Required booleans accept both true and false; only a missing value fails.
-    if (field.required) {
-      if (
-        field.uniqueIdentifier === 'switch-field' ||
-        field.uniqueIdentifier === 'checkbox'
-      ) {
-        if (typeof value !== 'boolean') {
-          errors[field.id] = `${field.label} is required`
-          return
-        }
-      } else if (!value || value === '' || (Array.isArray(value) && value.length === 0)) {
-        errors[field.id] = `${field.label} is required`
-        return
-      }
-    }
+		// Required booleans accept both true and false; only a missing value fails.
+		if (field.required) {
+			if (
+				field.uniqueIdentifier === "switch-field" ||
+				field.uniqueIdentifier === "checkbox"
+			) {
+				if (typeof value !== "boolean") {
+					errors[field.id] = `${field.label} is required`;
+					return;
+				}
+			} else if (
+				!value ||
+				value === "" ||
+				(Array.isArray(value) && value.length === 0)
+			) {
+				errors[field.id] = `${field.label} is required`;
+				return;
+			}
+		}
 
-    // Optional fields left untouched submit empty values ('' / [] /
-    // undefined). Field schemas only accept undefined as empty, so skip
-    // field-specific validation for empty optional values.
-    const isEmptyValue =
-      value === undefined ||
-      value === null ||
-      value === '' ||
-      (Array.isArray(value) && value.length === 0)
-    if (!field.required && isEmptyValue) {
-      return
-    }
+		// Optional fields left untouched submit empty values ('' / [] /
+		// undefined). Field schemas only accept undefined as empty, so skip
+		// field-specific validation for empty optional values.
+		const isEmptyValue =
+			value === undefined ||
+			value === null ||
+			value === "" ||
+			(Array.isArray(value) && value.length === 0);
+		if (!field.required && isEmptyValue) {
+			return;
+		}
 
-    // Field-specific constraints (length, options, dates, and so on).
-    const error = validateFormField(field, value)
-    if (error) {
-      errors[field.id] = error
-    }
-  })
+		// Field-specific constraints (length, options, dates, and so on).
+		const error = validateFormField(field, value);
+		if (error) {
+			errors[field.id] = error;
+		}
+	});
 
-  return errors
-}
+	return errors;
+};

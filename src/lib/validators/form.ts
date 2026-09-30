@@ -1,16 +1,28 @@
-import { z } from 'zod'
+import { z } from "zod";
 
 export const FormValidator = z.object({
-  title: z.string().min(2, 'Title is required'),
-  description: z.string().nullable().optional(),
-  fields: z.unknown(),
-  maxSubmissions: z.number().int().min(1, 'Must be at least 1').nullable().optional(),
-  expiresAt: z.coerce
-    .date()
-    .refine((date) => date > new Date(), 'Expiration date must be in the future')
-    .optional(),
-  redirectUrl: z.string().url('Must be a valid URL').nullable().optional(),
-  submitButtonText: z.string().max(50, 'Must be 50 characters or less').nullable().optional(),
-})
+	title: z.string().min(2, "Title is required"),
+	description: z.string().nullable().optional(),
+	fields: z.unknown(),
+	maxSubmissions: z
+		.number()
+		.int()
+		.min(1, "Must be at least 1")
+		.nullable()
+		.optional(),
+	expiresAt: z.coerce
+		.date()
+		.refine(
+			(date) => date > new Date(),
+			"Expiration date must be in the future",
+		)
+		.optional(),
+	redirectUrl: z.string().url("Must be a valid URL").nullable().optional(),
+	submitButtonText: z
+		.string()
+		.max(50, "Must be 50 characters or less")
+		.nullable()
+		.optional(),
+});
 
-export type CreateFormPayload = z.infer<typeof FormValidator>
+export type CreateFormPayload = z.infer<typeof FormValidator>;

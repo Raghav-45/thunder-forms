@@ -1,15 +1,15 @@
-import Default from '@/containers/dashboard/templates'
-import { DashboardLayout } from '@/containers/dashboard/dashboard-layout'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
+import { DashboardLayout } from "@/containers/dashboard/dashboard-layout";
+import Default from "@/containers/dashboard/templates";
 
-export const Route = createFileRoute('/dashboard/templates/')({
-  component: RouteComponent,
-})
+export const Route = createFileRoute("/dashboard/templates/")({
+	component: RouteComponent,
+});
 
 function RouteComponent() {
-  return (
-    <DashboardLayout>
-      <Default />
-    </DashboardLayout>
-  )
+	return (
+		<DashboardLayout>
+			<Default />
+		</DashboardLayout>
+	);
 }

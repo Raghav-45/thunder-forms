@@ -1,19 +1,17 @@
-'use client'
-
-import type { FieldConfig } from '@/features/form-builder/elements'
+import type { FieldConfig } from "@/features/form-builder/elements";
+import { normalizeChoiceOptions } from "@/features/form-builder/elements/choice-options";
 import {
-  createFormPage,
-  createFormSection,
-  type FormSection,
-  type FormStructure,
-} from '@/features/form-builder/form-structure'
-import { normalizeChoiceOptions } from '@/features/form-builder/elements/choice-options'
-import type { AvailableFieldsType } from '@/features/form-builder/types'
-import { createDefaultFieldConfig } from '@/features/form-builder/utils/helperFunctions'
-import type { FormTemplateSpec } from './types'
+	createFormPage,
+	createFormSection,
+	type FormSection,
+	type FormStructure,
+} from "@/features/form-builder/form-structure";
+import type { AvailableFieldsType } from "@/features/form-builder/types";
+import { createDefaultFieldConfig } from "@/features/form-builder/utils/helperFunctions";
+import type { FormTemplateSpec } from "./types";
 
-export type BuiltSection = FormSection
-export type BuiltFormStructure = FormStructure
+export type BuiltSection = FormSection;
+export type BuiltFormStructure = FormStructure;
 
 /**
  * Materialize a template spec into builder-ready form structure.
@@ -23,42 +21,40 @@ export type BuiltFormStructure = FormStructure
  * Field shapes always come from the registry's own `defaultConfig`, with
  * only presentational overrides applied from the spec.
  */
-export function instantiateTemplate(
-  template: FormTemplateSpec,
-): FormStructure {
-  return {
-    pages: [
-      createFormPage(
-        template.sections.map((section) =>
-          createFormSection(
-            section.fields.map((spec) => {
-              const field = createDefaultFieldConfig(
-                spec.type as AvailableFieldsType,
-              ) as unknown as Record<string, unknown>
+export function instantiateTemplate(template: FormTemplateSpec): FormStructure {
+	return {
+		pages: [
+			createFormPage(
+				template.sections.map((section) =>
+					createFormSection(
+						section.fields.map((spec) => {
+							const field = createDefaultFieldConfig(
+								spec.type as AvailableFieldsType,
+							) as unknown as Record<string, unknown>;
 
-              field.id = `${spec.type}_${crypto.randomUUID().slice(0, 8)}`
-              field.label = spec.label
-              if (spec.placeholder !== undefined) {
-                field.placeholder = spec.placeholder
-              }
-              if (spec.description !== undefined) {
-                field.description = spec.description
-              }
-              if (spec.required !== undefined) {
-                field.required = spec.required
-              }
-              if (spec.options !== undefined && 'options' in field) {
-                field.options = normalizeChoiceOptions(spec.options)
-              }
-              if (spec.inputType !== undefined && 'inputType' in field) {
-                field.inputType = spec.inputType
-              }
+							field.id = `${spec.type}_${crypto.randomUUID().slice(0, 8)}`;
+							field.label = spec.label;
+							if (spec.placeholder !== undefined) {
+								field.placeholder = spec.placeholder;
+							}
+							if (spec.description !== undefined) {
+								field.description = spec.description;
+							}
+							if (spec.required !== undefined) {
+								field.required = spec.required;
+							}
+							if (spec.options !== undefined && "options" in field) {
+								field.options = normalizeChoiceOptions(spec.options);
+							}
+							if (spec.inputType !== undefined && "inputType" in field) {
+								field.inputType = spec.inputType;
+							}
 
-              return field as unknown as FieldConfig
-            }),
-          ),
-        ),
-      ),
-    ],
-  }
+							return field as unknown as FieldConfig;
+						}),
+					),
+				),
+			),
+		],
+	};
 }

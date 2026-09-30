@@ -337,10 +337,3 @@ model templates {
 
   form forms @relation(fields: [formId], references: [id], onDelete: Cascade)
 }
-
-// Retained for the starter demo route that ships with this project.
-model Todo {
-  id        Int      @id @default(autoincrement())
-  title     String
-  createdAt DateTime @default(now())
-}
