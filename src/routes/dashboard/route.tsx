@@ -5,7 +5,7 @@ import { auth } from "#/lib/auth";
 
 const getSession = createServerFn({ method: "GET" }).handler(async () => {
 	const session = await auth.api.getSession({
-		headers: getRequestHeaders() as unknown as Headers,
+		headers: getRequestHeaders(),
 	});
 	return session;
 });
