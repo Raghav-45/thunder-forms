@@ -1,6 +1,6 @@
 import { Heart, Star, ThumbsUp } from "lucide-react";
 import { useState } from "react";
-import { z } from "zod";
+import { z } from "zod/v3";
 import {
 	Accordion,
 	AccordionContent,

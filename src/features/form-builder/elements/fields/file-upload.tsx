@@ -1,6 +1,6 @@
 import { Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { z } from "zod";
+import { z } from "zod/v3";
 import {
 	Accordion,
 	AccordionContent,

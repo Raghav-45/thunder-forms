@@ -23,7 +23,8 @@
     "build-storybook": "storybook build",
     "test:watch": "vitest --project unit",
     "test:e2e": "playwright test",
-    "test:e2e:install": "playwright install chromium"
+    "test:e2e:install": "playwright install chromium",
+    "start": "node server.mjs"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.6.25",
@@ -75,8 +76,8 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
-    "googleapis": "^171.4.0",
     "google-auth-library": "^10.2.0",
+    "googleapis": "^171.4.0",
     "lucide-react": "^0.577.0",
     "motion": "^12.18.1",
     "postprocessing": "^6.37.4",
@@ -88,12 +89,13 @@
     "react-hook-form": "^7.59.0",
     "recharts": "^3.8.0",
     "sonner": "^2.0.5",
+    "srvx": "^1.0.5",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.18",
     "three": "^0.178.0",
     "tw-animate-css": "^1.3.6",
     "vaul": "^1.1.2",
-    "zod": "^3.25.67",
+    "zod": "^4.6.5",
     "zustand": "^5.0.5"
   },
   "devDependencies": {

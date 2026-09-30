@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "@/db";
 import { isFormStructure } from "@/features/form-builder/form-structure";
 import type { Prisma } from "@/generated/prisma/client";
