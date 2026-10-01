@@ -17,7 +17,6 @@ import { Route as ApiHealthcheckRouteImport } from './routes/api/healthcheck'
 import { Route as ApiTemplatesRouteImport } from './routes/api/templates'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
-import { Route as Landing1IndexRouteImport } from './routes/landing-1/index'
 import { Route as TemplatesIndexRouteImport } from './routes/templates/index'
 import { Route as ApiAnalyticsOverviewRouteImport } from './routes/api/analytics/overview'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -99,11 +98,6 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRouteRoute,
-} as any)
-const Landing1IndexRoute = Landing1IndexRouteImport.update({
-  id: '/landing-1/',
-  path: '/landing-1/',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const TemplatesIndexRoute = TemplatesIndexRouteImport.update({
   id: '/templates/',
@@ -342,7 +336,6 @@ export interface FileRoutesByFullPath {
   '/api/templates': typeof ApiTemplatesRoute
   '/auth/': typeof AuthIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
-  '/landing-1/': typeof Landing1IndexRoute
   '/templates/': typeof TemplatesIndexRoute
   '/api/analytics/overview': typeof ApiAnalyticsOverviewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -393,7 +386,6 @@ export interface FileRoutesByTo {
   '/api/templates': typeof ApiTemplatesRoute
   '/auth': typeof AuthIndexRoute
   '/dashboard': typeof DashboardIndexRoute
-  '/landing-1': typeof Landing1IndexRoute
   '/templates': typeof TemplatesIndexRoute
   '/api/analytics/overview': typeof ApiAnalyticsOverviewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -446,7 +438,6 @@ export interface FileRoutesById {
   '/api/templates': typeof ApiTemplatesRoute
   '/auth/': typeof AuthIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
-  '/landing-1/': typeof Landing1IndexRoute
   '/templates/': typeof TemplatesIndexRoute
   '/api/analytics/overview': typeof ApiAnalyticsOverviewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -500,7 +491,6 @@ export interface FileRouteTypes {
     | '/api/templates'
     | '/auth/'
     | '/dashboard/'
-    | '/landing-1/'
     | '/templates/'
     | '/api/analytics/overview'
     | '/api/auth/$'
@@ -551,7 +541,6 @@ export interface FileRouteTypes {
     | '/api/templates'
     | '/auth'
     | '/dashboard'
-    | '/landing-1'
     | '/templates'
     | '/api/analytics/overview'
     | '/api/auth/$'
@@ -603,7 +592,6 @@ export interface FileRouteTypes {
     | '/api/templates'
     | '/auth/'
     | '/dashboard/'
-    | '/landing-1/'
     | '/templates/'
     | '/api/analytics/overview'
     | '/api/auth/$'
@@ -655,7 +643,6 @@ export interface RootRouteChildren {
   ApiHealthcheckRoute: typeof ApiHealthcheckRoute
   ApiTemplatesRoute: typeof ApiTemplatesRoute
   AuthIndexRoute: typeof AuthIndexRoute
-  Landing1IndexRoute: typeof Landing1IndexRoute
   TemplatesIndexRoute: typeof TemplatesIndexRoute
   ApiAnalyticsOverviewRoute: typeof ApiAnalyticsOverviewRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -726,13 +713,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
-    }
-    '/landing-1/': {
-      id: '/landing-1/'
-      path: '/landing-1'
-      fullPath: '/landing-1/'
-      preLoaderRoute: typeof Landing1IndexRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/templates/': {
       id: '/templates/'
@@ -1186,7 +1166,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHealthcheckRoute: ApiHealthcheckRoute,
   ApiTemplatesRoute: ApiTemplatesRoute,
   AuthIndexRoute: AuthIndexRoute,
-  Landing1IndexRoute: Landing1IndexRoute,
   TemplatesIndexRoute: TemplatesIndexRoute,
   ApiAnalyticsOverviewRoute: ApiAnalyticsOverviewRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
