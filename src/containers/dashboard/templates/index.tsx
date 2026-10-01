@@ -1,4 +1,4 @@
-import { TemplateGallery } from "./components/template-gallery";
+import { TemplateGallery } from "#/containers/dashboard/templates/components/template-gallery";
 
 const TemplatesPage = () => {
 	return (

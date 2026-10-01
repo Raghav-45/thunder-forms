@@ -1,6 +1,6 @@
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { DashboardHeader } from "./components/dashboard-header";
-import { DashboardSidebar } from "./components/dashboard-sidebar";
+import { SidebarInset, SidebarProvider } from "#/components/ui/sidebar";
+import { DashboardHeader } from "#/containers/dashboard/components/dashboard-header";
+import { DashboardSidebar } from "#/containers/dashboard/components/dashboard-sidebar";
 
 export function DashboardLayout({
 	children,

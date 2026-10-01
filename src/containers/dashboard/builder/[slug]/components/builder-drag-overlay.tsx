@@ -1,19 +1,21 @@
 import { DragOverlay } from "@dnd-kit/react";
 import type { RefObject } from "react";
-import type { FieldConfig } from "@/features/form-builder/elements";
-import type {
-	FormPage,
-	FormSection,
-} from "@/features/form-builder/form-structure";
-
+import {
+	ItemCard,
+	SectionCard,
+} from "#/containers/dashboard/builder/[slug]/components/builder-cards";
 import {
 	findField,
 	ITEM_TYPE,
 	PALETTE_FIELD_TYPE,
 	PALETTE_SECTION_TYPE,
 	SECTION_TYPE,
-} from "../drag-model";
-import { ItemCard, SectionCard } from "./builder-cards";
+} from "#/containers/dashboard/builder/[slug]/drag-model";
+import type { FieldConfig } from "#/features/form-builder/elements";
+import type {
+	FormPage,
+	FormSection,
+} from "#/features/form-builder/form-structure";
 
 interface BuilderDragOverlayProps {
 	activePage: FormPage;

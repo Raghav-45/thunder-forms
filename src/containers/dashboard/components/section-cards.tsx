@@ -1,7 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { Skeleton } from "@/components/ui/skeleton";
-import { MetricCard, type MetricCardProps } from "./metric-card";
+import { Skeleton } from "#/components/ui/skeleton";
+import {
+	MetricCard,
+	type MetricCardProps,
+} from "#/containers/dashboard/components/metric-card";
 
 interface OverallAnalytics {
 	totalViews: number;

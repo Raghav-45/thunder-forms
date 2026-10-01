@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { convertGoogleForm } from "@/features/google-forms-import/server/forms";
+import { convertGoogleForm } from "#/features/google-forms-import/server/forms";
 
 describe("Google Forms conversion", () => {
 	it("converts supported questions and reports unsupported items", () => {

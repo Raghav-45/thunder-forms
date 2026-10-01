@@ -2,8 +2,8 @@ import { createHash, randomBytes } from "node:crypto";
 import { CodeChallengeMethod } from "google-auth-library";
 import { google } from "googleapis";
 
-import { GOOGLE_SHEETS_SCOPE } from "@/features/google-sheets/constants";
-import { getGoogleSheetsConfig } from "./config";
+import { GOOGLE_SHEETS_SCOPE } from "#/features/google-sheets/constants";
+import { getGoogleSheetsConfig } from "#/features/google-sheets/server/config";
 
 export function createGoogleSheetsOAuthClient() {
 	const config = getGoogleSheetsConfig();

@@ -1,6 +1,6 @@
-import { Icons } from "@/components/Icons";
-import { AuthLayout } from "../auth-layout";
-import { LoginForm } from "../components/login-form";
+import { Icons } from "#/components/Icons";
+import { AuthLayout } from "#/containers/auth/auth-layout";
+import { LoginForm } from "#/containers/auth/components/login-form";
 
 export default function LoginPage() {
 	return (

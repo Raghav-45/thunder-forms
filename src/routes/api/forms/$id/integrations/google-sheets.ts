@@ -1,21 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { prisma } from "@/db";
-import { isFormStructure } from "@/features/form-builder/form-structure";
+import { prisma } from "#/db";
+import { isFormStructure } from "#/features/form-builder/form-structure";
 import {
 	getOwnedGoogleSheetsForm,
 	googleSheetsErrorResponse,
-} from "@/features/google-sheets/server/owner";
+} from "#/features/google-sheets/server/owner";
 import {
 	isGoogleSheetsHeaders,
 	reconcileGoogleSheetsHeaders,
-} from "@/features/google-sheets/server/schema";
-import { updateManagedSheetHeaders } from "@/features/google-sheets/server/sheets";
+} from "#/features/google-sheets/server/schema";
+import { updateManagedSheetHeaders } from "#/features/google-sheets/server/sheets";
 import {
 	GoogleSheetsConnectionStatus,
 	GoogleSheetsDeliveryStatus,
 	GoogleSheetsIntegrationStatus,
 	type Prisma,
-} from "@/generated/prisma/client";
+} from "#/generated/prisma/client";
 
 export const Route = createFileRoute(
 	"/api/forms/$id/integrations/google-sheets",

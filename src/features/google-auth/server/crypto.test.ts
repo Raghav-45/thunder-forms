@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
 	decryptGoogleOAuthSecret,
 	encryptGoogleOAuthSecret,
-} from "@/features/google-auth/server/crypto";
+} from "#/features/google-auth/server/crypto";
 
 describe("Google OAuth token encryption", () => {
 	afterEach(() => vi.unstubAllEnvs());

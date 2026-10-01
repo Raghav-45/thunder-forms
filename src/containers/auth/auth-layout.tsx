@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { siteConfig } from "@/config/site";
+import { siteConfig } from "#/config/site";
 
 interface AuthLayoutProps {
 	children: ReactNode;

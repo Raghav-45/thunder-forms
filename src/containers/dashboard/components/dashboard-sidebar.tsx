@@ -1,4 +1,4 @@
-import { Icons } from "@/components/Icons";
+import { Icons } from "#/components/Icons";
 import {
 	Sidebar,
 	SidebarContent,
@@ -7,11 +7,11 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import { siteConfig } from "@/config/site";
-import { authClient } from "@/lib/auth-client";
-import { SidebarSections } from "./sidebar";
-import { NavUser } from "./sidebar/nav-user";
+} from "#/components/ui/sidebar";
+import { siteConfig } from "#/config/site";
+import { SidebarSections } from "#/containers/dashboard/components/sidebar";
+import { NavUser } from "#/containers/dashboard/components/sidebar/nav-user";
+import { authClient } from "#/lib/auth-client";
 
 export function DashboardSidebar({
 	...props

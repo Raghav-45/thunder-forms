@@ -11,11 +11,11 @@ const mocks = vi.hoisted(() => ({
 	updateUploads: vi.fn(),
 }));
 
-vi.mock("@/features/google-sheets/server/deliveries", () => ({
+vi.mock("#/features/google-sheets/server/deliveries", () => ({
 	drainGoogleSheetsDeliveries: mocks.drainGoogleSheetsDeliveries,
 }));
 
-vi.mock("@/db", () => ({
+vi.mock("#/db", () => ({
 	prisma: {
 		forms: { findUnique: mocks.findForm },
 		responses: { create: mocks.createResponse },
@@ -29,7 +29,7 @@ vi.mock("@/db", () => ({
 	},
 }));
 
-import { Route } from "./submit";
+import { Route } from "#/routes/api/forms/$id/submit";
 
 const { POST } = (
 	Route as unknown as {

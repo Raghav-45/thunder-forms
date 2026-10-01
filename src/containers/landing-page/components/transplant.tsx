@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Leaf, Scissors, Sun } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { buttonVariants } from "#/components/ui/button";
+import { cn } from "#/lib/utils";
 
 const BEDS = [
 	{

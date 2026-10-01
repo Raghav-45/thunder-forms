@@ -7,23 +7,23 @@ const mocks = vi.hoisted(() => ({
 	updateResponse: vi.fn(),
 }));
 
-vi.mock("@/db", () => ({
+vi.mock("#/db", () => ({
 	prisma: {
 		forms: { findUnique: mocks.findForm },
 		responses: { update: mocks.updateResponse },
 	},
 }));
 
-vi.mock("@/lib/server/session", () => ({
+vi.mock("#/lib/server/session", () => ({
 	getSessionUserId: mocks.getSessionUserId,
 }));
 
-vi.mock("@/features/form-builder/server/quiz-email", () => ({
+vi.mock("#/features/form-builder/server/quiz-email", () => ({
 	QuizEmailConfigurationError: class QuizEmailConfigurationError extends Error {},
 	sendQuizGradeEmail: mocks.sendQuizGradeEmail,
 }));
 
-import { Route } from "./responses";
+import { Route } from "#/routes/api/forms/$id/responses";
 
 const { PATCH } = (
 	Route as unknown as {

@@ -6,8 +6,8 @@ import {
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
-} from "@/components/ui/chart";
-import { Separator } from "@/components/ui/separator";
+} from "#/components/ui/chart";
+import { Separator } from "#/components/ui/separator";
 
 // Types for the analytics data
 type AnalyticsData = {

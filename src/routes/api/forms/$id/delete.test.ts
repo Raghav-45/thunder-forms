@@ -6,15 +6,15 @@ const mocks = vi.hoisted(() => ({
 	getSessionUserId: vi.fn(),
 }));
 
-vi.mock("@/db", () => ({
+vi.mock("#/db", () => ({
 	prisma: { forms: { findUnique: mocks.findForm, delete: mocks.deleteForm } },
 }));
 
-vi.mock("@/lib/server/session", () => ({
+vi.mock("#/lib/server/session", () => ({
 	getSessionUserId: mocks.getSessionUserId,
 }));
 
-import { Route } from "./delete";
+import { Route } from "#/routes/api/forms/$id/delete";
 
 const { DELETE } = (
 	Route as unknown as {

@@ -1,15 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { prisma } from "@/db";
-import { encryptGoogleOAuthSecret } from "@/features/google-auth/server/crypto";
+import { prisma } from "#/db";
+import { encryptGoogleOAuthSecret } from "#/features/google-auth/server/crypto";
 import {
 	createGoogleSheetsAuthorizationUrl,
 	createOAuthAttemptValues,
-} from "@/features/google-sheets/server/oauth";
+} from "#/features/google-sheets/server/oauth";
 import {
 	getOwnedGoogleSheetsForm,
 	googleSheetsErrorResponse,
-} from "@/features/google-sheets/server/owner";
+} from "#/features/google-sheets/server/owner";
 
 export const Route = createFileRoute(
 	"/api/forms/$id/integrations/google-sheets/connect",

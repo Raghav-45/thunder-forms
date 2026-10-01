@@ -2,9 +2,9 @@ import { createHash, randomBytes } from "node:crypto";
 import { CodeChallengeMethod } from "google-auth-library";
 import { google } from "googleapis";
 
-import { prisma } from "@/db";
-import { GOOGLE_DRIVE_FILE_SCOPE } from "@/features/file-uploads/constants";
-import { decryptGoogleOAuthSecret } from "@/features/google-auth/server/crypto";
+import { prisma } from "#/db";
+import { GOOGLE_DRIVE_FILE_SCOPE } from "#/features/file-uploads/constants";
+import { decryptGoogleOAuthSecret } from "#/features/google-auth/server/crypto";
 
 export function isGoogleDriveAuthorizationError(error: unknown) {
 	if (error instanceof Error && error.message === "invalid_grant") return true;

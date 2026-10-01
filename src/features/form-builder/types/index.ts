@@ -1,4 +1,4 @@
-import type { FIELD_REGISTRY } from "@/features/form-builder/elements";
+import type { FIELD_REGISTRY } from "#/features/form-builder/elements";
 
 export type FieldType = { name: string; isAvailable: boolean; index?: number };
 
@@ -46,4 +46,4 @@ export interface EditorProps<T extends BaseFieldConfig = BaseFieldConfig> {
 export type AvailableFieldsType = keyof typeof FIELD_REGISTRY;
 
 /** Mutable list retained for existing builder consumers. Re-exported from the registry owner. */
-export { AVAILABLE_FIELDS } from "@/features/form-builder/elements";
+export { AVAILABLE_FIELDS } from "#/features/form-builder/elements";

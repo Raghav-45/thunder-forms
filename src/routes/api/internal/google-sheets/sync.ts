@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { createFileRoute } from "@tanstack/react-router";
-import { GOOGLE_SHEETS_SYNC_BATCH_LIMIT } from "@/features/google-sheets/constants";
-import { getGoogleSheetsSyncSecret } from "@/features/google-sheets/server/config";
-import { drainGoogleSheetsDeliveries } from "@/features/google-sheets/server/deliveries";
+import { GOOGLE_SHEETS_SYNC_BATCH_LIMIT } from "#/features/google-sheets/constants";
+import { getGoogleSheetsSyncSecret } from "#/features/google-sheets/server/config";
+import { drainGoogleSheetsDeliveries } from "#/features/google-sheets/server/deliveries";
 
 function isAuthorized(request: Request): boolean {
 	try {

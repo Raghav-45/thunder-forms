@@ -1,4 +1,4 @@
-import type { FieldConfig } from "@/features/form-builder/elements";
+import type { FieldConfig } from "#/features/form-builder/elements";
 import {
 	createFormPage,
 	createFormSection,
@@ -6,8 +6,8 @@ import {
 	type FormSection,
 	type FormStructure,
 	sanitizeImportedFields,
-} from "@/features/form-builder/form-structure";
-import type { ImportedGoogleFormPage } from "@/features/google-forms-import/types";
+} from "#/features/form-builder/form-structure";
+import type { ImportedGoogleFormPage } from "#/features/google-forms-import/types";
 
 export type { FormPage, FormSection, FormStructure };
 

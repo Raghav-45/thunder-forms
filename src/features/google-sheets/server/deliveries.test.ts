@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
 	upsertDelivery: vi.fn(),
 }));
 
-vi.mock("@/db", () => ({
+vi.mock("#/db", () => ({
 	prisma: {
 		responses: { findMany: mocks.findResponses },
 		$transaction: mocks.transaction,
@@ -16,7 +16,7 @@ vi.mock("@/db", () => ({
 import {
 	enqueueGoogleSheetsResponseBackfill,
 	nextGoogleSheetsRetryAt,
-} from "@/features/google-sheets/server/deliveries";
+} from "#/features/google-sheets/server/deliveries";
 
 describe("Google Sheets delivery retry timing", () => {
 	beforeEach(() => {

@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { CalendarX2, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "#/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -8,7 +8,7 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog";
+} from "#/components/ui/dialog";
 import {
 	Drawer,
 	DrawerClose,
@@ -16,8 +16,8 @@ import {
 	DrawerDescription,
 	DrawerFooter,
 	DrawerHeader,
-} from "@/components/ui/drawer";
-import { useIsMobile } from "@/hooks/use-mobile";
+} from "#/components/ui/drawer";
+import { useIsMobile } from "#/hooks/use-mobile";
 
 interface FormClosedDialogProps {
 	isOpen: boolean;

@@ -9,12 +9,12 @@ import {
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@/components/ui/card";
+} from "#/components/ui/card";
 import {
 	type ChartConfig,
 	ChartContainer,
 	ChartTooltip,
-} from "@/components/ui/chart";
+} from "#/components/ui/chart";
 
 export const description =
 	"Form analytics chart showing daily views and visitors";

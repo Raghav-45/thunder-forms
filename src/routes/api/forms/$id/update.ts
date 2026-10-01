@@ -1,19 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod/v3";
 
-import { prisma } from "@/db";
-import { isFormStructure } from "@/features/form-builder/form-structure";
+import { prisma } from "#/db";
+import { isFormStructure } from "#/features/form-builder/form-structure";
 import {
 	isGoogleSheetsHeaders,
 	reconcileGoogleSheetsHeaders,
-} from "@/features/google-sheets/server/schema";
-import { updateManagedSheetHeaders } from "@/features/google-sheets/server/sheets";
+} from "#/features/google-sheets/server/schema";
+import { updateManagedSheetHeaders } from "#/features/google-sheets/server/sheets";
 import {
 	GoogleSheetsIntegrationStatus,
 	type Prisma,
-} from "@/generated/prisma/client";
-import { getSessionUserId } from "@/lib/server/session";
-import { FormValidator } from "@/lib/validators/form";
+} from "#/generated/prisma/client";
+import { getSessionUserId } from "#/lib/server/session";
+import { FormValidator } from "#/lib/validators/form";
 
 export const Route = createFileRoute("/api/forms/$id/update")({
 	server: {

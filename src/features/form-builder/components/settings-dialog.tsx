@@ -1,24 +1,24 @@
 import { GraduationCap, Link, Settings, Shield, Split } from "lucide-react";
 import * as React from "react";
 
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "#/components/ui/button";
+import { Checkbox } from "#/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogTitle,
 	DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "#/components/ui/dialog";
+import { Input } from "#/components/ui/input";
+import { Label } from "#/components/ui/label";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
+} from "#/components/ui/select";
 import {
 	Sidebar,
 	SidebarContent,
@@ -28,10 +28,10 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 	SidebarProvider,
-} from "@/components/ui/sidebar";
-import { Switch } from "@/components/ui/switch";
-import { DatePickerWithPresets } from "@/features/form-builder/components/date-picker-with-presets";
-import type { FieldConfig } from "@/features/form-builder/elements";
+} from "#/components/ui/sidebar";
+import { Switch } from "#/components/ui/switch";
+import { DatePickerWithPresets } from "#/features/form-builder/components/date-picker-with-presets";
+import type { FieldConfig } from "#/features/form-builder/elements";
 import {
 	type FormStructure,
 	getOrderedFormFields,
@@ -39,11 +39,11 @@ import {
 	getQuizGradeRelease,
 	isAutoGradableQuizField,
 	type QuizSettings,
-} from "@/features/form-builder/form-structure";
-import { useFormStore } from "@/features/form-builder/store";
-import type { QuizQuestionConfig } from "@/features/form-builder/types";
-import { enableGooglePickerPointerEvents } from "@/features/google-picker/client";
-import { GoogleSheetsIntegration } from "@/features/google-sheets/components/google-sheets-integration";
+} from "#/features/form-builder/form-structure";
+import { useFormStore } from "#/features/form-builder/store";
+import type { QuizQuestionConfig } from "#/features/form-builder/types";
+import { enableGooglePickerPointerEvents } from "#/features/google-picker/client";
+import { GoogleSheetsIntegration } from "#/features/google-sheets/components/google-sheets-integration";
 
 const data = {
 	nav: [

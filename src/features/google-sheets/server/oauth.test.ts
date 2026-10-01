@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { GOOGLE_SHEETS_SCOPE } from "@/features/google-sheets/constants";
+import { GOOGLE_SHEETS_SCOPE } from "#/features/google-sheets/constants";
 import {
 	createGoogleSheetsAuthorizationUrl,
 	createOAuthAttemptValues,
-} from "@/features/google-sheets/server/oauth";
+} from "#/features/google-sheets/server/oauth";
 
 describe("Google Sheets OAuth", () => {
 	afterEach(() => vi.unstubAllEnvs());

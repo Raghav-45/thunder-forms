@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { FormStructure } from "@/features/form-builder/form-structure";
-import { calculateQuizResult } from "@/features/form-builder/utils/quiz";
+import type { FormStructure } from "#/features/form-builder/form-structure";
+import { calculateQuizResult } from "#/features/form-builder/utils/quiz";
 
 const quiz = (
 	overrides: Partial<FormStructure["quiz"]> = {},

@@ -1,9 +1,9 @@
 import { randomBytes } from "node:crypto";
-import { prisma } from "@/db";
+import { prisma } from "#/db";
 import {
 	decryptGoogleOAuthSecret,
 	encryptGoogleOAuthSecret,
-} from "@/features/google-auth/server/crypto";
+} from "#/features/google-auth/server/crypto";
 
 const IMPORT_SESSION_COOKIE = "thunderforms_google_forms_import";
 const IMPORT_SESSION_DURATION_MS = 10 * 60 * 1000;

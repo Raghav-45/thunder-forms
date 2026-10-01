@@ -6,16 +6,16 @@ const mocks = vi.hoisted(() => ({
 	getSessionUserId: vi.fn(),
 }));
 
-vi.mock("@/db", () => ({
+vi.mock("#/db", () => ({
 	prisma: { forms: { findMany: mocks.findForms } },
 	analyticsPrisma: { $queryRawUnsafe: mocks.queryRawUnsafe },
 }));
 
-vi.mock("@/lib/server/session", () => ({
+vi.mock("#/lib/server/session", () => ({
 	getSessionUserId: mocks.getSessionUserId,
 }));
 
-import { Route } from "./overview";
+import { Route } from "#/routes/api/analytics/overview";
 
 const { GET } = (
 	Route as unknown as {

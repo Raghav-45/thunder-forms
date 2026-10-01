@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRightIcon, EyeIcon, FileTextIcon } from "lucide-react";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "#/components/ui/badge";
+import { Button } from "#/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -10,7 +10,7 @@ import {
 	CardFooter,
 	CardHeader,
 	CardTitle,
-} from "@/components/ui/card";
+} from "#/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -18,9 +18,12 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog";
-import { countTemplateFields, FORM_TEMPLATES } from "../constants";
-import type { FormTemplateSpec } from "../types";
+} from "#/components/ui/dialog";
+import {
+	countTemplateFields,
+	FORM_TEMPLATES,
+} from "#/containers/dashboard/templates/constants";
+import type { FormTemplateSpec } from "#/containers/dashboard/templates/types";
 
 function TemplateCard({ template }: { template: FormTemplateSpec }) {
 	const [previewOpen, setPreviewOpen] = useState(false);

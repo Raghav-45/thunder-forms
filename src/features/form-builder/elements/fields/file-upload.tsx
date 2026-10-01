@@ -6,20 +6,20 @@ import {
 	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "#/components/ui/accordion";
+import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/input";
+import { Label } from "#/components/ui/label";
 import {
 	Sheet,
 	SheetContent,
 	SheetFooter,
 	SheetHeader,
 	SheetTitle,
-} from "@/components/ui/sheet";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { GoogleDriveUploadIntegration } from "@/features/file-uploads/components/google-drive-upload-integration";
+} from "#/components/ui/sheet";
+import { Switch } from "#/components/ui/switch";
+import { Textarea } from "#/components/ui/textarea";
+import { GoogleDriveUploadIntegration } from "#/features/file-uploads/components/google-drive-upload-integration";
 import {
 	FILE_UPLOAD_MAX_FILES,
 	FILE_UPLOAD_MAX_SIZE_BYTES,
@@ -27,19 +27,19 @@ import {
 	FILE_UPLOAD_MIN_SIZE_BYTES,
 	normalizeFileUploadMaxFiles,
 	normalizeFileUploadMaxSizeBytes,
-} from "@/features/file-uploads/constants";
+} from "#/features/file-uploads/constants";
 import {
 	type FileUploadReceipt,
 	isFileUploadReceiptList,
-} from "@/features/file-uploads/types";
-import AccordionWithSwitch from "@/features/form-builder/components/accordion-with-switch";
-import { FormFieldDefinition } from "@/features/form-builder/elements/base";
+} from "#/features/file-uploads/types";
+import AccordionWithSwitch from "#/features/form-builder/components/accordion-with-switch";
+import { FormFieldDefinition } from "#/features/form-builder/elements/base";
 import type {
 	BaseFieldConfig,
 	EditorProps,
 	FieldProps,
-} from "@/features/form-builder/types";
-import { enableGooglePickerPointerEvents } from "@/features/google-picker/client";
+} from "#/features/form-builder/types";
+import { enableGooglePickerPointerEvents } from "#/features/google-picker/client";
 
 const FIELD_IDENTIFIER = "file-upload";
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { googleSheetsOAuthResultMessage } from "@/features/google-sheets/oauth-result";
+import { googleSheetsOAuthResultMessage } from "#/features/google-sheets/oauth-result";
 
 describe("Google Sheets OAuth result messages", () => {
 	it("describes known callback outcomes", () => {

@@ -1,18 +1,20 @@
 import { useSortable } from "@dnd-kit/react/sortable";
 import { GripVerticalIcon } from "lucide-react";
 import { memo } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardDescription } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "#/components/ui/badge";
+import { Button, buttonVariants } from "#/components/ui/button";
+import { Card, CardContent, CardDescription } from "#/components/ui/card";
+import { ScrollArea } from "#/components/ui/scroll-area";
+import { Separator } from "#/components/ui/separator";
+import {
+	PALETTE_FIELD_TYPE,
+	PALETTE_SECTION_TYPE,
+} from "#/containers/dashboard/builder/[slug]/drag-model";
 import {
 	AVAILABLE_FIELDS,
 	type AvailableFieldsType,
-} from "@/features/form-builder/types";
-import { cn } from "@/lib/utils";
-
-import { PALETTE_FIELD_TYPE, PALETTE_SECTION_TYPE } from "../drag-model";
+} from "#/features/form-builder/types";
+import { cn } from "#/lib/utils";
 
 const COMING_SOON_FIELDS = [
 	"Combobox",

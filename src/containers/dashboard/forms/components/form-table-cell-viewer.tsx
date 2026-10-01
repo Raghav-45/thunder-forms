@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ChartLineIcon, DatabaseIcon, Edit2Icon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "#/components/ui/button";
 import {
 	Drawer,
 	DrawerClose,
@@ -10,10 +10,10 @@ import {
 	DrawerHeader,
 	DrawerTitle,
 	DrawerTrigger,
-} from "@/components/ui/drawer";
-import { useIsMobile } from "@/hooks/use-mobile";
-import type { FormTableRow } from "../types/form";
-import { AnalyticsGraph } from "./analytics-graph";
+} from "#/components/ui/drawer";
+import { AnalyticsGraph } from "#/containers/dashboard/forms/components/analytics-graph";
+import type { FormTableRow } from "#/containers/dashboard/forms/types/form";
+import { useIsMobile } from "#/hooks/use-mobile";
 
 interface FormTableCellViewerProps {
 	item: FormTableRow;

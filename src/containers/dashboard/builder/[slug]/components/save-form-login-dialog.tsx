@@ -3,8 +3,8 @@ import {
 	DialogContent,
 	DialogDescription,
 	DialogTitle,
-} from "@/components/ui/dialog";
-import { LoginForm } from "@/containers/auth/components/login-form";
+} from "#/components/ui/dialog";
+import { LoginForm } from "#/containers/auth/components/login-form";
 
 export function SaveFormLoginDialog({
 	open,

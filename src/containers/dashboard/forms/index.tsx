@@ -1,5 +1,5 @@
-import { FormTable } from "./components/form-table";
-import { useForms } from "./hooks/use-forms";
+import { FormTable } from "#/containers/dashboard/forms/components/form-table";
+import { useForms } from "#/containers/dashboard/forms/hooks/use-forms";
 
 const FormsPage = () => {
 	const { forms, isLoading } = useForms();

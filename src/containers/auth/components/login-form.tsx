@@ -5,19 +5,19 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod/v3";
-import { Button } from "@/components/ui/button";
+import { Button } from "#/components/ui/button";
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { authClient } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
-import { ContinueWithOAuthButtonsGroup } from "./oauth-buttons";
+} from "#/components/ui/card";
+import { Input } from "#/components/ui/input";
+import { Label } from "#/components/ui/label";
+import { ContinueWithOAuthButtonsGroup } from "#/containers/auth/components/oauth-buttons";
+import { authClient } from "#/lib/auth-client";
+import { cn } from "#/lib/utils";
 
 export function LoginForm({
 	className,

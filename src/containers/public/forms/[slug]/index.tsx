@@ -2,19 +2,19 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import type { FieldConfig } from "@/features/form-builder/elements";
+import { Button } from "#/components/ui/button";
+import { FormClosedDialog } from "#/containers/public/forms/components/form-closed-dialog";
+import { FormSubmittedPage } from "#/containers/public/forms/components/form-submitted-page";
+import type { FieldConfig } from "#/features/form-builder/elements";
 import {
 	type FormStructure,
 	type FormPage as FormStructurePage,
 	getOrderedFormFields,
 	isFormStructure,
-} from "@/features/form-builder/form-structure";
-import { validateFormFields } from "@/features/form-builder/utils/formValidation";
-import { getFieldComponent } from "@/features/form-builder/utils/helperFunctions";
-import type { QuizResult } from "@/features/form-builder/utils/quiz";
-import { FormClosedDialog } from "../components/form-closed-dialog";
-import { FormSubmittedPage } from "../components/form-submitted-page";
+} from "#/features/form-builder/form-structure";
+import { validateFormFields } from "#/features/form-builder/utils/formValidation";
+import { getFieldComponent } from "#/features/form-builder/utils/helperFunctions";
+import type { QuizResult } from "#/features/form-builder/utils/quiz";
 
 interface FormPageProps {
 	slug: string;

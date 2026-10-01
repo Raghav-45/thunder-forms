@@ -1,5 +1,5 @@
-import { prisma } from "@/db";
-import { getSessionUserId } from "@/lib/server/session";
+import { prisma } from "#/db";
+import { getSessionUserId } from "#/lib/server/session";
 
 export class GoogleSheetsRouteError extends Error {
 	constructor(

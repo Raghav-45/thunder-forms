@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { prisma } from "@/db";
-import { GOOGLE_DRIVE_FILE_SCOPE } from "@/features/file-uploads/constants";
-import { createGoogleDriveOAuthClient } from "@/features/file-uploads/server/google-drive";
+import { prisma } from "#/db";
+import { GOOGLE_DRIVE_FILE_SCOPE } from "#/features/file-uploads/constants";
+import { createGoogleDriveOAuthClient } from "#/features/file-uploads/server/google-drive";
 import {
 	decryptGoogleOAuthSecret,
 	encryptGoogleOAuthSecret,
-} from "@/features/google-auth/server/crypto";
-import { FileUploadConnectionStatus } from "@/generated/prisma/client";
-import { getSessionUserId } from "@/lib/server/session";
+} from "#/features/google-auth/server/crypto";
+import { FileUploadConnectionStatus } from "#/generated/prisma/client";
+import { getSessionUserId } from "#/lib/server/session";
 
 function redirectToBuilder(request: Request, formId: string, result: string) {
 	const url = new URL(`/dashboard/builder/${formId}`, request.url);

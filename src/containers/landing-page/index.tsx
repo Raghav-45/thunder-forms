@@ -1,8 +1,11 @@
-import { Capabilities, FinalCta } from "./components/capabilities";
-import { Hero } from "./components/hero";
-import { HonestLedger } from "./components/honest-ledger";
-import { Timeline } from "./components/timeline";
-import { Transplant } from "./components/transplant";
+import {
+	Capabilities,
+	FinalCta,
+} from "#/containers/landing-page/components/capabilities";
+import { Hero } from "#/containers/landing-page/components/hero";
+import { HonestLedger } from "#/containers/landing-page/components/honest-ledger";
+import { Timeline } from "#/containers/landing-page/components/timeline";
+import { Transplant } from "#/containers/landing-page/components/transplant";
 
 export default function Home() {
 	return (

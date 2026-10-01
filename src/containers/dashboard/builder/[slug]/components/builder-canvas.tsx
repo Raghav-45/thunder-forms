@@ -3,10 +3,10 @@ import { useDroppable } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import type { PropsWithChildren } from "react";
 import { memo, useCallback } from "react";
-import type { FieldConfig } from "@/features/form-builder/elements";
-import type { FormPage } from "@/features/form-builder/form-structure";
-import { cn } from "@/lib/utils";
-
+import {
+	ItemCard,
+	SectionCard,
+} from "#/containers/dashboard/builder/[slug]/components/builder-cards";
 import {
 	CANVAS_DROP_ID,
 	ITEM_TYPE,
@@ -14,8 +14,10 @@ import {
 	PALETTE_SECTION_TYPE,
 	SECTION_GROUP_ID,
 	SECTION_TYPE,
-} from "../drag-model";
-import { ItemCard, SectionCard } from "./builder-cards";
+} from "#/containers/dashboard/builder/[slug]/drag-model";
+import type { FieldConfig } from "#/features/form-builder/elements";
+import type { FormPage } from "#/features/form-builder/form-structure";
+import { cn } from "#/lib/utils";
 
 interface SortableItemProps {
 	field: FieldConfig;

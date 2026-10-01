@@ -1,6 +1,6 @@
 import * as React from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button } from "#/components/ui/button";
 import {
 	Drawer,
 	DrawerClose,
@@ -10,16 +10,16 @@ import {
 	DrawerHeader,
 	DrawerTitle,
 	DrawerTrigger,
-} from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "#/components/ui/drawer";
+import { Input } from "#/components/ui/input";
+import { Label } from "#/components/ui/label";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
+} from "#/components/ui/select";
 import {
 	Table,
 	TableBody,
@@ -27,19 +27,19 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/components/ui/table";
+} from "#/components/ui/table";
 import {
 	isFileUploadReceipt,
 	isFileUploadReceiptList,
-} from "@/features/file-uploads/types";
-import type { FieldConfig } from "@/features/form-builder/elements";
+} from "#/features/file-uploads/types";
+import type { FieldConfig } from "#/features/form-builder/elements";
 import {
 	getQuizGradeRelease,
 	hasQuizAnswerKey,
 	type QuizSettings,
-} from "@/features/form-builder/form-structure";
-import type { QuizResult } from "@/features/form-builder/utils/quiz";
-import { useIsMobile } from "@/hooks/use-mobile";
+} from "#/features/form-builder/form-structure";
+import type { QuizResult } from "#/features/form-builder/utils/quiz";
+import { useIsMobile } from "#/hooks/use-mobile";
 
 export interface FormResponse {
 	id: string;

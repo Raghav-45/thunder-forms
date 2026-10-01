@@ -3,12 +3,12 @@ import axios from "axios";
 import { Loader2, Pause, Play, Plus, Sheet, Unplug } from "lucide-react";
 import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button } from "#/components/ui/button";
 import {
 	chooseGoogleSpreadsheet,
 	waitForGooglePickerLayer,
-} from "@/features/google-picker/client";
-import type { GoogleSheetsIntegrationSummary } from "@/features/google-sheets/types";
+} from "#/features/google-picker/client";
+import type { GoogleSheetsIntegrationSummary } from "#/features/google-sheets/types";
 
 interface IntegrationResponse {
 	connection: { status: "ACTIVE" | "REAUTH_REQUIRED" } | null;

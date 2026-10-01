@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { prisma } from "@/db";
-import { FileUploadStatus } from "@/generated/prisma/client";
-import { GOOGLE_DRIVE_STORAGE_PROVIDER } from "../constants";
-import { googleDriveStorageProvider } from "./storage";
+import { prisma } from "#/db";
+import { GOOGLE_DRIVE_STORAGE_PROVIDER } from "#/features/file-uploads/constants";
+import { googleDriveStorageProvider } from "#/features/file-uploads/server/storage";
+import { FileUploadStatus } from "#/generated/prisma/client";
 
 const SESSION_LIFETIME_MS = 2 * 60 * 60 * 1000;
 

@@ -1,6 +1,6 @@
 import { GalleryVerticalEnd } from "lucide-react";
-import { AuthLayout } from "./auth-layout";
-import { LoginForm } from "./components/login-form";
+import { AuthLayout } from "#/containers/auth/auth-layout";
+import { LoginForm } from "#/containers/auth/components/login-form";
 
 export default function AuthPage() {
 	return (

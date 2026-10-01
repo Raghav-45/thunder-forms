@@ -1,8 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { isKnownFieldIdentifier } from "@/features/form-builder/form-structure";
-import { SYSTEM_PROMPT } from "./-prompt";
+import { isKnownFieldIdentifier } from "#/features/form-builder/form-structure";
+import { SYSTEM_PROMPT } from "#/routes/api/generatewithai/-prompt";
 
 export const Route = createFileRoute("/api/generatewithai")({
 	server: {

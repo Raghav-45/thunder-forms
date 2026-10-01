@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { FormValidator } from "@/lib/validators/form";
+import { FormValidator } from "#/lib/validators/form";
 
 const validPayload = {
 	title: "Contact form",

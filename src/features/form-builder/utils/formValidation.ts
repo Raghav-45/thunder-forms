@@ -1,5 +1,5 @@
-import type { FieldConfig } from "@/features/form-builder/elements";
-import { FIELD_REGISTRY } from "@/features/form-builder/elements";
+import type { FieldConfig } from "#/features/form-builder/elements";
+import { FIELD_REGISTRY } from "#/features/form-builder/elements";
 
 /**
  * Form validation dispatcher.

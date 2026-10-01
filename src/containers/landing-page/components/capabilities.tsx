@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, LayoutTemplate } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { buttonVariants } from "#/components/ui/button";
+import { cn } from "#/lib/utils";
 
 const LEDGER = [
 	{

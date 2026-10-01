@@ -1,5 +1,8 @@
 import { create } from "zustand";
-import { DEFAULT_FORM_DESCRIPTION, DEFAULT_FORM_TITLE } from "./constants";
+import {
+	DEFAULT_FORM_DESCRIPTION,
+	DEFAULT_FORM_TITLE,
+} from "#/features/form-builder/constants";
 
 type FormStore = {
 	count: number;

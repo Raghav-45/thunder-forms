@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { prisma } from "@/db";
+import { prisma } from "#/db";
 import {
 	getOwnedGoogleSheetsForm,
 	googleSheetsErrorResponse,
-} from "@/features/google-sheets/server/owner";
-import { getPickerAccessToken } from "@/features/google-sheets/server/sheets";
-import { GoogleSheetsConnectionStatus } from "@/generated/prisma/client";
+} from "#/features/google-sheets/server/owner";
+import { getPickerAccessToken } from "#/features/google-sheets/server/sheets";
+import { GoogleSheetsConnectionStatus } from "#/generated/prisma/client";
 
 export const Route = createFileRoute(
 	"/api/forms/$id/integrations/google-sheets/picker-token",

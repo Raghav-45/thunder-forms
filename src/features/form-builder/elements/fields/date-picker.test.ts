@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseValidDate } from "@/features/form-builder/elements/fields/date-picker";
+import { parseValidDate } from "#/features/form-builder/elements/fields/date-picker";
 
 describe("date picker persisted values", () => {
 	it("accepts a valid serialized date", () => {

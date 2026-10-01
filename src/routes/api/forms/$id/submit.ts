@@ -1,31 +1,31 @@
 import { randomUUID } from "node:crypto";
 import { createFileRoute } from "@tanstack/react-router";
-import { prisma } from "@/db";
-import { getFileUploadSessionCookie } from "@/features/file-uploads/server/session";
+import { prisma } from "#/db";
+import { getFileUploadSessionCookie } from "#/features/file-uploads/server/session";
 import {
 	type FileUploadReceipt,
 	isFileUploadReceiptList,
-} from "@/features/file-uploads/types";
+} from "#/features/file-uploads/types";
 import {
 	getOrderedFormFields,
 	getQuizGradeRelease,
 	isFormStructure,
 	type QuizGradeRelease,
-} from "@/features/form-builder/form-structure";
-import { validateFormFields } from "@/features/form-builder/utils/formValidation";
+} from "#/features/form-builder/form-structure";
+import { validateFormFields } from "#/features/form-builder/utils/formValidation";
 import {
 	calculateQuizResult,
 	type QuizResult,
-} from "@/features/form-builder/utils/quiz";
-import { drainGoogleSheetsDeliveries } from "@/features/google-sheets/server/deliveries";
+} from "#/features/form-builder/utils/quiz";
+import { drainGoogleSheetsDeliveries } from "#/features/google-sheets/server/deliveries";
 import {
 	createGoogleSheetsRow,
 	isGoogleSheetsHeaders,
-} from "@/features/google-sheets/server/schema";
+} from "#/features/google-sheets/server/schema";
 import {
 	FileUploadStatus,
 	GoogleSheetsIntegrationStatus,
-} from "@/generated/prisma/client";
+} from "#/generated/prisma/client";
 
 class SubmissionRouteError extends Error {
 	constructor(

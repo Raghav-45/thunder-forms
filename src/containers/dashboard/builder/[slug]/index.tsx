@@ -22,50 +22,19 @@ import {
 	useState,
 } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Textarea } from "@/components/ui/textarea";
-import { siteConfig } from "@/config/site";
-import { getTemplateBySlug } from "@/containers/dashboard/templates/constants";
-import { instantiateTemplate } from "@/containers/dashboard/templates/instantiate-template";
-import { CopyButton } from "@/features/form-builder/components/copy-button";
-import { IMMORTAL_SENTINEL_DATE } from "@/features/form-builder/components/date-picker-with-presets";
-import { SettingsDialog } from "@/features/form-builder/components/settings-dialog";
-import GenerateWithAiPrompt from "@/features/form-builder/core/generate-with-ai";
-import ImportGoogleForm from "@/features/form-builder/core/import-google-form";
-import type { FieldConfig } from "@/features/form-builder/elements";
-import {
-	getOrderedFormFields,
-	getQuizDefaultPoints,
-	isFormStructure,
-	type FormStructure as PersistedFormStructure,
-	type QuizSettings,
-} from "@/features/form-builder/form-structure";
-import { useFormStore } from "@/features/form-builder/store";
-import type {
-	AvailableFieldsType,
-	QuizQuestionConfig,
-} from "@/features/form-builder/types";
-import {
-	createDefaultFieldConfig,
-	getFieldEditor,
-} from "@/features/form-builder/utils/helperFunctions";
-import type { ImportedGoogleFormPage } from "@/features/google-forms-import/types";
-import { GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM } from "@/features/google-sheets/constants";
-import { googleSheetsOAuthResultMessage } from "@/features/google-sheets/oauth-result";
-import { authClient } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
-import type { CreateFormPayload } from "@/lib/validators/form";
-import { BuilderCanvas } from "./components/builder-canvas";
-import { BuilderDragOverlay } from "./components/builder-drag-overlay";
-import { BuilderPalette } from "./components/builder-palette";
-import { ChromeTabStrip } from "./components/chrome-tab-strip";
-import { SaveFormLoginDialog } from "./components/save-form-login-dialog";
-import { SectionEditor } from "./components/section-editor";
-
+import { Button } from "#/components/ui/button";
+import { Card, CardContent } from "#/components/ui/card";
+import { Input } from "#/components/ui/input";
+import { Label } from "#/components/ui/label";
+import { ScrollArea } from "#/components/ui/scroll-area";
+import { Textarea } from "#/components/ui/textarea";
+import { siteConfig } from "#/config/site";
+import { BuilderCanvas } from "#/containers/dashboard/builder/[slug]/components/builder-canvas";
+import { BuilderDragOverlay } from "#/containers/dashboard/builder/[slug]/components/builder-drag-overlay";
+import { BuilderPalette } from "#/containers/dashboard/builder/[slug]/components/builder-palette";
+import { ChromeTabStrip } from "#/containers/dashboard/builder/[slug]/components/chrome-tab-strip";
+import { SaveFormLoginDialog } from "#/containers/dashboard/builder/[slug]/components/save-form-login-dialog";
+import { SectionEditor } from "#/containers/dashboard/builder/[slug]/components/section-editor";
 import {
 	CANVAS_DROP_ID,
 	createImportedGoogleFormStructure,
@@ -90,7 +59,37 @@ import {
 	stagePaletteSection,
 	updateField,
 	updateSection,
-} from "./drag-model";
+} from "#/containers/dashboard/builder/[slug]/drag-model";
+import { getTemplateBySlug } from "#/containers/dashboard/templates/constants";
+import { instantiateTemplate } from "#/containers/dashboard/templates/instantiate-template";
+import { CopyButton } from "#/features/form-builder/components/copy-button";
+import { IMMORTAL_SENTINEL_DATE } from "#/features/form-builder/components/date-picker-with-presets";
+import { SettingsDialog } from "#/features/form-builder/components/settings-dialog";
+import GenerateWithAiPrompt from "#/features/form-builder/core/generate-with-ai";
+import ImportGoogleForm from "#/features/form-builder/core/import-google-form";
+import type { FieldConfig } from "#/features/form-builder/elements";
+import {
+	getOrderedFormFields,
+	getQuizDefaultPoints,
+	isFormStructure,
+	type FormStructure as PersistedFormStructure,
+	type QuizSettings,
+} from "#/features/form-builder/form-structure";
+import { useFormStore } from "#/features/form-builder/store";
+import type {
+	AvailableFieldsType,
+	QuizQuestionConfig,
+} from "#/features/form-builder/types";
+import {
+	createDefaultFieldConfig,
+	getFieldEditor,
+} from "#/features/form-builder/utils/helperFunctions";
+import type { ImportedGoogleFormPage } from "#/features/google-forms-import/types";
+import { GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM } from "#/features/google-sheets/constants";
+import { googleSheetsOAuthResultMessage } from "#/features/google-sheets/oauth-result";
+import { authClient } from "#/lib/auth-client";
+import { cn } from "#/lib/utils";
+import type { CreateFormPayload } from "#/lib/validators/form";
 
 const sensors = [
 	PointerSensor.configure({

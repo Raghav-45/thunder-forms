@@ -10,15 +10,15 @@ import {
 	CardFooter,
 	CardHeader,
 	CardTitle,
-} from "@/components/ui/card";
-import LoadingScreen from "../../components/loading-screen";
+} from "#/components/ui/card";
 import {
 	BrowserRadialChart,
 	DeviceRadialChart,
 	OSRadialChart,
 	ReferrerGraph,
-} from "./components/breakdown-charts";
-import ImpressionsChart from "./components/impressions-chart";
+} from "#/containers/dashboard/forms/[formId]/analytics/components/breakdown-charts";
+import ImpressionsChart from "#/containers/dashboard/forms/[formId]/analytics/components/impressions-chart";
+import LoadingScreen from "#/containers/dashboard/forms/components/loading-screen";
 
 // Define your data types
 interface DailyViewData {

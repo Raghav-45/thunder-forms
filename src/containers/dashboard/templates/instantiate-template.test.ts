@@ -3,10 +3,10 @@ import {
 	countTemplateFields,
 	FORM_TEMPLATES,
 	getTemplateBySlug,
-} from "@/containers/dashboard/templates/constants";
-import { instantiateTemplate } from "@/containers/dashboard/templates/instantiate-template";
-import type { FormTemplateSpec } from "@/containers/dashboard/templates/types";
-import { isFormStructure } from "@/features/form-builder/form-structure";
+} from "#/containers/dashboard/templates/constants";
+import { instantiateTemplate } from "#/containers/dashboard/templates/instantiate-template";
+import type { FormTemplateSpec } from "#/containers/dashboard/templates/types";
+import { isFormStructure } from "#/features/form-builder/form-structure";
 
 const allIds = (template: ReturnType<typeof instantiateTemplate>) => [
 	...template.pages.map((page) => page.id),

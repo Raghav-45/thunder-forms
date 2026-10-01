@@ -1,7 +1,7 @@
 import { IconCirclePlusFilled, IconMail } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import type { ComponentType, FC } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "#/components/ui/button";
 import {
 	SidebarGroup,
 	SidebarGroupContent,
@@ -9,9 +9,9 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
-import { sidebarSections } from "../../constants";
+} from "#/components/ui/sidebar";
+import { sidebarSections } from "#/containers/dashboard/constants";
+import { cn } from "#/lib/utils";
 
 type SidebarSectionsProps = {};
 

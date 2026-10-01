@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { FieldConfig } from "@/features/form-builder/elements";
-import type { AvailableFieldsType } from "@/features/form-builder/types";
-import { validateFormFields } from "@/features/form-builder/utils/formValidation";
+import type { FieldConfig } from "#/features/form-builder/elements";
+import type { AvailableFieldsType } from "#/features/form-builder/types";
+import { validateFormFields } from "#/features/form-builder/utils/formValidation";
 
 const field = (
 	id: string,

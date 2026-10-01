@@ -1,13 +1,13 @@
 import { Readable } from "node:stream";
 import { createFileRoute } from "@tanstack/react-router";
-import { prisma } from "@/db";
-import { markGoogleDriveConnectionForReauthentication } from "@/features/file-uploads/server/google-drive";
+import { prisma } from "#/db";
+import { markGoogleDriveConnectionForReauthentication } from "#/features/file-uploads/server/google-drive";
 import {
 	fileUploadErrorResponse,
 	getOwnedFileUploadForm,
-} from "@/features/file-uploads/server/owner";
-import { getFileStorageProvider } from "@/features/file-uploads/server/storage";
-import { FileUploadStatus } from "@/generated/prisma/client";
+} from "#/features/file-uploads/server/owner";
+import { getFileStorageProvider } from "#/features/file-uploads/server/storage";
+import { FileUploadStatus } from "#/generated/prisma/client";
 
 function contentDisposition(fileName: string) {
 	const fallback = fileName.replace(/[^\x20-\x7E]/g, "_").replaceAll('"', "");

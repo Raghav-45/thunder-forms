@@ -1,7 +1,7 @@
 // import { TrendingUpIcon } from 'lucide-react'
 
-import { Icons } from "@/components/Icons";
-import { Announcement } from "./components/announcement";
+import { Icons } from "#/components/Icons";
+import { Announcement } from "#/containers/templates/components/announcement";
 
 // const baseUrl =
 //   process.env.NODE_ENV === 'development'

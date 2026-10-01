@@ -1,19 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { prisma } from "@/db";
-import { decryptGoogleOAuthSecret } from "@/features/google-auth/server/crypto";
+import { prisma } from "#/db";
+import { decryptGoogleOAuthSecret } from "#/features/google-auth/server/crypto";
 import {
 	GOOGLE_FORMS_IMPORT_OAUTH_RESULT_QUERY_PARAM,
 	GOOGLE_FORMS_IMPORT_SCOPES,
-} from "@/features/google-forms-import/constants";
-import { createGoogleFormsImportOAuthClient } from "@/features/google-forms-import/server/oauth";
+} from "#/features/google-forms-import/constants";
+import { createGoogleFormsImportOAuthClient } from "#/features/google-forms-import/server/oauth";
 import {
 	createGoogleFormsImportSessionId,
 	encryptTemporaryGoogleFormsAccessToken,
 	googleFormsImportSessionExpiresAt,
 	setGoogleFormsImportCookie,
-} from "@/features/google-forms-import/server/session";
-import { getSessionUserId } from "@/lib/server/session";
+} from "#/features/google-forms-import/server/session";
+import { getSessionUserId } from "#/lib/server/session";
 
 function redirectToBuilder(request: Request, returnTo: string, result: string) {
 	const url = new URL(returnTo, request.url);

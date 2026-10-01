@@ -2,7 +2,7 @@ import { IconArrowRight } from "@tabler/icons-react";
 import { LayoutPanelTopIcon } from "lucide-react";
 import type { FC } from "react";
 
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "#/components/ui/separator";
 
 interface AnnouncementProps {
 	text?: string;

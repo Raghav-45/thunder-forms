@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
 	updateIntegration: vi.fn(),
 }));
 
-vi.mock("@/db", () => ({
+vi.mock("#/db", () => ({
 	prisma: {
 		forms: { findUnique: mocks.findForm, update: mocks.update },
 		google_sheets_integrations: { update: mocks.updateIntegration },
@@ -17,15 +17,15 @@ vi.mock("@/db", () => ({
 	},
 }));
 
-vi.mock("@/lib/server/session", () => ({
+vi.mock("#/lib/server/session", () => ({
 	getSessionUserId: mocks.getSessionUserId,
 }));
 
-vi.mock("@/features/google-sheets/server/sheets", () => ({
+vi.mock("#/features/google-sheets/server/sheets", () => ({
 	updateManagedSheetHeaders: mocks.updateHeaders,
 }));
 
-import { Route } from "./update";
+import { Route } from "#/routes/api/forms/$id/update";
 
 const { POST } = (
 	Route as unknown as {

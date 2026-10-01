@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { getFormStatus } from "./-utils";
+import { getFormStatus } from "#/routes/api/forms/-utils";
 
 describe("getFormStatus", () => {
 	afterEach(() => {

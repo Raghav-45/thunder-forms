@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
 	DEFAULT_FORM_DESCRIPTION,
 	DEFAULT_FORM_TITLE,
-} from "@/features/form-builder/constants";
-import { useFormStore } from "@/features/form-builder/store";
+} from "#/features/form-builder/constants";
+import { useFormStore } from "#/features/form-builder/store";
 
 describe("form builder store", () => {
 	afterEach(() => {

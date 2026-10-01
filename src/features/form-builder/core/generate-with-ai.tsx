@@ -1,7 +1,7 @@
 import { type FC, useState } from "react";
 import { toast } from "sonner";
-import { Icons } from "@/components/Icons";
-import { Button } from "@/components/ui/button";
+import { Icons } from "#/components/Icons";
+import { Button } from "#/components/ui/button";
 import {
 	Dialog,
 	DialogClose,
@@ -10,10 +10,10 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
-} from "@/components/ui/dialog";
-import { ShineBorder } from "@/components/ui/shine-border";
-import { Textarea } from "@/components/ui/textarea";
-import type { FieldConfig } from "@/features/form-builder/elements";
+} from "#/components/ui/dialog";
+import { ShineBorder } from "#/components/ui/shine-border";
+import { Textarea } from "#/components/ui/textarea";
+import type { FieldConfig } from "#/features/form-builder/elements";
 
 interface GenerateWithAiPromptProps {
 	onGeneratedFields: (

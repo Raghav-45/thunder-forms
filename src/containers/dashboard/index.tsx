@@ -1,7 +1,7 @@
-import { ChartAreaInteractive } from "./components/chart-area-interactive";
-import { SectionCards } from "./components/section-cards";
-import { FormTable } from "./forms/components/form-table";
-import { useForms } from "./forms/hooks/use-forms";
+import { ChartAreaInteractive } from "#/containers/dashboard/components/chart-area-interactive";
+import { SectionCards } from "#/containers/dashboard/components/section-cards";
+import { FormTable } from "#/containers/dashboard/forms/components/form-table";
+import { useForms } from "#/containers/dashboard/forms/hooks/use-forms";
 
 export default function Dashboard() {
 	const { forms, isLoading } = useForms();

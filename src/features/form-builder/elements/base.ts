@@ -3,7 +3,7 @@ import type {
 	BaseFieldConfig,
 	EditorProps,
 	FieldProps,
-} from "@/features/form-builder/types";
+} from "#/features/form-builder/types";
 
 /**
  * Abstract base class for all form field definitions.

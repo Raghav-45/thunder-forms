@@ -1,9 +1,9 @@
-import { GOOGLE_DRIVE_STORAGE_PROVIDER } from "../constants";
+import { GOOGLE_DRIVE_STORAGE_PROVIDER } from "#/features/file-uploads/constants";
 import {
 	deleteGoogleDriveFile,
 	downloadGoogleDriveFile,
 	uploadGoogleDriveFile,
-} from "./google-drive";
+} from "#/features/file-uploads/server/google-drive";
 
 export interface FileStorageProvider {
 	upload(input: {

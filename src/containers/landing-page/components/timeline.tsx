@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
-import { BrowserMockup } from "./browser-mockup";
+import { BrowserMockup } from "#/containers/landing-page/components/browser-mockup";
 
 const STEPS = [
 	{

@@ -1,16 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { prisma } from "@/db";
+import { prisma } from "#/db";
 import {
 	decryptGoogleOAuthSecret,
 	encryptGoogleOAuthSecret,
-} from "@/features/google-auth/server/crypto";
+} from "#/features/google-auth/server/crypto";
 import {
 	GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM,
 	GOOGLE_SHEETS_SCOPE,
-} from "@/features/google-sheets/constants";
-import { createGoogleSheetsOAuthClient } from "@/features/google-sheets/server/oauth";
-import { GoogleSheetsConnectionStatus } from "@/generated/prisma/client";
-import { getSessionUserId } from "@/lib/server/session";
+} from "#/features/google-sheets/constants";
+import { createGoogleSheetsOAuthClient } from "#/features/google-sheets/server/oauth";
+import { GoogleSheetsConnectionStatus } from "#/generated/prisma/client";
+import { getSessionUserId } from "#/lib/server/session";
 
 function redirectToBuilder(request: Request, formId: string, result: string) {
 	const url = new URL(`/dashboard/builder/${formId}`, request.url);

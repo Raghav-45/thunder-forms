@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { type FC, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button } from "#/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -16,10 +16,10 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { GOOGLE_FORMS_IMPORT_OAUTH_RESULT_QUERY_PARAM } from "@/features/google-forms-import/constants";
-import type { ImportedGoogleFormPage } from "@/features/google-forms-import/types";
+} from "#/components/ui/dialog";
+import { Input } from "#/components/ui/input";
+import { GOOGLE_FORMS_IMPORT_OAUTH_RESULT_QUERY_PARAM } from "#/features/google-forms-import/constants";
+import type { ImportedGoogleFormPage } from "#/features/google-forms-import/types";
 
 interface ImportGoogleFormProps {
 	onImported: (

@@ -3,9 +3,9 @@ import { google } from "googleapis";
 import {
 	normalizeFileUploadMaxFiles,
 	normalizeFileUploadMaxSizeBytes,
-} from "@/features/file-uploads/constants";
-import { createChoiceOptionId } from "@/features/form-builder/elements/choice-options";
-import type { ImportedGoogleFormPage } from "@/features/google-forms-import/types";
+} from "#/features/file-uploads/constants";
+import { createChoiceOptionId } from "#/features/form-builder/elements/choice-options";
+import type { ImportedGoogleFormPage } from "#/features/google-forms-import/types";
 
 interface GoogleFormItem {
 	itemId: string;

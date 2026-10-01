@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { FormStructure } from "@/features/form-builder/form-structure";
+import type { FormStructure } from "#/features/form-builder/form-structure";
 import {
 	createGoogleSheetsHeaders,
 	createGoogleSheetsRow,
 	reconcileGoogleSheetsHeaders,
-} from "@/features/google-sheets/server/schema";
+} from "#/features/google-sheets/server/schema";
 
 const structure = {
 	pages: [

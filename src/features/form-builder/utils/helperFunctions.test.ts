@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { FIELD_REGISTRY } from "@/features/form-builder/elements";
-import type { AvailableFieldsType } from "@/features/form-builder/types";
+import { FIELD_REGISTRY } from "#/features/form-builder/elements";
+import type { AvailableFieldsType } from "#/features/form-builder/types";
 import {
 	createDefaultFieldConfig,
 	getFieldComponent,
 	getFieldEditor,
 	validateFieldConfig,
-} from "@/features/form-builder/utils/helperFunctions";
+} from "#/features/form-builder/utils/helperFunctions";
 
 const identifiers = Object.keys(FIELD_REGISTRY) as AvailableFieldsType[];
 

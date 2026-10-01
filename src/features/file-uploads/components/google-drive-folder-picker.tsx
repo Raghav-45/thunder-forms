@@ -2,11 +2,11 @@ import axios from "axios";
 import { FolderOpen, Loader2, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button } from "#/components/ui/button";
 import {
 	chooseGoogleDriveFolder,
 	waitForGooglePickerLayer,
-} from "@/features/google-picker/client";
+} from "#/features/google-picker/client";
 
 interface GoogleDriveFolderPickerProps {
 	formId: string;

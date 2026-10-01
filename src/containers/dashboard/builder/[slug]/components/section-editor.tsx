@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/input";
+import { Label } from "#/components/ui/label";
 import {
 	Sheet,
 	SheetContent,
 	SheetFooter,
 	SheetHeader,
 	SheetTitle,
-} from "@/components/ui/sheet";
-import { Textarea } from "@/components/ui/textarea";
-import type { FormSection } from "@/features/form-builder/form-structure";
+} from "#/components/ui/sheet";
+import { Textarea } from "#/components/ui/textarea";
+import type { FormSection } from "#/features/form-builder/form-structure";
 
 interface SectionEditorProps {
 	onClose: () => void;

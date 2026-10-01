@@ -1,6 +1,6 @@
 import { type FC, useState } from "react";
-import { Switch } from "@/components/ui/switch";
-import { cn } from "@/lib/utils";
+import { Switch } from "#/components/ui/switch";
+import { cn } from "#/lib/utils";
 
 interface AccordionWithSwitchProps {
 	text: string;

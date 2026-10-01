@@ -4,11 +4,11 @@ const mocks = vi.hoisted(() => ({
 	findForm: vi.fn(),
 }));
 
-vi.mock("@/db", () => ({
+vi.mock("#/db", () => ({
 	prisma: { forms: { findUnique: mocks.findForm } },
 }));
 
-import { Route } from "./viewForm";
+import { Route } from "#/routes/api/forms/$id/viewForm";
 
 const { GET } = (
 	Route as unknown as {

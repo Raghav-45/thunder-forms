@@ -2,10 +2,10 @@ import { Link } from "@tanstack/react-router";
 import { FileIcon, HomeIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { type FC, useEffect, useState } from "react";
-import { Icons } from "@/components/Icons";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import type { QuizResult } from "@/features/form-builder/utils/quiz";
+import { Icons } from "#/components/Icons";
+import { Button } from "#/components/ui/button";
+import { Card, CardContent } from "#/components/ui/card";
+import type { QuizResult } from "#/features/form-builder/utils/quiz";
 
 interface CheckmarkProps {
 	size?: number;

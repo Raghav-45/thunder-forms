@@ -1,14 +1,14 @@
-import type { FieldConfig } from "@/features/form-builder/elements";
-import { normalizeChoiceOptions } from "@/features/form-builder/elements/choice-options";
+import type { FormTemplateSpec } from "#/containers/dashboard/templates/types";
+import type { FieldConfig } from "#/features/form-builder/elements";
+import { normalizeChoiceOptions } from "#/features/form-builder/elements/choice-options";
 import {
 	createFormPage,
 	createFormSection,
 	type FormSection,
 	type FormStructure,
-} from "@/features/form-builder/form-structure";
-import type { AvailableFieldsType } from "@/features/form-builder/types";
-import { createDefaultFieldConfig } from "@/features/form-builder/utils/helperFunctions";
-import type { FormTemplateSpec } from "./types";
+} from "#/features/form-builder/form-structure";
+import type { AvailableFieldsType } from "#/features/form-builder/types";
+import { createDefaultFieldConfig } from "#/features/form-builder/utils/helperFunctions";
 
 export type BuiltSection = FormSection;
 export type BuiltFormStructure = FormStructure;

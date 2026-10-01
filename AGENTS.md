@@ -6,6 +6,12 @@ Instructions for AI agents working in this codebase.
 
 Make the smallest change that achieves the requested goal. Don't add folders, wrapper components, barrels, or abstractions unless they reduce real duplication or clarify ownership. When two approaches both work, pick the boring one over the clever one.
 
+## Import conventions
+
+- Use `#/` for every handwritten project-module import, including imports within the same feature or directory. Do not use relative `./` or `../` module imports.
+- Use one internal alias only: `#/`. Do not introduce or use `@/` in handwritten code.
+- Leave generated files (`src/routeTree.gen.ts` and `src/generated/`) in their generator-prescribed import style.
+
 ## Shadcn UI
 
 - Treat `components/ui/` as the original shadcn baseline. Do not change it for feature-specific styling or layout; fix the consuming feature instead. Change a shared primitive only when the task explicitly requires it.

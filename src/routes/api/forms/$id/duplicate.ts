@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { prisma } from "@/db";
-import { isFormStructure } from "@/features/form-builder/form-structure";
-import type { Prisma } from "@/generated/prisma/client";
-import { getSessionUserId } from "@/lib/server/session";
+import { prisma } from "#/db";
+import { isFormStructure } from "#/features/form-builder/form-structure";
+import type { Prisma } from "#/generated/prisma/client";
+import { getSessionUserId } from "#/lib/server/session";
 
 export const Route = createFileRoute("/api/forms/$id/duplicate")({
 	server: {

@@ -12,22 +12,22 @@
  *  4. Add a new instance to FIELD_DEFINITIONS below
  */
 
-export { FormFieldDefinition } from "./base";
+export { FormFieldDefinition } from "#/features/form-builder/elements/base";
 
-import { CheckboxFieldDefinition } from "./fields/checkbox";
-import { DatePickerFieldDefinition } from "./fields/date-picker";
-import { DateTimePickerFieldDefinition } from "./fields/datetime-picker";
-import { FileUploadFieldDefinition } from "./fields/file-upload";
-import { MultiSelectFieldDefinition } from "./fields/multi-select";
-import { NumberInputFieldDefinition } from "./fields/number-input";
-import { RadioGroupFieldDefinition } from "./fields/radio-group";
-import { RatingFieldDefinition } from "./fields/rating";
-import { SingleSelectFieldDefinition } from "./fields/single-select";
-import { SliderFieldDefinition } from "./fields/slider";
-import { SwitchFieldDefinition } from "./fields/switch-field";
-import { TextAreaFieldDefinition } from "./fields/text-area";
-import { TextInputFieldDefinition } from "./fields/text-input";
-import { TimePickerFieldDefinition } from "./fields/time-picker";
+import { CheckboxFieldDefinition } from "#/features/form-builder/elements/fields/checkbox";
+import { DatePickerFieldDefinition } from "#/features/form-builder/elements/fields/date-picker";
+import { DateTimePickerFieldDefinition } from "#/features/form-builder/elements/fields/datetime-picker";
+import { FileUploadFieldDefinition } from "#/features/form-builder/elements/fields/file-upload";
+import { MultiSelectFieldDefinition } from "#/features/form-builder/elements/fields/multi-select";
+import { NumberInputFieldDefinition } from "#/features/form-builder/elements/fields/number-input";
+import { RadioGroupFieldDefinition } from "#/features/form-builder/elements/fields/radio-group";
+import { RatingFieldDefinition } from "#/features/form-builder/elements/fields/rating";
+import { SingleSelectFieldDefinition } from "#/features/form-builder/elements/fields/single-select";
+import { SliderFieldDefinition } from "#/features/form-builder/elements/fields/slider";
+import { SwitchFieldDefinition } from "#/features/form-builder/elements/fields/switch-field";
+import { TextAreaFieldDefinition } from "#/features/form-builder/elements/fields/text-area";
+import { TextInputFieldDefinition } from "#/features/form-builder/elements/fields/text-input";
+import { TimePickerFieldDefinition } from "#/features/form-builder/elements/fields/time-picker";
 
 const FIELD_DEFINITIONS = [
 	new TextInputFieldDefinition(),

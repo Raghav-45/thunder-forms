@@ -1,15 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { prisma } from "@/db";
+import { prisma } from "#/db";
 import {
 	createGoogleDriveAuthorizationUrl,
 	createGoogleDriveAuthorizationValues,
-} from "@/features/file-uploads/server/google-drive";
+} from "#/features/file-uploads/server/google-drive";
 import {
 	fileUploadErrorResponse,
 	getOwnedFileUploadField,
-} from "@/features/file-uploads/server/owner";
-import { encryptGoogleOAuthSecret } from "@/features/google-auth/server/crypto";
+} from "#/features/file-uploads/server/owner";
+import { encryptGoogleOAuthSecret } from "#/features/google-auth/server/crypto";
 
 export const Route = createFileRoute(
 	"/api/forms/$id/uploads/fields/$fieldId/connect",

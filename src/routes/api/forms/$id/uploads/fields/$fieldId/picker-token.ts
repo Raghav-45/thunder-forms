@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { prisma } from "@/db";
-import { getGoogleDriveAccessToken } from "@/features/file-uploads/server/google-drive";
+import { prisma } from "#/db";
+import { getGoogleDriveAccessToken } from "#/features/file-uploads/server/google-drive";
 import {
 	fileUploadErrorResponse,
 	getOwnedFileUploadField,
-} from "@/features/file-uploads/server/owner";
-import { FileUploadConnectionStatus } from "@/generated/prisma/client";
+} from "#/features/file-uploads/server/owner";
+import { FileUploadConnectionStatus } from "#/generated/prisma/client";
 
 export const Route = createFileRoute(
 	"/api/forms/$id/uploads/fields/$fieldId/picker-token",

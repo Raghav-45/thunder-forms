@@ -10,12 +10,12 @@ import {
 	stagePaletteSection,
 	updateField,
 	updateSection,
-} from "@/containers/dashboard/builder/[slug]/drag-model";
-import type { FieldConfig } from "@/features/form-builder/elements";
+} from "#/containers/dashboard/builder/[slug]/drag-model";
+import type { FieldConfig } from "#/features/form-builder/elements";
 import type {
 	FormSection,
 	FormStructure,
-} from "@/features/form-builder/form-structure";
+} from "#/features/form-builder/form-structure";
 
 const field = (id: string): FieldConfig =>
 	({

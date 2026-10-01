@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DashboardLayout } from "@/containers/dashboard/dashboard-layout";
-import FormResponsesPage from "@/containers/dashboard/forms/[formId]/responses";
+import { DashboardLayout } from "#/containers/dashboard/dashboard-layout";
+import FormResponsesPage from "#/containers/dashboard/forms/[formId]/responses";
 
 export const Route = createFileRoute("/dashboard/forms/$formId/responses")({
 	component: RouteComponent,

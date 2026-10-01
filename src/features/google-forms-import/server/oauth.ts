@@ -2,7 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { CodeChallengeMethod } from "google-auth-library";
 import { google } from "googleapis";
 
-import { GOOGLE_FORMS_IMPORT_SCOPES } from "@/features/google-forms-import/constants";
+import { GOOGLE_FORMS_IMPORT_SCOPES } from "#/features/google-forms-import/constants";
 
 interface GoogleFormsImportConfig {
 	clientId: string;

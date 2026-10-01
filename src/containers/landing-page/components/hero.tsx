@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, LayoutTemplate } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import Dither from "./background-dither";
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar";
+import { Badge } from "#/components/ui/badge";
+import { buttonVariants } from "#/components/ui/button";
+import Dither from "#/containers/landing-page/components/background-dither";
+import { cn } from "#/lib/utils";
 
 export function Hero() {
 	return (

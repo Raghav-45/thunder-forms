@@ -3,8 +3,8 @@ import axios from "axios";
 import { CheckCircle2, FolderUp, Loader2 } from "lucide-react";
 import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { GoogleDriveFolderPicker } from "./google-drive-folder-picker";
+import { Button } from "#/components/ui/button";
+import { GoogleDriveFolderPicker } from "#/features/file-uploads/components/google-drive-folder-picker";
 
 interface UploadIntegrationResponse {
 	connection: { status: "ACTIVE" | "REAUTH_REQUIRED" } | null;

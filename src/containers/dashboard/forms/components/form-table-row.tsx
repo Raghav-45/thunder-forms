@@ -1,6 +1,6 @@
 import { flexRender, type Row } from "@tanstack/react-table";
-import { TableCell, TableRow } from "@/components/ui/table";
-import type { FormTableRow } from "../types/form";
+import { TableCell, TableRow } from "#/components/ui/table";
+import type { FormTableRow } from "#/containers/dashboard/forms/types/form";
 
 interface FormTableRowRendererProps {
 	row: Row<FormTableRow>;

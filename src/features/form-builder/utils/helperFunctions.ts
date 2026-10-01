@@ -1,6 +1,6 @@
-import type { FieldConfig } from "@/features/form-builder/elements";
-import { FIELD_REGISTRY } from "@/features/form-builder/elements";
-import type { AvailableFieldsType } from "@/features/form-builder/types";
+import type { FieldConfig } from "#/features/form-builder/elements";
+import { FIELD_REGISTRY } from "#/features/form-builder/elements";
+import type { AvailableFieldsType } from "#/features/form-builder/types";
 
 /**
  * HELPER FUNCTIONS FOR FORM BUILDER

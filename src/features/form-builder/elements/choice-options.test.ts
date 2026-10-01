@@ -4,7 +4,7 @@ import {
 	hasValidChoiceOptionValues,
 	isChoiceOptionValueInvalid,
 	normalizeChoiceOptions,
-} from "@/features/form-builder/elements/choice-options";
+} from "#/features/form-builder/elements/choice-options";
 
 describe("choice options", () => {
 	it("accepts nonblank unique submitted values", () => {

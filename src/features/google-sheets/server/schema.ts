@@ -1,10 +1,10 @@
-import { isFileUploadReceipt } from "@/features/file-uploads/types";
+import { isFileUploadReceipt } from "#/features/file-uploads/types";
 import {
 	type FormStructure,
 	getOrderedFormFields,
-} from "@/features/form-builder/form-structure";
-import { GOOGLE_SHEETS_FIXED_COLUMNS } from "@/features/google-sheets/constants";
-import type { GoogleSheetsColumn } from "@/features/google-sheets/types";
+} from "#/features/form-builder/form-structure";
+import { GOOGLE_SHEETS_FIXED_COLUMNS } from "#/features/google-sheets/constants";
+import type { GoogleSheetsColumn } from "#/features/google-sheets/types";
 
 function fieldLabel(label: string | undefined): string {
 	return label?.trim() || "Untitled field";

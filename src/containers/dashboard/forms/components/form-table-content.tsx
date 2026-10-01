@@ -5,15 +5,15 @@ import {
 	IconChevronsRight,
 } from "@tabler/icons-react";
 import { flexRender, type Table as ReactTable } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Button } from "#/components/ui/button";
+import { Label } from "#/components/ui/label";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
+} from "#/components/ui/select";
 import {
 	Table,
 	TableBody,
@@ -21,10 +21,10 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/components/ui/table";
-import { TabsContent } from "@/components/ui/tabs";
-import type { FormTableRow } from "../types/form";
-import { FormTableRowRenderer } from "./form-table-row";
+} from "#/components/ui/table";
+import { TabsContent } from "#/components/ui/tabs";
+import { FormTableRowRenderer } from "#/containers/dashboard/forms/components/form-table-row";
+import type { FormTableRow } from "#/containers/dashboard/forms/types/form";
 
 interface FormTableContentProps {
 	columnCount: number;

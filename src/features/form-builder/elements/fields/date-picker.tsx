@@ -8,40 +8,40 @@ import {
 	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "#/components/ui/accordion";
+import { Button } from "#/components/ui/button";
+import { Calendar } from "#/components/ui/calendar";
+import { Input } from "#/components/ui/input";
+import { Label } from "#/components/ui/label";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/ui/popover";
+} from "#/components/ui/popover";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
+} from "#/components/ui/select";
 import {
 	Sheet,
 	SheetContent,
 	SheetFooter,
 	SheetHeader,
 	SheetTitle,
-} from "@/components/ui/sheet";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import AccordionWithSwitch from "@/features/form-builder/components/accordion-with-switch";
-import { FormFieldDefinition } from "@/features/form-builder/elements/base";
+} from "#/components/ui/sheet";
+import { Switch } from "#/components/ui/switch";
+import { Textarea } from "#/components/ui/textarea";
+import AccordionWithSwitch from "#/features/form-builder/components/accordion-with-switch";
+import { FormFieldDefinition } from "#/features/form-builder/elements/base";
 import type {
 	BaseFieldConfig,
 	EditorProps,
 	FieldProps,
-} from "@/features/form-builder/types";
-import { cn } from "@/lib/utils";
+} from "#/features/form-builder/types";
+import { cn } from "#/lib/utils";
 
 // ─── Config ──────────────────────────────────────────────
 

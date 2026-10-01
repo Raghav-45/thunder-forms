@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Icons } from "@/components/Icons";
-import { Progress } from "@/components/ui/progress";
+import { Icons } from "#/components/Icons";
+import { Progress } from "#/components/ui/progress";
 
 export default function LoadingScreen() {
 	const [progress, setProgress] = useState(8);

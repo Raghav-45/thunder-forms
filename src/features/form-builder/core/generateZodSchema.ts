@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { z } from "zod/v3";
-import type { FieldConfig } from "@/features/form-builder/elements";
-import { FIELD_REGISTRY } from "@/features/form-builder/elements";
+import type { FieldConfig } from "#/features/form-builder/elements";
+import { FIELD_REGISTRY } from "#/features/form-builder/elements";
 
 export const generateZodSchema = (fields: FieldConfig[]): z.ZodObject<any> => {
 	const schemaObject: Record<string, z.ZodTypeAny> = {};

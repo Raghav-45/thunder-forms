@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { analyticsPrisma, prisma } from "@/db";
-import { getSessionUserId } from "@/lib/server/session";
+import { analyticsPrisma, prisma } from "#/db";
+import { getSessionUserId } from "#/lib/server/session";
 
 // Define interfaces for type safety
 interface WebsiteEventLog {

@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
 	updateUpload: vi.fn(),
 }));
 
-vi.mock("@/db", () => ({
+vi.mock("#/db", () => ({
 	prisma: {
 		forms: { findUnique: mocks.findForm },
 		file_uploads: {
@@ -24,10 +24,10 @@ vi.mock("@/db", () => ({
 	},
 }));
 
-vi.mock("@/features/file-uploads/server/session", async (importOriginal) => {
+vi.mock("#/features/file-uploads/server/session", async (importOriginal) => {
 	const original =
 		await importOriginal<
-			typeof import("@/features/file-uploads/server/session")
+			typeof import("#/features/file-uploads/server/session")
 		>();
 	return {
 		...original,
@@ -36,18 +36,18 @@ vi.mock("@/features/file-uploads/server/session", async (importOriginal) => {
 	};
 });
 
-vi.mock("@/features/file-uploads/server/storage", () => ({
+vi.mock("#/features/file-uploads/server/storage", () => ({
 	getFileStorageProvider: () => ({
 		upload: mocks.providerUpload,
 		delete: mocks.providerDelete,
 	}),
 }));
 
-vi.mock("@/features/file-uploads/server/google-drive", () => ({
+vi.mock("#/features/file-uploads/server/google-drive", () => ({
 	markGoogleDriveConnectionForReauthentication: vi.fn(),
 }));
 
-import { Route } from "./uploads";
+import { Route } from "#/routes/api/forms/$id/uploads";
 
 const { POST } = (
 	Route as unknown as {

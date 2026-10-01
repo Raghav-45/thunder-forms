@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { format } from "date-fns";
-import type { FormTableRow } from "../types/form";
+import type { FormTableRow } from "#/containers/dashboard/forms/types/form";
 
 interface ApiFormData {
 	id: string;

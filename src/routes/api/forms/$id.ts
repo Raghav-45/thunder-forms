@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { prisma } from "@/db";
-import { getSessionUserId } from "@/lib/server/session";
+import { prisma } from "#/db";
+import { getSessionUserId } from "#/lib/server/session";
 
 export const Route = createFileRoute("/api/forms/$id")({
 	server: {

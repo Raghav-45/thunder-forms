@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { prisma } from "@/db";
+import { prisma } from "#/db";
 import {
 	isFormStructure,
 	stripQuizAnswerKeys,
-} from "@/features/form-builder/form-structure";
-import { getFormStatus } from "../-utils";
+} from "#/features/form-builder/form-structure";
+import { getFormStatus } from "#/routes/api/forms/-utils";
 
 export const Route = createFileRoute("/api/forms/$id/viewForm")({
 	server: {

@@ -8,21 +8,21 @@ const mocks = vi.hoisted(() => ({
 	consumeSession: vi.fn(),
 }));
 
-vi.mock("@/lib/server/session", () => ({
+vi.mock("#/lib/server/session", () => ({
 	getSessionUserId: mocks.getSessionUserId,
 }));
 
-vi.mock("@/features/google-forms-import/server/forms", () => ({
+vi.mock("#/features/google-forms-import/server/forms", () => ({
 	listGoogleForms: mocks.listGoogleForms,
 	importGoogleForm: mocks.importGoogleForm,
 }));
 
 vi.mock(
-	"@/features/google-forms-import/server/session",
+	"#/features/google-forms-import/server/session",
 	async (importOriginal) => {
 		const original =
 			await importOriginal<
-				typeof import("@/features/google-forms-import/server/session")
+				typeof import("#/features/google-forms-import/server/session")
 			>();
 		return {
 			...original,
@@ -32,7 +32,7 @@ vi.mock(
 	},
 );
 
-import { Route } from "./import-google-form";
+import { Route } from "#/routes/api/forms/import-google-form";
 
 const { GET, POST } = (
 	Route as unknown as {

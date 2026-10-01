@@ -7,10 +7,10 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { Toaster } from "sonner";
-import UmamiAnalytics from "../components/UmamiAnalytics";
-import { siteConfig } from "../config/site";
-import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
-import appCss from "../styles.css?url";
+import UmamiAnalytics from "#/components/UmamiAnalytics";
+import { siteConfig } from "#/config/site";
+import TanStackQueryDevtools from "#/integrations/tanstack-query/devtools";
+import appCss from "#/styles.css?url";
 
 interface MyRouterContext {
 	queryClient: QueryClient;

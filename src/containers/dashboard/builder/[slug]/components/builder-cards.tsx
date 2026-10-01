@@ -1,10 +1,10 @@
 import { GripVerticalIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import type { ComponentType, ReactNode } from "react";
 import { createElement, forwardRef } from "react";
-import { Button } from "@/components/ui/button";
-import type { FieldConfig } from "@/features/form-builder/elements";
-import { getFieldComponent } from "@/features/form-builder/utils/helperFunctions";
-import { cn } from "@/lib/utils";
+import { Button } from "#/components/ui/button";
+import type { FieldConfig } from "#/features/form-builder/elements";
+import { getFieldComponent } from "#/features/form-builder/utils/helperFunctions";
+import { cn } from "#/lib/utils";
 
 type FieldPreviewComponent = ComponentType<{
 	field: FieldConfig;

@@ -1,6 +1,6 @@
-import { prisma } from "@/db";
-import { Prisma } from "@/generated/prisma/client";
-import { GoogleSheetsRouteError } from "./owner";
+import { prisma } from "#/db";
+import { GoogleSheetsRouteError } from "#/features/google-sheets/server/owner";
+import { Prisma } from "#/generated/prisma/client";
 
 const STALE_LOCK_MS = 10 * 60 * 1000;
 

@@ -1,8 +1,8 @@
-import type { FieldConfig } from "@/features/form-builder/elements";
+import type { FieldConfig } from "#/features/form-builder/elements";
 import {
 	hasValidChoiceOptions,
 	normalizeChoiceOptions,
-} from "@/features/form-builder/elements/choice-options";
+} from "#/features/form-builder/elements/choice-options";
 
 export interface FormSection {
 	description?: string;

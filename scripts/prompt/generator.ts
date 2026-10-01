@@ -1,4 +1,4 @@
-import type { AvailableFieldsType } from '@/features/form-builder/types'
+import type { AvailableFieldsType } from '#/features/form-builder/types'
 import fs from 'fs'
 import path from 'path'
 
@@ -64,12 +64,12 @@ async function extractBaseFieldConfig(filePath: string): Promise<string> {
 async function generatePrompt() {
   try {
     // Import your types (adjust path as needed)
-    const { BASE_PROMPT } = await import('./base-prompt')
+    const { BASE_PROMPT } = await import('#/scripts/prompt/base-prompt')
     const { AVAILABLE_FIELDS } = await import(
-      '@/features/form-builder/types'
+      '#/features/form-builder/types'
     )
     const { createDefaultFieldConfig } = await import(
-      '@/features/form-builder/utils/helperFunctions'
+      '#/features/form-builder/utils/helperFunctions'
     )
 
     // Extract BaseFieldConfig from the types file

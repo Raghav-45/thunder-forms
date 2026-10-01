@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { prisma } from "@/db";
+import { prisma } from "#/db";
 import {
 	FILE_UPLOAD_MAX_SIZE_BYTES,
 	normalizeFileUploadMaxFiles,
 	normalizeFileUploadMaxSizeBytes,
-} from "@/features/file-uploads/constants";
-import { markGoogleDriveConnectionForReauthentication } from "@/features/file-uploads/server/google-drive";
+} from "#/features/file-uploads/constants";
+import { markGoogleDriveConnectionForReauthentication } from "#/features/file-uploads/server/google-drive";
 import {
 	createSizeLimitedFileStream,
 	FileUploadContentError,
@@ -13,23 +13,23 @@ import {
 	FileUploadSizeLimitError,
 	parseStreamedFileUpload,
 	type StreamedFileUpload,
-} from "@/features/file-uploads/server/multipart";
+} from "#/features/file-uploads/server/multipart";
 import {
 	deleteExpiredFileUploadSessions,
 	getFileUploadSessionCookie,
 	getOrCreateFileUploadSession,
 	setFileUploadSessionCookie,
-} from "@/features/file-uploads/server/session";
-import { getFileStorageProvider } from "@/features/file-uploads/server/storage";
-import type { FileUploadConfig } from "@/features/form-builder/elements/fields/file-upload";
+} from "#/features/file-uploads/server/session";
+import { getFileStorageProvider } from "#/features/file-uploads/server/storage";
+import type { FileUploadConfig } from "#/features/form-builder/elements/fields/file-upload";
 import {
 	getOrderedFormFields,
 	isFormStructure,
-} from "@/features/form-builder/form-structure";
+} from "#/features/form-builder/form-structure";
 import {
 	FileUploadConnectionStatus,
 	FileUploadStatus,
-} from "@/generated/prisma/client";
+} from "#/generated/prisma/client";
 
 class PublicFileUploadError extends Error {
 	constructor(

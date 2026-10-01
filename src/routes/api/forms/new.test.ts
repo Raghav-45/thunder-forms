@@ -5,15 +5,15 @@ const mocks = vi.hoisted(() => ({
 	getSessionUserId: vi.fn(),
 }));
 
-vi.mock("@/db", () => ({
+vi.mock("#/db", () => ({
 	prisma: { forms: { create: mocks.create } },
 }));
 
-vi.mock("@/lib/server/session", () => ({
+vi.mock("#/lib/server/session", () => ({
 	getSessionUserId: mocks.getSessionUserId,
 }));
 
-import { Route } from "./new";
+import { Route } from "#/routes/api/forms/new";
 
 const { POST } = (
 	Route as unknown as {

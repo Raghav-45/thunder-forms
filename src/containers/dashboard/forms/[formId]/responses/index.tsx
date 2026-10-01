@@ -27,10 +27,10 @@ import {
 } from "@tanstack/react-table";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "#/components/ui/badge";
+import { Button } from "#/components/ui/button";
+import { Card, CardContent } from "#/components/ui/card";
+import { Checkbox } from "#/components/ui/checkbox";
 import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
@@ -38,15 +38,15 @@ import {
 	DropdownMenuItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Label } from "@/components/ui/label";
+} from "#/components/ui/dropdown-menu";
+import { Label } from "#/components/ui/label";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
+} from "#/components/ui/select";
 import {
 	Table,
 	TableBody,
@@ -54,20 +54,9 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { isFileUploadReceiptList } from "@/features/file-uploads/types";
-import type { FieldConfig } from "@/features/form-builder/elements";
-import {
-	type FormStructure,
-	getOrderedFormFields,
-	hasQuizAnswerKey,
-	isFormStructure,
-	isQuizScoredField,
-	type QuizSettings,
-} from "@/features/form-builder/form-structure";
-import LoadingScreen from "../../components/loading-screen";
-import NoResponsesYetCard from "./components/no-responses-yet-card";
+} from "#/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/ui/tabs";
+import NoResponsesYetCard from "#/containers/dashboard/forms/[formId]/responses/components/no-responses-yet-card";
 import {
 	type FormResponse,
 	formatResponseValue,
@@ -75,7 +64,18 @@ import {
 	QuestionGrading,
 	ResponseDetailsDrawer,
 	responseFields,
-} from "./components/quiz-grading";
+} from "#/containers/dashboard/forms/[formId]/responses/components/quiz-grading";
+import LoadingScreen from "#/containers/dashboard/forms/components/loading-screen";
+import { isFileUploadReceiptList } from "#/features/file-uploads/types";
+import type { FieldConfig } from "#/features/form-builder/elements";
+import {
+	type FormStructure,
+	getOrderedFormFields,
+	hasQuizAnswerKey,
+	isFormStructure,
+	isQuizScoredField,
+	type QuizSettings,
+} from "#/features/form-builder/form-structure";
 
 interface FormResponsesData {
 	fields: FormStructure;

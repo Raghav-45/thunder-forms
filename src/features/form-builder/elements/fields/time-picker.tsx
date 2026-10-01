@@ -6,33 +6,33 @@ import {
 	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "#/components/ui/accordion";
+import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/input";
+import { Label } from "#/components/ui/label";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
+} from "#/components/ui/select";
 import {
 	Sheet,
 	SheetContent,
 	SheetFooter,
 	SheetHeader,
 	SheetTitle,
-} from "@/components/ui/sheet";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import AccordionWithSwitch from "@/features/form-builder/components/accordion-with-switch";
-import { FormFieldDefinition } from "@/features/form-builder/elements/base";
+} from "#/components/ui/sheet";
+import { Switch } from "#/components/ui/switch";
+import { Textarea } from "#/components/ui/textarea";
+import AccordionWithSwitch from "#/features/form-builder/components/accordion-with-switch";
+import { FormFieldDefinition } from "#/features/form-builder/elements/base";
 import type {
 	BaseFieldConfig,
 	EditorProps,
 	FieldProps,
-} from "@/features/form-builder/types";
+} from "#/features/form-builder/types";
 
 const FIELD_IDENTIFIER = "time-picker";
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;

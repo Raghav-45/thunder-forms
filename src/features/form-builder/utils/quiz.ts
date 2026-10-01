@@ -1,10 +1,10 @@
-import type { FieldConfig } from "@/features/form-builder/elements";
-import type { FormStructure } from "@/features/form-builder/form-structure";
+import type { FieldConfig } from "#/features/form-builder/elements";
+import type { FormStructure } from "#/features/form-builder/form-structure";
 import {
 	getOrderedFormFields,
 	hasQuizAnswerKey,
 	isQuizScoredField,
-} from "@/features/form-builder/form-structure";
+} from "#/features/form-builder/form-structure";
 
 export interface QuizResult {
 	manualScores: Record<string, number>;

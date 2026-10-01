@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	isOnStep,
 	isPositiveFiniteNumber,
-} from "@/features/form-builder/elements/number-constraints";
+} from "#/features/form-builder/elements/number-constraints";
 
 describe("numeric field constraints", () => {
 	it("accepts only positive finite steps", () => {

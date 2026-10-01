@@ -7,26 +7,26 @@ const mocks = vi.hoisted(() => ({
 	getOwnedFileUploadForm: vi.fn(),
 }));
 
-vi.mock("@/db", () => ({
+vi.mock("#/db", () => ({
 	prisma: {
 		file_uploads: { findFirst: mocks.findFirst },
 	},
 }));
 
-vi.mock("@/features/file-uploads/server/owner", () => ({
+vi.mock("#/features/file-uploads/server/owner", () => ({
 	fileUploadErrorResponse: vi.fn(),
 	getOwnedFileUploadForm: mocks.getOwnedFileUploadForm,
 }));
 
-vi.mock("@/features/file-uploads/server/storage", () => ({
+vi.mock("#/features/file-uploads/server/storage", () => ({
 	getFileStorageProvider: () => ({ download: mocks.download }),
 }));
 
-vi.mock("@/features/file-uploads/server/google-drive", () => ({
+vi.mock("#/features/file-uploads/server/google-drive", () => ({
 	markGoogleDriveConnectionForReauthentication: vi.fn(),
 }));
 
-import { Route } from "./$uploadId";
+import { Route } from "#/routes/api/forms/$id/uploads/$uploadId";
 
 const { GET } = (
 	Route as unknown as {

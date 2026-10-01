@@ -19,33 +19,33 @@ import {
 } from "@tanstack/react-table";
 import * as React from "react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "#/components/ui/badge";
+import { Button } from "#/components/ui/button";
+import { Checkbox } from "#/components/ui/checkbox";
 import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
 	DropdownMenuContent,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Label } from "@/components/ui/label";
+} from "#/components/ui/dropdown-menu";
+import { Label } from "#/components/ui/label";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { FormTableRow } from "../types/form";
-import { DeleteFormDialog } from "./delete-form-dialog";
-import { FormTableActions } from "./form-table-actions";
-import { FormTableCellViewer } from "./form-table-cell-viewer";
-import { FormTableContent } from "./form-table-content";
+} from "#/components/ui/select";
+import { Separator } from "#/components/ui/separator";
+import { Skeleton } from "#/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "#/components/ui/tabs";
+import { DeleteFormDialog } from "#/containers/dashboard/forms/components/delete-form-dialog";
+import { FormTableActions } from "#/containers/dashboard/forms/components/form-table-actions";
+import { FormTableCellViewer } from "#/containers/dashboard/forms/components/form-table-cell-viewer";
+import { FormTableContent } from "#/containers/dashboard/forms/components/form-table-content";
+import type { FormTableRow } from "#/containers/dashboard/forms/types/form";
 
-export { formTableSchema as schema } from "../types/form";
+export { formTableSchema as schema } from "#/containers/dashboard/forms/types/form";
 
 interface FormTableProps {
 	data: FormTableRow[];

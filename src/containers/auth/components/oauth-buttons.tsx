@@ -1,6 +1,6 @@
 import { GithubIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
+import { Button } from "#/components/ui/button";
+import { authClient } from "#/lib/auth-client";
 
 export const ContinueWithOAuthButtonsGroup = () => {
 	return (

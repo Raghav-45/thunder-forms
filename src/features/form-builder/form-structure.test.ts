@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { FieldConfig } from "@/features/form-builder/elements";
+import type { FieldConfig } from "#/features/form-builder/elements";
 import {
 	createFormStructure,
 	type FormStructure,
@@ -7,7 +7,7 @@ import {
 	isFormStructure,
 	sanitizeImportedFields,
 	stripQuizAnswerKeys,
-} from "@/features/form-builder/form-structure";
+} from "#/features/form-builder/form-structure";
 
 const field = (id: string): FieldConfig =>
 	({

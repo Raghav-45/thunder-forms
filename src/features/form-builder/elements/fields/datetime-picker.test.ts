@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	parseValidDate,
 	updateDateTimePart,
-} from "@/features/form-builder/elements/fields/datetime-picker";
+} from "#/features/form-builder/elements/fields/datetime-picker";
 
 const dateAt = (hours: number, minutes = 30) =>
 	new Date(2026, 0, 15, hours, minutes);

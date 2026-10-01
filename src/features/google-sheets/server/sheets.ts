@@ -1,9 +1,9 @@
 import { randomBytes } from "node:crypto";
 import { google } from "googleapis";
 
-import { decryptGoogleOAuthSecret } from "@/features/google-auth/server/crypto";
-import type { GoogleSheetsColumn } from "@/features/google-sheets/types";
-import { createGoogleSheetsOAuthClient } from "./oauth";
+import { decryptGoogleOAuthSecret } from "#/features/google-auth/server/crypto";
+import { createGoogleSheetsOAuthClient } from "#/features/google-sheets/server/oauth";
+import type { GoogleSheetsColumn } from "#/features/google-sheets/types";
 
 export interface GoogleSpreadsheetTarget {
 	spreadsheetId: string;

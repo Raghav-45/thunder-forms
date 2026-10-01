@@ -1,19 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { prisma } from "@/db";
+import { prisma } from "#/db";
 import {
 	getOrderedFormFields,
 	getQuizGradeRelease,
 	hasQuizAnswerKey,
 	isFormStructure,
 	isQuizScoredField,
-} from "@/features/form-builder/form-structure";
+} from "#/features/form-builder/form-structure";
 import {
 	QuizEmailConfigurationError,
 	sendQuizGradeEmail,
-} from "@/features/form-builder/server/quiz-email";
-import { calculateQuizResult } from "@/features/form-builder/utils/quiz";
-import { getSessionUserId } from "@/lib/server/session";
+} from "#/features/form-builder/server/quiz-email";
+import { calculateQuizResult } from "#/features/form-builder/utils/quiz";
+import { getSessionUserId } from "#/lib/server/session";
 
 type ManualScoreUpdate = Record<string, number | null>;
 
