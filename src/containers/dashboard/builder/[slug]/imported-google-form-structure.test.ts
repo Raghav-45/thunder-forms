@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createImportedGoogleFormStructure } from "@/containers/dashboard/builder/[slug]/drag-model";
 import type { FieldConfig } from "@/features/form-builder/elements";
+import { createImportedGoogleFormStructure } from "./drag-model";
 
 const field = (id: string): FieldConfig =>
 	({
