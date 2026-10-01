@@ -55,6 +55,7 @@ const PaletteFieldRow = memo(function PaletteFieldRow({
 			className={cn(
 				buttonVariants({ variant: "outline", size: "sm" }),
 				"w-full cursor-grab rounded-lg bg-neutral-900! px-2 md:pl-3 hover:text-primary",
+				"hover:border-primary/50! hover:border hover:border-dashed hover:border-border",
 				isDragSource && "opacity-30",
 			)}
 			onClick={() => onAdd(fieldType)}
