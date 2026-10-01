@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Icons } from "@/components/Icons";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { siteConfig } from "../config/site";
+import { Icons } from "#/components/Icons";
+import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/input";
+import { siteConfig } from "#/config/site";
 
 const currentDate = new Date();
 const currentYear = currentDate.getFullYear();

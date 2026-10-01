@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { TerminalIcon, UserCircle2Icon } from "lucide-react";
+import { MainNav } from "#/components/mainNav";
+import { buttonVariants } from "#/components/ui/button";
 import { authClient } from "#/lib/auth-client";
-import { MainNav } from "@/components/mainNav";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "#/lib/utils";
 
 export function SiteHeader() {
 	const { data: session } = authClient.useSession();

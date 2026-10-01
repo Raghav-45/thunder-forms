@@ -1,8 +1,8 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Icons } from "@/components/Icons";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { siteConfig } from "../config/site";
+import { Icons } from "#/components/Icons";
+import { Badge } from "#/components/ui/badge";
+import { siteConfig } from "#/config/site";
+import { cn } from "#/lib/utils";
 
 export function MainNav() {
 	const { pathname } = useLocation();
