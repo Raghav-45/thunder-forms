@@ -19,10 +19,13 @@
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev",
     "db:studio": "dotenv -e .env.local -- prisma studio",
     "test": "vitest run --project unit",
+    "test-storybook": "vitest run --project storybook",
     "test:watch": "vitest --project unit",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install chromium",
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.6.25",
@@ -114,7 +117,15 @@
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "vite": "^8.0.0",
-    "vitest": "latest"
+    "vitest": "latest",
+    "storybook": "^10.6.1",
+    "@storybook/react-vite": "^10.6.1",
+    "@chromatic-com/storybook": "latest",
+    "@storybook/addon-vitest": "^10.6.1",
+    "@storybook/addon-a11y": "^10.6.1",
+    "@storybook/addon-docs": "^10.6.1",
+    "@storybook/addon-mcp": "^10.6.1",
+    "@vitest/browser-playwright": "5.0.2"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
