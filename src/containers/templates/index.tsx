@@ -41,7 +41,7 @@ export default function TemplatesPage() {
 						withoutIcon
 					/>
 
-					<h1 className="flex mb-3 mt-1 text-balance text-3xl font-semibold md:text-4xl">
+					<h1 className="flex mb-3 mt-1 font-anton text-balance text-3xl leading-tight font-normal tracking-tight md:text-4xl">
 						Choose a Template <Icons.Logo className="h-auto w-10 mx-3" />
 					</h1>
 					<p className="text-lg text-muted-foreground">
