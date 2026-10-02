@@ -209,7 +209,8 @@ test("community presets are searchable, editable and persist with fonts and comp
 	await expect(preview).toHaveCSS("--sidebar-ring", preset.variables["sidebar-ring"]);
 	await expect(preview).toHaveCSS("--shadow-xl", preset.variables["shadow-xl"]);
 	await editor.getByRole("textbox", { name: "Search colors" }).fill("charts");
-	await expect(editor.getByRole("textbox", { name: "Chart 5", exact: true })).toHaveValue(preset.variables["chart-5"]);
+	await editor.getByRole("switch", { name: "Show color codes", exact: true }).check();
+	await expect(editor.getByRole("textbox", { name: "Chart 5 code", exact: true })).toHaveValue(preset.variables["chart-5"]);
 	await editor.getByRole("tab", { name: "Typography", exact: true }).click();
 	await expect(editor.getByRole("textbox", { name: "Primary font stack" })).toHaveValue(preset.variables["font-sans"]);
 	await expect(editor.getByRole("textbox", { name: "Serif font stack" })).toHaveValue("Lora, serif");

@@ -30,9 +30,14 @@ import {
 } from "#/components/ui/select";
 import { Separator } from "#/components/ui/separator";
 import { Slider } from "#/components/ui/slider";
+import { Switch } from "#/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/ui/tabs";
 import { Textarea } from "#/components/ui/textarea";
 import { ThemePresetPicker } from "#/containers/dashboard/builder/[slug]/components/theme-preset-picker";
+import {
+	THEME_COLOR_GROUP_DETAILS,
+	THEME_COLOR_LABELS,
+} from "#/containers/dashboard/builder/[slug]/constants/theme-color-labels";
 import { FormThemeScope } from "#/features/form-builder/components/form-theme-scope";
 import type { FieldConfig } from "#/features/form-builder/elements";
 import type { FormStructure } from "#/features/form-builder/form-structure";
@@ -64,41 +69,61 @@ import { cn } from "#/lib/utils";
 function ColorControl({
 	label,
 	value,
+	showCode = true,
 	onChange,
 }: {
 	label: string;
 	value: string;
+	showCode?: boolean;
 	onChange: (value: string) => void;
 }) {
 	const id = useId();
 	const [text, setText] = useState(value);
 	const [invalid, setInvalid] = useState(false);
+	const [pickerValue, setPickerValue] = useState("#000000");
 	useEffect(() => {
 		setText(value);
 		setInvalid(false);
+		// Native color pickers need hex; keep the imported CSS value unchanged.
+		const canvas = document.createElement("canvas");
+		canvas.width = canvas.height = 1;
+		const context = canvas.getContext("2d");
+		if (context) {
+			context.fillStyle = value;
+			context.fillRect(0, 0, 1, 1);
+			const [red, green, blue] = context.getImageData(0, 0, 1, 1).data;
+			setPickerValue(
+				`#${[red, green, blue].map((channel) => channel.toString(16).padStart(2, "0")).join("")}`,
+			);
+		}
 	}, [value]);
 	return (
 		<div className="flex flex-col gap-1.5">
-			<Label htmlFor={id}>{label}</Label>
-			<div className="flex items-center gap-2">
+			<div className="flex items-center justify-between gap-3">
+				<Label htmlFor={id} className="cursor-pointer">
+					{label}
+				</Label>
 				<div
 					className="relative size-9 shrink-0 overflow-hidden rounded-md border focus-within:ring-2 focus-within:ring-ring"
 					style={{ backgroundColor: value }}
 				>
 					<input
+						id={id}
 						type="color"
-						aria-label={`Pick ${label.toLowerCase()} color`}
-						value={/^#[\da-f]{6}$/i.test(value) ? value : "#000000"}
+						aria-label={`Choose ${label.toLowerCase()}`}
+						value={pickerValue}
 						onChange={(event) => onChange(event.target.value)}
 						className="absolute inset-0 size-full cursor-pointer opacity-0"
 					/>
 				</div>
+			</div>
+			{showCode ? (
 				<Input
-					id={id}
+					aria-label={`${label} code`}
 					value={text}
 					aria-invalid={invalid}
 					aria-describedby={invalid ? `${id}-error` : undefined}
-					placeholder="HEX, RGB, HSL or OKLCH"
+					placeholder="Color code, e.g. #ffae00"
 					onChange={(event) => {
 						const color = event.target.value;
 						setText(color);
@@ -108,8 +133,8 @@ function ColorControl({
 						if (valid) onChange(color);
 					}}
 				/>
-			</div>
-			{invalid ? (
+			) : null}
+			{showCode && invalid ? (
 				<p id={`${id}-error`} className="text-xs text-destructive">
 					Enter a valid CSS color.
 				</p>
@@ -249,6 +274,19 @@ function CustomizationEditor({
 			: createFormTheme(),
 	);
 	const [colorSearch, setColorSearch] = useState("");
+	const [showColorCodes, setShowColorCodes] = useState(false);
+	const matchingColorGroups = FORM_COLOR_GROUPS.filter((group) =>
+		[
+			group.label,
+			...group.tokens,
+			THEME_COLOR_GROUP_DETAILS[group.label].label,
+			THEME_COLOR_GROUP_DETAILS[group.label].description,
+			...group.tokens.map((token) => THEME_COLOR_LABELS[token]),
+		]
+			.join(" ")
+			.toLowerCase()
+			.includes(colorSearch.trim().toLowerCase()),
+	);
 	const [mobileView, setMobileView] = useState("controls");
 	const previewId = useId();
 	const [css, setCss] = useState("");
@@ -353,37 +391,37 @@ function CustomizationEditor({
 							<TabsTrigger value="other">Other</TabsTrigger>
 						</TabsList>
 						<TabsContent value="colors" className="flex flex-col gap-5">
+							<p className="text-xs text-muted-foreground">
+								Choose a color swatch to change it. Watch your form update in
+								the preview.
+							</p>
 							<Input
 								aria-label="Search colors"
 								placeholder="Search colors..."
 								value={colorSearch}
 								onChange={(event) => setColorSearch(event.target.value)}
 							/>
-							{FORM_COLOR_GROUPS.filter((group) =>
-								`${group.label} ${group.tokens.join(" ")}`
-									.toLowerCase()
-									.includes(colorSearch.toLowerCase()),
-							).map((group) => (
+							<div className="flex items-center justify-between gap-3">
+								<Label htmlFor="show-color-codes">Show color codes</Label>
+								<Switch
+									id="show-color-codes"
+									checked={showColorCodes}
+									onCheckedChange={setShowColorCodes}
+								/>
+							</div>
+							{matchingColorGroups.map((group) => (
 								<fieldset key={group.label} className="flex flex-col gap-3">
-									<legend className="mb-3 text-sm font-semibold">
-										{group.label}
+									<legend className="mb-2 text-sm font-semibold">
+										{THEME_COLOR_GROUP_DETAILS[group.label].label}
 									</legend>
-									{group.tokens.map((token, index) => (
+									<p className="text-xs text-muted-foreground">
+										{THEME_COLOR_GROUP_DETAILS[group.label].description}
+									</p>
+									{group.tokens.map((token) => (
 										<ColorControl
 											key={token}
-											label={
-												token.startsWith("chart-")
-													? `Chart ${token.slice(-1)}`
-													: token.endsWith("ring")
-														? "Focus ring"
-														: token.endsWith("border")
-															? "Border"
-															: token === "input"
-																? "Input"
-																: index === 0
-																	? "Background"
-																	: "Foreground"
-											}
+											label={THEME_COLOR_LABELS[token]}
+											showCode={showColorCodes}
 											value={draft.colors[token] ?? "#000000"}
 											onChange={(value) => updateColor(token, value)}
 										/>
@@ -391,11 +429,7 @@ function CustomizationEditor({
 									<Separator className="mt-2" />
 								</fieldset>
 							))}
-							{!FORM_COLOR_GROUPS.some((group) =>
-								`${group.label} ${group.tokens.join(" ")}`
-									.toLowerCase()
-									.includes(colorSearch.toLowerCase()),
-							) ? (
+							{matchingColorGroups.length === 0 ? (
 								<p className="text-sm text-muted-foreground">
 									No matching colors.
 								</p>
