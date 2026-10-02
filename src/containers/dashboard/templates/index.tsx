@@ -1,25 +1,39 @@
+import { Link } from "@tanstack/react-router";
+import { PlusIcon } from "lucide-react";
+import { Button } from "#/components/ui/button";
 import { TemplateGallery } from "#/containers/dashboard/templates/components/template-gallery";
 
 const TemplatesPage = () => {
 	return (
 		<div className="flex flex-1 flex-col">
-			<div className="@container/main flex flex-1 flex-col gap-2">
-				<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-					<div className="flex flex-col items-center justify-between gap-y-4 px-4 lg:px-6">
-						<div className="flex w-full justify-between items-center">
-							<div className="flex flex-col gap-2">
-								<h1 className="text-3xl leading-none font-bold">
-									Choose a Template
-								</h1>
-								<p className="text-muted-foreground text-sm">
-									Select a template and start creating your form instantly.
-								</p>
-							</div>
+			<div className="@container/main mx-auto flex w-full max-w-screen-2xl flex-1 flex-col">
+				<div className="flex flex-col gap-8 px-4 py-6 md:px-8 md:py-8">
+					<div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+						<div className="flex max-w-2xl flex-col gap-3">
+							<h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
+								A head start for your next form.
+							</h1>
+							<p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-base">
+								Start with the right questions. Customize the details in the
+								builder.
+							</p>
 						</div>
+						<Button
+							variant="outline"
+							asChild
+							className="h-11 self-start lg:shrink-0"
+						>
+							<Link
+								to="/dashboard/builder/$slug"
+								params={{ slug: "new-form" }}
+								search={{}}
+							>
+								<PlusIcon data-icon="inline-start" />
+								Start from scratch
+							</Link>
+						</Button>
 					</div>
-					<div className="px-4 lg:px-6">
-						<TemplateGallery />
-					</div>
+					<TemplateGallery />
 				</div>
 			</div>
 		</div>
