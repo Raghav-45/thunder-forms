@@ -295,12 +295,12 @@ for (const viewport of [{ name: "desktop", width: 1440, height: 1000 }, { name: 
 		await page.goto("/dashboard/builder/new-form", { waitUntil: "networkidle" });
 		await page.getByRole("button", { name: "Customize", exact: true }).click();
 		const editor = page.getByRole("dialog", { name: "Customize your form" });
-		const basic = editor.getByRole("region", { name: "Basic customizations", exact: true });
+		const basic = editor.getByRole("region", { name: "Make it yours", exact: true });
 		const full = editor.getByRole("region", { name: "Advanced customizations", exact: true });
 		const preview = page.getByTestId("customization-preview");
 		const advanced = editor.getByRole("button", { name: "Advanced customizations", exact: true });
 		await expect(advanced).toHaveAttribute("aria-expanded", "false");
-		await expect(basic.locator('input[type="color"]')).toHaveCount(8);
+		await expect(basic.locator('input[type="color"]')).toHaveCount(10);
 		for (const token of BASIC_THEME_COLORS) {
 			await expect(basic.getByLabel(`Choose ${THEME_COLOR_LABELS[token].toLowerCase()}`, { exact: true })).toBeVisible();
 		}
@@ -337,7 +337,7 @@ for (const viewport of [{ name: "desktop", width: 1440, height: 1000 }, { name: 
 		await advanced.focus();
 		await advanced.press("Enter");
 		await expect(advanced).toHaveAttribute("aria-expanded", "true");
-		await expect(editor.getByRole("button", { name: "Basic customizations", exact: true })).toHaveAttribute("aria-expanded", "true");
+		await expect(editor.getByRole("button", { name: "Make it yours", exact: true })).toHaveAttribute("aria-expanded", "true");
 		await expect(basic.getByRole("combobox", { name: "Text font", exact: true })).toBeVisible();
 		await expect(full.getByRole("textbox", { name: "Search colors", exact: true })).toBeHidden();
 		const colors = full.getByRole("button", { name: "All colors", exact: true });
@@ -363,11 +363,11 @@ for (const viewport of [{ name: "desktop", width: 1440, height: 1000 }, { name: 
 	await advanced.click();
 		await expect(advanced).toHaveAttribute("aria-expanded", "false");
 		await expect(editor.getByRole("button", { name: "More shadow controls", exact: true })).toBeHidden();
-	await expect(basic.locator('input[type="color"]')).toHaveCount(8);
+	await expect(basic.locator('input[type="color"]')).toHaveCount(10);
 	expect(await previewVariables()).toEqual(expectedVariables);
 	await advanced.click();
 	expect(await previewVariables()).toEqual(expectedVariables);
-		await editor.getByRole("button", { name: "Basic customizations", exact: true }).click();
+		await editor.getByRole("button", { name: "Make it yours", exact: true }).click();
 	await expect(basic).toBeHidden();
 	await expect(advanced).toHaveAttribute("aria-expanded", "true");
 	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
@@ -375,7 +375,7 @@ for (const viewport of [{ name: "desktop", width: 1440, height: 1000 }, { name: 
 		expect(canvasVariables).toEqual(expectedVariables);
 		await page.getByRole("button", { name: "Customize", exact: true }).click();
 		await expect(editor.getByRole("button", { name: "Advanced customizations", exact: true })).toHaveAttribute("aria-expanded", "false");
-		await expect(editor.getByRole("button", { name: "Basic customizations", exact: true })).toHaveAttribute("aria-expanded", "true");
+		await expect(editor.getByRole("button", { name: "Make it yours", exact: true })).toHaveAttribute("aria-expanded", "true");
 		expect(await previewVariables()).toEqual(expectedVariables);
 		expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 	});

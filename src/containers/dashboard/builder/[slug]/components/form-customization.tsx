@@ -45,7 +45,7 @@ import {
 	THEME_COLOR_LABELS,
 } from "#/containers/dashboard/builder/[slug]/constants/theme-color-labels";
 import {
-	BASIC_THEME_COLORS,
+	BASIC_THEME_COLOR_GROUPS,
 	THEME_FONT_LABELS,
 } from "#/containers/dashboard/builder/[slug]/constants/theme-customization";
 import { FormThemeScope } from "#/features/form-builder/components/form-theme-scope";
@@ -401,86 +401,111 @@ function CustomizationEditor({
 					</div>
 					<Accordion type="multiple" defaultValue={["basic"]}>
 						<AccordionItem value="basic">
-							<AccordionTrigger>Basic customizations</AccordionTrigger>
-							<AccordionContent className="flex flex-col gap-6">
-								<fieldset className="flex flex-col gap-3">
-									<legend className="mb-3 text-sm font-semibold">Colors</legend>
-									{BASIC_THEME_COLORS.map((token) => (
-										<ColorControl
-											key={token}
-											label={THEME_COLOR_LABELS[token]}
-											showCode={false}
-											value={draft.colors[token] ?? "#000000"}
-											onChange={(value) => updateColor(token, value)}
-										/>
-									))}
-								</fieldset>
-								<fieldset className="flex flex-col gap-5">
-									<legend className="mb-3 text-sm font-semibold">Text</legend>
-									<FontControl theme={draft} onChange={updateFont} />
-									<RangeControl
-										label="Letter spacing"
-										value={draft.letterSpacing}
-										min={-0.5}
-										max={0.5}
-										step={0.005}
-										displayValue={`${Number((draft.letterSpacing * 100).toFixed(1))}%`}
-										onChange={(letterSpacing) =>
-											setDraft((current) => ({ ...current, letterSpacing }))
-										}
-									/>
-								</fieldset>
-								<fieldset className="flex flex-col gap-5">
-									<legend className="mb-3 text-sm font-semibold">Layout</legend>
-									<RangeControl
-										label="Corner rounding"
-										value={draft.radius}
-										min={0}
-										max={10}
-										step={0.05}
-										displayValue={
-											draft.radius === 0
-												? "Square"
-												: `${Number((draft.radius * 16).toFixed(1))}px`
-										}
-										onChange={(radius) =>
-											setDraft((current) => ({ ...current, radius }))
-										}
-									/>
-									<RangeControl
-										label="Space between elements"
-										value={draft.spacing}
-										min={0.01}
-										max={2}
-										step={0.01}
-										displayValue={`${Number((draft.spacing * 16).toFixed(1))}px`}
-										onChange={(spacing) =>
-											setDraft((current) => ({ ...current, spacing }))
-										}
-									/>
-								</fieldset>
-								<fieldset className="flex flex-col gap-5">
-									<legend className="mb-3 text-sm font-semibold">
-										Shadows
-									</legend>
-									<RangeControl
-										label="Shadow strength"
-										value={draft.shadow.opacity}
-										min={0}
-										max={1}
-										step={0.01}
-										displayValue={`${Math.round(draft.shadow.opacity * 100)}%`}
-										onChange={(value) => updateShadow("opacity", value)}
-									/>
-									<RangeControl
-										label="Shadow softness"
-										value={draft.shadow.blur}
-										min={0}
-										max={200}
-										unit="px"
-										onChange={(value) => updateShadow("blur", value)}
-									/>
-								</fieldset>
+							<AccordionTrigger>Make it yours</AccordionTrigger>
+							<AccordionContent>
+								<p className="mb-4 text-xs text-muted-foreground">
+									Start with what people notice first. Every detail is still
+									available in Advanced customizations.
+								</p>
+								<Accordion
+									type="multiple"
+									defaultValue={["colors", "type-layout", "finish"]}
+								>
+									<AccordionItem value="colors">
+										<AccordionTrigger>Colors & surfaces</AccordionTrigger>
+										<AccordionContent className="flex flex-col gap-5">
+											{BASIC_THEME_COLOR_GROUPS.map((group) => (
+												<fieldset
+													key={group.label}
+													className="flex flex-col gap-3"
+												>
+													<legend className="text-sm font-medium">
+														{group.label}
+													</legend>
+													<p className="text-xs text-muted-foreground">
+														{group.description}
+													</p>
+													<div className="grid grid-cols-2 gap-3">
+														{group.tokens.map((token) => (
+															<ColorControl
+																key={token}
+																label={THEME_COLOR_LABELS[token]}
+																showCode={false}
+																value={draft.colors[token] ?? "#000000"}
+																onChange={(value) => updateColor(token, value)}
+															/>
+														))}
+													</div>
+												</fieldset>
+											))}
+										</AccordionContent>
+									</AccordionItem>
+									<AccordionItem value="type-layout">
+										<AccordionTrigger>Text, shape & spacing</AccordionTrigger>
+										<AccordionContent className="flex flex-col gap-5">
+											<FontControl theme={draft} onChange={updateFont} />
+											<RangeControl
+												label="Letter spacing"
+												value={draft.letterSpacing}
+												min={-0.5}
+												max={0.5}
+												step={0.005}
+												displayValue={`${Number((draft.letterSpacing * 100).toFixed(1))}%`}
+												onChange={(letterSpacing) =>
+													setDraft((current) => ({ ...current, letterSpacing }))
+												}
+											/>
+											<RangeControl
+												label="Corner rounding"
+												value={draft.radius}
+												min={0}
+												max={10}
+												step={0.05}
+												displayValue={
+													draft.radius === 0
+														? "Square"
+														: `${Number((draft.radius * 16).toFixed(1))}px`
+												}
+												onChange={(radius) =>
+													setDraft((current) => ({ ...current, radius }))
+												}
+											/>
+											<RangeControl
+												label="Space between elements"
+												value={draft.spacing}
+												min={0.01}
+												max={2}
+												step={0.01}
+												displayValue={`${Number((draft.spacing * 16).toFixed(1))}px`}
+												onChange={(spacing) =>
+													setDraft((current) => ({ ...current, spacing }))
+												}
+											/>
+										</AccordionContent>
+									</AccordionItem>
+									<AccordionItem value="finish">
+										<AccordionTrigger>Depth & polish</AccordionTrigger>
+										<AccordionContent className="flex flex-col gap-5">
+											<RangeControl
+												label="Shadow strength"
+												value={draft.shadow.opacity}
+												min={0}
+												max={1}
+												step={0.01}
+												displayValue={`${Math.round(draft.shadow.opacity * 100)}%`}
+												onChange={(value) => updateShadow("opacity", value)}
+											/>
+											<RangeControl
+												label="Shadow softness"
+												value={draft.shadow.blur}
+												min={0}
+												max={200}
+												unit="px"
+												onChange={(value) => updateShadow("blur", value)}
+											/>
+										</AccordionContent>
+									</AccordionItem>
+								</Accordion>
 							</AccordionContent>
 						</AccordionItem>
 						<AccordionItem value="advanced">
