@@ -43,6 +43,14 @@ test("customizations preview live, cancel cleanly, apply and reset", async ({ pa
 	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
 	await expect(page.getByRole("dialog")).toHaveCount(0);
 	await expect(page.locator("[data-form-theme]")).toHaveCSS("font-family", 'Georgia, "Times New Roman", serif');
+	await expect(
+		page
+			.getByRole("navigation", { name: "Form pages" })
+			.locator("[data-active-page-tab-surface]"),
+	).toHaveCSS(
+		"background-color",
+		"rgb(10, 10, 10)",
+	);
 
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
 	await expect(editor.getByRole("combobox", { name: "Text font", exact: true })).toContainText("Georgia");

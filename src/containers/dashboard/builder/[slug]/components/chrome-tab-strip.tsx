@@ -11,6 +11,7 @@ export interface ChromeTabStripPage {
 interface ChromeTabStripProps {
 	pages: ChromeTabStripPage[];
 	activePageId: string;
+	hasCustomTheme: boolean;
 	onSelectPage: (pageId: string) => void;
 	onRemovePage: (pageId: string) => void;
 	onAddPage: () => void;
@@ -21,6 +22,7 @@ interface ChromeTabStripProps {
 export function ChromeTabStrip({
 	pages,
 	activePageId,
+	hasCustomTheme,
 	onSelectPage,
 	onRemovePage,
 	onAddPage,
@@ -69,8 +71,14 @@ export function ChromeTabStrip({
 						{isActive ? (
 							<motion.div
 								aria-hidden="true"
+								data-active-page-tab-surface
 								layoutId="builder-active-page-tab"
-								className="absolute inset-0 z-0 rounded-t-[14px] bg-card shadow-[0_-1px_4px_rgba(0,0,0,0.22)] before:absolute before:bottom-0 before:-left-3 before:size-3 before:bg-[radial-gradient(circle_at_top_left,transparent_12px,var(--card)_12px)] after:absolute after:bottom-0 after:-right-3 after:size-3 after:bg-[radial-gradient(circle_at_top_right,transparent_12px,var(--card)_12px)]"
+								className={cn(
+									"absolute inset-0 z-0 rounded-t-[14px] shadow-[0_-1px_4px_rgba(0,0,0,0.22)] before:absolute before:bottom-0 before:-left-3 before:size-3 after:absolute after:bottom-0 after:-right-3 after:size-3",
+									hasCustomTheme
+										? "bg-background before:bg-[radial-gradient(circle_at_top_left,transparent_12px,var(--background)_12px)] after:bg-[radial-gradient(circle_at_top_right,transparent_12px,var(--background)_12px)]"
+										: "bg-card before:bg-[radial-gradient(circle_at_top_left,transparent_12px,var(--card)_12px)] after:bg-[radial-gradient(circle_at_top_right,transparent_12px,var(--card)_12px)]",
+								)}
 								transition={
 									shouldReduceMotion
 										? { duration: 0 }

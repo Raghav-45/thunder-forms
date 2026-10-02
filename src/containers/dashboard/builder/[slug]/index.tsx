@@ -1017,6 +1017,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 					</div>
 
 					<Card
+						style={getFormThemeStyle(formStructure.theme)}
 						className={cn(
 							"mb-1 flex h-[calc(100vh-72px)] flex-col gap-0 overflow-hidden rounded-none border-none bg-card text-card-foreground !p-0",
 						)}
@@ -1024,6 +1025,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 						<ChromeTabStrip
 							pages={formStructure.pages}
 							activePageId={resolvedActivePageId}
+							hasCustomTheme={Boolean(formStructure.theme)}
 							onSelectPage={selectPage}
 							onRemovePage={removePageById}
 							onAddPage={addPage}
