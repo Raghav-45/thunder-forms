@@ -59,6 +59,7 @@ const SliderComponent: React.FC<FieldProps<SliderConfig>> = ({
 	field,
 	value,
 	onChange,
+	onBlur,
 	error,
 }) => {
 	const min = field.min ?? 0;
@@ -67,12 +68,18 @@ const SliderComponent: React.FC<FieldProps<SliderConfig>> = ({
 	const currentValue =
 		typeof value === "number" ? value : (field.defaultValue ?? min);
 	const inputId = `field-${field.id}`;
+	const describedBy = [
+		field.description && `${inputId}-description`,
+		error && `${inputId}-error`,
+	]
+		.filter(Boolean)
+		.join(" ");
 
 	return (
 		<div className="space-y-2">
 			<div className="flex items-center justify-between">
 				<Label
-					htmlFor={inputId}
+					id={`${inputId}-label`}
 					className={`text-sm font-medium ${
 						field.required
 							? "after:content-['*'] after:text-red-500 after:ml-1"
@@ -91,11 +98,31 @@ const SliderComponent: React.FC<FieldProps<SliderConfig>> = ({
 
 			<Slider
 				id={inputId}
+				ref={(root) => {
+					// The unchanged UI primitive exposes ARIA only on its wrapper.
+					// Connect this question to its actual focusable control at mount/update.
+					const thumb = root?.querySelector('[role="slider"]');
+					if (!thumb) return;
+					const attributes = {
+						"aria-labelledby": `${inputId}-label`,
+						"aria-describedby": describedBy,
+						"aria-invalid": error ? "true" : "",
+						"aria-disabled": field.disabled ? "true" : "",
+					};
+					for (const [name, value] of Object.entries(attributes)) {
+						if (value) thumb.setAttribute(name, value);
+						else thumb.removeAttribute(name);
+					}
+				}}
+				aria-labelledby={`${inputId}-label`}
+				aria-describedby={describedBy || undefined}
+				aria-invalid={error ? true : undefined}
 				min={min}
 				max={max}
 				step={step}
 				value={[currentValue]}
 				onValueChange={([val]) => onChange(val)}
+				onBlur={onBlur}
 				disabled={field.disabled}
 				className={error ? "[&>span:first-child]:bg-red-200" : ""}
 			/>
@@ -112,7 +139,12 @@ const SliderComponent: React.FC<FieldProps<SliderConfig>> = ({
 			</div>
 
 			{field.description && (
-				<p className="text-sm text-muted-foreground">{field.description}</p>
+				<p
+					id={`${inputId}-description`}
+					className="text-sm text-muted-foreground"
+				>
+					{field.description}
+				</p>
 			)}
 
 			{error && (

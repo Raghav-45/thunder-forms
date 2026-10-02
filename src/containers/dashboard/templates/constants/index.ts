@@ -15,6 +15,7 @@ export const FORM_TEMPLATES: FormTemplateSpec[] = [
 		description: "Let visitors reach out with their name, email and message.",
 		category: "Contact",
 		submitButtonText: "Send message",
+		previewFieldLabels: ["Subject", "Message"],
 		sections: [
 			{
 				fields: [
@@ -54,6 +55,10 @@ export const FORM_TEMPLATES: FormTemplateSpec[] = [
 		description: "Collect satisfaction ratings and suggestions from customers.",
 		category: "Feedback",
 		submitButtonText: "Submit feedback",
+		previewFieldLabels: [
+			"How satisfied are you with our service?",
+			"Rate your overall experience",
+		],
 		sections: [
 			{
 				fields: [
@@ -83,6 +88,7 @@ export const FORM_TEMPLATES: FormTemplateSpec[] = [
 						type: "slider",
 						label: "Rate your overall experience",
 						description: "Drag the slider from 0 to 10.",
+						slider: { min: 0, max: 10, step: 1, defaultValue: 5 },
 						required: false,
 					},
 					{
@@ -101,6 +107,7 @@ export const FORM_TEMPLATES: FormTemplateSpec[] = [
 		description: "Collect applicant details, role preference and cover letter.",
 		category: "Application",
 		submitButtonText: "Apply now",
+		previewFieldLabels: ["Position applying for", "Earliest start date"],
 		sections: [
 			{
 				fields: [
@@ -149,6 +156,7 @@ export const FORM_TEMPLATES: FormTemplateSpec[] = [
 		description: "Track attendance, guest count and dietary requirements.",
 		category: "Event",
 		submitButtonText: "Confirm RSVP",
+		previewFieldLabels: ["Will you attend?", "Number of guests"],
 		sections: [
 			{
 				fields: [
@@ -190,6 +198,10 @@ export const FORM_TEMPLATES: FormTemplateSpec[] = [
 		description: "Learn how users use your product and what to build next.",
 		category: "Survey",
 		submitButtonText: "Submit survey",
+		previewFieldLabels: [
+			"Which features do you use?",
+			"How likely are you to renew?",
+		],
 		sections: [
 			{
 				fields: [
@@ -236,6 +248,7 @@ export const FORM_TEMPLATES: FormTemplateSpec[] = [
 		description: "Let users report issues with priority and details.",
 		category: "Support",
 		submitButtonText: "Raise ticket",
+		previewFieldLabels: ["Priority", "Issue summary"],
 		sections: [
 			{
 				fields: [

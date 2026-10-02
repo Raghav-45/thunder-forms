@@ -7,9 +7,9 @@ const TemplatesPage = () => {
 	return (
 		<div className="flex flex-1 flex-col">
 			<div className="@container/main mx-auto flex w-full max-w-screen-2xl flex-1 flex-col">
-				<div className="flex flex-col gap-8 px-4 py-6 md:px-8 md:py-8">
-					<div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-						<div className="flex max-w-2xl flex-col gap-3">
+				<div className="flex flex-col gap-6 px-4 py-5 md:gap-8 md:px-8 md:py-8">
+					<div className="flex flex-col gap-4 md:gap-5 lg:flex-row lg:items-center lg:justify-between">
+						<div className="flex max-w-2xl flex-col gap-2 md:gap-3">
 							<h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
 								A head start for your next form.
 							</h1>

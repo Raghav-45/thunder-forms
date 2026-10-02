@@ -1,3 +1,4 @@
+import type { SliderConfig } from "#/features/form-builder/elements/fields/slider";
 import type { AvailableFieldsType } from "#/features/form-builder/types";
 
 export interface TemplateFieldSpec {
@@ -8,6 +9,7 @@ export interface TemplateFieldSpec {
 	required?: boolean;
 	options?: { label: string; value: string }[];
 	inputType?: string;
+	slider?: Pick<SliderConfig, "min" | "max" | "step" | "defaultValue">;
 }
 
 export interface TemplateSectionSpec {
@@ -20,5 +22,7 @@ export interface FormTemplateSpec {
 	description: string;
 	category: string;
 	submitButtonText?: string;
+	/** Representative real questions for thumbnails only; full order is unchanged. */
+	previewFieldLabels?: string[];
 	sections: TemplateSectionSpec[];
 }

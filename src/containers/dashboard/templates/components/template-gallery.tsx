@@ -49,9 +49,9 @@ function TemplateCard({ template }: { template: FormTemplateSpec }) {
 			<Card className="h-full gap-0 overflow-hidden rounded-xl py-0 shadow-none">
 				<div
 					aria-hidden="true"
-					className="relative h-64 overflow-hidden bg-muted/60 p-6 pb-0"
+					className="relative h-40 overflow-hidden bg-muted/60 p-4 pb-0 sm:h-64 sm:p-6 sm:pb-0"
 				>
-					<div className="h-full overflow-hidden rounded-t-xl border border-b-0 bg-card p-5">
+					<div className="h-full overflow-hidden rounded-t-xl border border-b-0 bg-card p-4 sm:p-5">
 						<TemplateFormPreview template={template} thumbnail />
 					</div>
 				</div>

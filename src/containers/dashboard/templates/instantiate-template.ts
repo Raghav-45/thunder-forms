@@ -1,6 +1,11 @@
 import type { FormTemplateSpec } from "#/containers/dashboard/templates/types";
 import type { FieldConfig } from "#/features/form-builder/elements";
 import { normalizeChoiceOptions } from "#/features/form-builder/elements/choice-options";
+import type { SliderConfig } from "#/features/form-builder/elements/fields/slider";
+import {
+	isOnStep,
+	isPositiveFiniteNumber,
+} from "#/features/form-builder/elements/number-constraints";
 import {
 	createFormPage,
 	createFormSection,
@@ -19,7 +24,7 @@ export type BuiltFormStructure = FormStructure;
  * Every section and field gets a fresh UUID so template instances never
  * collide with each other (or with fields the user adds afterwards).
  * Field shapes always come from the registry's own `defaultConfig`, with
- * only presentational overrides applied from the spec.
+ * explicit copy and supported constraint overrides applied from the spec.
  */
 export function instantiateTemplate(template: FormTemplateSpec): FormStructure {
 	return {
@@ -37,9 +42,8 @@ export function instantiateTemplate(template: FormTemplateSpec): FormStructure {
 							if (spec.placeholder !== undefined) {
 								field.placeholder = spec.placeholder;
 							}
-							if (spec.description !== undefined) {
-								field.description = spec.description;
-							}
+							// Generic field help may describe a different question or workflow.
+							field.description = spec.description ?? "";
 							if (spec.required !== undefined) {
 								field.required = spec.required;
 							}
@@ -48,6 +52,59 @@ export function instantiateTemplate(template: FormTemplateSpec): FormStructure {
 							}
 							if (spec.inputType !== undefined && "inputType" in field) {
 								field.inputType = spec.inputType;
+							}
+							if (spec.type === "slider" && spec.slider) {
+								for (const key of [
+									"min",
+									"max",
+									"step",
+									"defaultValue",
+								] as const) {
+									if (spec.slider[key] !== undefined) {
+										field[key] = spec.slider[key];
+									}
+								}
+								const slider = field as unknown as SliderConfig;
+								const min = slider.min ?? 0;
+								const max = slider.max ?? 100;
+								const step = slider.step ?? 1;
+								if (
+									!Number.isFinite(min) ||
+									!Number.isFinite(max) ||
+									min > max ||
+									!isPositiveFiniteNumber(step)
+								) {
+									throw new Error(
+										`Invalid slider constraints for "${spec.label}".`,
+									);
+								}
+								if (spec.slider.defaultValue === undefined) {
+									// Only adjust inherited defaults; explicit answers must stay intentional.
+									const value = Math.min(
+										max,
+										Math.max(min, slider.defaultValue ?? min),
+									);
+									const stepsToMax = (max - min) / step;
+									const lastStep = isOnStep(max, step, min)
+										? Math.round(stepsToMax)
+										: Math.floor(stepsToMax);
+									const valueStep = Math.min(
+										lastStep,
+										Math.round((value - min) / step),
+									);
+									slider.defaultValue = Math.min(max, min + valueStep * step);
+								}
+								const initialValue = slider.defaultValue ?? min;
+								if (
+									!Number.isFinite(initialValue) ||
+									initialValue < min ||
+									initialValue > max ||
+									!isOnStep(initialValue, step, min)
+								) {
+									throw new Error(
+										`Invalid slider default for "${spec.label}".`,
+									);
+								}
 							}
 
 							return field as unknown as FieldConfig;

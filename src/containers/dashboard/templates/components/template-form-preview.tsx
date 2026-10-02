@@ -50,19 +50,29 @@ export function TemplateFormPreview({
 					{sections.length > 1 && (
 						<h3 className="font-semibold">Section {sectionIndex + 1}</h3>
 					)}
-					{section.fields.map((field) => {
-						const FieldComponent = getFieldComponent(field.uniqueIdentifier);
-						return (
-							<FieldComponent
-								key={field.id}
-								field={field as never}
-								value={values[field.id]}
-								onChange={(value) =>
-									setValues((previous) => ({ ...previous, [field.id]: value }))
-								}
-							/>
-						);
-					})}
+					{section.fields
+						.filter(
+							(field) =>
+								!thumbnail ||
+								!template.previewFieldLabels ||
+								template.previewFieldLabels.includes(field.label),
+						)
+						.map((field) => {
+							const FieldComponent = getFieldComponent(field.uniqueIdentifier);
+							return (
+								<FieldComponent
+									key={field.id}
+									field={field as never}
+									value={values[field.id]}
+									onChange={(value) =>
+										setValues((previous) => ({
+											...previous,
+											[field.id]: value,
+										}))
+									}
+								/>
+							);
+						})}
 				</div>
 			))}
 			<Button type="button" size="lg" className="h-11 w-full" disabled>
