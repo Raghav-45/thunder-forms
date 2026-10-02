@@ -199,6 +199,17 @@ test("community presets are searchable, editable and persist with fonts and comp
 	const editor = page.getByRole("dialog", { name: "Customize your form" });
 	const preview = page.getByTestId("customization-preview");
 	await editor.getByRole("combobox", { name: "Form style" }).click();
+	const themeList = page.locator('[data-slot="command-list"]');
+	const themeListSize = await themeList.evaluate((element) => ({
+		clientHeight: element.clientHeight,
+		scrollHeight: element.scrollHeight,
+	}));
+	expect(themeListSize.scrollHeight).toBeGreaterThan(themeListSize.clientHeight);
+	await themeList.hover();
+	await page.mouse.wheel(0, 240);
+	await expect
+		.poll(() => themeList.evaluate((element) => element.scrollTop))
+		.toBeGreaterThan(0);
 	await page.getByRole("combobox", { name: "Search themes or creators" }).fill(preset.author);
 	await expect(page.getByRole("option", { name: preset.name, exact: true })).toBeVisible();
 	await testInfo.attach("community-picker", { body: await page.screenshot(), contentType: "image/png" });
@@ -210,7 +221,6 @@ test("community presets are searchable, editable and persist with fonts and comp
 	await expect(preview).toHaveCSS("--shadow-xl", preset.variables["shadow-xl"]);
 	await editor.getByRole("button", { name: "Advanced customizations", exact: true }).click();
 	await editor.getByRole("button", { name: "All colors", exact: true }).click();
-	await editor.getByRole("textbox", { name: "Search colors" }).fill("charts");
 	await editor.getByRole("switch", { name: "Show color codes", exact: true }).check();
 	await expect(editor.getByRole("textbox", { name: "Chart 5 code", exact: true })).toHaveValue(preset.variables["chart-5"]);
 	await expect(editor.getByText(/calc\(/)).toHaveCount(0);
@@ -306,7 +316,7 @@ for (const viewport of [{ name: "desktop", width: 1440, height: 1000 }, { name: 
 		}
 		await expect(basic.getByRole("slider")).toHaveCount(5);
 		await expect(basic.getByRole("combobox", { name: "Text font", exact: true })).toBeVisible();
-		await expect(editor.getByRole("textbox", { name: "Search colors", exact: true })).toBeHidden();
+		await expect(editor.getByRole("textbox", { name: "Search colors", exact: true })).toHaveCount(0);
 		await expect(editor.getByRole("button", { name: "Import or export a theme", exact: true })).toBeHidden();
 		await editor.getByRole("combobox", { name: "Form style" }).click();
 		await page.getByRole("combobox", { name: "Search themes or creators" }).fill(preset.name);
@@ -339,7 +349,7 @@ for (const viewport of [{ name: "desktop", width: 1440, height: 1000 }, { name: 
 		await expect(advanced).toHaveAttribute("aria-expanded", "true");
 		await expect(editor.getByRole("button", { name: "Make it yours", exact: true })).toHaveAttribute("aria-expanded", "true");
 		await expect(basic.getByRole("combobox", { name: "Text font", exact: true })).toBeVisible();
-		await expect(full.getByRole("textbox", { name: "Search colors", exact: true })).toBeHidden();
+		await expect(full.getByRole("textbox", { name: "Search colors", exact: true })).toHaveCount(0);
 		const colors = full.getByRole("button", { name: "All colors", exact: true });
 		await colors.click();
 		await expect(full.locator('input[type="color"]:visible')).toHaveCount(32);

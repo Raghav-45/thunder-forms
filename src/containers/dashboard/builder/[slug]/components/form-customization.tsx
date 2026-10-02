@@ -276,21 +276,8 @@ function CustomizationEditor({
 			? structuredClone(normalizeFormTheme(structure.theme))
 			: createFormTheme(),
 	);
-	const [colorSearch, setColorSearch] = useState("");
 	const [showColorCodes, setShowColorCodes] = useState(false);
 	const [advancedSections, setAdvancedSections] = useState<string[]>([]);
-	const matchingColorGroups = FORM_COLOR_GROUPS.filter((group) =>
-		[
-			group.label,
-			...group.tokens,
-			THEME_COLOR_GROUP_DETAILS[group.label].label,
-			THEME_COLOR_GROUP_DETAILS[group.label].description,
-			...group.tokens.map((token) => THEME_COLOR_LABELS[token]),
-		]
-			.join(" ")
-			.toLowerCase()
-			.includes(colorSearch.trim().toLowerCase()),
-	);
 	const [mobileView, setMobileView] = useState("controls");
 	const previewId = useId();
 	const [css, setCss] = useState("");
@@ -523,12 +510,6 @@ function CustomizationEditor({
 												Choose a color swatch to change it. Watch your form
 												update in the preview.
 											</p>
-											<Input
-												aria-label="Search colors"
-												placeholder="Search colors..."
-												value={colorSearch}
-												onChange={(event) => setColorSearch(event.target.value)}
-											/>
 											<div className="flex items-center justify-between gap-3">
 												<Label htmlFor="show-color-codes">
 													Show color codes
@@ -539,7 +520,7 @@ function CustomizationEditor({
 													onCheckedChange={setShowColorCodes}
 												/>
 											</div>
-											{matchingColorGroups.map((group) => (
+											{FORM_COLOR_GROUPS.map((group) => (
 												<fieldset
 													key={group.label}
 													className="flex flex-col gap-3"
@@ -562,11 +543,6 @@ function CustomizationEditor({
 													<Separator className="mt-2" />
 												</fieldset>
 											))}
-											{matchingColorGroups.length === 0 ? (
-												<p className="text-sm text-muted-foreground">
-													No matching colors.
-												</p>
-											) : null}
 										</AccordionContent>
 									</AccordionItem>
 									<AccordionItem value="other">

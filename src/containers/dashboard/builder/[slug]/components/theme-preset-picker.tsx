@@ -55,13 +55,27 @@ export function ThemePresetPicker({
 				<PopoverContent
 					className="w-[var(--radix-popover-trigger-width)] p-0"
 					align="start"
+					style={{ height: "min(22rem, calc(100dvh - 2rem))" }}
 				>
-					<Command>
+					<Command className="h-full min-h-0">
 						<CommandInput
 							placeholder="Search themes or creators..."
 							aria-label="Search themes or creators"
 						/>
-						<CommandList>
+						<CommandList
+							className="min-h-0 flex-1 max-h-none overflow-y-scroll overscroll-contain"
+							onWheel={(event) => {
+								const list = event.currentTarget;
+								const next = Math.min(
+									Math.max(0, list.scrollTop + event.deltaY),
+									list.scrollHeight - list.clientHeight,
+								);
+								if (next === list.scrollTop) return;
+								list.scrollTop = next;
+								event.preventDefault();
+								event.stopPropagation();
+							}}
+						>
 							<CommandEmpty>No matching themes.</CommandEmpty>
 							<CommandGroup heading="tweakcn community">
 								{communityThemes.map((preset) => (
@@ -127,16 +141,16 @@ export function ThemePresetPicker({
 					</Command>
 				</PopoverContent>
 			</Popover>
-			<a
-				href={selected?.url ?? "https://tweakcn.com/community"}
-				target="_blank"
-				rel="noopener noreferrer"
-				className="text-xs text-muted-foreground underline underline-offset-4"
-			>
-				{selected?.author
-					? `View ${selected.name} by ${selected.author} on tweakcn`
-					: `${communityThemes.length} community presets · Browse all on tweakcn`}
-			</a>
+			{selected?.author && selected.url ? (
+				<a
+					href={selected.url}
+					target="_blank"
+					rel="noopener noreferrer"
+					className="text-xs text-muted-foreground underline underline-offset-4"
+				>
+					View {selected.name} by {selected.author} on tweakcn
+				</a>
+			) : null}
 		</div>
 	);
 }
