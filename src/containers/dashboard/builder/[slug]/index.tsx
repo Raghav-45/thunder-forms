@@ -1019,7 +1019,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 					<Card
 						style={getFormThemeStyle(formStructure.theme)}
 						className={cn(
-							"mb-1 flex h-[calc(100vh-72px)] flex-col gap-0 overflow-hidden rounded-none border-none bg-card text-card-foreground !p-0",
+							"mb-1 flex h-[calc(100vh-72px)] flex-col gap-0 overflow-hidden rounded-none border-none bg-card text-card-foreground shadow-none !p-0",
 						)}
 					>
 						<ChromeTabStrip
