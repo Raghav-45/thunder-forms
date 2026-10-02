@@ -8,6 +8,12 @@ import {
 } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { toast } from "sonner";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "#/components/ui/accordion";
 import { Button } from "#/components/ui/button";
 import {
 	Dialog,
@@ -31,13 +37,17 @@ import {
 import { Separator } from "#/components/ui/separator";
 import { Slider } from "#/components/ui/slider";
 import { Switch } from "#/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "#/components/ui/tabs";
 import { Textarea } from "#/components/ui/textarea";
 import { ThemePresetPicker } from "#/containers/dashboard/builder/[slug]/components/theme-preset-picker";
 import {
 	THEME_COLOR_GROUP_DETAILS,
 	THEME_COLOR_LABELS,
 } from "#/containers/dashboard/builder/[slug]/constants/theme-color-labels";
+import {
+	BASIC_THEME_COLORS,
+	THEME_FONT_LABELS,
+} from "#/containers/dashboard/builder/[slug]/constants/theme-customization";
 import { FormThemeScope } from "#/features/form-builder/components/form-theme-scope";
 import type { FieldConfig } from "#/features/form-builder/elements";
 import type { FormStructure } from "#/features/form-builder/form-structure";
@@ -46,18 +56,11 @@ import {
 	exportFormThemeCss,
 	FORM_COLOR_GROUPS,
 	FORM_FONTS,
-	FORM_SHADOW_TOKENS,
-	FORM_TRACKING_TOKENS,
 	type FormColorToken,
 	type FormTheme,
-	getFormThemeShadows,
-	getFormThemeStyle,
 	getTweakcnRegistryUrl,
 	importFormThemeCss,
 	isFormThemeColor,
-	isFormThemeFont,
-	isFormThemeShadow,
-	isFormThemeTracking,
 	normalizeFormTheme,
 } from "#/features/form-builder/theme";
 import {
@@ -150,6 +153,7 @@ function RangeControl({
 	max,
 	step = 1,
 	unit = "",
+	displayValue,
 	onChange,
 }: {
 	label: string;
@@ -158,6 +162,7 @@ function RangeControl({
 	max: number;
 	step?: number;
 	unit?: string;
+	displayValue?: string;
 	onChange: (value: number) => void;
 }) {
 	const id = useId();
@@ -166,8 +171,7 @@ function RangeControl({
 			<div className="flex items-center justify-between gap-3">
 				<Label htmlFor={id}>{label}</Label>
 				<span className="text-xs tabular-nums text-muted-foreground">
-					{Number(value.toFixed(3))}
-					{unit}
+					{displayValue ?? `${Number(value.toFixed(3))}${unit}`}
 				</span>
 			</div>
 			<Slider
@@ -188,49 +192,6 @@ function RangeControl({
 	);
 }
 
-function TextControl({
-	label,
-	value,
-	onChange,
-	validate,
-}: {
-	label: string;
-	value: string;
-	onChange: (value: string) => void;
-	validate: (value: string) => boolean;
-}) {
-	const id = useId();
-	const [text, setText] = useState(value);
-	const [invalid, setInvalid] = useState(false);
-	useEffect(() => {
-		setText(value);
-		setInvalid(false);
-	}, [value]);
-	return (
-		<div className="flex flex-col gap-2">
-			<Label htmlFor={id}>{label}</Label>
-			<Input
-				id={id}
-				value={text}
-				aria-invalid={invalid}
-				aria-describedby={invalid ? `${id}-error` : undefined}
-				onChange={(event) => {
-					const next = event.target.value;
-					setText(next);
-					const valid = validate(next);
-					setInvalid(!valid);
-					if (valid) onChange(next);
-				}}
-			/>
-			{invalid ? (
-				<p id={`${id}-error`} className="text-xs text-destructive">
-					Enter a valid CSS value.
-				</p>
-			) : null}
-		</div>
-	);
-}
-
 interface FormCustomizationProps {
 	structure: FormStructure;
 	activePageId: string;
@@ -238,6 +199,48 @@ interface FormCustomizationProps {
 	description?: string;
 	submitButtonText?: string;
 	onUpdate: (theme: FormTheme | undefined) => void;
+}
+
+function FontControl({
+	theme,
+	onChange,
+}: {
+	theme: FormTheme;
+	onChange: (fontFamily: FormTheme["fontFamily"]) => void;
+}) {
+	const id = useId();
+	return (
+		<div className="flex flex-col gap-2">
+			<Label htmlFor={id}>Text font</Label>
+			<Select
+				value={
+					theme.fontFamily === "system" &&
+					theme.fonts?.sans !== FORM_FONTS.system.value
+						? "custom"
+						: theme.fontFamily
+				}
+				onValueChange={(value) =>
+					value !== "custom" && onChange(value as FormTheme["fontFamily"])
+				}
+			>
+				<SelectTrigger id={id} className="w-full">
+					<SelectValue />
+				</SelectTrigger>
+				<SelectContent>
+					<SelectGroup>
+						<SelectItem value="custom">Theme font</SelectItem>
+						{Object.entries(FORM_FONTS).map(([key, font]) => (
+							<SelectItem key={key} value={key}>
+								<span style={{ fontFamily: font.value }}>
+									{THEME_FONT_LABELS[key as FormTheme["fontFamily"]]}
+								</span>
+							</SelectItem>
+						))}
+					</SelectGroup>
+				</SelectContent>
+			</Select>
+		</div>
+	);
 }
 
 export function FormCustomization(props: FormCustomizationProps) {
@@ -275,6 +278,7 @@ function CustomizationEditor({
 	);
 	const [colorSearch, setColorSearch] = useState("");
 	const [showColorCodes, setShowColorCodes] = useState(false);
+	const [advancedSections, setAdvancedSections] = useState<string[]>([]);
 	const matchingColorGroups = FORM_COLOR_GROUPS.filter((group) =>
 		[
 			group.label,
@@ -313,6 +317,17 @@ function CustomizationEditor({
 		setDraft((current) => ({
 			...current,
 			colors: { ...current.colors, [token]: value },
+		}));
+	const updateFont = (fontFamily: FormTheme["fontFamily"]) =>
+		setDraft((current) => ({
+			...current,
+			fontFamily,
+			fonts: {
+				...(normalizeFormTheme(current).fonts as NonNullable<
+					FormTheme["fonts"]
+				>),
+				sans: FORM_FONTS[fontFamily].value,
+			},
 		}));
 	const updateShadow = (
 		key: keyof FormTheme["shadow"],
@@ -381,407 +396,335 @@ function CustomizationEditor({
 					)}
 				>
 					<div className="flex flex-col gap-2">
-						<Label htmlFor="form-theme-preset">Theme preset</Label>
+						<Label htmlFor="form-theme-preset">Form style</Label>
 						<ThemePresetPicker onSelect={setDraft} />
 					</div>
-					<Tabs defaultValue="colors" className="gap-5">
-						<TabsList className="w-full" aria-label="Customization controls">
-							<TabsTrigger value="colors">Colors</TabsTrigger>
-							<TabsTrigger value="typography">Typography</TabsTrigger>
-							<TabsTrigger value="other">Other</TabsTrigger>
-						</TabsList>
-						<TabsContent value="colors" className="flex flex-col gap-5">
-							<p className="text-xs text-muted-foreground">
-								Choose a color swatch to change it. Watch your form update in
-								the preview.
-							</p>
-							<Input
-								aria-label="Search colors"
-								placeholder="Search colors..."
-								value={colorSearch}
-								onChange={(event) => setColorSearch(event.target.value)}
-							/>
-							<div className="flex items-center justify-between gap-3">
-								<Label htmlFor="show-color-codes">Show color codes</Label>
-								<Switch
-									id="show-color-codes"
-									checked={showColorCodes}
-									onCheckedChange={setShowColorCodes}
-								/>
-							</div>
-							{matchingColorGroups.map((group) => (
-								<fieldset key={group.label} className="flex flex-col gap-3">
-									<legend className="mb-2 text-sm font-semibold">
-										{THEME_COLOR_GROUP_DETAILS[group.label].label}
-									</legend>
-									<p className="text-xs text-muted-foreground">
-										{THEME_COLOR_GROUP_DETAILS[group.label].description}
-									</p>
-									{group.tokens.map((token) => (
+					<Accordion type="multiple" defaultValue={["basic"]}>
+						<AccordionItem value="basic">
+							<AccordionTrigger>Basic customizations</AccordionTrigger>
+							<AccordionContent className="flex flex-col gap-6">
+								<fieldset className="flex flex-col gap-3">
+									<legend className="mb-3 text-sm font-semibold">Colors</legend>
+									{BASIC_THEME_COLORS.map((token) => (
 										<ColorControl
 											key={token}
 											label={THEME_COLOR_LABELS[token]}
-											showCode={showColorCodes}
+											showCode={false}
 											value={draft.colors[token] ?? "#000000"}
 											onChange={(value) => updateColor(token, value)}
 										/>
 									))}
-									<Separator className="mt-2" />
 								</fieldset>
-							))}
-							{matchingColorGroups.length === 0 ? (
-								<p className="text-sm text-muted-foreground">
-									No matching colors.
-								</p>
-							) : null}
-						</TabsContent>
-						<TabsContent value="typography" className="flex flex-col gap-6">
-							<div className="flex flex-col gap-2">
-								<Label htmlFor="form-theme-font">Font family</Label>
-								<Select
-									value={
-										draft.fontFamily === "system" &&
-										draft.fonts?.sans !== FORM_FONTS.system.value
-											? "custom"
-											: draft.fontFamily
-									}
-									onValueChange={(fontFamily) =>
-										fontFamily !== "custom" &&
-										setDraft((current) => ({
-											...current,
-											fontFamily: fontFamily as FormTheme["fontFamily"],
-											fonts: {
-												...(normalizeFormTheme(current).fonts as NonNullable<
-													FormTheme["fonts"]
-												>),
-												sans: FORM_FONTS[fontFamily as FormTheme["fontFamily"]]
-													.value,
-											},
-										}))
-									}
-								>
-									<SelectTrigger id="form-theme-font" className="w-full">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectGroup>
-											<SelectItem value="custom">
-												Imported / custom font
-											</SelectItem>
-											{Object.entries(FORM_FONTS).map(([id, font]) => (
-												<SelectItem key={id} value={id}>
-													<span style={{ fontFamily: font.value }}>
-														{font.label}
-													</span>
-												</SelectItem>
-											))}
-										</SelectGroup>
-									</SelectContent>
-								</Select>
-							</div>
-							{(["sans", "serif", "mono"] as const).map((slot) => (
-								<TextControl
-									key={slot}
-									label={
-										slot === "sans"
-											? "Primary font stack"
-											: slot === "serif"
-												? "Serif font stack"
-												: "Monospace font stack"
-									}
-									value={draft.fonts?.[slot] ?? ""}
-									validate={(value) =>
-										isFormThemeFont(value) && CSS.supports("font-family", value)
-									}
-									onChange={(value) =>
-										setDraft((current) => ({
-											...current,
-											fontFamily:
-												slot === "sans" ? "system" : current.fontFamily,
-											fonts: {
-												...(normalizeFormTheme(current).fonts as NonNullable<
-													FormTheme["fonts"]
-												>),
-												[slot]: value,
-											},
-										}))
-									}
-								/>
-							))}
-							<p className="text-xs text-muted-foreground">
-								Google Fonts load automatically. Other fonts use your fallback
-								stack.
-							</p>
-							<RangeControl
-								label="Letter spacing"
-								value={draft.letterSpacing}
-								min={-0.5}
-								max={0.5}
-								step={0.005}
-								unit="em"
-								onChange={(letterSpacing) =>
-									setDraft((current) => ({ ...current, letterSpacing }))
-								}
-							/>
-							<details>
-								<summary className="cursor-pointer text-sm font-medium">
-									Tracking scale
-								</summary>
-								<div className="mt-3 flex flex-col gap-3">
-									{FORM_TRACKING_TOKENS.map((token) => (
-										<TextControl
-											key={token}
-											label={`Tracking ${token}`}
-											value={
-												draft.tracking?.[token] ??
-												String(
-													(getFormThemeStyle(draft) as Record<string, string>)[
-														`--tracking-${token}`
-													],
-												)
-											}
-											validate={isFormThemeTracking}
-											onChange={(value) =>
-												setDraft((current) => ({
-													...current,
-													tracking: { ...current.tracking, [token]: value },
-												}))
-											}
-										/>
-									))}
-								</div>
-							</details>
-						</TabsContent>
-						<TabsContent value="other" className="flex flex-col gap-6">
-							<RangeControl
-								label="Corner radius"
-								value={draft.radius}
-								min={0}
-								max={10}
-								step={0.05}
-								unit="rem"
-								onChange={(radius) =>
-									setDraft((current) => ({ ...current, radius }))
-								}
-							/>
-							<RangeControl
-								label="Spacing"
-								value={draft.spacing}
-								min={0.01}
-								max={2}
-								step={0.01}
-								unit="rem"
-								onChange={(spacing) =>
-									setDraft((current) => ({ ...current, spacing }))
-								}
-							/>
-							<Separator />
-							<h3 className="text-sm font-semibold">Shadow</h3>
-							<ColorControl
-								label="Shadow color"
-								value={draft.shadow.color}
-								onChange={(value) => updateShadow("color", value)}
-							/>
-							<RangeControl
-								label="Opacity"
-								value={draft.shadow.opacity}
-								min={0}
-								max={1}
-								step={0.01}
-								onChange={(value) => updateShadow("opacity", value)}
-							/>
-							<RangeControl
-								label="Blur"
-								value={draft.shadow.blur}
-								min={0}
-								max={200}
-								unit="px"
-								onChange={(value) => updateShadow("blur", value)}
-							/>
-							<RangeControl
-								label="Spread"
-								value={draft.shadow.spread}
-								min={-200}
-								max={200}
-								unit="px"
-								onChange={(value) => updateShadow("spread", value)}
-							/>
-							<RangeControl
-								label="Horizontal offset"
-								value={draft.shadow.x}
-								min={-200}
-								max={200}
-								unit="px"
-								onChange={(value) => updateShadow("x", value)}
-							/>
-							<RangeControl
-								label="Vertical offset"
-								value={draft.shadow.y}
-								min={-200}
-								max={200}
-								unit="px"
-								onChange={(value) => updateShadow("y", value)}
-							/>
-							<details>
-								<summary className="cursor-pointer text-sm font-medium">
-									Shadow scale
-								</summary>
-								<div className="mt-3 flex flex-col gap-3">
-									{FORM_SHADOW_TOKENS.map((token) => (
-										<TextControl
-											key={token}
-											label={
-												token === "shadow"
-													? "Default shadow"
-													: token.replace("shadow-", "Shadow ")
-											}
-											value={getFormThemeShadows(draft)[token]}
-											validate={(value) =>
-												isFormThemeShadow(value) &&
-												CSS.supports("box-shadow", value)
-											}
-											onChange={(value) =>
-												setDraft((current) => ({
-													...current,
-													shadows: { ...current.shadows, [token]: value },
-												}))
-											}
-										/>
-									))}
-								</div>
-							</details>
-						</TabsContent>
-					</Tabs>
-					<Separator />
-					<details className="flex flex-col gap-3">
-						<summary className="flex cursor-pointer items-center gap-2 text-sm font-medium">
-							<CodeIcon className="size-4" />
-							Import or export CSS
-						</summary>
-						<div className="mt-3 flex flex-col gap-3">
-							<Label htmlFor="form-theme-css">Theme CSS</Label>
-							<Textarea
-								id="form-theme-css"
-								value={css}
-								aria-invalid={Boolean(cssError)}
-								aria-describedby={cssError ? "form-theme-css-error" : undefined}
-								onChange={(event) => {
-									setCss(event.target.value);
-									setCssError("");
-								}}
-								placeholder="Paste tweakcn CSS or shadcn registry JSON"
-								className="max-h-64 min-h-32"
-							/>
-							{cssError ? (
-								<p
-									id="form-theme-css-error"
-									role="alert"
-									className="text-xs text-destructive"
-								>
-									{cssError}
-								</p>
-							) : null}
-							<div className="flex flex-wrap gap-2">
-								<Button
-									type="button"
-									size="sm"
-									variant="outline"
-									disabled={isImporting}
-									onClick={() => importTheme(css)}
-								>
-									Import theme
-								</Button>
-								<Button
-									type="button"
-									size="sm"
-									variant="outline"
-									onClick={async () => {
-										const exported = exportFormThemeCss(draft);
-										setCss(exported);
-										try {
-											await navigator.clipboard.writeText(exported);
-											toast.success("Theme CSS copied");
-										} catch {
-											toast.message("Select the CSS above to copy it.");
+								<fieldset className="flex flex-col gap-5">
+									<legend className="mb-3 text-sm font-semibold">Text</legend>
+									<FontControl theme={draft} onChange={updateFont} />
+									<RangeControl
+										label="Letter spacing"
+										value={draft.letterSpacing}
+										min={-0.5}
+										max={0.5}
+										step={0.005}
+										displayValue={`${Number((draft.letterSpacing * 100).toFixed(1))}%`}
+										onChange={(letterSpacing) =>
+											setDraft((current) => ({ ...current, letterSpacing }))
 										}
-									}}
-								>
-									<CopyIcon data-icon="inline-start" />
-									Copy CSS
-								</Button>
-							</div>
-							<Label htmlFor="form-theme-file">Import a CSS or JSON file</Label>
-							<Input
-								id="form-theme-file"
-								type="file"
-								accept=".css,.json,text/css,application/json"
-								disabled={isImporting}
-								onChange={async (event) => {
-									const file = event.target.files?.[0];
-									if (!file) return;
-									if (file.size > 1_000_000) {
-										setCssError("The theme file is too large.");
-										return;
-									}
-									const content = await file.text();
-									setCss(content);
-									importTheme(content);
-								}}
-							/>
-							<Separator />
-							<Label htmlFor="form-theme-url">tweakcn theme link</Label>
-							<Input
-								id="form-theme-url"
-								type="url"
-								placeholder="https://tweakcn.com/themes/..."
-								value={themeUrl}
-								onChange={(event) => setThemeUrl(event.target.value)}
-							/>
-							<Button
-								type="button"
-								size="sm"
-								variant="outline"
-								disabled={isImporting || !themeUrl.trim()}
-								onClick={async () => {
-									setIsImporting(true);
-									setCssError("");
-									try {
-										const response = await fetch(
-											getTweakcnRegistryUrl(themeUrl),
-											{
-												signal: AbortSignal.timeout(15_000),
-												credentials: "omit",
-											},
-										);
-										if (!response.ok)
-											throw new Error(
-												"Could not load this theme. Check that its tweakcn link is public.",
-											);
-										const content = await response.text();
-										setDraft(importFormThemeCss(content, draft));
-										setCss(content);
-										toast.success("Theme imported");
-									} catch (error) {
-										setCssError(
-											error instanceof Error
-												? error.message
-												: "Could not import theme",
-										);
-									} finally {
-										setIsImporting(false);
-									}
-								}}
-							>
-								{isImporting ? (
-									<Loader2Icon
-										data-icon="inline-start"
-										className="animate-spin"
 									/>
-								) : null}
-								{isImporting ? "Importing..." : "Import from link"}
-							</Button>
-						</div>
-					</details>
+								</fieldset>
+								<fieldset className="flex flex-col gap-5">
+									<legend className="mb-3 text-sm font-semibold">Layout</legend>
+									<RangeControl
+										label="Corner rounding"
+										value={draft.radius}
+										min={0}
+										max={10}
+										step={0.05}
+										displayValue={
+											draft.radius === 0
+												? "Square"
+												: `${Number((draft.radius * 16).toFixed(1))}px`
+										}
+										onChange={(radius) =>
+											setDraft((current) => ({ ...current, radius }))
+										}
+									/>
+									<RangeControl
+										label="Space between elements"
+										value={draft.spacing}
+										min={0.01}
+										max={2}
+										step={0.01}
+										displayValue={`${Number((draft.spacing * 16).toFixed(1))}px`}
+										onChange={(spacing) =>
+											setDraft((current) => ({ ...current, spacing }))
+										}
+									/>
+								</fieldset>
+								<fieldset className="flex flex-col gap-5">
+									<legend className="mb-3 text-sm font-semibold">
+										Shadows
+									</legend>
+									<RangeControl
+										label="Shadow strength"
+										value={draft.shadow.opacity}
+										min={0}
+										max={1}
+										step={0.01}
+										displayValue={`${Math.round(draft.shadow.opacity * 100)}%`}
+										onChange={(value) => updateShadow("opacity", value)}
+									/>
+									<RangeControl
+										label="Shadow softness"
+										value={draft.shadow.blur}
+										min={0}
+										max={200}
+										unit="px"
+										onChange={(value) => updateShadow("blur", value)}
+									/>
+								</fieldset>
+							</AccordionContent>
+						</AccordionItem>
+						<AccordionItem value="advanced">
+							<AccordionTrigger>Advanced customizations</AccordionTrigger>
+							<AccordionContent>
+								<Accordion
+									type="multiple"
+									value={advancedSections}
+									onValueChange={setAdvancedSections}
+								>
+									<AccordionItem value="colors">
+										<AccordionTrigger>All colors</AccordionTrigger>
+										<AccordionContent className="flex flex-col gap-5">
+											<p className="text-xs text-muted-foreground">
+												Choose a color swatch to change it. Watch your form
+												update in the preview.
+											</p>
+											<Input
+												aria-label="Search colors"
+												placeholder="Search colors..."
+												value={colorSearch}
+												onChange={(event) => setColorSearch(event.target.value)}
+											/>
+											<div className="flex items-center justify-between gap-3">
+												<Label htmlFor="show-color-codes">
+													Show color codes
+												</Label>
+												<Switch
+													id="show-color-codes"
+													checked={showColorCodes}
+													onCheckedChange={setShowColorCodes}
+												/>
+											</div>
+											{matchingColorGroups.map((group) => (
+												<fieldset
+													key={group.label}
+													className="flex flex-col gap-3"
+												>
+													<legend className="mb-2 text-sm font-semibold">
+														{THEME_COLOR_GROUP_DETAILS[group.label].label}
+													</legend>
+													<p className="text-xs text-muted-foreground">
+														{THEME_COLOR_GROUP_DETAILS[group.label].description}
+													</p>
+													{group.tokens.map((token) => (
+														<ColorControl
+															key={token}
+															label={THEME_COLOR_LABELS[token]}
+															showCode={showColorCodes}
+															value={draft.colors[token] ?? "#000000"}
+															onChange={(value) => updateColor(token, value)}
+														/>
+													))}
+													<Separator className="mt-2" />
+												</fieldset>
+											))}
+											{matchingColorGroups.length === 0 ? (
+												<p className="text-sm text-muted-foreground">
+													No matching colors.
+												</p>
+											) : null}
+										</AccordionContent>
+									</AccordionItem>
+									<AccordionItem value="other">
+										<AccordionTrigger>More shadow controls</AccordionTrigger>
+										<AccordionContent className="flex flex-col gap-6">
+											<ColorControl
+												label="Shadow color"
+												value={draft.shadow.color}
+												showCode={false}
+												onChange={(value) => updateShadow("color", value)}
+											/>
+											<RangeControl
+												label="Shadow size adjustment"
+												value={draft.shadow.spread}
+												min={-200}
+												max={200}
+												unit="px"
+												onChange={(value) => updateShadow("spread", value)}
+											/>
+											<RangeControl
+												label="Shadow horizontal position"
+												value={draft.shadow.x}
+												min={-200}
+												max={200}
+												unit="px"
+												onChange={(value) => updateShadow("x", value)}
+											/>
+											<RangeControl
+												label="Shadow vertical position"
+												value={draft.shadow.y}
+												min={-200}
+												max={200}
+												unit="px"
+												onChange={(value) => updateShadow("y", value)}
+											/>
+											<p className="text-xs text-muted-foreground">
+												Shape shadows without needing CSS.
+											</p>
+										</AccordionContent>
+									</AccordionItem>
+									<AccordionItem value="import">
+										<AccordionTrigger>
+											<span className="flex items-center gap-2">
+												<CodeIcon className="size-4" />
+												Import or export a theme
+											</span>
+										</AccordionTrigger>
+										<AccordionContent className="flex flex-col gap-3">
+											<Label htmlFor="form-theme-css">Theme code</Label>
+											<Textarea
+												id="form-theme-css"
+												value={css}
+												aria-invalid={Boolean(cssError)}
+												aria-describedby={
+													cssError ? "form-theme-css-error" : undefined
+												}
+												onChange={(event) => {
+													setCss(event.target.value);
+													setCssError("");
+												}}
+												placeholder="Paste tweakcn CSS or shadcn registry JSON"
+												className="max-h-64 min-h-32"
+											/>
+											{cssError ? (
+												<p
+													id="form-theme-css-error"
+													role="alert"
+													className="text-xs text-destructive"
+												>
+													{cssError}
+												</p>
+											) : null}
+											<div className="flex flex-wrap gap-2">
+												<Button
+													type="button"
+													size="sm"
+													variant="outline"
+													disabled={isImporting}
+													onClick={() => importTheme(css)}
+												>
+													Import theme
+												</Button>
+												<Button
+													type="button"
+													size="sm"
+													variant="outline"
+													onClick={async () => {
+														const exported = exportFormThemeCss(draft);
+														setCss(exported);
+														try {
+															await navigator.clipboard.writeText(exported);
+															toast.success("Theme code copied");
+														} catch {
+															toast.message(
+																"Select the theme code above to copy it.",
+															);
+														}
+													}}
+												>
+													<CopyIcon data-icon="inline-start" />
+													Copy theme code
+												</Button>
+											</div>
+											<Label htmlFor="form-theme-file">
+												Theme file (CSS or JSON)
+											</Label>
+											<Input
+												id="form-theme-file"
+												type="file"
+												accept=".css,.json,text/css,application/json"
+												disabled={isImporting}
+												onChange={async (event) => {
+													const file = event.target.files?.[0];
+													if (!file) return;
+													if (file.size > 1_000_000) {
+														setCssError("The theme file is too large.");
+														return;
+													}
+													const content = await file.text();
+													setCss(content);
+													importTheme(content);
+												}}
+											/>
+											<Separator />
+											<Label htmlFor="form-theme-url">
+												Theme link from tweakcn
+											</Label>
+											<Input
+												id="form-theme-url"
+												type="url"
+												placeholder="https://tweakcn.com/themes/..."
+												value={themeUrl}
+												onChange={(event) => setThemeUrl(event.target.value)}
+											/>
+											<Button
+												type="button"
+												size="sm"
+												variant="outline"
+												disabled={isImporting || !themeUrl.trim()}
+												onClick={async () => {
+													setIsImporting(true);
+													setCssError("");
+													try {
+														const response = await fetch(
+															getTweakcnRegistryUrl(themeUrl),
+															{
+																signal: AbortSignal.timeout(15_000),
+																credentials: "omit",
+															},
+														);
+														if (!response.ok)
+															throw new Error(
+																"Could not load this theme. Check that its tweakcn link is public.",
+															);
+														const content = await response.text();
+														setDraft(importFormThemeCss(content, draft));
+														setCss(content);
+														toast.success("Theme imported");
+													} catch (error) {
+														setCssError(
+															error instanceof Error
+																? error.message
+																: "Could not import theme",
+														);
+													} finally {
+														setIsImporting(false);
+													}
+												}}
+											>
+												{isImporting ? (
+													<Loader2Icon
+														data-icon="inline-start"
+														className="animate-spin"
+													/>
+												) : null}
+												{isImporting ? "Importing..." : "Import from link"}
+											</Button>
+										</AccordionContent>
+									</AccordionItem>
+								</Accordion>
+							</AccordionContent>
+						</AccordionItem>
+					</Accordion>
 				</div>
 				<div
 					className={cn(

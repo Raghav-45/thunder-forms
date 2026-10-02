@@ -41,13 +41,13 @@ export function ThemePresetPicker({
 					<Button
 						id="form-theme-preset"
 						role="combobox"
-						aria-label="Theme preset"
+						aria-label="Form style"
 						aria-expanded={open}
 						variant="outline"
 						className="w-full justify-between"
 					>
 						<span className="truncate">
-							{selected?.name ?? "Choose a starting point"}
+							{selected?.name ?? "Choose a form style"}
 						</span>
 						<ChevronsUpDownIcon data-icon="inline-end" />
 					</Button>

@@ -1,6 +1,8 @@
 import { expect, type Page, test } from "@playwright/test";
 import communityThemes from "#/containers/dashboard/builder/[slug]/constants/community-themes.json" with { type: "json" };
-import { createFormTheme } from "#/features/form-builder/theme";
+import { THEME_COLOR_LABELS } from "#/containers/dashboard/builder/[slug]/constants/theme-color-labels";
+import { BASIC_THEME_COLORS } from "#/containers/dashboard/builder/[slug]/constants/theme-customization";
+import { createFormTheme, getFormThemeStyle, importFormThemeVariables } from "#/features/form-builder/theme";
 
 async function mockSession(page: Page) {
 	await page.route("**/api/auth/get-session**", (route) => route.fulfill({ json: {
@@ -16,7 +18,7 @@ test("customizations preview live, cancel cleanly, apply and reset", async ({ pa
 	const editor = page.getByRole("dialog", { name: "Customize your form" });
 	const preview = page.getByTestId("customization-preview");
 	await expect(preview.getByText("Your Name", { exact: true })).toBeVisible();
-	await editor.getByRole("combobox", { name: "Theme preset" }).click();
+	await editor.getByRole("combobox", { name: "Form style" }).click();
 	await page.getByRole("option", { name: "Ocean", exact: true }).click();
 	await expect(editor.getByRole("tab", { name: "Light", exact: true })).toHaveCount(0);
 	await expect(editor.getByRole("tab", { name: "Dark", exact: true })).toHaveCount(0);
@@ -27,16 +29,14 @@ test("customizations preview live, cancel cleanly, apply and reset", async ({ pa
 
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
 	await expect(preview).toHaveCSS("background-color", "rgb(10, 10, 10)");
-	await editor.getByRole("tab", { name: "Typography", exact: true }).click();
-	await editor.getByRole("combobox", { name: "Font family", exact: true }).click();
+	await editor.getByRole("combobox", { name: "Text font", exact: true }).click();
 	await page.getByRole("option", { name: "Georgia", exact: true }).click();
 	await expect(preview).toHaveCSS("font-family", 'Georgia, "Times New Roman", serif');
 	const tracking = editor.getByRole("slider", { name: "Letter spacing", exact: true });
 	await tracking.focus();
 	await tracking.press("ArrowRight");
 	await expect(tracking).toHaveAttribute("aria-valuenow", "0.005");
-	await editor.getByRole("tab", { name: "Other", exact: true }).click();
-	const radius = editor.getByRole("slider", { name: "Corner radius", exact: true });
+	const radius = editor.getByRole("slider", { name: "Corner rounding", exact: true });
 	await radius.focus();
 	await radius.press("Home");
 	await expect(preview.locator("section").first()).toHaveCSS("border-radius", "0px");
@@ -45,8 +45,7 @@ test("customizations preview live, cancel cleanly, apply and reset", async ({ pa
 	await expect(page.locator("[data-form-theme]")).toHaveCSS("font-family", 'Georgia, "Times New Roman", serif');
 
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
-	await editor.getByRole("tab", { name: "Typography", exact: true }).click();
-	await expect(editor.getByRole("combobox", { name: "Font family", exact: true })).toContainText("Georgia");
+	await expect(editor.getByRole("combobox", { name: "Text font", exact: true })).toContainText("Georgia");
 	await editor.getByRole("button", { name: "Reset to original", exact: true }).click();
 	await expect(page.locator("[data-form-theme]")).toHaveCount(0);
 });
@@ -65,10 +64,11 @@ test("theme persists in the save payload and public form after reload, including
 	await page.getByRole("button", { name: "single-select", exact: true }).click();
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
 	const editor = page.getByRole("dialog", { name: "Customize your form" });
-	await editor.getByRole("combobox", { name: "Theme preset" }).click();
+	await editor.getByRole("combobox", { name: "Form style" }).click();
 	await page.getByRole("option", { name: "Ocean", exact: true }).click();
-	await editor.getByText("Import or export CSS", { exact: true }).click();
-	await editor.getByRole("textbox", { name: "Theme CSS", exact: true }).fill(":root { --popover: #ffeedd; --popover-foreground: #112233; } .dark { --primary: #334455; }");
+	await editor.getByRole("button", { name: "Advanced customizations", exact: true }).click();
+	await editor.getByText("Import or export a theme", { exact: true }).click();
+	await editor.getByRole("textbox", { name: "Theme code", exact: true }).fill(":root { --popover: #ffeedd; --popover-foreground: #112233; } .dark { --primary: #334455; }");
 	await editor.getByRole("button", { name: "Import theme", exact: true }).click();
 	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
 	await page.getByRole("button", { name: "Save", exact: true }).click();
@@ -198,7 +198,7 @@ test("community presets are searchable, editable and persist with fonts and comp
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
 	const editor = page.getByRole("dialog", { name: "Customize your form" });
 	const preview = page.getByTestId("customization-preview");
-	await editor.getByRole("combobox", { name: "Theme preset" }).click();
+	await editor.getByRole("combobox", { name: "Form style" }).click();
 	await page.getByRole("combobox", { name: "Search themes or creators" }).fill(preset.author);
 	await expect(page.getByRole("option", { name: preset.name, exact: true })).toBeVisible();
 	await testInfo.attach("community-picker", { body: await page.screenshot(), contentType: "image/png" });
@@ -208,16 +208,14 @@ test("community presets are searchable, editable and persist with fonts and comp
 	await expect(preview).toHaveCSS("--chart-5", preset.variables["chart-5"]);
 	await expect(preview).toHaveCSS("--sidebar-ring", preset.variables["sidebar-ring"]);
 	await expect(preview).toHaveCSS("--shadow-xl", preset.variables["shadow-xl"]);
+	await editor.getByRole("button", { name: "Advanced customizations", exact: true }).click();
+	await editor.getByRole("button", { name: "All colors", exact: true }).click();
 	await editor.getByRole("textbox", { name: "Search colors" }).fill("charts");
 	await editor.getByRole("switch", { name: "Show color codes", exact: true }).check();
 	await expect(editor.getByRole("textbox", { name: "Chart 5 code", exact: true })).toHaveValue(preset.variables["chart-5"]);
-	await editor.getByRole("tab", { name: "Typography", exact: true }).click();
-	await expect(editor.getByRole("textbox", { name: "Primary font stack" })).toHaveValue(preset.variables["font-sans"]);
-	await expect(editor.getByRole("textbox", { name: "Serif font stack" })).toHaveValue("Lora, serif");
-	await expect(editor.getByRole("textbox", { name: "Monospace font stack" })).toHaveValue("IBM Plex Mono, monospace");
-	await editor.getByRole("tab", { name: "Other", exact: true }).click();
-	await editor.getByText("Shadow scale", { exact: true }).click();
-	await expect(editor.getByRole("textbox", { name: "Shadow xl", exact: true })).toHaveValue(preset.variables["shadow-xl"]);
+	await expect(editor.getByText(/calc\(/)).toHaveCount(0);
+	await editor.getByRole("button", { name: "More shadow controls", exact: true }).click();
+	await expect(editor.getByText("Shape shadows without needing CSS.")).toBeVisible();
 	await testInfo.attach("community-preview", { body: await page.screenshot(), contentType: "image/png" });
 	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
 	await page.getByRole("button", { name: "Save", exact: true }).click();
@@ -240,8 +238,9 @@ test("theme links and CSS or registry files import dark colors and all customiza
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
 	const editor = page.getByRole("dialog", { name: "Customize your form" });
 	const preview = page.getByTestId("customization-preview");
-	await editor.getByText("Import or export CSS", { exact: true }).click();
-	const link = editor.getByRole("textbox", { name: "tweakcn theme link" });
+	await editor.getByRole("button", { name: "Advanced customizations", exact: true }).click();
+	await editor.getByText("Import or export a theme", { exact: true }).click();
+	const link = editor.getByRole("textbox", { name: "Theme link from tweakcn" });
 	await link.fill("https://example.com/theme");
 	await editor.getByRole("button", { name: "Import from link", exact: true }).click();
 	await expect(editor.getByRole("alert")).toContainText("tweakcn.com");
@@ -251,12 +250,12 @@ test("theme links and CSS or registry files import dark colors and all customiza
 	await expect(preview).toHaveCSS("--primary", preset.variables.primary);
 	await expect(preview).toHaveCSS("--spacing", "0.27rem");
 	await expect(preview).toHaveCSS("font-family", '"Plus Jakarta Sans", sans-serif');
-	const css = editor.getByRole("textbox", { name: "Theme CSS", exact: true });
+	const css = editor.getByRole("textbox", { name: "Theme code", exact: true });
 	await css.fill(':root { --font-sans: url(https://example.com/font); }');
 	await editor.getByRole("button", { name: "Import theme", exact: true }).click();
 	await expect(editor.getByRole("alert")).toContainText("Invalid font stack");
 	await expect(preview).toHaveCSS("font-family", '"Plus Jakarta Sans", sans-serif');
-	const file = editor.getByLabel("Import a CSS or JSON file", { exact: true });
+	const file = editor.getByLabel("Theme file (CSS or JSON)", { exact: true });
 	await file.setInputFiles({ name: "theme.css", mimeType: "text/css", buffer: Buffer.from(':root { --primary: #112233; --radius: 8px; --spacing: 0.3rem; --font-sans: Arial, sans-serif; --shadow-color: 0, 0%, 0%; --shadow-xl: 0 4px 8px hsl(0, 0%, 0% / 0.5); } .dark { --primary: #abcdef; }') });
 	await expect(preview).toHaveCSS("--primary", "#abcdef");
 	await expect(preview).toHaveCSS("--radius", "0.5rem");
@@ -264,7 +263,7 @@ test("theme links and CSS or registry files import dark colors and all customiza
 	await expect(preview).toHaveCSS("--shadow-xl", "0 4px 8px hsl(0 0% 0% / 0.5)");
 	await file.setInputFiles({ name: "theme.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify({ cssVars: { dark: preset.variables } })) });
 	await expect(preview).toHaveCSS("--primary", preset.variables.primary);
-	await editor.getByRole("button", { name: "Copy CSS", exact: true }).click();
+	await editor.getByRole("button", { name: "Copy theme code", exact: true }).click();
 	await expect(css).toHaveValue(/--font-serif: Lora, serif;/);
 	await expect(css).toHaveValue(/--shadow-xl:/);
 	await editor.getByRole("button", { name: "Import theme", exact: true }).click();
@@ -287,3 +286,97 @@ test("every bundled community theme produces browser-valid color, font and shado
 	}, communityThemes);
 	expect(failures).toEqual([]);
 });
+
+for (const viewport of [{ name: "desktop", width: 1440, height: 1000 }, { name: "mobile", width: 390, height: 844 }]) {
+	test(`basic controls and advanced accordions preserve every setting on ${viewport.name}`, async ({ page }) => {
+		await page.setViewportSize(viewport);
+		await page.route("https://fonts.googleapis.com/**", (route) => route.fulfill({ contentType: "text/css", body: "" }));
+		const preset = communityThemes.find((theme) => theme.name === "Sage Green")!;
+		await page.goto("/dashboard/builder/new-form", { waitUntil: "networkidle" });
+		await page.getByRole("button", { name: "Customize", exact: true }).click();
+		const editor = page.getByRole("dialog", { name: "Customize your form" });
+		const basic = editor.getByRole("region", { name: "Basic customizations", exact: true });
+		const full = editor.getByRole("region", { name: "Advanced customizations", exact: true });
+		const preview = page.getByTestId("customization-preview");
+		const advanced = editor.getByRole("button", { name: "Advanced customizations", exact: true });
+		await expect(advanced).toHaveAttribute("aria-expanded", "false");
+		await expect(basic.locator('input[type="color"]')).toHaveCount(8);
+		for (const token of BASIC_THEME_COLORS) {
+			await expect(basic.getByLabel(`Choose ${THEME_COLOR_LABELS[token].toLowerCase()}`, { exact: true })).toBeVisible();
+		}
+		await expect(basic.getByRole("slider")).toHaveCount(5);
+		await expect(basic.getByRole("combobox", { name: "Text font", exact: true })).toBeVisible();
+		await expect(editor.getByRole("textbox", { name: "Search colors", exact: true })).toBeHidden();
+		await expect(editor.getByRole("button", { name: "Import or export a theme", exact: true })).toBeHidden();
+		await editor.getByRole("combobox", { name: "Form style" }).click();
+		await page.getByRole("combobox", { name: "Search themes or creators" }).fill(preset.name);
+		await page.getByRole("option", { name: preset.name, exact: true }).click();
+		const expected = importFormThemeVariables(preset.variables, createFormTheme());
+		let expectedVariables = Object.fromEntries(Object.entries(getFormThemeStyle(expected)!).filter(([name]) => name.startsWith("--")));
+		const previewVariables = () => preview.evaluate(el => Object.fromEntries(Array.from(el.style).filter(name => name.startsWith("--")).map(name => [name, el.style.getPropertyValue(name)])));
+		expect(await previewVariables()).toEqual(expectedVariables);
+		await basic.getByLabel("Choose button color", { exact: true }).fill("#334455");
+		expected.colors.primary = "#334455";
+		const radius = basic.getByRole("slider", { name: "Corner rounding", exact: true });
+		await radius.focus();
+		await radius.press("Home");
+		expected.radius = 0;
+		await expect(basic.getByText("Square", { exact: true })).toBeVisible();
+		const spacing = basic.getByRole("slider", { name: "Space between elements", exact: true });
+		await spacing.focus();
+		await spacing.press("ArrowRight");
+		expected.spacing = 0.28;
+		const tracking = basic.getByRole("slider", { name: "Letter spacing", exact: true });
+		await tracking.focus();
+		await tracking.press("ArrowRight");
+		expected.letterSpacing = -0.02;
+		expectedVariables = Object.fromEntries(Object.entries(getFormThemeStyle(expected)!).filter(([name]) => name.startsWith("--")));
+		expect(await previewVariables()).toEqual(expectedVariables);
+
+		// Keyboard activation expands advanced settings without replacing the basics.
+		await advanced.focus();
+		await advanced.press("Enter");
+		await expect(advanced).toHaveAttribute("aria-expanded", "true");
+		await expect(editor.getByRole("button", { name: "Basic customizations", exact: true })).toHaveAttribute("aria-expanded", "true");
+		await expect(basic.getByRole("combobox", { name: "Text font", exact: true })).toBeVisible();
+		await expect(full.getByRole("textbox", { name: "Search colors", exact: true })).toBeHidden();
+		const colors = full.getByRole("button", { name: "All colors", exact: true });
+		await colors.click();
+		await expect(full.locator('input[type="color"]:visible')).toHaveCount(32);
+		await full.getByRole("switch", { name: "Show color codes", exact: true }).check();
+		for (const [token, label] of Object.entries(THEME_COLOR_LABELS)) {
+			await expect(full.getByRole("textbox", { name: `${label} code`, exact: true })).toHaveValue(expected.colors[token as keyof typeof expected.colors]!);
+		}
+	await colors.click();
+	await expect(full.getByText(/calc\(/)).toHaveCount(0);
+	await full.getByRole("button", { name: "More shadow controls", exact: true }).click();
+	await expect(full.getByRole("slider")).toHaveCount(3);
+	await expect(full.getByText("Shape shadows without needing CSS.")).toBeVisible();
+		const strength = basic.getByRole("slider", { name: "Shadow strength", exact: true });
+		await strength.focus();
+		await strength.press("End");
+		expected.shadow.opacity = 1;
+		expected.shadows = undefined;
+	expectedVariables = Object.fromEntries(Object.entries(getFormThemeStyle(expected)!).filter(([name]) => name.startsWith("--")));
+	await expect(basic.getByRole("slider", { name: "Shadow strength", exact: true })).toHaveAttribute("aria-valuenow", "1");
+	expect(await previewVariables()).toEqual(expectedVariables);
+	await advanced.click();
+		await expect(advanced).toHaveAttribute("aria-expanded", "false");
+		await expect(editor.getByRole("button", { name: "More shadow controls", exact: true })).toBeHidden();
+	await expect(basic.locator('input[type="color"]')).toHaveCount(8);
+	expect(await previewVariables()).toEqual(expectedVariables);
+	await advanced.click();
+	expect(await previewVariables()).toEqual(expectedVariables);
+		await editor.getByRole("button", { name: "Basic customizations", exact: true }).click();
+	await expect(basic).toBeHidden();
+	await expect(advanced).toHaveAttribute("aria-expanded", "true");
+	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
+		const canvasVariables = await page.locator("[data-form-theme]").evaluate(el => Object.fromEntries(Array.from(el.style).filter(name => name.startsWith("--")).map(name => [name, el.style.getPropertyValue(name)])));
+		expect(canvasVariables).toEqual(expectedVariables);
+		await page.getByRole("button", { name: "Customize", exact: true }).click();
+		await expect(editor.getByRole("button", { name: "Advanced customizations", exact: true })).toHaveAttribute("aria-expanded", "false");
+		await expect(editor.getByRole("button", { name: "Basic customizations", exact: true })).toHaveAttribute("aria-expanded", "true");
+		expect(await previewVariables()).toEqual(expectedVariables);
+		expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+	});
+}
