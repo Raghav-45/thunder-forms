@@ -33,6 +33,7 @@ import { BuilderCanvas } from "#/containers/dashboard/builder/[slug]/components/
 import { BuilderDragOverlay } from "#/containers/dashboard/builder/[slug]/components/builder-drag-overlay";
 import { BuilderPalette } from "#/containers/dashboard/builder/[slug]/components/builder-palette";
 import { ChromeTabStrip } from "#/containers/dashboard/builder/[slug]/components/chrome-tab-strip";
+import { FormCustomization } from "#/containers/dashboard/builder/[slug]/components/form-customization";
 import { SaveFormLoginDialog } from "#/containers/dashboard/builder/[slug]/components/save-form-login-dialog";
 import { SectionEditor } from "#/containers/dashboard/builder/[slug]/components/section-editor";
 import {
@@ -64,6 +65,7 @@ import { getTemplateBySlug } from "#/containers/dashboard/templates/constants";
 import { instantiateTemplate } from "#/containers/dashboard/templates/instantiate-template";
 import { CopyButton } from "#/features/form-builder/components/copy-button";
 import { IMMORTAL_SENTINEL_DATE } from "#/features/form-builder/components/date-picker-with-presets";
+import { useFormThemeFonts } from "#/features/form-builder/components/form-theme-scope";
 import { SettingsDialog } from "#/features/form-builder/components/settings-dialog";
 import GenerateWithAiPrompt from "#/features/form-builder/core/generate-with-ai";
 import ImportGoogleForm from "#/features/form-builder/core/import-google-form";
@@ -76,6 +78,10 @@ import {
 	type QuizSettings,
 } from "#/features/form-builder/form-structure";
 import { useFormStore } from "#/features/form-builder/store";
+import {
+	getFormThemeStyle,
+	normalizeFormTheme,
+} from "#/features/form-builder/theme";
 import type {
 	AvailableFieldsType,
 	QuizQuestionConfig,
@@ -208,6 +214,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 	const [formStructure, setFormStructure] = useState<FormStructure>(
 		initialState.formStructure,
 	);
+	useFormThemeFonts(formStructure.theme);
 	const [isSaving, setIsSaving] = useState(false);
 	const [isSaveLoginOpen, setIsSaveLoginOpen] = useState(false);
 	const [hasInvalidPersistedStructure, setHasInvalidPersistedStructure] =
@@ -428,7 +435,12 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 			redirectUrl: form.data.redirectUrl,
 			submitButtonText: form.data.submitButtonText,
 		});
-		setFormStructure(form.data.fields as PersistedFormStructure);
+		setFormStructure({
+			...(form.data.fields as PersistedFormStructure),
+			theme: form.data.fields.theme
+				? normalizeFormTheme(form.data.fields.theme)
+				: undefined,
+		});
 		setActivePageId(form.data.fields.pages[0]?.id ?? initialState.activePageId);
 		// Hydration is intentionally driven by the query result, not the store
 		// writes performed inside this effect.
@@ -561,7 +573,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 				toast.error("Import produced no usable fields");
 				return;
 			}
-			setFormStructure(structure);
+			setFormStructure((current) => ({ ...structure, theme: current.theme }));
 			setActivePageId(structure.pages[0].id);
 			setFormSettings({ ...formSettings, title, description });
 		},
@@ -971,6 +983,16 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 					<div className="flex flex-row justify-between bg-[#111111] px-4 pt-6 md:px-4 md:pt-6">
 						<h1 className="text-3xl font-bold">Builder</h1>
 						<div className="flex gap-2">
+							<FormCustomization
+								structure={formStructure}
+								activePageId={resolvedActivePageId}
+								title={formSettings.title}
+								description={formSettings.description}
+								submitButtonText={formSettings.submitButtonText}
+								onUpdate={(theme) =>
+									setFormStructure((current) => ({ ...current, theme }))
+								}
+							/>
 							{isExistingForm ? (
 								<CopyButton
 									className="h-8"
@@ -1008,6 +1030,8 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 							canRemovePage={formStructure.pages.length > 1}
 						/>
 						<CardContent
+							data-form-theme={formStructure.theme ? true : undefined}
+							style={getFormThemeStyle(formStructure.theme)}
 							className={cn(
 								"min-h-0 flex-1 overflow-y-auto p-3 md:p-4",
 								!hasCanvasSections &&

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
 import { FormClosedDialog } from "#/containers/public/forms/components/form-closed-dialog";
 import { FormSubmittedPage } from "#/containers/public/forms/components/form-submitted-page";
+import { FormThemeScope } from "#/features/form-builder/components/form-theme-scope";
 import type { FieldConfig } from "#/features/form-builder/elements";
 import {
 	type FormStructure,
@@ -12,6 +13,10 @@ import {
 	getOrderedFormFields,
 	isFormStructure,
 } from "#/features/form-builder/form-structure";
+import {
+	type FormTheme,
+	normalizeFormTheme,
+} from "#/features/form-builder/theme";
 import { validateFormFields } from "#/features/form-builder/utils/formValidation";
 import { getFieldComponent } from "#/features/form-builder/utils/helperFunctions";
 import type { QuizResult } from "#/features/form-builder/utils/quiz";
@@ -32,6 +37,7 @@ interface PublicFormSettings {
 export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 	const [fields, setFields] = useState<FieldConfig[]>([]);
 	const [pages, setPages] = useState<FormStructurePage[]>([]);
+	const [theme, setTheme] = useState<FormTheme>();
 	const [activePageIndex, setActivePageIndex] = useState(0);
 	const [formSettings, setFormSettings] = useState<PublicFormSettings | null>(
 		null,
@@ -181,7 +187,7 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 	};
 
 	const form = useQuery({
-		queryKey: ["form", currentFormId],
+		queryKey: ["public-form", currentFormId],
 		queryFn: async () => {
 			const { data } = await axios.get(`/api/forms/${currentFormId}/viewForm`);
 			return data;
@@ -222,6 +228,11 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 			const normalizedFields = getOrderedFormFields(formStructure);
 			setFields(normalizedFields);
 			setPages(formStructure.pages);
+			setTheme(
+				formStructure.theme
+					? normalizeFormTheme(formStructure.theme)
+					: undefined,
+			);
 			setActivePageIndex(0);
 
 			// Check if form is closed based on status from API
@@ -284,12 +295,14 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 
 	if (isFormSubmitted) {
 		return (
-			<FormSubmittedPage
-				redirectUrl={formSettings.redirectUrl}
-				quizPendingReview={quizPendingReview}
-				quizResult={quizResult}
-				formPath={`/forms/${currentFormId}`}
-			/>
+			<FormThemeScope theme={theme} className="min-h-screen">
+				<FormSubmittedPage
+					redirectUrl={formSettings.redirectUrl}
+					quizPendingReview={quizPendingReview}
+					quizResult={quizResult}
+					formPath={`/forms/${currentFormId}`}
+				/>
+			</FormThemeScope>
 		);
 	}
 
@@ -302,7 +315,7 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 	const pageDescription = activePage?.description?.trim();
 
 	return (
-		<>
+		<FormThemeScope theme={theme} className="min-h-screen">
 			<FormClosedDialog
 				isOpen={showClosedDialog}
 				onClose={() => setShowClosedDialog(false)}
@@ -421,7 +434,7 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 					)}
 				</div>
 			</main>
-		</>
+		</FormThemeScope>
 	);
 }
 

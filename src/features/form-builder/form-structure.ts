@@ -3,6 +3,10 @@ import {
 	hasValidChoiceOptions,
 	normalizeChoiceOptions,
 } from "#/features/form-builder/elements/choice-options";
+import {
+	isFormTheme,
+	type StoredFormTheme,
+} from "#/features/form-builder/theme";
 
 export interface FormSection {
 	description?: string;
@@ -21,6 +25,7 @@ export interface FormPage {
 export interface FormStructure {
 	pages: FormPage[];
 	quiz?: QuizSettings;
+	theme?: StoredFormTheme;
 }
 
 export type QuizGradeRelease = "immediately" | "after-review";
@@ -211,7 +216,8 @@ export function isFormStructure(value: unknown): value is FormStructure {
 		!isRecord(value) ||
 		!Array.isArray(value.pages) ||
 		value.pages.length === 0 ||
-		!hasValidQuizSettings(value.quiz)
+		!hasValidQuizSettings(value.quiz) ||
+		(value.theme !== undefined && !isFormTheme(value.theme))
 	) {
 		return false;
 	}
