@@ -295,6 +295,11 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 
 	const activePage = pages[activePageIndex];
 	const isLastPage = activePageIndex === pages.length - 1;
+	const pageTitle = activePage?.title?.trim();
+	const hasPageTitle =
+		Boolean(pageTitle) &&
+		pageTitle?.toLowerCase() !== `page ${activePageIndex + 1}`;
+	const pageDescription = activePage?.description?.trim();
 
 	return (
 		<>
@@ -311,44 +316,69 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 							: "both"
 				}
 			/>
-			<div className="mx-auto max-w-6xl space-y-6 p-4 pt-16 md:p-10 pb-16">
-				<div className="space-y-0.5 md:space-y-1">
-					<h2 className="text-2xl md:text-5xl font-bold tracking-tight">
+			<main className="mx-auto max-w-6xl space-y-6 p-4 pt-16 md:p-10 pb-16">
+				<div className="space-y-3">
+					<h1 className="text-2xl md:text-5xl font-bold tracking-tight">
 						{formSettings.title}
-					</h2>
-					<p className="text-muted-foreground">{formSettings.description}</p>
+					</h1>
+					<p className="text-base text-muted-foreground md:text-lg">
+						{formSettings.description}
+					</p>
 				</div>
-				<div className="space-y-4 w-full">
-					{activePage?.title || activePage?.description ? (
-						<div className="space-y-1">
-							{activePage.title ? (
-								<h3 className="text-xl font-semibold tracking-tight">
-									{activePage.title}
-								</h3>
-							) : null}
-							{activePage.description ? (
-								<p className="text-muted-foreground">
-									{activePage.description}
-								</p>
-							) : null}
+				<div className="flex w-full flex-col gap-6">
+					{pages.length > 1 ? (
+						<div className="flex flex-wrap items-center justify-between gap-3 pt-4">
+							<p
+								className="text-sm font-semibold tabular-nums"
+								aria-live="polite"
+								aria-atomic="true"
+							>
+								Page {activePageIndex + 1} of {pages.length}
+							</p>
+							<div
+								className="flex flex-wrap items-center gap-1.5"
+								aria-hidden="true"
+							>
+								{pages.map((page, index) => (
+									<span
+										key={page.id}
+										className={`h-1.5 shrink-0 rounded-full transition-[width,background-color] duration-250 ease-out motion-reduce:transition-none ${index === activePageIndex ? "w-5 bg-primary" : index < activePageIndex ? "w-1.5 bg-primary/40" : "w-1.5 bg-border"}`}
+									/>
+								))}
+							</div>
 						</div>
 					) : null}
-					{activePage?.sections.map((section) => (
-						<section key={section.id} className="space-y-4">
-							{section.title || section.description ? (
-								<div className="space-y-1">
-									{section.title ? (
-										<h3 className="text-xl font-semibold tracking-tight">
-											{section.title}
-										</h3>
-									) : null}
-									{section.description ? (
-										<p className="text-muted-foreground">
-											{section.description}
-										</p>
-									) : null}
-								</div>
+					{hasPageTitle || pageDescription ? (
+						<header className="space-y-2">
+							{hasPageTitle ? (
+								<h2 className="text-xl font-semibold tracking-tight">
+									{pageTitle}
+								</h2>
 							) : null}
+							{pageDescription ? (
+								<p className="text-muted-foreground">{pageDescription}</p>
+							) : null}
+						</header>
+					) : null}
+					{activePage?.sections.map((section, sectionIndex) => (
+						<section
+							key={section.id}
+							aria-labelledby={`form-section-${section.id}`}
+							className="flex min-w-0 flex-col gap-5 rounded-xl border bg-card p-4 sm:p-6"
+						>
+							<div className="space-y-1 border-b pb-4">
+								<h3
+									id={`form-section-${section.id}`}
+									className="text-base font-semibold"
+								>
+									{section.title || `Section ${sectionIndex + 1}`}
+								</h3>
+								{section.description ? (
+									<p className="text-sm leading-relaxed text-muted-foreground">
+										{section.description}
+									</p>
+								) : null}
+							</div>
 							{section.fields.map((field) => renderField(field))}
 						</section>
 					))}
@@ -390,7 +420,7 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 						</Button>
 					)}
 				</div>
-			</div>
+			</main>
 		</>
 	);
 }
