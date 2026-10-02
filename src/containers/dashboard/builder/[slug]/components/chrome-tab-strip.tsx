@@ -61,7 +61,7 @@ export function ChromeTabStrip({
 					<div
 						key={page.id}
 						className={cn(
-							"group/tab relative flex h-9 min-w-[180px] max-w-[220px] flex-none cursor-default items-center gap-2 rounded-t-xl px-3 text-[13px] transition-colors duration-200",
+							"group/tab relative flex h-9 min-w-[180px] max-w-[220px] flex-none cursor-default items-center gap-2 rounded-t-[14px] px-3 text-[13px] transition-colors duration-200",
 							isActive ? "z-10 text-card-foreground" : "text-muted-foreground",
 						)}
 						{...(isActive ? { "data-active": "" } : {})}
@@ -70,7 +70,7 @@ export function ChromeTabStrip({
 							<motion.div
 								aria-hidden="true"
 								layoutId="builder-active-page-tab"
-								className="absolute inset-0 z-0 rounded-t-xl bg-card shadow-[0_-1px_4px_rgba(0,0,0,0.22)] before:absolute before:bottom-0 before:-left-3 before:size-3 before:bg-[radial-gradient(circle_at_top_left,transparent_12px,var(--card)_12px)] after:absolute after:bottom-0 after:-right-3 after:size-3 after:bg-[radial-gradient(circle_at_top_right,transparent_12px,var(--card)_12px)]"
+								className="absolute inset-0 z-0 rounded-t-[14px] bg-card shadow-[0_-1px_4px_rgba(0,0,0,0.22)] before:absolute before:bottom-0 before:-left-3 before:size-3 before:bg-[radial-gradient(circle_at_top_left,transparent_12px,var(--card)_12px)] after:absolute after:bottom-0 after:-right-3 after:size-3 after:bg-[radial-gradient(circle_at_top_right,transparent_12px,var(--card)_12px)]"
 								transition={
 									shouldReduceMotion
 										? { duration: 0 }
@@ -99,7 +99,7 @@ export function ChromeTabStrip({
 							aria-label={pageTitle}
 							aria-current={isActive ? "page" : undefined}
 							onClick={() => onSelectPage(page.id)}
-							className="absolute inset-0 z-[1] rounded-t-xl focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:outline-[#8ab4f8]"
+							className="absolute inset-0 z-[1] rounded-t-[14px] focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:outline-[#8ab4f8]"
 						/>
 						{canRemovePage ? (
 							<button
