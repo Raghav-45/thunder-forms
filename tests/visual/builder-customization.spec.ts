@@ -2,7 +2,7 @@ import { expect, type Locator, type Page, test } from "@playwright/test";
 import communityThemes from "#/containers/dashboard/builder/[slug]/constants/community-themes.json" with { type: "json" };
 import { THEME_COLOR_LABELS } from "#/containers/dashboard/builder/[slug]/constants/theme-color-labels";
 import { BASIC_THEME_COLORS } from "#/containers/dashboard/builder/[slug]/constants/theme-customization";
-import { createFormTheme, getFormThemeStyle, importFormThemeVariables } from "#/features/form-builder/theme";
+import { createFormTheme, FORM_THEME_PRESETS, getFormThemeStyle, importFormThemeVariables } from "#/features/form-builder/theme";
 
 async function mockSession(page: Page) {
 	await page.route("**/api/auth/get-session**", (route) => route.fulfill({ json: {
@@ -97,6 +97,56 @@ test("a customized Contact Us form loads its current appearance into Customize w
 	expect(await section.evaluate(appearance)).toEqual(before);
 	await page.mouse.move(0, 0);
 	expect((await section.screenshot({ animations: "disabled" })).equals(beforeScreenshot)).toBe(true);
+});
+
+test("ThunderForms presets transform complete styles, cancel cleanly and persist on the public form", async ({ page }) => {
+	await mockSession(page);
+	let saved: Record<string, unknown> = {};
+	await page.route("**/api/forms/new", (route) => {
+		saved = { ...route.request().postDataJSON(), id: "thunder-preset-test", status: "Active" };
+		return route.fulfill({ json: saved });
+	});
+	await page.route("**/api/forms/thunder-preset-test", (route) => route.fulfill({ json: saved }));
+	await page.route("**/api/forms/thunder-preset-test/viewForm", (route) => route.fulfill({ json: saved }));
+	await page.goto("/dashboard/builder/new-form?template=contact-us", { waitUntil: "networkidle" });
+	await page.getByRole("button", { name: "Customize", exact: true }).click();
+	const editor = page.getByRole("dialog", { name: "Customize your form" });
+	const preview = page.getByTestId("customization-preview");
+	await editor.getByRole("combobox", { name: "Form style" }).click();
+	await expect(page.locator('[data-slot="command-group"]').first()).toContainText("ThunderForms");
+	await page.getByRole("combobox", { name: "Search themes or creators" }).fill("square");
+	await expect(page.getByRole("option", { name: "Green Terminal", exact: true })).toBeVisible();
+	await page.getByRole("option", { name: "Green Terminal", exact: true }).click();
+	for (const preset of FORM_THEME_PRESETS.filter((preset) => preset.palette)) {
+		await editor.getByRole("combobox", { name: "Form style" }).click();
+		await page.getByRole("combobox", { name: "Search themes or creators" }).fill(preset.label);
+		const option = page.getByRole("option", { name: preset.label, exact: true });
+		await expect(option).toContainText(preset.description);
+		await option.click();
+		const theme = createFormTheme(preset.id);
+		await expect(preview).toHaveCSS("--background", theme.colors.background);
+		await expect(preview).toHaveCSS("--card", theme.colors.card);
+		await expect(preview).toHaveCSS("--font-sans", theme.fonts!.sans);
+		await expect(preview).toHaveCSS("--spacing", `${theme.spacing}rem`);
+		await expect(preview.locator(".group\\/section").first()).toHaveCSS("border-radius", `${theme.radius * 16}px`);
+	}
+	await editor.getByRole("button", { name: "Cancel", exact: true }).click();
+	await expect(page.locator("[data-form-theme]")).toHaveCount(0);
+	await page.getByRole("button", { name: "Customize", exact: true }).click();
+	await editor.getByRole("combobox", { name: "Form style" }).click();
+	await page.getByRole("combobox", { name: "Search themes or creators" }).fill("Bold Blocks");
+	await page.getByRole("option", { name: "Bold Blocks", exact: true }).click();
+	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
+	const saveResponse = page.waitForResponse((response) => response.url().endsWith("/api/forms/new") && response.request().method() === "POST");
+	await page.getByRole("button", { name: "Save", exact: true }).click();
+	await saveResponse;
+	expect(saved.fields).toMatchObject({ theme: createFormTheme("bold-blocks") });
+	await page.goto("/forms/thunder-preset-test", { waitUntil: "networkidle" });
+	const form = page.locator("[data-form-theme]");
+	await expect(form).toHaveCSS("background-color", "rgb(255, 223, 100)");
+	await expect(form.locator("section").first()).toHaveCSS("border-radius", "0px");
+	await expect(form.locator("section").first()).toHaveCSS("box-shadow", "rgb(33, 27, 12) 6px 6px 0px 0px");
+	await expect(form.getByRole("button", { name: "Send message", exact: true })).toHaveCSS("background-color", "rgb(33, 27, 12)");
 });
 
 test("theme import and copy buttons stay in one horizontal row", async ({ page }) => {

@@ -18,8 +18,10 @@ import {
 import communityThemes from "#/containers/dashboard/builder/[slug]/constants/community-themes.json";
 import {
 	createFormTheme,
+	FORM_FONTS,
 	FORM_THEME_PRESETS,
 	type FormTheme,
+	getFormThemeShadows,
 	importFormThemeVariables,
 } from "#/features/form-builder/theme";
 
@@ -77,9 +79,69 @@ export function ThemePresetPicker({
 							}}
 						>
 							<CommandEmpty>No matching themes.</CommandEmpty>
+							<CommandGroup heading="ThunderForms">
+								{FORM_THEME_PRESETS.map((preset) => {
+									const theme = createFormTheme(preset.id);
+									return (
+										<CommandItem
+											className="group/preset"
+											key={preset.id}
+											value={preset.id}
+											keywords={[
+												preset.label,
+												preset.description,
+												"ThunderForms",
+											]}
+											aria-label={preset.label}
+											onSelect={() => {
+												onSelect(theme);
+												setSelected({ name: preset.label });
+												setOpen(false);
+											}}
+										>
+											<span
+												aria-hidden="true"
+												className="h-11 w-14 shrink-0 overflow-hidden rounded-sm border p-1.5"
+												style={{
+													backgroundColor: theme.colors.background,
+													borderColor: theme.colors.border,
+												}}
+											>
+												<span
+													className="flex h-full flex-col justify-center gap-1 border p-1"
+													style={{
+														backgroundColor: theme.colors.card,
+														color: theme.colors.foreground,
+														borderColor: theme.colors.border,
+														borderRadius: Math.min(theme.radius * 5, 8),
+														boxShadow: getFormThemeShadows(theme).shadow,
+														fontFamily: FORM_FONTS[theme.fontFamily].value,
+													}}
+												>
+													<span className="text-[10px] leading-none">Aa</span>
+													<span
+														className="h-1.5 w-5"
+														style={{
+															backgroundColor: theme.colors.primary,
+															borderRadius: Math.min(theme.radius * 3, 4),
+														}}
+													/>
+												</span>
+											</span>
+											<span className="flex min-w-0 flex-1 flex-col gap-0.5">
+												<span>{preset.label}</span>
+												<span className="text-xs text-muted-foreground group-data-[selected=true]/preset:text-accent-foreground">
+													{preset.description}
+												</span>
+											</span>
+										</CommandItem>
+									);
+								})}
+							</CommandGroup>
 							<CommandGroup heading="tweakcn community">
 								{communityThemes.map((preset) => (
 									<CommandItem
+										className="group/preset"
 										key={preset.id}
 										value={preset.id}
 										keywords={[preset.name, preset.author]}
@@ -109,31 +171,10 @@ export function ThemePresetPicker({
 										/>
 										<span className="flex min-w-0 flex-col">
 											<span className="truncate">{preset.name}</span>
-											<span className="truncate text-xs text-muted-foreground">
+											<span className="truncate text-xs text-muted-foreground group-data-[selected=true]/preset:text-accent-foreground">
 												by {preset.author}
 											</span>
 										</span>
-									</CommandItem>
-								))}
-							</CommandGroup>
-							<CommandGroup heading="ThunderForms">
-								{FORM_THEME_PRESETS.map((preset) => (
-									<CommandItem
-										key={preset.id}
-										value={preset.id}
-										keywords={[preset.label]}
-										aria-label={preset.label}
-										onSelect={() => {
-											onSelect(createFormTheme(preset.id));
-											setSelected({ name: preset.label });
-											setOpen(false);
-										}}
-									>
-										<span
-											className="size-4 shrink-0 rounded-full border"
-											style={{ backgroundColor: preset.primary }}
-										/>
-										{preset.label}
 									</CommandItem>
 								))}
 							</CommandGroup>
