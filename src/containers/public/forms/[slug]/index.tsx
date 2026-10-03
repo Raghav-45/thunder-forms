@@ -6,6 +6,7 @@ import { Button } from "#/components/ui/button";
 import { FormClosedDialog } from "#/containers/public/forms/components/form-closed-dialog";
 import { FormSubmittedPage } from "#/containers/public/forms/components/form-submitted-page";
 import { FormThemeScope } from "#/features/form-builder/components/form-theme-scope";
+import { FORM_SUBMIT_WIDTH_CLASSES } from "#/features/form-builder/constants";
 import type { FieldConfig } from "#/features/form-builder/elements";
 import {
 	DEFAULT_FORM_LAYOUT,
@@ -23,6 +24,7 @@ import {
 import { validateFormFields } from "#/features/form-builder/utils/formValidation";
 import { getFieldComponent } from "#/features/form-builder/utils/helperFunctions";
 import type { QuizResult } from "#/features/form-builder/utils/quiz";
+import { cn } from "#/lib/utils";
 
 interface FormPageProps {
 	slug: string;
@@ -463,7 +465,10 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 					) : null}
 					{isLastPage ? (
 						<Button
-							className="w-full md:w-auto"
+							className={cn(
+								"h-auto min-h-9 max-w-full whitespace-normal break-words",
+								FORM_SUBMIT_WIDTH_CLASSES[layout.submitWidth],
+							)}
 							onClick={handleSubmit}
 							disabled={
 								isSubmitting ||

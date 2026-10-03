@@ -50,7 +50,6 @@ const data = {
 		{ name: "Access & Control", icon: Shield },
 		{ name: "Quiz", icon: GraduationCap },
 		{ name: "Navigation", icon: Split },
-		{ name: "Appearance", icon: Settings },
 		{ name: "Integrations", icon: Link },
 	],
 };
@@ -542,43 +541,6 @@ export function SettingsDialog({
 											)}
 										</>
 									) : null}
-								</div>
-							)}
-
-							{/* --- Appearance --- */}
-							{activeTab === "Appearance" && (
-								<div className="space-y-6">
-									<div className="flex flex-col gap-1">
-										<h1 className="text-2xl font-bold">Appearance</h1>
-										<p className="text-muted-foreground text-sm">
-											Customize the look and feel of your form.
-										</p>
-									</div>
-
-									<div className="grid gap-6">
-										<div className="grid gap-2">
-											<Label htmlFor="submitButtonText">
-												Submit Button Text
-											</Label>
-											<Input
-												id="submitButtonText"
-												type="text"
-												placeholder="Submit"
-												maxLength={50}
-												value={formSettings.submitButtonText || ""}
-												onChange={(e) =>
-													setFormSettings({
-														...formSettings,
-														submitButtonText: e.target.value || undefined,
-													})
-												}
-											/>
-											<p className="text-xs text-muted-foreground">
-												Custom text for the submit button. Defaults to
-												&quot;Submit&quot;.
-											</p>
-										</div>
-									</div>
 								</div>
 							)}
 

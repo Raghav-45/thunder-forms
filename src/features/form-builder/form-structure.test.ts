@@ -5,6 +5,7 @@ import {
 	type FormStructure,
 	getOrderedFormFields,
 	isFormStructure,
+	normalizeFormLayout,
 	sanitizeImportedFields,
 	stripQuizAnswerKeys,
 } from "#/features/form-builder/form-structure";
@@ -106,6 +107,22 @@ describe("form structure", () => {
 		expect(
 			isFormStructure({ pages, layout: { spacing: { fieldGap: 17 } } }),
 		).toBe(false);
+	});
+
+	it("validates submit widths and retains responsive buttons for older forms", () => {
+		const pages = [
+			{ id: "page", sections: [{ id: "section", fields: [field("field")] }] },
+		];
+		for (const submitWidth of ["auto", "full", "responsive"]) {
+			expect(isFormStructure({ pages, layout: { submitWidth } })).toBe(true);
+		}
+		for (const submitWidth of ["wide", "", 100, null]) {
+			expect(isFormStructure({ pages, layout: { submitWidth } })).toBe(false);
+		}
+		expect(normalizeFormLayout().submitWidth).toBe("responsive");
+		expect(normalizeFormLayout({ submitAlignment: "right" }).submitWidth).toBe(
+			"responsive",
+		);
 	});
 
 	it("accepts registered file-upload fields", () => {

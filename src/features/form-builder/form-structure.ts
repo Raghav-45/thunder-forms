@@ -32,6 +32,7 @@ export interface FormStructure {
 export type FormContentWidth = "compact" | "standard" | "wide";
 export type FormHorizontalAlignment = "left" | "center" | "right";
 export type FormSectionSpacing = "compact" | "comfortable" | "spacious";
+export type FormSubmitWidth = "auto" | "full" | "responsive";
 
 export interface FormLayoutSpacing {
 	fieldGap?: number;
@@ -49,6 +50,7 @@ export interface FormLayout {
 	sectionSpacing?: FormSectionSpacing;
 	spacing?: FormLayoutSpacing;
 	submitAlignment?: FormHorizontalAlignment;
+	submitWidth?: FormSubmitWidth;
 }
 
 export type NormalizedFormLayout = Omit<Required<FormLayout>, "spacing"> & {
@@ -69,6 +71,7 @@ export const DEFAULT_FORM_LAYOUT: NormalizedFormLayout = {
 		titleDescriptionGap: 3,
 	},
 	submitAlignment: "left",
+	submitWidth: "responsive",
 };
 
 export type QuizGradeRelease = "immediately" | "after-review";
@@ -216,7 +219,11 @@ export function isFormLayout(value: unknown): value is FormLayout {
 		(value.submitAlignment === undefined ||
 			value.submitAlignment === "left" ||
 			value.submitAlignment === "center" ||
-			value.submitAlignment === "right")
+			value.submitAlignment === "right") &&
+		(value.submitWidth === undefined ||
+			value.submitWidth === "auto" ||
+			value.submitWidth === "full" ||
+			value.submitWidth === "responsive")
 	);
 }
 

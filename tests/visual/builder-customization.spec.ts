@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Locator, type Page, test } from "@playwright/test";
 import communityThemes from "#/containers/dashboard/builder/[slug]/constants/community-themes.json" with { type: "json" };
 import { THEME_COLOR_LABELS } from "#/containers/dashboard/builder/[slug]/constants/theme-color-labels";
 import { BASIC_THEME_COLORS } from "#/containers/dashboard/builder/[slug]/constants/theme-customization";
@@ -78,7 +78,7 @@ test("theme persists in the save payload and public form after reload, including
 	const editor = page.getByRole("dialog", { name: "Customize your form" });
 	const preview = page.getByTestId("customization-preview");
 	await editor.getByRole("tab", { name: "Layout", exact: true }).click();
-	await editor.getByRole("combobox", { name: "Title & description", exact: true }).click();
+	await editor.getByRole("combobox", { name: "Heading alignment", exact: true }).click();
 	await page.getByRole("option", { name: "Centered", exact: true }).click();
 	await editor.getByRole("combobox", { name: "Form width", exact: true }).click();
 	await page.getByRole("option", { name: "Wide", exact: true }).click();
@@ -87,7 +87,7 @@ test("theme persists in the save payload and public form after reload, including
 		.click();
 	await page.getByRole("option", { name: "Left aligned", exact: true }).click();
 	await editor
-		.getByRole("combobox", { name: "Space inside question cards", exact: true })
+		.getByRole("combobox", { name: "Space inside sections", exact: true })
 		.click();
 	await page.getByRole("option", { name: "Spacious", exact: true }).click();
 	const fieldSpacing = editor.getByRole("slider", {
@@ -138,6 +138,117 @@ test("theme persists in the save payload and public form after reload, including
 	await expect(page.getByRole("button", { name: "Submit", exact: true })).toHaveCSS("background-color", "rgb(51, 68, 85)");
 	await expect(page.locator("[data-form-theme]")).toHaveAttribute("data-form-theme", "true");
 });
+
+for (const viewport of [
+	{ name: "desktop", width: 1440, height: 1000 },
+	{ name: "mobile", width: 390, height: 844 },
+]) {
+	test(`submit button text and width match preview and public form on ${viewport.name}`, async ({ page }) => {
+		await page.setViewportSize(viewport);
+		await mockSession(page);
+		let saved: Record<string, unknown> = {};
+		await page.route("**/api/forms/new", (route) => {
+			saved = { ...route.request().postDataJSON(), id: "submit-button-test", status: "Active" };
+			return route.fulfill({ json: saved });
+		});
+		await page.route("**/api/forms/submit-button-test", (route) => route.fulfill({ json: saved }));
+		await page.route("**/api/forms/submit-button-test/viewForm", (route) => route.fulfill({ json: saved }));
+		const editor = page.getByRole("dialog", { name: "Customize your form" });
+		const preview = page.getByTestId("customization-preview");
+		const expectWidth = async (button: Locator, full: boolean) => {
+			await expect.poll(() => button.evaluate((element) => {
+				const parent = element.parentElement!;
+				return Math.abs(element.getBoundingClientRect().width - parent.getBoundingClientRect().width) < 1;
+			})).toBe(full);
+		};
+		for (const mode of [
+			{ value: "responsive", label: "Full width on phones" },
+			{ value: "auto", label: "Auto width" },
+			{ value: "full", label: "Full width" },
+		]) {
+			await page.setViewportSize({ width: 1440, height: 1000 });
+			await page.goto("/dashboard/builder/new-form", { waitUntil: "networkidle" });
+			await page.getByRole("button", { name: "text-input", exact: true }).click();
+			if (mode.value === "responsive") {
+				await page.getByRole("button", { name: "Advanced Settings", exact: true }).click();
+				const settings = page.getByRole("dialog", { name: "Settings", exact: true });
+				await expect(settings.getByRole("button", { name: "Appearance", exact: true })).toHaveCount(0);
+				await expect(settings.getByRole("textbox", { name: /submit button text/i })).toHaveCount(0);
+				await page.keyboard.press("Escape");
+			}
+			await page.setViewportSize(viewport);
+			await page.getByRole("button", { name: "Customize", exact: true }).click();
+			await editor.getByRole("tab", { name: "Layout", exact: true }).click();
+			const heading = editor.getByRole("region", { name: "Form heading", exact: true });
+			const sections = editor.getByRole("region", { name: "Sections & spacing", exact: true });
+			const submit = editor.getByRole("region", { name: "Submit button", exact: true });
+			await expect(heading.getByRole("combobox", { name: "Heading alignment", exact: true })).toBeVisible();
+			await expect(heading.getByRole("slider", { name: "Space between title & description", exact: true })).toBeVisible();
+			await expect(sections.getByRole("combobox", { name: "Space inside sections", exact: true })).toBeVisible();
+			await expect(sections.getByRole("slider", { name: "Between fields", exact: true })).toBeVisible();
+			await expect(sections.getByRole("slider", { name: "Between sections", exact: true })).toBeVisible();
+			await expect(submit.getByRole("slider", { name: "Last section & submit button", exact: true })).toBeVisible();
+			if (mode.value === "responsive") {
+				await submit.getByRole("textbox", { name: "Submit button text", exact: true }).fill("Cancel this draft");
+				await submit.getByRole("combobox", { name: "Button width", exact: true }).click();
+				await page.getByRole("option", { name: "Auto width", exact: true }).click();
+				await editor.getByRole("button", { name: "Cancel", exact: true }).click();
+				await page.getByRole("button", { name: "Customize", exact: true }).click();
+				await editor.getByRole("tab", { name: "Layout", exact: true }).click();
+				await expect(submit.getByRole("textbox", { name: "Submit button text", exact: true })).toHaveValue("");
+				await expect(submit.getByRole("combobox", { name: "Button width", exact: true })).toContainText("Full width on phones");
+			}
+			await submit.getByRole("textbox", { name: "Submit button text", exact: true }).fill(" Send response ");
+			await submit.getByRole("combobox", { name: "Button width", exact: true }).click();
+			await page.getByRole("option", { name: mode.label, exact: true }).click();
+			const position = submit.getByRole("combobox", { name: "Button position", exact: true });
+			if (mode.value === "full") {
+				await expect(position).toBeDisabled();
+			} else {
+				await position.click();
+				await page.getByRole("option", { name: "Right aligned", exact: true }).click();
+			}
+			if (viewport.name === "mobile") {
+				await editor.getByRole("tab", { name: "Preview", exact: true }).click();
+			}
+			const fullWidth = mode.value === "full" || (mode.value === "responsive" && viewport.name === "mobile");
+			const previewButton = preview.getByRole("button", { name: "Send response", exact: true });
+			await expectWidth(previewButton, fullWidth);
+			if (!fullWidth) await expect(previewButton.locator("..")).toHaveCSS("justify-content", "flex-end");
+			await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
+			await page.getByRole("button", { name: "Customize", exact: true }).click();
+			await editor.getByRole("tab", { name: "Layout", exact: true }).click();
+			await expect(submit.getByRole("textbox", { name: "Submit button text", exact: true })).toHaveValue("Send response");
+			await expect(submit.getByRole("combobox", { name: "Button width", exact: true })).toContainText(mode.label);
+			if (mode.value === "full") {
+				await editor.getByRole("button", { name: "Reset to original", exact: true }).click();
+				await page.getByRole("button", { name: "Customize", exact: true }).click();
+				await editor.getByRole("tab", { name: "Layout", exact: true }).click();
+				await expect(submit.getByRole("textbox", { name: "Submit button text", exact: true })).toHaveValue("");
+				await expect(submit.getByRole("combobox", { name: "Button width", exact: true })).toContainText("Full width on phones");
+				await submit.getByRole("textbox", { name: "Submit button text", exact: true }).fill("Send response");
+				await submit.getByRole("combobox", { name: "Button width", exact: true }).click();
+				await page.getByRole("option", { name: "Full width", exact: true }).click();
+				await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
+			} else {
+				await editor.getByRole("button", { name: "Cancel", exact: true }).click();
+			}
+			const saveResponse = page.waitForResponse((response) =>
+				response.url().endsWith("/api/forms/new") && response.request().method() === "POST",
+			);
+			await page.getByRole("button", { name: "Save", exact: true }).click();
+			await saveResponse;
+			await expect.poll(() => saved.submitButtonText).toBe("Send response");
+			expect(saved.fields).toMatchObject({ layout: { submitWidth: mode.value } });
+			await page.goto("/forms/submit-button-test", { waitUntil: "networkidle" });
+			const publicButton = page.getByRole("button", { name: "Send response", exact: true });
+			await expectWidth(publicButton, fullWidth);
+			if (!fullWidth) await expect(publicButton.locator("..")).toHaveCSS("justify-content", "flex-end");
+			await page.reload({ waitUntil: "networkidle" });
+			await expectWidth(publicButton, fullWidth);
+		}
+	});
+}
 
 test("customization is usable on mobile and the app stays dark with light browser preferences", async ({ page }, testInfo) => {
 	await page.addInitScript(() => localStorage.setItem("theme", "light"));
