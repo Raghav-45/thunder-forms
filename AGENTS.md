@@ -11,6 +11,7 @@ a nested `AGENTS.md` first, return here and complete this workflow before editin
    `rg --files --hidden -g AGENTS.md -g '!node_modules' -g '!.git'`.
    Do not assume your tool automatically loads nested instruction files.
 2. Read this file and every discovered `AGENTS.md` in full before the first edit.
+   Also read the required architecture document listed below in full.
    The index below is a navigation aid; discovery also catches newly added guides.
    Guides already read in full during this session need not be reread unless they
    change. If output is truncated, read the remaining content.
@@ -38,6 +39,14 @@ a nested `AGENTS.md` first, return here and complete this workflow before editin
 
 When adding, moving, or removing an `AGENTS.md`, update this index and the affected
 parent/child links in the same change. Every nested guide must link back here.
+
+### Required architecture document
+
+Read [Form Structure v1](src/features/form-builder/FORM_STRUCTURE.md) alongside
+these guides. It defines the shared page/section/field contract, ownership,
+validation, ordering, and verification requirements for builders, templates,
+imports, APIs, and public forms. Follow it when changing any producer or consumer
+of form data. Keep the contract in that document rather than duplicating it here.
 
 ## Guiding principle: KISS
 

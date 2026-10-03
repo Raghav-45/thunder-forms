@@ -1,4 +1,4 @@
-# Form Structure v1
+# Form Structure
 
 ## Contract
 

@@ -9,6 +9,8 @@ and complete its reading workflow before editing. This guide supplements root ru
 
 - Parent: [root guide](../../../AGENTS.md).
 - Child: [field implementation guide](elements/fields/AGENTS.md), for field-specific rules.
+- Required architecture: [Form Structure v1](FORM_STRUCTURE.md). Read it in full
+  before changing form data or its producers and consumers.
 
 ## Guiding principle: KISS
 
