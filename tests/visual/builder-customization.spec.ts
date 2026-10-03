@@ -876,6 +876,15 @@ for (const width of [1024, 1440]) {
 				index % 2 === 0 ? "true" : "false",
 			);
 			await expect(page.getByRole("dialog")).toHaveCount(0);
+			const heading = canvas.getByRole("heading", {
+				name: "Contact Us",
+				exact: true,
+			});
+			if (index % 2 === 0) {
+				await expect(heading.locator("../..")).toHaveCSS("filter", "blur(0px)");
+			} else {
+				await expect(heading).toHaveCount(0);
+			}
 			await expect(
 				tabs.getByRole("button", { name: "Page 2", exact: true }),
 			).toHaveAttribute("aria-current", "page");
@@ -957,48 +966,68 @@ test("Save applies the visible customization before persisting it", async ({
 	).toHaveAttribute("aria-pressed", "false");
 });
 
-test("an import from a canceled customization session cannot overwrite a new session", async ({
-	page,
-}) => {
-	let releaseImport!: () => void;
-	const importGate = new Promise<void>((resolve) => {
-		releaseImport = resolve;
+for (const status of [200, 500]) {
+	test(`an import from a canceled customization session cannot overwrite a new session (HTTP ${status})`, async ({
+		page,
+	}) => {
+		let releaseImport!: () => void;
+		const importGate = new Promise<void>((resolve) => {
+			releaseImport = resolve;
+		});
+		await page.route("https://tweakcn.com/r/themes/**", async (route) => {
+			await importGate;
+			await route.fulfill({ status, body: ":root { --primary: #abcdef; }" });
+		});
+		await page.goto("/dashboard/builder/new-form?template=contact-us", {
+			waitUntil: "networkidle",
+		});
+		const toggle = page.getByRole("button", { name: "Customize", exact: true });
+		await toggle.click();
+		await page
+			.getByRole("button", { name: "Advanced customizations", exact: true })
+			.click();
+		await page
+			.getByRole("button", { name: "Import or export a theme", exact: true })
+			.click();
+		await page
+			.getByRole("textbox", { name: "Theme link from tweakcn", exact: true })
+			.fill("https://tweakcn.com/themes/test");
+		await page
+			.getByRole("button", { name: "Import from link", exact: true })
+			.click();
+		await expect(
+			page.getByRole("button", { name: "Importing...", exact: true }),
+		).toBeVisible();
+		await page.getByRole("button", { name: "Cancel", exact: true }).click();
+		await toggle.click();
+		await expect(
+			page.getByTestId("builder-left-sidebar").locator("[inert]"),
+		).toHaveCount(0);
+		await page
+			.getByLabel("Choose button color", { exact: true })
+			.fill("#334455");
+		await expect(page.getByTestId("builder-canvas")).toHaveCSS(
+			"--primary",
+			"#334455",
+		);
+		const completed = page.waitForResponse("https://tweakcn.com/r/themes/**");
+		releaseImport();
+		await (await completed).finished();
+		await expect(
+			page.getByLabel("Choose button color", { exact: true }),
+		).toHaveValue("#334455");
+		await expect(page.getByTestId("builder-canvas")).toHaveCSS(
+			"--primary",
+			"#334455",
+		);
+		await expect(page.getByText("Theme imported", { exact: true })).toHaveCount(
+			0,
+		);
+		await expect(
+			page.getByText(
+				"Could not load this theme. Check that its tweakcn link is public.",
+				{ exact: true },
+			),
+		).toHaveCount(0);
 	});
-	await page.route("https://tweakcn.com/r/themes/**", async (route) => {
-		await importGate;
-		await route.fulfill({ body: ":root { --primary: #abcdef; }" });
-	});
-	await page.goto("/dashboard/builder/new-form?template=contact-us", {
-		waitUntil: "networkidle",
-	});
-	const toggle = page.getByRole("button", { name: "Customize", exact: true });
-	await toggle.click();
-	await page
-		.getByRole("button", { name: "Advanced customizations", exact: true })
-		.click();
-	await page
-		.getByRole("button", { name: "Import or export a theme", exact: true })
-		.click();
-	await page
-		.getByRole("textbox", { name: "Theme link from tweakcn", exact: true })
-		.fill("https://tweakcn.com/themes/test");
-	await page
-		.getByRole("button", { name: "Import from link", exact: true })
-		.click();
-	await expect(
-		page.getByRole("button", { name: "Importing...", exact: true }),
-	).toBeVisible();
-	await page.getByRole("button", { name: "Cancel", exact: true }).click();
-	await toggle.click();
-	await page.getByLabel("Choose button color", { exact: true }).fill("#334455");
-	const completed = page.waitForResponse("https://tweakcn.com/r/themes/**");
-	releaseImport();
-	await completed;
-	await expect(
-		page.getByLabel("Choose button color", { exact: true }),
-	).toHaveValue("#334455");
-	await expect(page.getByTestId("builder-canvas")).toHaveCSS(
-		"--primary",
-		"#334455",
-	);
-});
+}

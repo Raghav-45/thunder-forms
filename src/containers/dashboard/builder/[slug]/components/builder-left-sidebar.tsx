@@ -29,6 +29,7 @@ interface BuilderLeftSidebarProps {
 		ComponentProps<typeof FormCustomization>,
 		"side"
 	> | null;
+	customizationSessionId: number;
 	formStructure: FormStructure;
 	isExistingForm: boolean;
 	mode: string;
@@ -55,6 +56,7 @@ interface BuilderLeftSidebarProps {
 export function BuilderLeftSidebar({
 	currentFormId,
 	customizationProps,
+	customizationSessionId,
 	formStructure,
 	isExistingForm,
 	mode,
@@ -75,7 +77,7 @@ export function BuilderLeftSidebar({
 			{/* Negated direction so the left sidebar mirrors the right one. */}
 			<AnimatePresence mode="wait" custom={-sidebarDirection} initial={false}>
 				<motion.div
-					key={mode}
+					key={customizationProps ? `${mode}-${customizationSessionId}` : mode}
 					custom={-sidebarDirection}
 					variants={pageTransitionVariants}
 					initial="initial"

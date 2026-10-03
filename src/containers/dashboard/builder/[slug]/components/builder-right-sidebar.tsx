@@ -15,6 +15,7 @@ interface BuilderRightSidebarProps {
 		ComponentProps<typeof FormCustomization>,
 		"side"
 	> | null;
+	customizationSessionId: number;
 	mode: string;
 	pageTransition: Transition;
 	pageTransitionVariants: Variants;
@@ -25,6 +26,7 @@ interface BuilderRightSidebarProps {
 
 export function BuilderRightSidebar({
 	customizationProps,
+	customizationSessionId,
 	mode,
 	pageTransition,
 	pageTransitionVariants,
@@ -39,7 +41,7 @@ export function BuilderRightSidebar({
 		>
 			<AnimatePresence mode="wait" custom={sidebarDirection} initial={false}>
 				<motion.div
-					key={mode}
+					key={customizationProps ? `${mode}-${customizationSessionId}` : mode}
 					custom={sidebarDirection}
 					variants={pageTransitionVariants}
 					initial="initial"

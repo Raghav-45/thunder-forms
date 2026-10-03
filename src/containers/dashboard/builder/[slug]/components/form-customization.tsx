@@ -5,6 +5,7 @@ import {
 	Loader2Icon,
 	RotateCcwIcon,
 } from "lucide-react";
+import { useIsPresent } from "motion/react";
 import { useEffect, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -537,6 +538,7 @@ export function FormCustomization({
 	onCancel,
 	onReset,
 }: FormCustomizationProps) {
+	const isPresent = useIsPresent();
 	// Opening Customize must preserve an uncustomized form's current appearance.
 	const [defaultTheme] = useState(() => {
 		const defaultTheme = createFormTheme();
@@ -553,11 +555,11 @@ export function FormCustomization({
 	});
 	const importActive = useRef(true);
 	useEffect(() => {
-		importActive.current = true;
+		importActive.current = isPresent;
 		return () => {
 			importActive.current = false;
 		};
-	}, []);
+	}, [isPresent]);
 	const draft = value.theme ? normalizeFormTheme(value.theme) : defaultTheme;
 	const draftLayout = normalizeFormLayout(value.layout);
 	const setDraft = (next: FormTheme | ((current: FormTheme) => FormTheme)) =>
@@ -606,7 +608,10 @@ export function FormCustomization({
 	};
 	if (side === "layout") {
 		return (
-			<ScrollArea className="min-h-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block">
+			<ScrollArea
+				inert={!isPresent}
+				className="min-h-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block"
+			>
 				<div className="min-w-0 pb-4 pr-4">
 					<LayoutControls
 						layout={draftLayout}
@@ -625,7 +630,10 @@ export function FormCustomization({
 
 	return (
 		<>
-			<ScrollArea className="min-h-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block">
+			<ScrollArea
+				inert={!isPresent}
+				className="min-h-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block"
+			>
 				<div className="flex min-w-0 flex-col gap-5 pb-4 pr-4">
 					<div className="flex flex-col gap-2">
 						<Label htmlFor="form-theme-preset">Form style</Label>
@@ -931,6 +939,7 @@ export function FormCustomization({
 														setCss(content);
 														toast.success("Theme imported");
 													} catch (error) {
+														if (!importActive.current) return;
 														setCssError(
 															error instanceof Error
 																? error.message
@@ -957,7 +966,10 @@ export function FormCustomization({
 					</Accordion>
 				</div>
 			</ScrollArea>
-			<div className="flex shrink-0 flex-col gap-2 border-t pt-4 pr-4">
+			<div
+				inert={!isPresent}
+				className="flex shrink-0 flex-col gap-2 border-t pt-4 pr-4"
+			>
 				<Button
 					type="button"
 					variant="ghost"

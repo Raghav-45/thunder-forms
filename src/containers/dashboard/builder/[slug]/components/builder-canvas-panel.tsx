@@ -93,7 +93,7 @@ export function BuilderCanvasPanel({
 				data-form-theme={canvasTheme ? true : undefined}
 				style={getFormThemeStyle(canvasTheme)}
 				className={cn(
-					"min-h-0 flex-1 overflow-y-auto p-3 md:p-4",
+					"min-h-0 flex-1 overflow-y-auto [overflow-anchor:none] p-3 md:p-4",
 					!hasCanvasSections &&
 						"flex h-full w-full items-center justify-center",
 				)}

@@ -155,6 +155,8 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 	);
 	const [customization, setCustomization] =
 		useState<FormCustomizationValue | null>(null);
+	const customizationSession = useRef(0);
+	const customizationSessionId = customizationSession.current;
 	const mode = customization ? "customise" : "builder";
 	const canvasTheme = customization ? customization.theme : formStructure.theme;
 	const canvasLayout = customization
@@ -190,7 +192,9 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 				value: customization,
 				onUpdate: (value: Partial<FormCustomizationValue>) =>
 					setCustomization((current) =>
-						current ? { ...current, ...value } : current,
+						current && customizationSession.current === customizationSessionId
+							? { ...current, ...value }
+							: current,
 					),
 				onApply: () => {
 					applyCustomization();
@@ -294,6 +298,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 
 	const openCustomization = useCallback(() => {
 		pageTransitionDirection.current = 1;
+		customizationSession.current += 1;
 		setCustomization({
 			theme: formStructure.theme
 				? normalizeFormTheme(formStructure.theme)
@@ -616,6 +621,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 				<BuilderLeftSidebar
 					currentFormId={currentFormId}
 					customizationProps={customizationProps}
+					customizationSessionId={customizationSessionId}
 					formStructure={formStructure}
 					isExistingForm={isExistingForm}
 					mode={mode}
@@ -692,6 +698,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 
 				<BuilderRightSidebar
 					customizationProps={customizationProps}
+					customizationSessionId={customizationSessionId}
 					mode={mode}
 					pageTransition={pageTransition}
 					pageTransitionVariants={pageTransitionVariants}
