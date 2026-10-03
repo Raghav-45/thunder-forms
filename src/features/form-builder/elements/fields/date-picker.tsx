@@ -122,6 +122,7 @@ const DatePickerComponent: React.FC<FieldProps<DatePickerConfig>> = ({
 						id={inputId}
 						variant="outline"
 						disabled={field.disabled}
+						aria-describedby={error ? `${inputId}-error` : undefined}
 						className={cn(
 							"w-full justify-start text-left font-normal",
 							!selectedDate && "text-muted-foreground",

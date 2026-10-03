@@ -92,6 +92,7 @@ const TextInputComponent: React.FC<FieldProps<TextInputConfig>> = ({
 				required={field.required}
 				pattern={field.pattern}
 				autoComplete={field.autoComplete}
+				aria-describedby={error ? `${inputId}-error` : undefined}
 				className={error ? "border-red-500 focus:border-red-500" : ""}
 			/>
 

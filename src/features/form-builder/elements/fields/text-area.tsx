@@ -82,6 +82,7 @@ const TextAreaComponent: React.FC<FieldProps<TextAreaConfig>> = ({
 				disabled={field.disabled}
 				required={field.required}
 				autoComplete={field.autoComplete}
+				aria-describedby={error ? `${inputId}-error` : undefined}
 				className={error ? "border-red-500 focus:border-red-500" : ""}
 			/>
 

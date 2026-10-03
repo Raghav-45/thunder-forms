@@ -57,6 +57,7 @@ const SwitchFieldComponent: React.FC<FieldProps<SwitchConfig>> = ({
 }) => {
 	const isAnswered = typeof value === "boolean";
 	const isChecked = value === true;
+	const inputId = `field-${field.id}`;
 
 	const handleSwitchChange = (checked: boolean) => {
 		onChange?.(checked);
@@ -71,7 +72,7 @@ const SwitchFieldComponent: React.FC<FieldProps<SwitchConfig>> = ({
 			>
 				<div className="space-y-0.5">
 					<Label
-						htmlFor={field.id}
+						htmlFor={inputId}
 						className={`flex items-center gap-2 text-sm leading-none font-medium select-none ${
 							field.disabled ? "opacity-50" : "cursor-pointer"
 						}`}
@@ -92,11 +93,12 @@ const SwitchFieldComponent: React.FC<FieldProps<SwitchConfig>> = ({
 						</span>
 					)}
 					<Switch
-						id={field.id}
+						id={inputId}
 						checked={isChecked}
 						onCheckedChange={handleSwitchChange}
 						disabled={field.disabled}
 						aria-label={field.label}
+						aria-describedby={error ? `${inputId}-error` : undefined}
 						tabIndex={0}
 						className={cn(
 							!isAnswered &&
@@ -106,7 +108,11 @@ const SwitchFieldComponent: React.FC<FieldProps<SwitchConfig>> = ({
 				</div>
 			</div>
 			{error && (
-				<p className="text-sm text-red-500" role="alert">
+				<p
+					id={`${inputId}-error`}
+					className="text-sm text-red-500"
+					role="alert"
+				>
 					{error}
 				</p>
 			)}

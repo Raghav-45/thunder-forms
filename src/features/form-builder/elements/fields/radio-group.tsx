@@ -85,6 +85,7 @@ const RadioGroupComponent: React.FC<FieldProps<RadioGroupConfig>> = ({
 				value={(value as string) || ""}
 				onValueChange={(val) => onChange(val)}
 				disabled={field.disabled}
+				aria-describedby={error ? `${inputId}-error` : undefined}
 				className={
 					field.orientation === "horizontal"
 						? "flex flex-wrap gap-4"

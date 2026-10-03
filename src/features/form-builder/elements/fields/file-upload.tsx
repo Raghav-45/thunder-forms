@@ -161,6 +161,9 @@ const FileUploadComponent = ({
 				disabled={
 					field.disabled || isUploading || files.length >= limit || !formId
 				}
+				aria-describedby={
+					uploadError || error ? `field-${field.id}-error` : undefined
+				}
 				onChange={(event) => {
 					void uploadFiles(Array.from(event.currentTarget.files || []));
 					event.currentTarget.value = "";
@@ -201,7 +204,11 @@ const FileUploadComponent = ({
 				</ul>
 			) : null}
 			{uploadError || error ? (
-				<p className="text-sm text-red-500" role="alert">
+				<p
+					id={`field-${field.id}-error`}
+					className="text-sm text-red-500"
+					role="alert"
+				>
 					{uploadError || error}
 				</p>
 			) : null}

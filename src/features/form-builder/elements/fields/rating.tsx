@@ -311,7 +311,7 @@ const RatingEditor = ({
 											update("style", value as RatingStyle)
 										}
 									>
-										<SelectTrigger id="rating-style">
+										<SelectTrigger id="rating-style" className="w-full">
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
@@ -344,7 +344,7 @@ const RatingEditor = ({
 												update("size", value as RatingSize)
 											}
 										>
-											<SelectTrigger id="rating-size">
+											<SelectTrigger id="rating-size" className="w-full">
 												<SelectValue />
 											</SelectTrigger>
 											<SelectContent>

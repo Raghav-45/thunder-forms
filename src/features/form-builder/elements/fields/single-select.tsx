@@ -93,6 +93,7 @@ const SingleSelectComponent: React.FC<FieldProps<SingleSelectConfig>> = ({
 			>
 				<SelectTrigger
 					id={inputId}
+					aria-describedby={error ? `${inputId}-error` : undefined}
 					className={`w-full ${error ? "border-red-500 focus:border-red-500" : ""}`}
 				>
 					<SelectValue placeholder={field.placeholder || "Select an option"} />

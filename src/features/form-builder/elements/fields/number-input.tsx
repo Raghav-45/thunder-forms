@@ -106,6 +106,7 @@ const NumberInputComponent: React.FC<FieldProps<NumberInputConfig>> = ({
 				min={field.min}
 				max={field.max}
 				step={step ?? "any"}
+				aria-describedby={error ? `${inputId}-error` : undefined}
 				className={error ? "border-red-500 focus:border-red-500" : ""}
 			/>
 

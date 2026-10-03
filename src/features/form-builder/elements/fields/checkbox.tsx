@@ -86,6 +86,7 @@ const CheckboxComponent: React.FC<FieldProps<CheckboxConfig>> = ({
 					onCheckedChange={handleChange}
 					disabled={field.disabled}
 					aria-label={field.label}
+					aria-describedby={error ? `${inputId}-error` : undefined}
 					className="mt-0.5"
 				/>
 				<div className="space-y-0.5">
@@ -104,7 +105,11 @@ const CheckboxComponent: React.FC<FieldProps<CheckboxConfig>> = ({
 				</div>
 			</div>
 			{error && (
-				<p className="text-sm text-red-500" role="alert">
+				<p
+					id={`${inputId}-error`}
+					className="text-sm text-red-500"
+					role="alert"
+				>
 					{error}
 				</p>
 			)}

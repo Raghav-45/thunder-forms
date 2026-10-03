@@ -101,6 +101,7 @@ const DateTimePopover: React.FC<{
 	isDateDisabled?: (date: Date) => boolean;
 	placeholder?: string;
 	error?: boolean;
+	errorId?: string;
 	id?: string;
 }> = ({
 	value,
@@ -109,6 +110,7 @@ const DateTimePopover: React.FC<{
 	isDateDisabled,
 	placeholder,
 	error,
+	errorId,
 	id,
 }) => {
 	const selectedDate = parseValidDate(value);
@@ -133,6 +135,7 @@ const DateTimePopover: React.FC<{
 					id={id}
 					variant="outline"
 					disabled={disabled}
+					aria-describedby={errorId}
 					className={cn(
 						"w-full justify-start text-left font-normal",
 						!selectedDate && "text-muted-foreground",
@@ -288,6 +291,7 @@ const DateTimePickerComponent: React.FC<FieldProps<DateTimePickerConfig>> = ({
 				isDateDisabled={isDateDisabled}
 				placeholder={field.placeholder}
 				error={!!error}
+				errorId={error ? `${inputId}-error` : undefined}
 			/>
 
 			{field.description && (

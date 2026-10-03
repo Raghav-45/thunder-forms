@@ -178,8 +178,10 @@ const MultiSelectComponent: React.FC<FieldProps<MultiSelectConfig>> = ({
 				<Popover open={open} onOpenChange={setOpen}>
 					<PopoverTrigger asChild>
 						<Button
+							id={fieldId}
 							variant="outline"
 							role="combobox"
+							aria-describedby={error ? `${fieldId}-error` : undefined}
 							className={`w-full justify-between ${
 								error ? "border-red-500" : ""
 							}`}
