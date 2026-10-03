@@ -31,11 +31,15 @@ export function useFormThemeFonts(theme?: StoredFormTheme) {
 
 export function FormThemeScope({
 	theme,
+	alwaysWrap = false,
 	children,
 	className,
 	style,
 	...props
-}: ComponentProps<"div"> & { theme?: StoredFormTheme }) {
+}: ComponentProps<"div"> & {
+	theme?: StoredFormTheme;
+	alwaysWrap?: boolean;
+}) {
 	const scopeRef = useRef<HTMLDivElement>(null);
 	useFormThemeFonts(theme);
 
@@ -91,13 +95,13 @@ export function FormThemeScope({
 		};
 	}, [theme]);
 
-	if (!theme) return children;
+	if (!theme && !alwaysWrap) return children;
 	return (
 		<div
 			ref={scopeRef}
-			data-form-theme
-			className={cn("form-theme", className)}
-			style={{ ...getFormThemeStyle(theme), ...style }}
+			data-form-theme={theme ? true : undefined}
+			className={cn(theme && "form-theme", className)}
+			style={theme ? { ...getFormThemeStyle(theme), ...style } : style}
 			{...props}
 		>
 			{children}

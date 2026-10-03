@@ -66,9 +66,12 @@ test("Contact Us keeps its current appearance when Customize opens and unchanged
 			}
 		}
 		await expect(preview).not.toHaveAttribute("data-form-theme");
-		expect(await preview.locator(".group\\/section").first().evaluate(appearance)).toEqual(beforeSection);
-		expect(await preview.locator("input").first().evaluate(appearance)).toEqual(beforeInput);
-		expect(await preview.locator(".group\\/section").first().evaluate(geometry)).toEqual(beforeGeometry);
+		await expect(preview.locator("main h1")).toHaveText("Contact Us");
+		await expect(preview.locator("main h1")).toHaveCSS("font-size", "48px");
+		const respondentSection = preview.locator("main section").first();
+		await expect(respondentSection.locator("h3")).toHaveText("Section 1");
+		await expect(respondentSection).toHaveCSS("padding", "24px");
+		await expect(respondentSection.locator("[class*=dashed]")).toHaveCount(0);
 		await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
 		expect(await section.evaluate(appearance)).toEqual(beforeSection);
 		expect(await section.locator("input").first().evaluate(appearance)).toEqual(beforeInput);
@@ -170,7 +173,11 @@ test("a customized Contact Us form loads its current appearance into Customize w
 	await page.mouse.move(0, 0);
 	const beforeScreenshot = await section.screenshot({ animations: "disabled" });
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
-	await expect.poll(() => preview.locator(".group\\/section").first().evaluate(appearance)).toEqual(before);
+	await expect(preview.locator("main h1")).toHaveText("Contact Us");
+	await expect(preview.locator("main h1")).toHaveCSS("font-family", before.section["font-family"]);
+	await expect(preview.locator("main section").first()).toHaveCSS("background-color", "rgb(40, 56, 72)");
+	await expect(preview.locator("main section h3")).toHaveText("Section 1");
+	await expect(preview.locator("main section [class*=dashed]")).toHaveCount(0);
 	expect(await section.evaluate(appearance)).toEqual(before);
 	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
 	expect(await section.evaluate(appearance)).toEqual(before);
@@ -207,7 +214,7 @@ test("ThunderForms presets transform complete styles, cancel cleanly and persist
 		await expect(preview).toHaveCSS("--card", theme.colors.card);
 		await expect(preview).toHaveCSS("--font-sans", theme.fonts!.sans);
 		await expect(preview).toHaveCSS("--spacing", `${theme.spacing}rem`);
-		await expect(preview.locator(".group\\/section").first()).toHaveCSS("border-radius", `${theme.radius * 16}px`);
+		await expect(preview.locator("main section").first()).toHaveCSS("border-radius", `${theme.radius * 16}px`);
 	}
 	await editor.getByRole("button", { name: "Cancel", exact: true }).click();
 	await expect(page.locator("[data-form-theme]")).toHaveCount(0);
@@ -267,7 +274,7 @@ test("customizations preview live, cancel cleanly, apply and reset", async ({ pa
 	await expect(page.locator("[data-form-theme]")).toHaveCount(0);
 
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
-	await expect(preview).toHaveCSS("background-color", await page.locator("body").evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--card").trim()));
+	await expect(preview).toHaveCSS("background-color", await page.locator("body").evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--background").trim()));
 	await editor.getByRole("combobox", { name: "Text font", exact: true }).click();
 	await page.getByRole("option", { name: "Georgia", exact: true }).click();
 	await expect(preview).toHaveCSS("font-family", 'Georgia, "Times New Roman", serif');
@@ -279,7 +286,7 @@ test("customizations preview live, cancel cleanly, apply and reset", async ({ pa
 	const radius = editor.getByRole("slider", { name: "Corner rounding", exact: true });
 	await radius.focus();
 	await radius.press("Home");
-	await expect(preview.locator(".group\\/section").first()).toHaveCSS("border-radius", "0px");
+	await expect(preview.locator("main section").first()).toHaveCSS("border-radius", "0px");
 	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
 	await expect(page.getByRole("dialog")).toHaveCount(0);
 	await expect(page.locator("[data-form-theme]")).toHaveCSS(
@@ -504,7 +511,7 @@ test("customization is usable on mobile and the app stays dark with light browse
 	const preview = page.getByTestId("customization-preview");
 	await editor.getByRole("tab", { name: "Preview", exact: true }).click();
 	await expect(preview).toBeVisible();
-	await expect(preview).toHaveCSS("background-color", await page.locator("body").evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--card").trim()));
+	await expect(preview).toHaveCSS("background-color", await page.locator("body").evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--background").trim()));
 	await testInfo.attach("customization-mobile", { body: await page.screenshot(), contentType: "image/png" });
 	await page.setViewportSize({ width: 1440, height: 1000 });
 	await testInfo.attach("customization-desktop", { body: await page.screenshot(), contentType: "image/png" });

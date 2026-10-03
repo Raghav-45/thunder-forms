@@ -173,6 +173,20 @@
   background-color: var(--accent);
 }
 
+/* Animate theme edits inside Customize without affecting the published form. */
+[data-testid="customization-preview"],
+[data-testid="customization-preview"] * {
+  transition-property: background-color, border-color, color, box-shadow, border-radius;
+  transition-duration: 350ms;
+  transition-timing-function: ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-testid="customization-preview"],
+  [data-testid="customization-preview"] * {
+    transition-duration: 0ms;
+  }
+}
+
 @layer components {
   .container {
     @apply mx-auto px-8; /* px-8 is 2rem if base font-size is 16px */

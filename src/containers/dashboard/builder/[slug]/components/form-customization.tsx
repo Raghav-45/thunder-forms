@@ -39,10 +39,6 @@ import { Slider } from "#/components/ui/slider";
 import { Switch } from "#/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "#/components/ui/tabs";
 import { Textarea } from "#/components/ui/textarea";
-import {
-	ItemCard,
-	SectionCard,
-} from "#/containers/dashboard/builder/[slug]/components/builder-cards";
 import { ThemePresetPicker } from "#/containers/dashboard/builder/[slug]/components/theme-preset-picker";
 import {
 	THEME_COLOR_GROUP_DETAILS,
@@ -53,7 +49,7 @@ import {
 	THEME_FONT_LABELS,
 } from "#/containers/dashboard/builder/[slug]/constants/theme-customization";
 import { FormThemeScope } from "#/features/form-builder/components/form-theme-scope";
-import { FORM_SUBMIT_WIDTH_CLASSES } from "#/features/form-builder/constants";
+import { RespondentFormContent } from "#/features/form-builder/components/respondent-form-content";
 import type { FieldConfig } from "#/features/form-builder/elements";
 import {
 	type FormLayout,
@@ -207,7 +203,6 @@ function RangeControl({
 interface FormCustomizationProps {
 	structure: FormStructure;
 	activePageId: string;
-	canvasWidth?: number | null;
 	title: string;
 	description?: string;
 	submitButtonText?: string;
@@ -569,7 +564,6 @@ export function FormCustomization(props: FormCustomizationProps) {
 function CustomizationEditor({
 	structure,
 	activePageId,
-	canvasWidth,
 	title,
 	description,
 	submitButtonText,
@@ -607,14 +601,7 @@ function CustomizationEditor({
 		: structure.theme || themeChanged
 			? draft
 			: undefined;
-	const [initialLayout] = useState(() =>
-		normalizeFormLayout(
-			structure.layout ?? {
-				sectionSpacing: "compact",
-				spacing: { fieldGap: 3, sectionGap: 4, sectionTitleGap: 4 },
-			},
-		),
-	);
+	const [initialLayout] = useState(() => normalizeFormLayout(structure.layout));
 	const [draftLayout, setDraftLayout] = useState(() =>
 		structuredClone(initialLayout),
 	);
@@ -639,32 +626,26 @@ function CustomizationEditor({
 		createDefaultFieldConfig("text-area"),
 		createDefaultFieldConfig("checkbox"),
 	]);
-	const previewPage =
-		structure.pages.find((page) => page.id === previewPageId) ??
-		structure.pages[0];
 	const hasFields = structure.pages.some((page) =>
 		page.sections.some((section) => section.fields.length > 0),
 	);
-	const sections = hasFields
-		? previewPage.sections
-		: [{ id: "sample", title: "Your details", fields: sampleFields }];
-	const previewWidth = {
-		compact: "max-w-xl",
-		standard: "max-w-2xl",
-		wide: "max-w-4xl",
-	}[draftLayout.contentWidth];
-	const previewPosition =
-		draftLayout.contentAlignment === "left" ? "mr-auto" : "mx-auto";
-	const layoutGap = (units: number) => `calc(var(--spacing) * ${units})`;
-	const headerAlignment =
-		draftLayout.headerAlignment === "center"
-			? "items-center text-center"
-			: "items-start text-left";
-	const submitAlignment = {
-		left: "justify-start",
-		center: "justify-center",
-		right: "justify-end",
-	}[draftLayout.submitAlignment];
+	const previewPages = hasFields
+		? structure.pages
+		: [
+				{
+					id: "sample",
+					title: "",
+					sections: [
+						{ id: "sample", title: "Your details", fields: sampleFields },
+					],
+				},
+			];
+	const previewPage =
+		previewPages.find((page) => page.id === previewPageId) ?? previewPages[0];
+	const previewPageIndex = Math.max(
+		previewPages.findIndex((page) => page.id === previewPage.id),
+		0,
+	);
 	const updateColor = (token: FormColorToken, value: string) =>
 		setDraft((current) => ({
 			...current,
@@ -1112,14 +1093,14 @@ function CustomizationEditor({
 				>
 					<div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b px-5 py-3">
 						<p className="text-sm font-medium">Live preview</p>
-						{structure.pages.length > 1 ? (
+						{previewPages.length > 1 ? (
 							<Select value={previewPage.id} onValueChange={setPreviewPageId}>
 								<SelectTrigger aria-label="Preview page">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
 									<SelectGroup>
-										{structure.pages.map((page, index) => (
+										{previewPages.map((page, index) => (
 											<SelectItem key={page.id} value={page.id}>
 												{page.title || `Page ${index + 1}`}
 											</SelectItem>
@@ -1135,92 +1116,38 @@ function CustomizationEditor({
 					</div>
 					<div className="min-h-80 flex-1 overflow-y-auto">
 						<div
-							className={cn(
-								"min-h-full p-[12px] md:p-[16px]",
-								previewTheme ? "bg-background" : "bg-card",
-							)}
+							className="min-h-full"
 							data-testid="customization-preview"
 							data-form-theme={previewTheme ? true : undefined}
-							style={getFormThemeStyle(previewTheme)}
+							style={
+								getFormThemeStyle(previewTheme) ?? {
+									backgroundColor: defaultTheme.colors.background,
+								}
+							}
 						>
-							<FormThemeScope theme={previewTheme}>
-								<div
-									className={cn(
-										"flex w-full flex-col font-sans",
-										previewPosition,
-										(draftLayout.contentWidth !== initialLayout.contentWidth ||
-											!hasFields) &&
-											previewWidth,
-									)}
-									style={{
-										width: canvasWidth
-											? `min(100%, ${canvasWidth}px)`
-											: undefined,
+							<FormThemeScope theme={previewTheme} alwaysWrap>
+								<RespondentFormContent
+									activePageIndex={previewPageIndex}
+									description={description}
+									fields={renderField}
+									layout={draftLayout}
+									onNextPage={() => {
+										const nextPage = previewPages[previewPageIndex + 1];
+										if (nextPage) setPreviewPageId(nextPage.id);
 									}}
-								>
-									<header
-										className={cn("flex flex-col", headerAlignment)}
-										style={{
-											gap: layoutGap(draftLayout.spacing.titleDescriptionGap),
-										}}
-									>
-										<h2 className="text-2xl font-bold md:text-4xl">{title}</h2>
-										{description ? (
-											<p className="text-muted-foreground">{description}</p>
-										) : null}
-									</header>
-									<div
-										className="flex flex-col"
-										style={{
-											gap: layoutGap(
-												layoutChanged ? draftLayout.spacing.sectionGap : 4,
-											),
-											marginTop: layoutGap(draftLayout.spacing.titleContentGap),
-										}}
-									>
-										{sections.map((section, index) => (
-											<SectionCard
-												key={section.id}
-												label={section.title || `Section ${index + 1}`}
-												description={
-													"description" in section
-														? section.description
-														: undefined
-												}
-												isEmpty={section.fields.length === 0}
-												reserveActions
-												layout={layoutChanged ? draftLayout : undefined}
-											>
-												{section.fields.map((field) => (
-													<ItemCard key={field.id} field={field} interactive>
-														{renderField(field)}
-													</ItemCard>
-												))}
-											</SectionCard>
-										))}
-									</div>
-									<div
-										className={cn("flex", submitAlignment)}
-										style={{
-											marginTop: layoutGap(draftLayout.spacing.submitGap),
-										}}
-									>
-										<Button
-											type="button"
-											className={cn(
-												"h-auto min-h-9 max-w-full whitespace-normal break-words",
-												FORM_SUBMIT_WIDTH_CLASSES[draftLayout.submitWidth],
-											)}
-											onClick={() =>
-												toast.message(
-													"This is a preview. Your answers are not submitted.",
-												)
-											}
-										>
-											{draftSubmitButtonText.trim() || "Submit"}
-										</Button>
-									</div>
-								</div>
+									onPreviousPage={() => {
+										const previousPage = previewPages[previewPageIndex - 1];
+										if (previousPage) setPreviewPageId(previousPage.id);
+									}}
+									onSubmit={() =>
+										toast.message(
+											"This is a preview. Your answers are not submitted.",
+										)
+									}
+									pages={previewPages}
+									submitButtonText={draftSubmitButtonText || undefined}
+									title={title}
+								/>
 							</FormThemeScope>
 						</div>
 					</div>
