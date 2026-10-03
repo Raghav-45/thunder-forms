@@ -232,9 +232,12 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 	useFormThemeFonts(canvasTheme);
 
 	const pageTransitionDirection = useRef(0);
+	const closeCustomization = () => {
+		pageTransitionDirection.current = -1;
+		setCustomization(null);
+	};
 	const applyCustomization = () => {
 		if (!customization) return;
-		pageTransitionDirection.current = -1;
 		setFormStructure((current) => ({
 			...current,
 			theme: customization.theme,
@@ -244,7 +247,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 			...formSettings,
 			submitButtonText: customization.submitButtonText?.trim() || undefined,
 		});
-		setCustomization(null);
+		closeCustomization();
 	};
 	const customizationProps = customization
 		? {
@@ -257,19 +260,15 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 					applyCustomization();
 					toast.success("Customization applied. Save your form to keep it.");
 				},
-				onCancel: () => {
-					pageTransitionDirection.current = -1;
-					setCustomization(null);
-				},
+				onCancel: closeCustomization,
 				onReset: () => {
-					pageTransitionDirection.current = -1;
 					setFormStructure((current) => ({
 						...current,
 						theme: undefined,
 						layout: undefined,
 					}));
 					setFormSettings({ ...formSettings, submitButtonText: undefined });
-					setCustomization(null);
+					closeCustomization();
 				},
 			}
 		: null;
@@ -368,6 +367,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 				damping: 35,
 				mass: 0.8,
 			};
+	const sidebarDirection = pageTransitionDirection.current;
 
 	const openCustomization = useCallback(() => {
 		pageTransitionDirection.current = 1;
@@ -1018,12 +1018,12 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 					{/* Negated direction so the left sidebar mirrors the right one. */}
 					<AnimatePresence
 						mode="wait"
-						custom={-pageTransitionDirection.current}
+						custom={-sidebarDirection}
 						initial={false}
 					>
 						<motion.div
 							key={mode}
-							custom={-pageTransitionDirection.current}
+							custom={-sidebarDirection}
 							variants={pageTransitionVariants}
 							initial="initial"
 							animate="animate"
@@ -1229,12 +1229,12 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 				>
 					<AnimatePresence
 						mode="wait"
-						custom={pageTransitionDirection.current}
+						custom={sidebarDirection}
 						initial={false}
 					>
 						<motion.div
 							key={mode}
-							custom={pageTransitionDirection.current}
+							custom={sidebarDirection}
 							variants={pageTransitionVariants}
 							initial="initial"
 							animate="animate"
