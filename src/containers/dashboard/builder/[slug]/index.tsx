@@ -989,8 +989,8 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 								title={formSettings.title}
 								description={formSettings.description}
 								submitButtonText={formSettings.submitButtonText}
-								onUpdate={(theme) =>
-									setFormStructure((current) => ({ ...current, theme }))
+								onUpdate={(theme, layout) =>
+									setFormStructure((current) => ({ ...current, theme, layout }))
 								}
 							/>
 							{isExistingForm ? (

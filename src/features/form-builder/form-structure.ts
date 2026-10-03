@@ -24,9 +24,52 @@ export interface FormPage {
 
 export interface FormStructure {
 	pages: FormPage[];
+	layout?: FormLayout;
 	quiz?: QuizSettings;
 	theme?: StoredFormTheme;
 }
+
+export type FormContentWidth = "compact" | "standard" | "wide";
+export type FormHorizontalAlignment = "left" | "center" | "right";
+export type FormSectionSpacing = "compact" | "comfortable" | "spacious";
+
+export interface FormLayoutSpacing {
+	fieldGap?: number;
+	sectionGap?: number;
+	sectionTitleGap?: number;
+	submitGap?: number;
+	titleContentGap?: number;
+	titleDescriptionGap?: number;
+}
+
+export interface FormLayout {
+	contentAlignment?: Exclude<FormHorizontalAlignment, "right">;
+	headerAlignment?: Exclude<FormHorizontalAlignment, "right">;
+	contentWidth?: FormContentWidth;
+	sectionSpacing?: FormSectionSpacing;
+	spacing?: FormLayoutSpacing;
+	submitAlignment?: FormHorizontalAlignment;
+}
+
+export type NormalizedFormLayout = Omit<Required<FormLayout>, "spacing"> & {
+	spacing: Required<FormLayoutSpacing>;
+};
+
+export const DEFAULT_FORM_LAYOUT: NormalizedFormLayout = {
+	contentAlignment: "center",
+	headerAlignment: "left",
+	contentWidth: "standard",
+	sectionSpacing: "comfortable",
+	spacing: {
+		fieldGap: 5,
+		sectionGap: 6,
+		sectionTitleGap: 5,
+		submitGap: 6,
+		titleContentGap: 6,
+		titleDescriptionGap: 3,
+	},
+	submitAlignment: "left",
+};
 
 export type QuizGradeRelease = "immediately" | "after-review";
 
@@ -151,6 +194,60 @@ function hasValidQuizSettings(
 	);
 }
 
+export function isFormLayout(value: unknown): value is FormLayout {
+	if (value === undefined) return true;
+	if (!isRecord(value)) return false;
+	return (
+		(value.contentAlignment === undefined ||
+			value.contentAlignment === "left" ||
+			value.contentAlignment === "center") &&
+		(value.headerAlignment === undefined ||
+			value.headerAlignment === "left" ||
+			value.headerAlignment === "center") &&
+		(value.contentWidth === undefined ||
+			value.contentWidth === "compact" ||
+			value.contentWidth === "standard" ||
+			value.contentWidth === "wide") &&
+		(value.sectionSpacing === undefined ||
+			value.sectionSpacing === "compact" ||
+			value.sectionSpacing === "comfortable" ||
+			value.sectionSpacing === "spacious") &&
+		hasValidLayoutSpacing(value.spacing) &&
+		(value.submitAlignment === undefined ||
+			value.submitAlignment === "left" ||
+			value.submitAlignment === "center" ||
+			value.submitAlignment === "right")
+	);
+}
+
+function hasValidLayoutSpacing(value: unknown): value is FormLayoutSpacing {
+	if (value === undefined) return true;
+	if (!isRecord(value) || Array.isArray(value)) return false;
+	return Object.entries(value).every(
+		([key, gap]) =>
+			[
+				"fieldGap",
+				"sectionGap",
+				"sectionTitleGap",
+				"submitGap",
+				"titleContentGap",
+				"titleDescriptionGap",
+			].includes(key) &&
+			typeof gap === "number" &&
+			Number.isFinite(gap) &&
+			gap >= 0 &&
+			gap <= 16,
+	);
+}
+
+export function normalizeFormLayout(layout?: FormLayout): NormalizedFormLayout {
+	return {
+		...DEFAULT_FORM_LAYOUT,
+		...layout,
+		spacing: { ...DEFAULT_FORM_LAYOUT.spacing, ...layout?.spacing },
+	};
+}
+
 export function getQuizDefaultPoints(
 	settings: QuizSettings | undefined,
 ): number {
@@ -216,6 +313,7 @@ export function isFormStructure(value: unknown): value is FormStructure {
 		!isRecord(value) ||
 		!Array.isArray(value.pages) ||
 		value.pages.length === 0 ||
+		!isFormLayout(value.layout) ||
 		!hasValidQuizSettings(value.quiz) ||
 		(value.theme !== undefined && !isFormTheme(value.theme))
 	) {

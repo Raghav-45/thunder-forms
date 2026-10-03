@@ -36,13 +36,17 @@ test("customizations preview live, cancel cleanly, apply and reset", async ({ pa
 	await tracking.focus();
 	await tracking.press("ArrowRight");
 	await expect(tracking).toHaveAttribute("aria-valuenow", "0.005");
+	await editor.getByRole("tab", { name: "Layout", exact: true }).click();
 	const radius = editor.getByRole("slider", { name: "Corner rounding", exact: true });
 	await radius.focus();
 	await radius.press("Home");
 	await expect(preview.locator("section").first()).toHaveCSS("border-radius", "0px");
 	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
 	await expect(page.getByRole("dialog")).toHaveCount(0);
-	await expect(page.locator("[data-form-theme]")).toHaveCSS("font-family", 'Georgia, "Times New Roman", serif');
+	await expect(page.locator("[data-form-theme]")).toHaveCSS(
+		"font-family",
+		'Georgia, "Times New Roman", serif',
+	);
 	await expect(
 		page
 			.getByRole("navigation", { name: "Form pages" })
@@ -72,6 +76,31 @@ test("theme persists in the save payload and public form after reload, including
 	await page.getByRole("button", { name: "single-select", exact: true }).click();
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
 	const editor = page.getByRole("dialog", { name: "Customize your form" });
+	const preview = page.getByTestId("customization-preview");
+	await editor.getByRole("tab", { name: "Layout", exact: true }).click();
+	await editor.getByRole("combobox", { name: "Title & description", exact: true }).click();
+	await page.getByRole("option", { name: "Centered", exact: true }).click();
+	await editor.getByRole("combobox", { name: "Form width", exact: true }).click();
+	await page.getByRole("option", { name: "Wide", exact: true }).click();
+	await editor
+		.getByRole("combobox", { name: "Form position", exact: true })
+		.click();
+	await page.getByRole("option", { name: "Left aligned", exact: true }).click();
+	await editor
+		.getByRole("combobox", { name: "Space inside question cards", exact: true })
+		.click();
+	await page.getByRole("option", { name: "Spacious", exact: true }).click();
+	const fieldSpacing = editor.getByRole("slider", {
+		name: "Between fields",
+		exact: true,
+	});
+	await fieldSpacing.focus();
+	await fieldSpacing.press("ArrowRight");
+	await expect(fieldSpacing).toHaveAttribute("aria-valuenow", "5.25");
+	await editor.getByRole("combobox", { name: "Button position", exact: true }).click();
+	await page.getByRole("option", { name: "Right aligned", exact: true }).click();
+	await expect(preview.getByRole("heading").first()).toHaveCSS("text-align", "center");
+	await editor.getByRole("tab", { name: "Appearance", exact: true }).click();
 	await editor.getByRole("combobox", { name: "Form style" }).click();
 	await page.getByRole("option", { name: "Ocean", exact: true }).click();
 	await editor.getByRole("button", { name: "Advanced customizations", exact: true }).click();
@@ -81,13 +110,26 @@ test("theme persists in the save payload and public form after reload, including
 	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
 	await page.getByRole("button", { name: "Save", exact: true }).click();
 	await expect.poll(() => saved.id).toBe("theme-test");
-	expect(saved.fields).toMatchObject({ theme: { colors: { primary: "#334455", popover: "#ffeedd" } } });
+	expect(saved.fields).toMatchObject({
+	layout: {
+		contentAlignment: "left",
+		headerAlignment: "center",
+		contentWidth: "wide",
+		sectionSpacing: "spacious",
+		spacing: { fieldGap: 5.25 },
+		submitAlignment: "right",
+	},
+	theme: { colors: { primary: "#334455", popover: "#ffeedd" } },
+});
 	const savedTheme = (saved.fields as { theme: object }).theme;
 	expect(savedTheme).not.toHaveProperty("mode");
 	expect(savedTheme).not.toHaveProperty("light");
 	expect(savedTheme).not.toHaveProperty("dark");
 	await page.goto("/forms/theme-test", { waitUntil: "networkidle" });
 	await expect(page.getByRole("button", { name: "Submit", exact: true })).toHaveCSS("background-color", "rgb(51, 68, 85)");
+	await expect(page.locator("main h1")).toHaveCSS("text-align", "center");
+	await expect(page.locator("main")).toHaveCSS("max-width", "1280px");
+	await expect(page.getByRole("button", { name: "Submit", exact: true }).locator("..")).toHaveCSS("justify-content", "flex-end");
 	await page.getByRole("combobox").click();
 	await expect(page.getByRole("listbox")).toHaveCSS("background-color", "rgb(255, 238, 221)");
 	await expect(page.getByRole("listbox")).toHaveCSS("color", "rgb(17, 34, 51)");
@@ -322,7 +364,7 @@ for (const viewport of [{ name: "desktop", width: 1440, height: 1000 }, { name: 
 		for (const token of BASIC_THEME_COLORS) {
 			await expect(basic.getByLabel(`Choose ${THEME_COLOR_LABELS[token].toLowerCase()}`, { exact: true })).toBeVisible();
 		}
-		await expect(basic.getByRole("slider")).toHaveCount(5);
+		await expect(basic.getByRole("slider")).toHaveCount(3);
 		await expect(basic.getByRole("combobox", { name: "Text font", exact: true })).toBeVisible();
 		await expect(editor.getByRole("textbox", { name: "Search colors", exact: true })).toHaveCount(0);
 		await expect(editor.getByRole("button", { name: "Import or export a theme", exact: true })).toBeHidden();
@@ -335,15 +377,20 @@ for (const viewport of [{ name: "desktop", width: 1440, height: 1000 }, { name: 
 		expect(await previewVariables()).toEqual(expectedVariables);
 		await basic.getByLabel("Choose button color", { exact: true }).fill("#334455");
 		expected.colors.primary = "#334455";
-		const radius = basic.getByRole("slider", { name: "Corner rounding", exact: true });
+		await editor.getByRole("tab", { name: "Layout", exact: true }).click();
+		const radius = editor.getByRole("slider", { name: "Corner rounding", exact: true });
 		await radius.focus();
 		await radius.press("Home");
 		expected.radius = 0;
-		await expect(basic.getByText("Square", { exact: true })).toBeVisible();
-		const spacing = basic.getByRole("slider", { name: "Space between elements", exact: true });
+		await expect(editor.getByText("Square", { exact: true })).toBeVisible();
+		const spacing = editor.getByRole("slider", {
+			name: "Between fields",
+			exact: true,
+		});
 		await spacing.focus();
 		await spacing.press("ArrowRight");
-		expected.spacing = 0.28;
+		await expect(spacing).toHaveAttribute("aria-valuenow", "5.25");
+		await editor.getByRole("tab", { name: "Appearance", exact: true }).click();
 		const tracking = basic.getByRole("slider", { name: "Letter spacing", exact: true });
 		await tracking.focus();
 		await tracking.press("ArrowRight");

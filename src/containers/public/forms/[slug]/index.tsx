@@ -8,10 +8,13 @@ import { FormSubmittedPage } from "#/containers/public/forms/components/form-sub
 import { FormThemeScope } from "#/features/form-builder/components/form-theme-scope";
 import type { FieldConfig } from "#/features/form-builder/elements";
 import {
+	DEFAULT_FORM_LAYOUT,
 	type FormStructure,
 	type FormPage as FormStructurePage,
 	getOrderedFormFields,
 	isFormStructure,
+	type NormalizedFormLayout,
+	normalizeFormLayout,
 } from "#/features/form-builder/form-structure";
 import {
 	type FormTheme,
@@ -38,6 +41,8 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 	const [fields, setFields] = useState<FieldConfig[]>([]);
 	const [pages, setPages] = useState<FormStructurePage[]>([]);
 	const [theme, setTheme] = useState<FormTheme>();
+	const [layout, setLayout] =
+		useState<NormalizedFormLayout>(DEFAULT_FORM_LAYOUT);
 	const [activePageIndex, setActivePageIndex] = useState(0);
 	const [formSettings, setFormSettings] = useState<PublicFormSettings | null>(
 		null,
@@ -228,6 +233,7 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 			const normalizedFields = getOrderedFormFields(formStructure);
 			setFields(normalizedFields);
 			setPages(formStructure.pages);
+			setLayout(normalizeFormLayout(formStructure.layout));
 			setTheme(
 				formStructure.theme
 					? normalizeFormTheme(formStructure.theme)
@@ -313,6 +319,28 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 		Boolean(pageTitle) &&
 		pageTitle?.toLowerCase() !== `page ${activePageIndex + 1}`;
 	const pageDescription = activePage?.description?.trim();
+	const contentWidth = {
+		compact: "max-w-3xl",
+		standard: "max-w-6xl",
+		wide: "max-w-7xl",
+	}[layout.contentWidth ?? "standard"];
+	const contentAlignment =
+		layout.contentAlignment === "left" ? "mr-auto" : "mx-auto";
+	const sectionSpacing = {
+		compact: "p-3 sm:p-4",
+		comfortable: "p-4 sm:p-6",
+		spacious: "p-6 sm:p-8",
+	}[layout.sectionSpacing ?? "comfortable"];
+	const layoutGap = (units: number) => `calc(var(--spacing) * ${units})`;
+	const headerAlignment =
+		layout.headerAlignment === "center"
+			? "items-center text-center"
+			: "items-start text-left";
+	const submitAlignment = {
+		left: "justify-start",
+		center: "justify-center",
+		right: "justify-end",
+	}[layout.submitAlignment ?? "left"];
 
 	return (
 		<FormThemeScope theme={theme} className="min-h-screen">
@@ -329,8 +357,13 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 							: "both"
 				}
 			/>
-			<main className="mx-auto max-w-6xl space-y-6 p-4 pt-16 md:p-10 pb-16">
-				<div className="space-y-3">
+			<main
+				className={`${contentAlignment} flex w-full flex-col ${contentWidth} p-4 pt-16 pb-16 md:p-10`}
+			>
+				<div
+					className={`flex flex-col ${headerAlignment}`}
+					style={{ gap: layoutGap(layout.spacing.titleDescriptionGap) }}
+				>
 					<h1 className="text-2xl md:text-5xl font-bold tracking-tight">
 						{formSettings.title}
 					</h1>
@@ -338,7 +371,10 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 						{formSettings.description}
 					</p>
 				</div>
-				<div className="flex w-full flex-col gap-6">
+				<div
+					className="flex w-full flex-col gap-6"
+					style={{ marginTop: layoutGap(layout.spacing.titleContentGap) }}
+				>
 					{pages.length > 1 ? (
 						<div className="flex flex-wrap items-center justify-between gap-3 pt-4">
 							<p
@@ -373,30 +409,48 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 							) : null}
 						</header>
 					) : null}
-					{activePage?.sections.map((section, sectionIndex) => (
-						<section
-							key={section.id}
-							aria-labelledby={`form-section-${section.id}`}
-							className="flex min-w-0 flex-col gap-5 rounded-xl border bg-card p-4 sm:p-6"
-						>
-							<div className="space-y-1 border-b pb-4">
-								<h3
-									id={`form-section-${section.id}`}
-									className="text-base font-semibold"
+					<div
+						className="flex flex-col"
+						style={{ gap: layoutGap(layout.spacing.sectionGap) }}
+					>
+						{activePage?.sections.map((section, sectionIndex) => (
+							<section
+								key={section.id}
+								aria-labelledby={`form-section-${section.id}`}
+								className={`flex min-w-0 flex-col rounded-xl border bg-card ${sectionSpacing}`}
+							>
+								<div
+									className="space-y-1 border-b pb-4"
+									style={{
+										marginBottom: layoutGap(layout.spacing.sectionTitleGap),
+									}}
 								>
-									{section.title || `Section ${sectionIndex + 1}`}
-								</h3>
-								{section.description ? (
-									<p className="text-sm leading-relaxed text-muted-foreground">
-										{section.description}
-									</p>
-								) : null}
-							</div>
-							{section.fields.map((field) => renderField(field))}
-						</section>
-					))}
+									<h3
+										id={`form-section-${section.id}`}
+										className="text-base font-semibold"
+									>
+										{section.title || `Section ${sectionIndex + 1}`}
+									</h3>
+									{section.description ? (
+										<p className="text-sm leading-relaxed text-muted-foreground">
+											{section.description}
+										</p>
+									) : null}
+								</div>
+								<div
+									className="flex flex-col"
+									style={{ gap: layoutGap(layout.spacing.fieldGap) }}
+								>
+									{section.fields.map((field) => renderField(field))}
+								</div>
+							</section>
+						))}
+					</div>
 				</div>
-				<div className="flex flex-wrap gap-3">
+				<div
+					className={`flex flex-wrap gap-3 ${submitAlignment}`}
+					style={{ marginTop: layoutGap(layout.spacing.submitGap) }}
+				>
 					{activePageIndex > 0 ? (
 						<Button
 							type="button"

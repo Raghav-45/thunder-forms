@@ -77,6 +77,37 @@ describe("form structure", () => {
 		).toBe(true);
 	});
 
+	it("accepts saved layout preferences and rejects unsupported values", () => {
+		const pages = [
+			{
+				id: "page",
+				sections: [{ id: "section", fields: [field("field")] }],
+			},
+		];
+		expect(
+			isFormStructure({
+				pages,
+				layout: {
+					contentAlignment: "left",
+					headerAlignment: "center",
+					contentWidth: "wide",
+					sectionSpacing: "spacious",
+					spacing: { fieldGap: 7, submitGap: 9 },
+					submitAlignment: "right",
+				},
+			}),
+		).toBe(true);
+		expect(
+			isFormStructure({ pages, layout: { headerAlignment: "right" } }),
+		).toBe(false);
+		expect(
+			isFormStructure({ pages, layout: { sectionSpacing: "roomy" } }),
+		).toBe(false);
+		expect(
+			isFormStructure({ pages, layout: { spacing: { fieldGap: 17 } } }),
+		).toBe(false);
+	});
+
 	it("accepts registered file-upload fields", () => {
 		expect(
 			isFormStructure({

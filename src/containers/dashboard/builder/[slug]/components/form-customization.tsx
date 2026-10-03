@@ -50,7 +50,12 @@ import {
 } from "#/containers/dashboard/builder/[slug]/constants/theme-customization";
 import { FormThemeScope } from "#/features/form-builder/components/form-theme-scope";
 import type { FieldConfig } from "#/features/form-builder/elements";
-import type { FormStructure } from "#/features/form-builder/form-structure";
+import {
+	type FormLayout,
+	type FormStructure,
+	type NormalizedFormLayout,
+	normalizeFormLayout,
+} from "#/features/form-builder/form-structure";
 import {
 	createFormTheme,
 	exportFormThemeCss,
@@ -198,7 +203,10 @@ interface FormCustomizationProps {
 	title: string;
 	description?: string;
 	submitButtonText?: string;
-	onUpdate: (theme: FormTheme | undefined) => void;
+	onUpdate: (
+		theme: FormTheme | undefined,
+		layout: FormLayout | undefined,
+	) => void;
 }
 
 function FontControl({
@@ -243,6 +251,248 @@ function FontControl({
 	);
 }
 
+function LayoutControls({
+	layout,
+	theme,
+	onChange,
+	onThemeChange,
+}: {
+	layout: NormalizedFormLayout;
+	theme: FormTheme;
+	onChange: (layout: NormalizedFormLayout) => void;
+	onThemeChange: (theme: FormTheme) => void;
+}) {
+	const updateSpacing = (
+		key: keyof NormalizedFormLayout["spacing"],
+		value: number,
+	) =>
+		onChange({
+			...layout,
+			spacing: { ...layout.spacing, [key]: value },
+		});
+	const spacingValue = (value: number) =>
+		`${Number((theme.spacing * value * 16).toFixed(1))}px`;
+	return (
+		<div className="flex flex-col gap-6">
+			<div>
+				<h3 className="text-sm font-semibold">Form heading</h3>
+				<p className="mt-1 text-xs text-muted-foreground">
+					Choose where the form title and description sit.
+				</p>
+			</div>
+			<div className="flex flex-col gap-2">
+				<Label htmlFor="form-header-alignment">Title & description</Label>
+				<Select
+					value={layout.headerAlignment}
+					onValueChange={(headerAlignment) =>
+						onChange({
+							...layout,
+							headerAlignment:
+								headerAlignment as Required<FormLayout>["headerAlignment"],
+						})
+					}
+				>
+					<SelectTrigger id="form-header-alignment">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="left">Left aligned</SelectItem>
+						<SelectItem value="center">Centered</SelectItem>
+					</SelectContent>
+				</Select>
+			</div>
+			<Separator />
+			<div>
+				<h3 className="text-sm font-semibold">Form space</h3>
+				<p className="mt-1 text-xs text-muted-foreground">
+					Choose where the form sits and how spacious it feels.
+				</p>
+			</div>
+			<div className="flex flex-col gap-2">
+				<Label htmlFor="form-content-width">Form width</Label>
+				<Select
+					value={layout.contentWidth}
+					onValueChange={(contentWidth) =>
+						onChange({
+							...layout,
+							contentWidth:
+								contentWidth as Required<FormLayout>["contentWidth"],
+						})
+					}
+				>
+					<SelectTrigger id="form-content-width">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="compact">Compact</SelectItem>
+						<SelectItem value="standard">Standard</SelectItem>
+						<SelectItem value="wide">Wide</SelectItem>
+					</SelectContent>
+				</Select>
+			</div>
+			<div className="flex flex-col gap-2">
+				<Label htmlFor="form-content-alignment">Form position</Label>
+				<Select
+					value={layout.contentAlignment}
+					onValueChange={(contentAlignment) =>
+						onChange({
+							...layout,
+							contentAlignment:
+								contentAlignment as Required<FormLayout>["contentAlignment"],
+						})
+					}
+				>
+					<SelectTrigger id="form-content-alignment">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="left">Left aligned</SelectItem>
+						<SelectItem value="center">Centered</SelectItem>
+					</SelectContent>
+				</Select>
+			</div>
+			<div className="flex flex-col gap-2">
+				<Label htmlFor="form-section-spacing">
+					Space inside question cards
+				</Label>
+				<Select
+					value={layout.sectionSpacing}
+					onValueChange={(sectionSpacing) =>
+						onChange({
+							...layout,
+							sectionSpacing:
+								sectionSpacing as Required<FormLayout>["sectionSpacing"],
+						})
+					}
+				>
+					<SelectTrigger id="form-section-spacing">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="compact">Compact</SelectItem>
+						<SelectItem value="comfortable">Comfortable</SelectItem>
+						<SelectItem value="spacious">Spacious</SelectItem>
+					</SelectContent>
+				</Select>
+			</div>
+			<RangeControl
+				label="Corner rounding"
+				value={theme.radius}
+				min={0}
+				max={10}
+				step={0.05}
+				displayValue={
+					theme.radius === 0
+						? "Square"
+						: `${Number((theme.radius * 16).toFixed(1))}px`
+				}
+				onChange={(radius) => onThemeChange({ ...theme, radius })}
+			/>
+			<Accordion type="multiple" defaultValue={["questions"]}>
+				<AccordionItem value="heading">
+					<AccordionTrigger>Heading spacing</AccordionTrigger>
+					<AccordionContent className="flex flex-col gap-5">
+						<p className="text-xs text-muted-foreground">
+							Adjust the form heading without affecting question spacing.
+						</p>
+						<RangeControl
+							label="Title & description"
+							value={layout.spacing.titleDescriptionGap}
+							min={0}
+							max={16}
+							step={0.25}
+							displayValue={spacingValue(layout.spacing.titleDescriptionGap)}
+							onChange={(value) => updateSpacing("titleDescriptionGap", value)}
+						/>
+						<RangeControl
+							label="Heading & first section"
+							value={layout.spacing.titleContentGap}
+							min={0}
+							max={16}
+							step={0.25}
+							displayValue={spacingValue(layout.spacing.titleContentGap)}
+							onChange={(value) => updateSpacing("titleContentGap", value)}
+						/>
+					</AccordionContent>
+				</AccordionItem>
+				<AccordionItem value="questions">
+					<AccordionTrigger>Questions & submit button</AccordionTrigger>
+					<AccordionContent className="flex flex-col gap-5">
+						<p className="text-xs text-muted-foreground">
+							Set the rhythm inside and between each part of the form.
+						</p>
+						<RangeControl
+							label="Between fields"
+							value={layout.spacing.fieldGap}
+							min={0}
+							max={16}
+							step={0.25}
+							displayValue={spacingValue(layout.spacing.fieldGap)}
+							onChange={(value) => updateSpacing("fieldGap", value)}
+						/>
+						<RangeControl
+							label="Section title & fields"
+							value={layout.spacing.sectionTitleGap}
+							min={0}
+							max={16}
+							step={0.25}
+							displayValue={spacingValue(layout.spacing.sectionTitleGap)}
+							onChange={(value) => updateSpacing("sectionTitleGap", value)}
+						/>
+						<RangeControl
+							label="Between sections"
+							value={layout.spacing.sectionGap}
+							min={0}
+							max={16}
+							step={0.25}
+							displayValue={spacingValue(layout.spacing.sectionGap)}
+							onChange={(value) => updateSpacing("sectionGap", value)}
+						/>
+						<RangeControl
+							label="Last section & submit button"
+							value={layout.spacing.submitGap}
+							min={0}
+							max={16}
+							step={0.25}
+							displayValue={spacingValue(layout.spacing.submitGap)}
+							onChange={(value) => updateSpacing("submitGap", value)}
+						/>
+					</AccordionContent>
+				</AccordionItem>
+			</Accordion>
+			<Separator />
+			<div>
+				<h3 className="text-sm font-semibold">Submit button</h3>
+				<p className="mt-1 text-xs text-muted-foreground">
+					Choose where people find the final action.
+				</p>
+			</div>
+			<div className="flex flex-col gap-2">
+				<Label htmlFor="form-submit-alignment">Button position</Label>
+				<Select
+					value={layout.submitAlignment}
+					onValueChange={(submitAlignment) =>
+						onChange({
+							...layout,
+							submitAlignment:
+								submitAlignment as Required<FormLayout>["submitAlignment"],
+						})
+					}
+				>
+					<SelectTrigger id="form-submit-alignment">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="left">Left aligned</SelectItem>
+						<SelectItem value="center">Centered</SelectItem>
+						<SelectItem value="right">Right aligned</SelectItem>
+					</SelectContent>
+				</Select>
+			</div>
+		</div>
+	);
+}
+
 export function FormCustomization(props: FormCustomizationProps) {
 	const [open, setOpen] = useState(false);
 	return (
@@ -276,9 +526,13 @@ function CustomizationEditor({
 			? structuredClone(normalizeFormTheme(structure.theme))
 			: createFormTheme(),
 	);
+	const [draftLayout, setDraftLayout] = useState(() =>
+		normalizeFormLayout(structure.layout),
+	);
 	const [showColorCodes, setShowColorCodes] = useState(false);
 	const [advancedSections, setAdvancedSections] = useState<string[]>([]);
 	const [mobileView, setMobileView] = useState("controls");
+	const [customizationTab, setCustomizationTab] = useState("appearance");
 	const previewId = useId();
 	const [css, setCss] = useState("");
 	const [cssError, setCssError] = useState("");
@@ -300,6 +554,28 @@ function CustomizationEditor({
 	const sections = hasFields
 		? previewPage.sections
 		: [{ id: "sample", title: "Your details", fields: sampleFields }];
+	const previewWidth = {
+		compact: "max-w-xl",
+		standard: "max-w-2xl",
+		wide: "max-w-4xl",
+	}[draftLayout.contentWidth];
+	const previewPosition =
+		draftLayout.contentAlignment === "left" ? "mr-auto" : "mx-auto";
+	const sectionSpacing = {
+		compact: "p-3 sm:p-4",
+		comfortable: "p-4 sm:p-6",
+		spacious: "p-6 sm:p-8",
+	}[draftLayout.sectionSpacing];
+	const layoutGap = (units: number) => `calc(var(--spacing) * ${units})`;
+	const headerAlignment =
+		draftLayout.headerAlignment === "center"
+			? "items-center text-center"
+			: "items-start text-left";
+	const submitAlignment = {
+		left: "justify-start",
+		center: "justify-center",
+		right: "justify-end",
+	}[draftLayout.submitAlignment];
 	const updateColor = (token: FormColorToken, value: string) =>
 		setDraft((current) => ({
 			...current,
@@ -382,11 +658,30 @@ function CustomizationEditor({
 						mobileView === "controls" ? "flex" : "hidden",
 					)}
 				>
-					<div className="flex flex-col gap-2">
+					<Tabs value={customizationTab} onValueChange={setCustomizationTab}>
+						<TabsList className="w-full" aria-label="Customization category">
+							<TabsTrigger value="appearance" className="flex-1">
+								Appearance
+							</TabsTrigger>
+							<TabsTrigger value="layout" className="flex-1">
+								Layout
+							</TabsTrigger>
+						</TabsList>
+					</Tabs>
+					<div
+						className={cn(
+							"flex flex-col gap-2",
+							customizationTab === "appearance" ? "flex" : "hidden",
+						)}
+					>
 						<Label htmlFor="form-theme-preset">Form style</Label>
 						<ThemePresetPicker onSelect={setDraft} />
 					</div>
-					<Accordion type="multiple" defaultValue={["basic"]}>
+					<Accordion
+						type="multiple"
+						defaultValue={["basic"]}
+						className={customizationTab === "appearance" ? undefined : "hidden"}
+					>
 						<AccordionItem value="basic">
 							<AccordionTrigger>Make it yours</AccordionTrigger>
 							<AccordionContent>
@@ -396,7 +691,7 @@ function CustomizationEditor({
 								</p>
 								<Accordion
 									type="multiple"
-									defaultValue={["colors", "type-layout", "finish"]}
+									defaultValue={["colors", "text", "finish"]}
 								>
 									<AccordionItem value="colors">
 										<AccordionTrigger>Colors & surfaces</AccordionTrigger>
@@ -427,8 +722,8 @@ function CustomizationEditor({
 											))}
 										</AccordionContent>
 									</AccordionItem>
-									<AccordionItem value="type-layout">
-										<AccordionTrigger>Text, shape & spacing</AccordionTrigger>
+									<AccordionItem value="text">
+										<AccordionTrigger>Text</AccordionTrigger>
 										<AccordionContent className="flex flex-col gap-5">
 											<FontControl theme={draft} onChange={updateFont} />
 											<RangeControl
@@ -440,32 +735,6 @@ function CustomizationEditor({
 												displayValue={`${Number((draft.letterSpacing * 100).toFixed(1))}%`}
 												onChange={(letterSpacing) =>
 													setDraft((current) => ({ ...current, letterSpacing }))
-												}
-											/>
-											<RangeControl
-												label="Corner rounding"
-												value={draft.radius}
-												min={0}
-												max={10}
-												step={0.05}
-												displayValue={
-													draft.radius === 0
-														? "Square"
-														: `${Number((draft.radius * 16).toFixed(1))}px`
-												}
-												onChange={(radius) =>
-													setDraft((current) => ({ ...current, radius }))
-												}
-											/>
-											<RangeControl
-												label="Space between elements"
-												value={draft.spacing}
-												min={0.01}
-												max={2}
-												step={0.01}
-												displayValue={`${Number((draft.spacing * 16).toFixed(1))}px`}
-												onChange={(spacing) =>
-													setDraft((current) => ({ ...current, spacing }))
 												}
 											/>
 										</AccordionContent>
@@ -726,6 +995,14 @@ function CustomizationEditor({
 							</AccordionContent>
 						</AccordionItem>
 					</Accordion>
+					<div className={customizationTab === "layout" ? undefined : "hidden"}>
+						<LayoutControls
+							layout={draftLayout}
+							theme={draft}
+							onChange={setDraftLayout}
+							onThemeChange={setDraft}
+						/>
+					</div>
 				</div>
 				<div
 					className={cn(
@@ -762,37 +1039,76 @@ function CustomizationEditor({
 							className="min-h-full p-5 sm:p-8"
 							data-testid="customization-preview"
 						>
-							<div className="mx-auto flex max-w-2xl flex-col gap-6">
-								<header className="flex flex-col gap-3">
+							<div
+								className={cn(
+									"flex w-full flex-col",
+									previewPosition,
+									previewWidth,
+								)}
+							>
+								<header
+									className={cn("flex flex-col", headerAlignment)}
+									style={{
+										gap: layoutGap(draftLayout.spacing.titleDescriptionGap),
+									}}
+								>
 									<h2 className="text-2xl font-bold md:text-4xl">{title}</h2>
 									{description ? (
 										<p className="text-muted-foreground">{description}</p>
 									) : null}
 								</header>
-								{sections.map((section, index) => (
-									<section
-										key={section.id}
-										className="flex min-w-0 flex-col gap-5 border bg-card p-4 sm:p-6"
-									>
-										<div className="flex flex-col gap-1 border-b pb-4">
-											<h3 className="text-base font-semibold">
-												{section.title || `Section ${index + 1}`}
-											</h3>
-											{"description" in section && section.description ? (
-												<p className="text-sm text-muted-foreground">
-													{section.description}
-												</p>
-											) : null}
-										</div>
-										{section.fields.map(renderField)}
-										{section.fields.length === 0 ? (
-											<p className="text-sm text-muted-foreground">
-												Add fields in the builder to preview them here.
-											</p>
-										) : null}
-									</section>
-								))}
-								<div>
+								<div
+									className="flex flex-col"
+									style={{
+										gap: layoutGap(draftLayout.spacing.sectionGap),
+										marginTop: layoutGap(draftLayout.spacing.titleContentGap),
+									}}
+								>
+									{sections.map((section, index) => (
+										<section
+											key={section.id}
+											className={cn(
+												"flex min-w-0 flex-col border bg-card",
+												sectionSpacing,
+											)}
+										>
+											<div
+												className="flex flex-col gap-1 border-b pb-4"
+												style={{
+													marginBottom: layoutGap(
+														draftLayout.spacing.sectionTitleGap,
+													),
+												}}
+											>
+												<h3 className="text-base font-semibold">
+													{section.title || `Section ${index + 1}`}
+												</h3>
+												{"description" in section && section.description ? (
+													<p className="text-sm text-muted-foreground">
+														{section.description}
+													</p>
+												) : null}
+											</div>
+											<div
+												className="flex flex-col"
+												style={{ gap: layoutGap(draftLayout.spacing.fieldGap) }}
+											>
+												{section.fields.map(renderField)}
+												{section.fields.length === 0 ? (
+													<p className="text-sm text-muted-foreground">
+														Add fields in the builder to preview them here.
+													</p>
+												) : null}
+											</div>
+										</section>
+									))}
+								</div>
+								<div
+									className={cn("flex", submitAlignment)}
+									style={{
+										marginTop: layoutGap(draftLayout.spacing.submitGap),
+									}}
+								>
 									<Button
 										type="button"
 										onClick={() =>
@@ -814,9 +1130,9 @@ function CustomizationEditor({
 					type="button"
 					variant="ghost"
 					size="sm"
-					disabled={!structure.theme}
+					disabled={!structure.theme && !structure.layout}
 					onClick={() => {
-						onUpdate(undefined);
+						onUpdate(undefined, undefined);
 						onClose();
 					}}
 				>
@@ -834,7 +1150,7 @@ function CustomizationEditor({
 						size="sm"
 						disabled={isImporting}
 						onClick={() => {
-							onUpdate(draft);
+							onUpdate(draft, draftLayout);
 							onClose();
 							toast.success(
 								"Customization applied. Save your form to keep it.",
