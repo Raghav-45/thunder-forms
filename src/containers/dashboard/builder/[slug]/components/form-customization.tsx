@@ -39,6 +39,10 @@ import { Slider } from "#/components/ui/slider";
 import { Switch } from "#/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "#/components/ui/tabs";
 import { Textarea } from "#/components/ui/textarea";
+import {
+	ItemCard,
+	SectionCard,
+} from "#/containers/dashboard/builder/[slug]/components/builder-cards";
 import { ThemePresetPicker } from "#/containers/dashboard/builder/[slug]/components/theme-preset-picker";
 import {
 	THEME_COLOR_GROUP_DETAILS,
@@ -64,8 +68,10 @@ import {
 	FORM_FONTS,
 	type FormColorToken,
 	type FormTheme,
+	getFormThemeStyle,
 	getTweakcnRegistryUrl,
 	importFormThemeCss,
+	importFormThemeVariables,
 	isFormThemeColor,
 	normalizeFormTheme,
 } from "#/features/form-builder/theme";
@@ -201,6 +207,7 @@ function RangeControl({
 interface FormCustomizationProps {
 	structure: FormStructure;
 	activePageId: string;
+	canvasWidth?: number | null;
 	title: string;
 	description?: string;
 	submitButtonText?: string;
@@ -562,20 +569,45 @@ export function FormCustomization(props: FormCustomizationProps) {
 function CustomizationEditor({
 	structure,
 	activePageId,
+	canvasWidth,
 	title,
 	description,
 	submitButtonText,
 	onUpdate,
 	onClose,
 }: FormCustomizationProps & { onClose: () => void }) {
-	const [draft, setDraft] = useState(() =>
-		structure.theme
-			? structuredClone(normalizeFormTheme(structure.theme))
-			: createFormTheme(),
+	// Opening Customize must preserve an uncustomized form's current appearance.
+	const [initialTheme] = useState(() => {
+		if (structure.theme)
+			return structuredClone(normalizeFormTheme(structure.theme));
+		const defaultTheme = createFormTheme();
+		const appStyle = getComputedStyle(document.documentElement);
+		return importFormThemeVariables(
+			Object.fromEntries(
+				Object.keys(getFormThemeStyle(defaultTheme) ?? {})
+					.filter((key) => key.startsWith("--"))
+					.map((key) => [key, appStyle.getPropertyValue(key).trim()])
+					.filter(([, value]) => value),
+			),
+			defaultTheme,
+		);
+	});
+	const [draft, setDraft] = useState(() => structuredClone(initialTheme));
+	const themeChanged = JSON.stringify(draft) !== JSON.stringify(initialTheme);
+	const previewTheme = structure.theme || themeChanged ? draft : undefined;
+	const [initialLayout] = useState(() =>
+		normalizeFormLayout(
+			structure.layout ?? {
+				sectionSpacing: "compact",
+				spacing: { fieldGap: 3, sectionGap: 4, sectionTitleGap: 4 },
+			},
+		),
 	);
 	const [draftLayout, setDraftLayout] = useState(() =>
-		normalizeFormLayout(structure.layout),
+		structuredClone(initialLayout),
 	);
+	const layoutChanged =
+		JSON.stringify(draftLayout) !== JSON.stringify(initialLayout);
 	const [draftSubmitButtonText, setDraftSubmitButtonText] = useState(
 		submitButtonText ?? "",
 	);
@@ -611,11 +643,6 @@ function CustomizationEditor({
 	}[draftLayout.contentWidth];
 	const previewPosition =
 		draftLayout.contentAlignment === "left" ? "mr-auto" : "mx-auto";
-	const sectionSpacing = {
-		compact: "p-3 sm:p-4",
-		comfortable: "p-4 sm:p-6",
-		spacious: "p-6 sm:p-8",
-	}[draftLayout.sectionSpacing];
 	const layoutGap = (units: number) => `calc(var(--spacing) * ${units})`;
 	const headerAlignment =
 		draftLayout.headerAlignment === "center"
@@ -934,11 +961,12 @@ function CustomizationEditor({
 													{cssError}
 												</p>
 											) : null}
-											<div className="flex flex-wrap gap-2">
+											<div className="grid grid-cols-[auto_minmax(0,1fr)] items-stretch gap-2">
 												<Button
 													type="button"
 													size="sm"
 													variant="outline"
+													className="h-auto min-h-8 min-w-0 px-2 whitespace-normal"
 													disabled={isImporting}
 													onClick={() => importTheme(css)}
 												>
@@ -948,6 +976,7 @@ function CustomizationEditor({
 													type="button"
 													size="sm"
 													variant="outline"
+													className="h-auto min-h-8 min-w-0 px-2 whitespace-normal"
 													onClick={async () => {
 														const exported = exportFormThemeCss(draft);
 														setCss(exported);
@@ -1086,98 +1115,95 @@ function CustomizationEditor({
 						)}
 					</div>
 					<div className="min-h-80 flex-1 overflow-y-auto">
-						<FormThemeScope
-							theme={draft}
-							className="min-h-full p-5 sm:p-8"
+						<div
+							className={cn(
+								"min-h-full p-[12px] md:p-[16px]",
+								previewTheme ? "bg-background" : "bg-card",
+							)}
 							data-testid="customization-preview"
+							data-form-theme={previewTheme ? true : undefined}
+							style={getFormThemeStyle(previewTheme)}
 						>
-							<div
-								className={cn(
-									"flex w-full flex-col",
-									previewPosition,
-									previewWidth,
-								)}
-							>
-								<header
-									className={cn("flex flex-col", headerAlignment)}
-									style={{
-										gap: layoutGap(draftLayout.spacing.titleDescriptionGap),
-									}}
-								>
-									<h2 className="text-2xl font-bold md:text-4xl">{title}</h2>
-									{description ? (
-										<p className="text-muted-foreground">{description}</p>
-									) : null}
-								</header>
+							<FormThemeScope theme={previewTheme}>
 								<div
-									className="flex flex-col"
+									className={cn(
+										"flex w-full flex-col font-sans",
+										previewPosition,
+										(draftLayout.contentWidth !== initialLayout.contentWidth ||
+											!hasFields) &&
+											previewWidth,
+									)}
 									style={{
-										gap: layoutGap(draftLayout.spacing.sectionGap),
-										marginTop: layoutGap(draftLayout.spacing.titleContentGap),
+										width: canvasWidth
+											? `min(100%, ${canvasWidth}px)`
+											: undefined,
 									}}
 								>
-									{sections.map((section, index) => (
-										<section
-											key={section.id}
-											className={cn(
-												"flex min-w-0 flex-col border bg-card",
-												sectionSpacing,
-											)}
-										>
-											<div
-												className="flex flex-col gap-1 border-b pb-4"
-												style={{
-													marginBottom: layoutGap(
-														draftLayout.spacing.sectionTitleGap,
-													),
-												}}
-											>
-												<h3 className="text-base font-semibold">
-													{section.title || `Section ${index + 1}`}
-												</h3>
-												{"description" in section && section.description ? (
-													<p className="text-sm text-muted-foreground">
-														{section.description}
-													</p>
-												) : null}
-											</div>
-											<div
-												className="flex flex-col"
-												style={{ gap: layoutGap(draftLayout.spacing.fieldGap) }}
-											>
-												{section.fields.map(renderField)}
-												{section.fields.length === 0 ? (
-													<p className="text-sm text-muted-foreground">
-														Add fields in the builder to preview them here.
-													</p>
-												) : null}
-											</div>
-										</section>
-									))}
-								</div>
-								<div
-									className={cn("flex", submitAlignment)}
-									style={{
-										marginTop: layoutGap(draftLayout.spacing.submitGap),
-									}}
-								>
-									<Button
-										type="button"
-										className={cn(
-											"h-auto min-h-9 max-w-full whitespace-normal break-words",
-											FORM_SUBMIT_WIDTH_CLASSES[draftLayout.submitWidth],
-										)}
-										onClick={() =>
-											toast.message(
-												"This is a preview. Your answers are not submitted.",
-											)
-										}
+									<header
+										className={cn("flex flex-col", headerAlignment)}
+										style={{
+											gap: layoutGap(draftLayout.spacing.titleDescriptionGap),
+										}}
 									>
-										{draftSubmitButtonText.trim() || "Submit"}
-									</Button>
+										<h2 className="text-2xl font-bold md:text-4xl">{title}</h2>
+										{description ? (
+											<p className="text-muted-foreground">{description}</p>
+										) : null}
+									</header>
+									<div
+										className="flex flex-col"
+										style={{
+											gap: layoutGap(
+												layoutChanged ? draftLayout.spacing.sectionGap : 4,
+											),
+											marginTop: layoutGap(draftLayout.spacing.titleContentGap),
+										}}
+									>
+										{sections.map((section, index) => (
+											<SectionCard
+												key={section.id}
+												label={section.title || `Section ${index + 1}`}
+												description={
+													"description" in section
+														? section.description
+														: undefined
+												}
+												isEmpty={section.fields.length === 0}
+												reserveActions
+												layout={layoutChanged ? draftLayout : undefined}
+											>
+												{section.fields.map((field) => (
+													<ItemCard key={field.id} field={field} interactive>
+														{renderField(field)}
+													</ItemCard>
+												))}
+											</SectionCard>
+										))}
+									</div>
+									<div
+										className={cn("flex", submitAlignment)}
+										style={{
+											marginTop: layoutGap(draftLayout.spacing.submitGap),
+										}}
+									>
+										<Button
+											type="button"
+											className={cn(
+												"h-auto min-h-9 max-w-full whitespace-normal break-words",
+												FORM_SUBMIT_WIDTH_CLASSES[draftLayout.submitWidth],
+											)}
+											onClick={() =>
+												toast.message(
+													"This is a preview. Your answers are not submitted.",
+												)
+											}
+										>
+											{draftSubmitButtonText.trim() || "Submit"}
+										</Button>
+									</div>
 								</div>
-							</div>
-						</FormThemeScope>
+							</FormThemeScope>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -1206,9 +1232,17 @@ function CustomizationEditor({
 						size="sm"
 						disabled={isImporting}
 						onClick={() => {
+							if (
+								!layoutChanged &&
+								!themeChanged &&
+								draftSubmitButtonText === (submitButtonText ?? "")
+							) {
+								onClose();
+								return;
+							}
 							onUpdate(
-								draft,
-								draftLayout,
+								previewTheme,
+								layoutChanged ? draftLayout : structure.layout,
 								draftSubmitButtonText.trim() || undefined,
 							);
 							onClose();

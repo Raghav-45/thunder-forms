@@ -3,6 +3,7 @@ import type { ComponentType, ReactNode } from "react";
 import { createElement, forwardRef } from "react";
 import { Button } from "#/components/ui/button";
 import type { FieldConfig } from "#/features/form-builder/elements";
+import type { NormalizedFormLayout } from "#/features/form-builder/form-structure";
 import { getFieldComponent } from "#/features/form-builder/utils/helperFunctions";
 import { cn } from "#/lib/utils";
 
@@ -25,7 +26,9 @@ function FieldPreview({ field }: { field: FieldConfig }) {
 }
 
 interface ItemCardProps {
+	children?: ReactNode;
 	field: FieldConfig;
+	interactive?: boolean;
 	floatingWidth?: number | null;
 	onEdit?: () => void;
 	onRemove?: () => void;
@@ -33,7 +36,10 @@ interface ItemCardProps {
 }
 
 export const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(
-	function ItemCard({ field, floatingWidth, onEdit, onRemove, state }, ref) {
+	function ItemCard(
+		{ children, field, interactive, floatingWidth, onEdit, onRemove, state },
+		ref,
+	) {
 		const isFloating = state === "floating";
 
 		return (
@@ -48,8 +54,10 @@ export const ItemCard = forwardRef<HTMLDivElement, ItemCardProps>(
 					isFloating && "pointer-events-none shadow-2xl cursor-grabbing",
 				)}
 			>
-				<div className="pointer-events-none flex-1 pr-2">
-					<FieldPreview field={field} />
+				<div
+					className={cn("flex-1 pr-2", !interactive && "pointer-events-none")}
+				>
+					{children ?? <FieldPreview field={field} />}
 				</div>
 
 				{!isFloating && onEdit && onRemove ? (
@@ -93,6 +101,8 @@ interface SectionCardProps {
 	handleRef?: (element: Element | null) => void;
 	isEmpty: boolean;
 	label: string;
+	layout?: NormalizedFormLayout;
+	reserveActions?: boolean;
 	onEdit?: () => void;
 	onRemove?: () => void;
 	state?: "ghost" | "floating";
@@ -109,6 +119,8 @@ export const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
 			handleRef,
 			isEmpty,
 			label,
+			layout,
+			reserveActions,
 			onEdit,
 			onRemove,
 			state,
@@ -120,9 +132,15 @@ export const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
 		return (
 			<div
 				ref={ref}
-				style={
-					isFloating && floatingWidth ? { width: floatingWidth } : undefined
-				}
+				style={{
+					width: isFloating && floatingWidth ? floatingWidth : undefined,
+					padding: layout
+						? `calc(var(--spacing) * ${{ compact: 4, comfortable: 6, spacious: 8 }[layout.sectionSpacing]})`
+						: undefined,
+					gap: layout
+						? `calc(var(--spacing) * ${layout.spacing.sectionTitleGap})`
+						: undefined,
+				}}
 				className={cn(
 					"group/section flex flex-col gap-4 rounded-xl border border-neutral-800 bg-neutral-900 p-4 transition-opacity",
 					state === "ghost" && "opacity-30",
@@ -173,6 +191,8 @@ export const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
 								<span className="sr-only">Remove {label}</span>
 							</Button>
 						</div>
+					) : reserveActions ? (
+						<div aria-hidden className="h-8 w-17 shrink-0" />
 					) : null}
 				</div>
 
@@ -184,7 +204,15 @@ export const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
 						Drop fields here
 					</div>
 				) : (
-					<div ref={fieldSurfaceRef} className="flex-1 space-y-3">
+					<div
+						ref={fieldSurfaceRef}
+						className={cn("flex-1", layout ? "flex flex-col" : "space-y-3")}
+						style={
+							layout
+								? { gap: `calc(var(--spacing) * ${layout.spacing.fieldGap})` }
+								: undefined
+						}
+					>
 						{children}
 					</div>
 				)}

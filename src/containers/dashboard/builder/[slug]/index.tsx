@@ -317,7 +317,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 		canvasRef.current = element;
 
 		const updateCanvasWidth = () => {
-			setCanvasWidth(element.getBoundingClientRect().width);
+			setCanvasWidth(element.clientWidth);
 		};
 
 		updateCanvasWidth();
@@ -986,6 +986,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 							<FormCustomization
 								structure={formStructure}
 								activePageId={resolvedActivePageId}
+								canvasWidth={canvasWidth}
 								title={formSettings.title}
 								description={formSettings.description}
 								submitButtonText={formSettings.submitButtonText}

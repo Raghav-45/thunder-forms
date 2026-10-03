@@ -11,8 +11,118 @@ async function mockSession(page: Page) {
 	} }));
 }
 
+test("Contact Us keeps its current appearance when Customize opens and unchanged settings apply", async ({ page }) => {
+	await mockSession(page);
+	let saved: Record<string, unknown> = {};
+	await page.route("**/api/forms/new", (route) => {
+		saved = route.request().postDataJSON();
+		return route.fulfill({ json: { ...saved, id: "unchanged-contact", status: "Active" } });
+	});
+	await page.goto("/dashboard/builder/new-form?template=contact-us", { waitUntil: "networkidle" });
+	const section = page.locator(".group\\/section").first();
+	await section.evaluate(async (element) => {
+		element.getBoundingClientRect();
+		await Promise.all(element.getAnimations({ subtree: true }).map((animation) => animation.finished.catch(() => {})));
+	});
+	const appearance = (element: Element) => {
+		const style = getComputedStyle(element);
+		return Object.fromEntries(["background-color", "color", "border-radius", "padding", "font-family"].map((property) => [property, style.getPropertyValue(property)]));
+	};
+	const beforeSection = await section.evaluate(appearance);
+	const beforeInput = await section.locator("input").first().evaluate(appearance);
+	const geometry = (element: Element) => {
+		const rect = element.getBoundingClientRect();
+		return {
+			height: Math.round(rect.height), width: Math.round(rect.width),
+			fields: Array.from(element.querySelectorAll("input, textarea")).map((item) => {
+				const field = item.getBoundingClientRect();
+				return { top: Math.round(field.top - rect.top), left: Math.round(field.left - rect.left), height: Math.round(field.height), width: Math.round(field.width) };
+			}),
+		};
+	};
+	const beforeGeometry = await section.evaluate(geometry);
+	await page.mouse.move(0, 0);
+	const beforeScreenshot = await section.screenshot({ animations: "disabled" });
+	await page.getByRole("button", { name: "Customize", exact: true }).click();
+	const editor = page.getByRole("dialog", { name: "Customize your form" });
+	const preview = page.getByTestId("customization-preview");
+	expect(await preview.locator(".group\\/section").first().evaluate(appearance)).toEqual(beforeSection);
+	expect(await preview.locator("input").first().evaluate(appearance)).toEqual(beforeInput);
+	expect(await preview.locator(".group\\/section").first().evaluate(geometry)).toEqual(beforeGeometry);
+	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
+	expect(await section.evaluate(appearance)).toEqual(beforeSection);
+	expect(await section.locator("input").first().evaluate(appearance)).toEqual(beforeInput);
+	await expect(page.locator("[data-form-theme]")).toHaveCount(0);
+	expect(await section.evaluate(geometry)).toEqual(beforeGeometry);
+	await page.mouse.move(0, 0);
+	expect((await section.screenshot({ animations: "disabled" })).equals(beforeScreenshot)).toBe(true);
+	const saveResponse = page.waitForResponse((response) => response.url().endsWith("/api/forms/new") && response.request().method() === "POST");
+	await page.getByRole("button", { name: "Save", exact: true }).click();
+	await saveResponse;
+	expect(saved.fields).not.toHaveProperty("theme");
+	expect(saved.fields).not.toHaveProperty("layout");
+});
+
+test("a customized Contact Us form loads its current appearance into Customize without changing the canvas", async ({ page }) => {
+	await page.goto("/dashboard/builder/new-form?template=contact-us", { waitUntil: "networkidle" });
+	await page.getByRole("button", { name: "Customize", exact: true }).click();
+	const editor = page.getByRole("dialog", { name: "Customize your form" });
+	const preview = page.getByTestId("customization-preview");
+	await editor.getByRole("button", { name: "Advanced customizations", exact: true }).click();
+	await editor.getByRole("button", { name: "Import or export a theme", exact: true }).click();
+	await editor.getByRole("textbox", { name: "Theme code", exact: true }).fill(":root { --background: #102030; --card: #283848; --radius: 0.5rem; --spacing: 0.3rem; --font-sans: Georgia, serif; }");
+	await editor.getByRole("button", { name: "Import theme", exact: true }).click();
+	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
+	const section = page.locator(".group\\/section").first();
+	await section.evaluate(async (element) => {
+		element.getBoundingClientRect();
+		await Promise.all(element.getAnimations({ subtree: true }).map((animation) => animation.finished.catch(() => {})));
+	});
+	const appearance = (element: Element) => {
+		const style = (item: Element) => Object.fromEntries(["padding", "border-radius", "background-color", "font-family"].map((property) => [property, getComputedStyle(item).getPropertyValue(property)]));
+		const rect = element.getBoundingClientRect();
+		return {
+			section: style(element), input: style(element.querySelector("input")!),
+			positions: Array.from(element.querySelectorAll("input, textarea")).map((item) => Math.round(item.getBoundingClientRect().top - rect.top)),
+			height: Math.round(rect.height), width: Math.round(rect.width),
+		};
+	};
+	const before = await section.evaluate(appearance);
+	await page.mouse.move(0, 0);
+	const beforeScreenshot = await section.screenshot({ animations: "disabled" });
+	await page.getByRole("button", { name: "Customize", exact: true }).click();
+	await expect.poll(() => preview.locator(".group\\/section").first().evaluate(appearance)).toEqual(before);
+	expect(await section.evaluate(appearance)).toEqual(before);
+	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
+	expect(await section.evaluate(appearance)).toEqual(before);
+	await page.mouse.move(0, 0);
+	expect((await section.screenshot({ animations: "disabled" })).equals(beforeScreenshot)).toBe(true);
+});
+
+test("theme import and copy buttons stay in one horizontal row", async ({ page }) => {
+	await page.goto("/dashboard/builder/new-form", { waitUntil: "networkidle" });
+	await page.getByRole("button", { name: "Customize", exact: true }).click();
+	const editor = page.getByRole("dialog", { name: "Customize your form" });
+	await editor.getByRole("button", { name: "Advanced customizations", exact: true }).click();
+	await editor.getByRole("button", { name: "Import or export a theme", exact: true }).click();
+	for (const width of [1440, 390, 320]) {
+		await page.setViewportSize({ width, height: 1000 });
+		const buttons = editor.getByRole("button", { name: /^(Import theme|Copy theme code)$/ });
+		await expect(buttons).toHaveCount(2);
+		const boxes = await buttons.evaluateAll((elements) => elements.map((element) => {
+			const rect = element.getBoundingClientRect();
+			return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+		}));
+		expect(boxes[0].y).toBeCloseTo(boxes[1].y);
+		expect(boxes[0].height).toBeCloseTo(boxes[1].height);
+		expect(boxes[1].x).toBeGreaterThanOrEqual(boxes[0].x + boxes[0].width);
+		expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+	}
+});
+
 test("customizations preview live, cancel cleanly, apply and reset", async ({ page }) => {
 	await page.goto("/dashboard/builder/new-form", { waitUntil: "networkidle" });
+	const originalBackground = await page.locator("body").evaluate((element) => getComputedStyle(element).backgroundColor);
 	await page.getByRole("button", { name: "text-input", exact: true }).click();
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
 	const editor = page.getByRole("dialog", { name: "Customize your form" });
@@ -28,7 +138,7 @@ test("customizations preview live, cancel cleanly, apply and reset", async ({ pa
 	await expect(page.locator("[data-form-theme]")).toHaveCount(0);
 
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
-	await expect(preview).toHaveCSS("background-color", "rgb(10, 10, 10)");
+	await expect(preview).toHaveCSS("background-color", await page.locator("body").evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--card").trim()));
 	await editor.getByRole("combobox", { name: "Text font", exact: true }).click();
 	await page.getByRole("option", { name: "Georgia", exact: true }).click();
 	await expect(preview).toHaveCSS("font-family", 'Georgia, "Times New Roman", serif');
@@ -40,7 +150,7 @@ test("customizations preview live, cancel cleanly, apply and reset", async ({ pa
 	const radius = editor.getByRole("slider", { name: "Corner rounding", exact: true });
 	await radius.focus();
 	await radius.press("Home");
-	await expect(preview.locator("section").first()).toHaveCSS("border-radius", "0px");
+	await expect(preview.locator(".group\\/section").first()).toHaveCSS("border-radius", "0px");
 	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
 	await expect(page.getByRole("dialog")).toHaveCount(0);
 	await expect(page.locator("[data-form-theme]")).toHaveCSS(
@@ -53,7 +163,7 @@ test("customizations preview live, cancel cleanly, apply and reset", async ({ pa
 			.locator("[data-active-page-tab-surface]"),
 	).toHaveCSS(
 		"background-color",
-		"rgb(10, 10, 10)",
+		originalBackground,
 	);
 
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
@@ -96,7 +206,7 @@ test("theme persists in the save payload and public form after reload, including
 	});
 	await fieldSpacing.focus();
 	await fieldSpacing.press("ArrowRight");
-	await expect(fieldSpacing).toHaveAttribute("aria-valuenow", "5.25");
+	await expect(fieldSpacing).toHaveAttribute("aria-valuenow", "3.25");
 	await editor.getByRole("combobox", { name: "Button position", exact: true }).click();
 	await page.getByRole("option", { name: "Right aligned", exact: true }).click();
 	await expect(preview.getByRole("heading").first()).toHaveCSS("text-align", "center");
@@ -116,7 +226,7 @@ test("theme persists in the save payload and public form after reload, including
 		headerAlignment: "center",
 		contentWidth: "wide",
 		sectionSpacing: "spacious",
-		spacing: { fieldGap: 5.25 },
+		spacing: { fieldGap: 3.25 },
 		submitAlignment: "right",
 	},
 	theme: { colors: { primary: "#334455", popover: "#ffeedd" } },
@@ -265,7 +375,7 @@ test("customization is usable on mobile and the app stays dark with light browse
 	const preview = page.getByTestId("customization-preview");
 	await editor.getByRole("tab", { name: "Preview", exact: true }).click();
 	await expect(preview).toBeVisible();
-	await expect(preview.getByRole("textbox").first()).toHaveCSS("background-color", "rgb(10, 10, 10)");
+	await expect(preview).toHaveCSS("background-color", await page.locator("body").evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--card").trim()));
 	await testInfo.attach("customization-mobile", { body: await page.screenshot(), contentType: "image/png" });
 	await page.setViewportSize({ width: 1440, height: 1000 });
 	await testInfo.attach("customization-desktop", { body: await page.screenshot(), contentType: "image/png" });
@@ -415,7 +525,7 @@ test("theme links and CSS or registry files import dark colors and all customiza
 	await link.fill("https://example.com/theme");
 	await editor.getByRole("button", { name: "Import from link", exact: true }).click();
 	await expect(editor.getByRole("alert")).toContainText("tweakcn.com");
-	await expect(preview).toHaveCSS("--primary", "#f4ce4c");
+	await expect(preview).toHaveCSS("--primary", await page.locator("body").evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--primary").trim()));
 	await link.fill(`https://tweakcn.com/editor/theme?theme=${preset.id}`);
 	await editor.getByRole("button", { name: "Import from link", exact: true }).click();
 	await expect(preview).toHaveCSS("--primary", preset.variables.primary);
@@ -500,7 +610,7 @@ for (const viewport of [{ name: "desktop", width: 1440, height: 1000 }, { name: 
 		});
 		await spacing.focus();
 		await spacing.press("ArrowRight");
-		await expect(spacing).toHaveAttribute("aria-valuenow", "5.25");
+		await expect(spacing).toHaveAttribute("aria-valuenow", "3.25");
 		await editor.getByRole("tab", { name: "Appearance", exact: true }).click();
 		const tracking = basic.getByRole("slider", { name: "Letter spacing", exact: true });
 		await tracking.focus();
