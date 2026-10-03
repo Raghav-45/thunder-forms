@@ -157,3 +157,10 @@ Verify multi-page order and stable IDs through editing, saving, public navigatio
 validation, and submission. Cover invalid stored JSON returning HTTP 422 without
 a response write, legacy theme normalization, quiz answer-key stripping, and
 customization mode changes preserving canvas state when those areas change.
+
+Update triggers for this document: a new field identifier updates the allow-list
+notes; a changed page/section/field shape, ID rule, layout, theme, or quiz setting
+updates the contract section naming it; a changed producer, consumer, or API
+behavior updates the ownership or API-boundary entry for it. Replace obsolete
+statements in place and keep the AGENTS.md guides linked here free of copied
+contract text.

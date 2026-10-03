@@ -17,7 +17,7 @@ and complete its reading workflow before editing. This guide supplements root ru
 Make the smallest change that achieves the requested goal. This feature
 already has one field registry, one config-validation dispatcher, and one
 data-validation dispatcher — don't add a second of any of them, and don't add
-a components subfolder or barrel file the existing structure doesn't need.
+another shared-UI location or barrel file the existing structure doesn't need.
 
 ## Field structure
 
@@ -112,7 +112,9 @@ export class ExampleFieldDefinition extends FormFieldDefinition<ExampleFieldConf
 Add `new ExampleFieldDefinition()` to `FIELD_DEFINITIONS` in `elements/index.ts`
 in the same change. `BaseFieldConfig` gets its allowed identifiers from that
 registry. Use a nearby real field as the source for actual UI, settings, and
-validation.
+validation. Keep the `zod/v3` import path every current field uses — the
+installed `zod` package is v4 with a v3-compat entry point, so do not
+"upgrade" the import to `zod`.
 
 ## Validation dispatchers
 
@@ -141,7 +143,7 @@ this architecture.
 
 ```text
 src/features/form-builder/             # form-building domain feature
-├── components/                         # Form Builder UI shared by feature flows
+├── components/                         # shared settings, respondent rendering, theme scope
 ├── constants/
 │   └── index.ts                        # shared Form Builder constants
 ├── core/                               # AI generation, import, combined schemas
@@ -150,29 +152,36 @@ src/features/form-builder/             # form-building domain feature
 │   └── import-google-form.tsx
 ├── elements/                           # field definition system
 │   ├── base.ts                         # FormFieldDefinition contract
-│   ├── fields/                         # one complete field defined per file, each having its own renderer, editor, defaults, validator
-│   │   ├── text-area.tsx
+│   ├── choice-options.ts               # shared choice-option helpers (+ .test.ts)
+│   ├── number-constraints.ts           # shared numeric helpers (+ .test.ts)
+│   ├── fields/                         # one complete field per file: renderer, editor, defaults, validator
 │   │   ├── text-input.tsx
+│   │   ├── text-area.tsx
+│   │   ├── number-input.tsx
+│   │   ├── slider.tsx                  # (+ .test.ts; date-picker and datetime-picker also have tests)
+│   │   ├── single-select.tsx
+│   │   ├── multi-select.tsx
+│   │   ├── radio-group.tsx
+│   │   ├── checkbox.tsx
 │   │   ├── switch-field.tsx
 │   │   ├── date-picker.tsx
 │   │   ├── datetime-picker.tsx
-│   │   ├── checkbox.tsx
-│   │   ├── single-select.tsx
-│   │   ├── multi-select.tsx
-│   │   ├── number-input.tsx
-│   │   ├── radio-group.tsx
-│   │   ├── slider.tsx
-│   │   └── ...more field types can be added here as needed
+│   │   ├── time-picker.tsx
+│   │   ├── file-upload.tsx
+│   │   └── rating.tsx
 │   └── index.ts                        # FIELD_DEFINITIONS and FIELD_REGISTRY
-├── form-structure.ts                   # server-safe persisted tree contract
-├── theme.ts                            # theme contract and normalization
-├── server/                             # server-only domain services
-├── store.ts                            # form settings state
+├── form-structure.ts                   # server-safe persisted tree contract (+ .test.ts)
+├── theme.ts                            # theme contract and normalization (+ .test.ts)
+├── formValidation.test.ts              # answer-validation coverage for all fields
+├── server/                             # server-only domain services (quiz-email.ts)
+├── store.ts                            # form settings state (+ .test.ts)
+├── stories/                            # Storybook field controls, editors, and harness
 ├── types/
 │   └── index.ts                        # shared config and prop types
 └── utils/                              # registry dispatch and small helpers
-    ├── formValidation.ts
-    └── helperFunctions.ts
+    ├── formValidation.ts               # submitted-value dispatcher
+    ├── helperFunctions.ts              # config validation + registry lookups (+ .test.ts)
+    └── quiz.ts                         # quiz helpers (+ .test.ts)
 ```
 
 `components/` contains shared settings, respondent rendering, theme scope,
@@ -197,6 +206,12 @@ When registry integration, shared ownership, or validation dispatch changes,
 update the affected sections and the child field guide. Persisted-data changes
 also require reviewing [FORM_STRUCTURE.md](FORM_STRUCTURE.md). Keep examples
 compatible with `elements/base.ts` and the installed schema import used by fields.
+
+Update triggers in this scope: a new field updates the tree above and the
+add-a-field steps; a new shared helper, dispatcher, `core/` consumer, or
+`utils/` module updates the field-structure, dispatcher, or tree sections that
+name it. Replace obsolete file lists in place rather than appending a second
+list, and keep the `zod/v3` example matching what field files import.
 
 ## Before finishing
 

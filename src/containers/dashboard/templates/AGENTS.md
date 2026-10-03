@@ -50,3 +50,9 @@ and preview behavior against
 When an authorized feature changes a documented template default or preview rule,
 update the affected rule here in the same change. Preserve unrelated defaults and
 existing saved forms; do not treat a new template default as a data migration.
+
+Update triggers in this scope: a changed slider range, step, default, description,
+or `previewFieldLabels` set updates the rule naming it; a changed thumbnail,
+dialog, paired-action, DOM-ID, or focus behavior updates the corresponding bullet.
+Replace the obsolete value in place and re-verify the other two surfaces
+(spec, materialization, preview) still agree.

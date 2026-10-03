@@ -246,6 +246,13 @@ editor conventions, integration steps, or verification paths. Keep details uniqu
 to one field in that field's implementation and tests. Update the parent guide and
 form-structure document only when their contracts are affected.
 
+Update triggers in this scope: a changed renderer, editor, Sheet/accordion,
+DOM-ID, dnd-kit, or validation convention updates the rule stating it; a new
+integration step (registry, allow-list, AI prompt, importer, upload contract)
+extends the checklist; a moved or renamed test path updates the verification
+section. Replace obsolete conventions in place and re-check the closest shipped
+fields still match what is documented.
+
 ## Keep the implementation human-maintainable
 
 - Prefer a small, explicit helper over clever generic machinery.

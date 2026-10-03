@@ -54,13 +54,13 @@ Make the smallest change that achieves the requested goal. Don't add folders, wr
 
 ## Import conventions
 
-- Use `#/` for every handwritten project-module import, including imports within the same feature or directory. Do not use relative `./` or `../` module imports.
+- Use `#/` for every handwritten project-module import, including imports within the same feature or directory. Do not use relative `./` or `../` module imports. (`#/scripts/*` maps to `./scripts/*`; the codebase currently contains zero relative module imports outside generated files — keep it that way.)
 - Use one internal alias only: `#/`. Do not introduce or use `@/` in handwritten code.
 - Leave generated files (`src/routeTree.gen.ts` and `src/generated/`) in their generator-prescribed import style.
 
 ## Shadcn UI
 
-- Treat `components/ui/` as the original shadcn baseline. Do not change it for feature-specific styling or layout; fix the consuming feature instead. Change a shared primitive only when the task explicitly requires it.
+- Treat `src/components/ui/` as the original shadcn baseline. Do not change it for feature-specific styling or layout; fix the consuming feature instead. Change a shared primitive only when the task explicitly requires it.
 
 ## Skills
 
@@ -70,7 +70,7 @@ Make the smallest change that achieves the requested goal. Don't add folders, wr
 
 - Page route files in `src/routes/` stay thin — import or re-export from `containers/`, unless framework behavior requires otherwise.
 - Page-level logic and UI live in the matching `containers/<route>` folder.
-- A component used by only one feature stays in that feature's `containers/<feature>/components/`, next to the logic that uses it — don't promote it to root `components/` just in case.
+- A component used by only one route family stays in that container's `components/`, next to the logic that uses it — don't promote it to root `components/` just in case.
 - Organize container code by responsibility: use `components/`, `constants/`,
   `types/`, `hooks/`, and `utils/` when code belongs to those roles. Don't keep related
   code flat merely to avoid a folder, and don't create empty or ceremonial
@@ -96,6 +96,9 @@ src/routes/templates/index.tsx                  → containers/templates/index.t
 
 ## Directory structure
 
+Abbreviated — the containers and form-builder guides own their subtrees.
+Ellipses mark folders with more entries than shown.
+
 ```text
 .
 ├── src/routes/                      # TanStack Router routes and framework files
@@ -104,7 +107,7 @@ src/routes/templates/index.tsx                  → containers/templates/index.t
 │   ├── forms/$slug/                  # public form route
 │   ├── templates/                    # public templates route
 │   ├── auth/                         # auth routes
-│   └── api/                          # API route handlers
+│   └── api/                          # API route handlers (forms, analytics, integrations, …)
 ├── src/containers/                   # route/page UI and page-level logic
 │   ├── auth/
 │   ├── dashboard/
@@ -119,9 +122,12 @@ src/routes/templates/index.tsx                  → containers/templates/index.t
 │   ├── public/forms/[slug]/
 │   └── templates/
 ├── src/features/                     # shared domain features
-│   └── form-builder/
-├── src/components/                   # genuinely cross-feature UI only
-└── src/lib/                          # reusable utilities and shared domain data
+│   ├── form-builder/                 # (see its guide; components, core, elements, utils, …)
+│   └── file-uploads, google-auth, google-forms-import, google-picker, google-sheets
+├── src/components/                   # genuinely cross-feature UI only (`ui/` shadcn baseline + shared components)
+├── src/lib/                          # reusable utilities, auth, validators, and server helpers
+├── tests/visual/                     # Playwright browser tests
+└── .agents/skills/                   # repository skills (check before starting work)
 ```
 
 ## Refactoring rules
@@ -137,6 +143,25 @@ After a feature, fix, or refactor, check whether its changes make any applicable
 instruction or architecture document inaccurate. Update affected guidance in the
 same working change; leave accurate guidance untouched. This does not authorize
 committing, pushing, or changing unrelated product behavior.
+
+### Update triggers
+
+| Change | Update in the same diff |
+| --- | --- |
+| New route, moved page logic, new route family | Containers guide tree/mapping; this route mapping if it changes ownership |
+| New field, registry/dispatcher change, validation behavior change | Form Builder guide, field guide, `FORM_STRUCTURE.md` allow-list/contract notes |
+| Template default, preview, thumbnail, or materialization change | Templates guide rule for that default or behavior |
+| Import alias, test layout, script, or lint scope change | Verification commands and conventions here |
+| New `AGENTS.md` added, moved, or removed | Root index above plus affected parent/child links |
+
+### Style contract for instruction edits
+
+Write the update the way the surrounding guide already reads, so any model
+can extend these files without degrading them: short paragraphs, descriptive
+`##` headings, direct actionable bullets, exact repository paths, and stated
+scope with explicit exceptions. Replace obsolete statements in place rather
+than appending a correction beside them. State rules, not session history:
+no chat tone, no speculative future architecture, no temporary findings.
 
 1. Verify the changed behavior in its implementation, callers, and relevant tests.
    Check paths, exports, scripts, and configuration directly. Do not document a

@@ -23,7 +23,7 @@ ownership.
   matching route or route family.
 - Keep code shared only by sibling routes in its owning container. For example,
   dashboard template data and helpers belong in
-  `containers/dashboard/templates/`, even when dashboard builder/testing routes
+  `containers/dashboard/templates/`, even when dashboard builder or forms routes
   consume them.
 - Do not promote container-owned code to `features/` merely because sibling
   routes import it. Use `features/` for genuinely cross-area domains, such as
@@ -39,15 +39,24 @@ ownership.
 ```text
 src/containers/
 ├── auth/                              # auth page UI and shared auth components
-│   ├── components/
+│   ├── components/                    # login-form, signup-form, oauth-buttons
 │   ├── login/
-│   └── signup/
+│   ├── signup/
+│   ├── auth-layout.tsx
+│   └── index.tsx
 ├── dashboard/                         # dashboard route family
-│   ├── builder/[slug]/
+│   ├── builder/[slug]/                # builder page UI
+│   │   ├── components/
+│   │   ├── constants/
+│   │   ├── hooks/
+│   │   ├── drag-model.ts
+│   │   └── index.tsx
 │   ├── components/                    # dashboard-wide UI, including sidebar
 │   ├── constants/
 │   ├── forms/                         # form list, analytics, and responses
 │   │   ├── [formId]/
+│   │   │   ├── analytics/
+│   │   │   └── responses/
 │   │   ├── components/
 │   │   ├── hooks/
 │   │   └── types/
@@ -57,9 +66,9 @@ src/containers/
 │   │   ├── instantiate-template.ts
 │   │   └── types/
 │   └── dashboard-layout.tsx
-├── landing-page/                      # marketing landing page UI
-├── public/forms/[slug]/               # public form page UI
-└── templates/                         # marketing templates page UI
+├── landing-page/                      # marketing landing page UI (+ components/)
+├── public/forms/[slug]/               # public form page UI (+ components/)
+└── templates/                         # marketing templates page UI (+ components/)
 ```
 
 Organize code by responsibility from the start: use folders like `components/`,
@@ -86,6 +95,11 @@ Follow [instruction maintenance](../../AGENTS.md#maintaining-these-instructions)
 Update ownership and route mappings when an authorized feature moves page logic
 or introduces a new route family. Keep route-specific behavior in its owning
 guide and update the root index when adding or moving a guide.
+
+Update triggers in this scope: a new route family or moved page UI updates the
+tree above; a new template default or preview rule belongs in the child
+templates guide, not here. Replace obsolete paths in place, verify every listed
+path exists, and keep examples in `#/` import style.
 
 ## Before finishing
 
