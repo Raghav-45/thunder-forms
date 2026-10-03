@@ -3,12 +3,7 @@ import { DragDropProvider } from "@dnd-kit/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import axios from "axios";
-import {
-	AnimatePresence,
-	motion,
-	useReducedMotion,
-	type Variants,
-} from "motion/react";
+import { useReducedMotion, type Variants } from "motion/react";
 import type { ComponentType } from "react";
 import {
 	createElement,
@@ -19,14 +14,12 @@ import {
 	useState,
 } from "react";
 import { toast } from "sonner";
-import { Card, CardContent } from "#/components/ui/card";
 import { ScrollArea } from "#/components/ui/scroll-area";
-import { BuilderCanvas } from "#/containers/dashboard/builder/[slug]/components/builder-canvas";
+import { BuilderCanvasPanel } from "#/containers/dashboard/builder/[slug]/components/builder-canvas-panel";
 import { BuilderDragOverlay } from "#/containers/dashboard/builder/[slug]/components/builder-drag-overlay";
 import { BuilderHeader } from "#/containers/dashboard/builder/[slug]/components/builder-header";
 import { BuilderLeftSidebar } from "#/containers/dashboard/builder/[slug]/components/builder-left-sidebar";
 import { BuilderRightSidebar } from "#/containers/dashboard/builder/[slug]/components/builder-right-sidebar";
-import { ChromeTabStrip } from "#/containers/dashboard/builder/[slug]/components/chrome-tab-strip";
 import type { FormCustomizationValue } from "#/containers/dashboard/builder/[slug]/components/form-customization";
 import { SaveFormLoginDialog } from "#/containers/dashboard/builder/[slug]/components/save-form-login-dialog";
 import { SectionEditor } from "#/containers/dashboard/builder/[slug]/components/section-editor";
@@ -58,17 +51,13 @@ import {
 	type QuizSettings,
 } from "#/features/form-builder/form-structure";
 import { useFormStore } from "#/features/form-builder/store";
-import {
-	getFormThemeStyle,
-	normalizeFormTheme,
-} from "#/features/form-builder/theme";
+import { normalizeFormTheme } from "#/features/form-builder/theme";
 import type { QuizQuestionConfig } from "#/features/form-builder/types";
 import { getFieldEditor } from "#/features/form-builder/utils/helperFunctions";
 import type { ImportedGoogleFormPage } from "#/features/google-forms-import/types";
 import { GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM } from "#/features/google-sheets/constants";
 import { googleSheetsOAuthResultMessage } from "#/features/google-sheets/oauth-result";
 import { authClient } from "#/lib/auth-client";
-import { cn } from "#/lib/utils";
 import type { CreateFormPayload } from "#/lib/validators/form";
 
 const sensors = [
@@ -656,80 +645,49 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 						}}
 					/>
 
-					<Card
-						className={cn(
-							"mb-1 flex h-[calc(100vh-72px)] flex-col gap-0 overflow-hidden rounded-none border-none bg-card text-card-foreground shadow-none !p-0",
-						)}
-					>
-						<ChromeTabStrip
-							pages={formStructure.pages}
-							activePageId={resolvedActivePageId}
-							activeTabBackground={
-								canvasTheme
-									? normalizeFormTheme(canvasTheme).colors.background
-									: undefined
-							}
-							onSelectPage={selectPage}
-							onRemovePage={removePageById}
-							onAddPage={addPage}
-							canRemovePage={formStructure.pages.length > 1}
-						/>
-						<CardContent
-							data-testid="builder-canvas"
-							data-form-theme={canvasTheme ? true : undefined}
-							style={getFormThemeStyle(canvasTheme)}
-							className={cn(
-								"min-h-0 flex-1 overflow-y-auto p-3 md:p-4",
-								!hasCanvasSections &&
-									"flex h-full w-full items-center justify-center",
-							)}
-						>
-							<AnimatePresence
-								mode="popLayout"
-								custom={pageTransitionDirection.current}
-							>
-								<motion.div
-									key={resolvedActivePageId}
-									custom={pageTransitionDirection.current}
-									className={cn("w-full", !hasCanvasSections && "h-full")}
-									variants={pageTransitionVariants}
-									initial="initial"
-									animate="animate"
-									exit="exit"
-									transition={pageTransition}
-								>
-									<BuilderCanvas
-										title={formSettings.title}
-										description={formSettings.description}
-										layout={canvasLayout}
-										submitButtonText={canvasSubmitButtonText}
-										isCustomizing={Boolean(customization)}
-										activePage={activePage}
-										hasSections={hasCanvasSections}
-										onCanvasRef={registerCanvas}
-										onEditSection={(section) =>
-											setEditingSection({
-												pageId: resolvedActivePageId,
-												section,
-											})
-										}
-										onEditField={(field, sectionId) =>
-											setEditingField({
-												field,
-												pageId: resolvedActivePageId,
-												sectionId,
-											})
-										}
-										onFieldSurfaceRef={registerFieldSurface}
-										onRemoveSection={removeSectionById}
-										onRemoveField={removeFieldById}
-										paletteFieldPlaceholderId={paletteFieldPlaceholderId}
-										paletteSectionPlaceholderId={paletteSectionPlaceholderId}
-									/>
-								</motion.div>
-							</AnimatePresence>
-						</CardContent>
-					</Card>
+					<BuilderCanvasPanel
+						activePage={activePage}
+						activePageId={resolvedActivePageId}
+						activeTabBackground={
+							canvasTheme
+								? normalizeFormTheme(canvasTheme).colors.background
+								: undefined
+						}
+						canvasLayout={canvasLayout}
+						canvasSubmitButtonText={canvasSubmitButtonText}
+						canvasTheme={canvasTheme}
+						canRemovePage={formStructure.pages.length > 1}
+						description={formSettings.description}
+						hasCanvasSections={hasCanvasSections}
+						isCustomizing={Boolean(customization)}
+						pages={formStructure.pages}
+						pageTransition={pageTransition}
+						pageTransitionDirection={pageTransitionDirection.current}
+						pageTransitionVariants={pageTransitionVariants}
+						paletteFieldPlaceholderId={paletteFieldPlaceholderId}
+						paletteSectionPlaceholderId={paletteSectionPlaceholderId}
+						title={formSettings.title}
+						onAddPage={addPage}
+						onEditField={(field, sectionId) =>
+							setEditingField({
+								field,
+								pageId: resolvedActivePageId,
+								sectionId,
+							})
+						}
+						onEditSection={(section) =>
+							setEditingSection({
+								pageId: resolvedActivePageId,
+								section,
+							})
+						}
+						onFieldSurfaceRef={registerFieldSurface}
+						onCanvasRef={registerCanvas}
+						onRemoveField={removeFieldById}
+						onRemovePage={removePageById}
+						onRemoveSection={removeSectionById}
+						onSelectPage={selectPage}
+					/>
 				</ScrollArea>
 
 				<BuilderRightSidebar
