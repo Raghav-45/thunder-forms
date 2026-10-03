@@ -1,8 +1,10 @@
 import { CollisionPriority } from "@dnd-kit/abstract";
 import { useDroppable } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { PropsWithChildren } from "react";
 import { memo, useCallback } from "react";
+import { Button } from "#/components/ui/button";
 import {
 	ItemCard,
 	SectionCard,
@@ -15,8 +17,14 @@ import {
 	SECTION_GROUP_ID,
 	SECTION_TYPE,
 } from "#/containers/dashboard/builder/[slug]/drag-model";
+import { FORM_SUBMIT_WIDTH_CLASSES } from "#/features/form-builder/constants";
 import type { FieldConfig } from "#/features/form-builder/elements";
-import type { FormPage } from "#/features/form-builder/form-structure";
+import {
+	type FormLayout,
+	type FormPage,
+	type NormalizedFormLayout,
+	normalizeFormLayout,
+} from "#/features/form-builder/form-structure";
 import { cn } from "#/lib/utils";
 
 interface SortableItemProps {
@@ -57,6 +65,7 @@ const SortableItem = memo(function SortableItem({
 });
 
 interface SortableSectionProps {
+	layout?: NormalizedFormLayout;
 	description?: string;
 	fields: FieldConfig[];
 	id: string;
@@ -72,6 +81,7 @@ interface SortableSectionProps {
 }
 
 const SortableSection = memo(function SortableSection({
+	layout,
 	description,
 	fields,
 	id,
@@ -112,6 +122,7 @@ const SortableSection = memo(function SortableSection({
 
 	return (
 		<SectionCard
+			layout={layout}
 			ref={ref}
 			label={label}
 			description={description}
@@ -184,6 +195,11 @@ function CanvasDropSurface({
 }
 
 interface BuilderCanvasProps {
+	title: string;
+	description?: string;
+	layout?: FormLayout;
+	submitButtonText?: string;
+	isCustomizing?: boolean;
 	activePage: FormPage;
 	hasSections: boolean;
 	onCanvasRef: (element: HTMLDivElement | null) => void;
@@ -197,6 +213,11 @@ interface BuilderCanvasProps {
 }
 
 export function BuilderCanvas({
+	title,
+	description,
+	layout,
+	submitButtonText,
+	isCustomizing = false,
 	activePage,
 	hasSections,
 	onCanvasRef,
@@ -208,12 +229,132 @@ export function BuilderCanvas({
 	paletteFieldPlaceholderId,
 	paletteSectionPlaceholderId,
 }: BuilderCanvasProps) {
+	const normalizedLayout = normalizeFormLayout(layout);
+	const layoutGap = (units: number) => `calc(var(--spacing) * ${units})`;
+	const shouldReduceMotion = useReducedMotion();
+	const revealTransition = shouldReduceMotion
+		? { duration: 0.15 }
+		: {
+				type: "spring" as const,
+				stiffness: 400,
+				damping: 35,
+				mass: 0.8,
+			};
+	// The heading rises out from behind the sections; the submit button drops
+	// out the opposite way. Same spring as the page switch, mirrored vertically.
+	const headingReveal = shouldReduceMotion
+		? {
+				initial: { opacity: 0 },
+				animate: { opacity: 1 },
+				exit: { opacity: 0 },
+			}
+		: {
+				initial: {
+					opacity: 0,
+					height: 0,
+					y: 32,
+					scale: 0.98,
+					filter: "blur(8px)",
+				},
+				animate: {
+					opacity: 1,
+					height: "auto",
+					y: 0,
+					scale: 1,
+					filter: "blur(0px)",
+				},
+				exit: {
+					opacity: 0,
+					height: 0,
+					y: 32,
+					scale: 0.98,
+					filter: "blur(8px)",
+				},
+			};
+	const submitReveal = shouldReduceMotion
+		? {
+				initial: { opacity: 0 },
+				animate: { opacity: 1 },
+				exit: { opacity: 0 },
+			}
+		: {
+				initial: {
+					opacity: 0,
+					height: 0,
+					y: -32,
+					scale: 0.98,
+					filter: "blur(8px)",
+				},
+				animate: {
+					opacity: 1,
+					height: "auto",
+					y: 0,
+					scale: 1,
+					filter: "blur(0px)",
+				},
+				exit: {
+					opacity: 0,
+					height: 0,
+					y: -32,
+					scale: 0.98,
+					filter: "blur(8px)",
+				},
+			};
 	return (
 		<CanvasDropSurface hasSections={hasSections} onCanvasRef={onCanvasRef}>
-			<div className="mx-auto min-h-full font-sans text-card-foreground">
-				<div className="space-y-4 pb-8">
+			<div
+				className={cn(
+					"min-h-full font-sans text-card-foreground",
+					normalizedLayout.contentAlignment === "left" ? "mr-auto" : "mx-auto",
+					layout &&
+						{ compact: "max-w-3xl", standard: "max-w-6xl", wide: "max-w-7xl" }[
+							normalizedLayout.contentWidth
+						],
+				)}
+			>
+				<AnimatePresence initial={false}>
+					{isCustomizing ? (
+						<motion.div
+							key="form-heading"
+							className="overflow-hidden"
+							initial={headingReveal.initial}
+							animate={headingReveal.animate}
+							exit={headingReveal.exit}
+							transition={revealTransition}
+						>
+							<div
+								className={cn(
+									"flex flex-col",
+									normalizedLayout.headerAlignment === "center"
+										? "items-center text-center"
+										: "items-start text-left",
+								)}
+								style={{
+									gap: layoutGap(normalizedLayout.spacing.titleDescriptionGap),
+									marginBottom: layoutGap(
+										normalizedLayout.spacing.titleContentGap,
+									),
+								}}
+							>
+								<h2 className="text-2xl font-bold tracking-tight">{title}</h2>
+								{description ? (
+									<p className="text-muted-foreground">{description}</p>
+								) : null}
+							</div>
+						</motion.div>
+					) : null}
+				</AnimatePresence>
+				<div
+					className={cn(layout ? "flex flex-col" : "space-y-4")}
+					style={
+						layout
+							? { gap: layoutGap(normalizedLayout.spacing.sectionGap) }
+							: undefined
+					}
+				>
 					{activePage.sections.map((section, sectionIndex) => (
 						<SortableSection
+							layout={layout ? normalizedLayout : undefined}
 							key={section.id}
 							id={section.id}
 							index={sectionIndex}
@@ -230,6 +371,43 @@ export function BuilderCanvas({
 						/>
 					))}
 				</div>
+				<AnimatePresence initial={false}>
+					{isCustomizing ? (
+						<motion.div
+							key="form-submit"
+							className="overflow-hidden"
+							initial={submitReveal.initial}
+							animate={submitReveal.animate}
+							exit={submitReveal.exit}
+							transition={revealTransition}
+						>
+							<div
+								className={cn(
+									"flex pb-8",
+									{
+										left: "justify-start",
+										center: "justify-center",
+										right: "justify-end",
+									}[normalizedLayout.submitAlignment],
+								)}
+								style={{
+									marginTop: layoutGap(normalizedLayout.spacing.submitGap),
+								}}
+							>
+								<Button
+									type="button"
+									className={cn(
+										"pointer-events-none h-auto min-h-9 max-w-full whitespace-normal break-words",
+										FORM_SUBMIT_WIDTH_CLASSES[normalizedLayout.submitWidth],
+									)}
+									tabIndex={-1}
+								>
+									{submitButtonText || "Submit"}
+								</Button>
+							</div>
+						</motion.div>
+					) : null}
+				</AnimatePresence>
 			</div>
 		</CanvasDropSurface>
 	);

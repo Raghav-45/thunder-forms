@@ -4,7 +4,7 @@ import { type DragDropEventHandlers, DragDropProvider } from "@dnd-kit/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import axios from "axios";
-import { Loader2Icon, SaveIcon } from "lucide-react";
+import { Loader2Icon, PaletteIcon, SaveIcon } from "lucide-react";
 import {
 	AnimatePresence,
 	motion,
@@ -33,7 +33,10 @@ import { BuilderCanvas } from "#/containers/dashboard/builder/[slug]/components/
 import { BuilderDragOverlay } from "#/containers/dashboard/builder/[slug]/components/builder-drag-overlay";
 import { BuilderPalette } from "#/containers/dashboard/builder/[slug]/components/builder-palette";
 import { ChromeTabStrip } from "#/containers/dashboard/builder/[slug]/components/chrome-tab-strip";
-import { FormCustomization } from "#/containers/dashboard/builder/[slug]/components/form-customization";
+import {
+	FormCustomization,
+	type FormCustomizationValue,
+} from "#/containers/dashboard/builder/[slug]/components/form-customization";
 import { SaveFormLoginDialog } from "#/containers/dashboard/builder/[slug]/components/save-form-login-dialog";
 import { SectionEditor } from "#/containers/dashboard/builder/[slug]/components/section-editor";
 import {
@@ -214,7 +217,62 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 	const [formStructure, setFormStructure] = useState<FormStructure>(
 		initialState.formStructure,
 	);
-	useFormThemeFonts(formStructure.theme);
+	const [customization, setCustomization] =
+		useState<FormCustomizationValue | null>(null);
+	const mode = customization ? "customise" : "builder";
+	const canvasTheme = customization ? customization.theme : formStructure.theme;
+	const canvasLayout = customization
+		? customization.layout
+		: formStructure.layout;
+	const canvasSubmitButtonText =
+		(customization
+			? customization.submitButtonText
+			: formSettings.submitButtonText
+		)?.trim() || undefined;
+	useFormThemeFonts(canvasTheme);
+
+	const pageTransitionDirection = useRef(0);
+	const applyCustomization = () => {
+		if (!customization) return;
+		pageTransitionDirection.current = -1;
+		setFormStructure((current) => ({
+			...current,
+			theme: customization.theme,
+			layout: customization.layout,
+		}));
+		setFormSettings({
+			...formSettings,
+			submitButtonText: customization.submitButtonText?.trim() || undefined,
+		});
+		setCustomization(null);
+	};
+	const customizationProps = customization
+		? {
+				value: customization,
+				onUpdate: (value: Partial<FormCustomizationValue>) =>
+					setCustomization((current) =>
+						current ? { ...current, ...value } : current,
+					),
+				onApply: () => {
+					applyCustomization();
+					toast.success("Customization applied. Save your form to keep it.");
+				},
+				onCancel: () => {
+					pageTransitionDirection.current = -1;
+					setCustomization(null);
+				},
+				onReset: () => {
+					pageTransitionDirection.current = -1;
+					setFormStructure((current) => ({
+						...current,
+						theme: undefined,
+						layout: undefined,
+					}));
+					setFormSettings({ ...formSettings, submitButtonText: undefined });
+					setCustomization(null);
+				},
+			}
+		: null;
 	const [isSaving, setIsSaving] = useState(false);
 	const [isSaveLoginOpen, setIsSaveLoginOpen] = useState(false);
 	const [hasInvalidPersistedStructure, setHasInvalidPersistedStructure] =
@@ -261,7 +319,6 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 	const activePageIndex = formStructure.pages.findIndex(
 		(page) => page.id === resolvedActivePageId,
 	);
-	const pageTransitionDirection = useRef(0);
 
 	const selectPage = useCallback(
 		(pageId: string) => {
@@ -303,6 +360,29 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 						filter: "blur(8px)",
 					},
 	};
+	const pageTransition = shouldReduceMotion
+		? { duration: 0.15 }
+		: {
+				type: "spring" as const,
+				stiffness: 400,
+				damping: 35,
+				mass: 0.8,
+			};
+
+	const openCustomization = useCallback(() => {
+		pageTransitionDirection.current = 1;
+		setCustomization({
+			theme: formStructure.theme
+				? normalizeFormTheme(formStructure.theme)
+				: undefined,
+			layout: formStructure.layout,
+			submitButtonText: formSettings.submitButtonText,
+		});
+	}, [
+		formStructure.theme,
+		formStructure.layout,
+		formSettings.submitButtonText,
+	]);
 
 	const registerCanvas = useCallback((element: HTMLDivElement | null) => {
 		if (!element) {
@@ -644,7 +724,11 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 				const payload: CreateFormPayload = {
 					title: formSettings.title,
 					description: formSettings.description?.trim() || null,
-					fields: formStructure,
+					fields: {
+						...formStructure,
+						theme: canvasTheme,
+						layout: canvasLayout,
+					},
 					maxSubmissions: formSettings.maxSubmissions
 						? Number.isNaN(formSettings.maxSubmissions)
 							? null
@@ -652,7 +736,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 						: null,
 					expiresAt: formSettings.expiresAt,
 					redirectUrl: formSettings.redirectUrl?.trim() || null,
-					submitButtonText: formSettings.submitButtonText?.trim() || null,
+					submitButtonText: canvasSubmitButtonText?.trim() || null,
 				};
 				if (isNewForm) {
 					const { data } = await axios.post("/api/forms/new", payload);
@@ -692,6 +776,9 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 			}
 		},
 		[
+			canvasTheme,
+			canvasLayout,
+			canvasSubmitButtonText,
 			currentFormId,
 			formSettings,
 			formStructure,
@@ -924,80 +1011,116 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 			onDragEnd={handleDragEnd}
 		>
 			<div className="flex h-screen min-w-0 bg-background text-foreground">
-				<Card className="hidden h-screen w-80 overflow-hidden rounded-none border-0 border-r-2 md:block">
-					<CardContent className="flex h-full flex-col space-y-4 p-4 py-0">
-						<div className="mb-8">
-							<h2 className="text-2xl font-bold">Settings</h2>
-						</div>
+				<Card
+					data-testid="builder-left-sidebar"
+					className="hidden h-screen w-80 shrink-0 overflow-hidden rounded-none border-0 border-r-2 md:block"
+				>
+					{/* Negated direction so the left sidebar mirrors the right one. */}
+					<AnimatePresence
+						mode="wait"
+						custom={-pageTransitionDirection.current}
+						initial={false}
+					>
+						<motion.div
+							key={mode}
+							custom={-pageTransitionDirection.current}
+							variants={pageTransitionVariants}
+							initial="initial"
+							animate="animate"
+							exit="exit"
+							transition={pageTransition}
+							className="h-full min-h-0"
+						>
+							{customizationProps ? (
+								<CardContent className="flex h-full min-h-0 flex-col gap-4 pt-4 pr-0 pb-4 pl-4">
+									<h2 className="shrink-0 pr-4 text-2xl font-bold">
+										Appearance
+									</h2>
+									<FormCustomization
+										{...customizationProps}
+										side="appearance"
+									/>
+								</CardContent>
+							) : (
+								<CardContent className="flex h-full flex-col space-y-4 px-4 pt-4 pb-4">
+									<div className="mb-8">
+										<h2 className="text-2xl font-bold">Settings</h2>
+									</div>
 
-						<div className="grid w-full items-center gap-1.5">
-							<Label htmlFor="builder-title">Form title</Label>
-							<Input
-								id="builder-title"
-								placeholder="Enter form name"
-								value={formSettings.title}
-								onChange={(event) =>
-									setFormSettings({
-										...formSettings,
-										title: event.target.value,
-									})
-								}
-								className="bg-neutral-900!"
-							/>
-						</div>
+									<div className="grid w-full items-center gap-1.5">
+										<Label htmlFor="builder-title">Form title</Label>
+										<Input
+											id="builder-title"
+											placeholder="Enter form name"
+											value={formSettings.title}
+											onChange={(event) =>
+												setFormSettings({
+													...formSettings,
+													title: event.target.value,
+												})
+											}
+											className="bg-neutral-900!"
+										/>
+									</div>
 
-						<div className="grid w-full items-center gap-1.5">
-							<Label htmlFor="builder-description">Description</Label>
-							<Textarea
-								id="builder-description"
-								placeholder="Enter description"
-								value={formSettings.description}
-								onChange={(event) =>
-									setFormSettings({
-										...formSettings,
-										description: event.target.value,
-									})
-								}
-								className="max-h-24 bg-neutral-900!"
-							/>
-						</div>
+									<div className="grid w-full items-center gap-1.5">
+										<Label htmlFor="builder-description">Description</Label>
+										<Textarea
+											id="builder-description"
+											placeholder="Enter description"
+											value={formSettings.description}
+											onChange={(event) =>
+												setFormSettings({
+													...formSettings,
+													description: event.target.value,
+												})
+											}
+											className="max-h-24 bg-neutral-900!"
+										/>
+									</div>
 
-						<SettingsDialog
-							formId={isExistingForm ? currentFormId : null}
-							formStructure={formStructure}
-							onQuizSettingsChange={updateQuizSettings}
-							onQuizQuestionChange={updateQuizQuestion}
-						/>
-						<div className="flex-grow" />
-						<ImportGoogleForm
-							onImported={replaceWithImportedPages}
-							hasExistingContent={fieldCount(formStructure) > 0}
-						/>
-						<GenerateWithAiPrompt
-							onGeneratedFields={replaceWithImportedFields}
-						/>
-					</CardContent>
+									<SettingsDialog
+										formId={isExistingForm ? currentFormId : null}
+										formStructure={formStructure}
+										onQuizSettingsChange={updateQuizSettings}
+										onQuizQuestionChange={updateQuizQuestion}
+									/>
+									<div className="flex-grow" />
+									<ImportGoogleForm
+										onImported={replaceWithImportedPages}
+										hasExistingContent={fieldCount(formStructure) > 0}
+									/>
+									<GenerateWithAiPrompt
+										onGeneratedFields={replaceWithImportedFields}
+									/>
+								</CardContent>
+							)}
+						</motion.div>
+					</AnimatePresence>
 				</Card>
 
 				<ScrollArea className="sticky min-w-0 flex-1 overflow-auto bg-card [&_[data-radix-scroll-area-viewport]>div]:w-full [&_[data-radix-scroll-area-viewport]>div]:table-fixed">
 					<div className="flex flex-row justify-between bg-[#111111] px-4 pt-6 md:px-4 md:pt-6">
 						<h1 className="text-3xl font-bold">Builder</h1>
 						<div className="flex gap-2">
-							<FormCustomization
-								structure={formStructure}
-								activePageId={resolvedActivePageId}
-								title={formSettings.title}
-								description={formSettings.description}
-								submitButtonText={formSettings.submitButtonText}
-								onUpdate={(theme, layout, submitButtonText) => {
-									setFormStructure((current) => ({
-										...current,
-										theme,
-										layout,
-									}));
-									setFormSettings({ ...formSettings, submitButtonText });
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								aria-pressed={mode === "customise"}
+								title={
+									mode === "customise"
+										? "Back to builder"
+										: "Customize your form"
+								}
+								onClick={() => {
+									if (customization) applyCustomization();
+									else openCustomization();
 								}}
-							/>
+							>
+								<PaletteIcon data-icon="inline-start" />
+								Customize
+							</Button>
 							{isExistingForm ? (
 								<CopyButton
 									className="h-8"
@@ -1008,7 +1131,10 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 								type="button"
 								variant="secondary"
 								className="h-8 cursor-pointer"
-								onClick={() => void handleSaveForm()}
+								onClick={() => {
+									if (customization) applyCustomization();
+									void handleSaveForm();
+								}}
 								disabled={isSaving || hasInvalidPersistedStructure}
 							>
 								{isSaving ? (
@@ -1030,8 +1156,8 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 							pages={formStructure.pages}
 							activePageId={resolvedActivePageId}
 							activeTabBackground={
-								formStructure.theme
-									? normalizeFormTheme(formStructure.theme).colors.background
+								canvasTheme
+									? normalizeFormTheme(canvasTheme).colors.background
 									: undefined
 							}
 							onSelectPage={selectPage}
@@ -1040,8 +1166,9 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 							canRemovePage={formStructure.pages.length > 1}
 						/>
 						<CardContent
-							data-form-theme={formStructure.theme ? true : undefined}
-							style={getFormThemeStyle(formStructure.theme)}
+							data-testid="builder-canvas"
+							data-form-theme={canvasTheme ? true : undefined}
+							style={getFormThemeStyle(canvasTheme)}
 							className={cn(
 								"min-h-0 flex-1 overflow-y-auto p-3 md:p-4",
 								!hasCanvasSections &&
@@ -1060,18 +1187,14 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 									initial="initial"
 									animate="animate"
 									exit="exit"
-									transition={
-										shouldReduceMotion
-											? { duration: 0.15 }
-											: {
-													type: "spring",
-													stiffness: 400,
-													damping: 35,
-													mass: 0.8,
-												}
-									}
+									transition={pageTransition}
 								>
 									<BuilderCanvas
+										title={formSettings.title}
+										description={formSettings.description}
+										layout={canvasLayout}
+										submitButtonText={canvasSubmitButtonText}
+										isCustomizing={Boolean(customization)}
 										activePage={activePage}
 										hasSections={hasCanvasSections}
 										onCanvasRef={registerCanvas}
@@ -1100,7 +1223,39 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 					</Card>
 				</ScrollArea>
 
-				<BuilderPalette onAddField={addField} onAddSection={addSection} />
+				<Card
+					data-testid="builder-right-sidebar"
+					className="hidden h-screen w-80 shrink-0 overflow-hidden rounded-none border-0 border-l-2 md:block"
+				>
+					<AnimatePresence
+						mode="wait"
+						custom={pageTransitionDirection.current}
+						initial={false}
+					>
+						<motion.div
+							key={mode}
+							custom={pageTransitionDirection.current}
+							variants={pageTransitionVariants}
+							initial="initial"
+							animate="animate"
+							exit="exit"
+							transition={pageTransition}
+							className="h-full min-h-0"
+						>
+							{customizationProps ? (
+								<CardContent className="flex h-full min-h-0 flex-col gap-4 pt-4 pr-0 pb-4 pl-4">
+									<h2 className="shrink-0 pr-4 text-2xl font-bold">Layout</h2>
+									<FormCustomization {...customizationProps} side="layout" />
+								</CardContent>
+							) : (
+								<BuilderPalette
+									onAddField={addField}
+									onAddSection={addSection}
+								/>
+							)}
+						</motion.div>
+					</AnimatePresence>
+				</Card>
 			</div>
 
 			<BuilderDragOverlay

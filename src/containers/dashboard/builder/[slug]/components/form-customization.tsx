@@ -3,10 +3,9 @@ import {
 	CodeIcon,
 	CopyIcon,
 	Loader2Icon,
-	PaletteIcon,
 	RotateCcwIcon,
 } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
 	Accordion,
@@ -15,17 +14,9 @@ import {
 	AccordionTrigger,
 } from "#/components/ui/accordion";
 import { Button } from "#/components/ui/button";
-import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "#/components/ui/dialog";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
+import { ScrollArea } from "#/components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -37,7 +28,6 @@ import {
 import { Separator } from "#/components/ui/separator";
 import { Slider } from "#/components/ui/slider";
 import { Switch } from "#/components/ui/switch";
-import { Tabs, TabsList, TabsTrigger } from "#/components/ui/tabs";
 import { Textarea } from "#/components/ui/textarea";
 import { ThemePresetPicker } from "#/containers/dashboard/builder/[slug]/components/theme-preset-picker";
 import {
@@ -48,9 +38,6 @@ import {
 	BASIC_THEME_COLOR_GROUPS,
 	THEME_FONT_LABELS,
 } from "#/containers/dashboard/builder/[slug]/constants/theme-customization";
-import { FormThemeScope } from "#/features/form-builder/components/form-theme-scope";
-import { RespondentFormContent } from "#/features/form-builder/components/respondent-form-content";
-import type { FieldConfig } from "#/features/form-builder/elements";
 import {
 	type FormLayout,
 	type FormStructure,
@@ -71,11 +58,6 @@ import {
 	isFormThemeColor,
 	normalizeFormTheme,
 } from "#/features/form-builder/theme";
-import {
-	createDefaultFieldConfig,
-	getFieldComponent,
-} from "#/features/form-builder/utils/helperFunctions";
-import { cn } from "#/lib/utils";
 
 function ColorControl({
 	label,
@@ -109,9 +91,12 @@ function ColorControl({
 		}
 	}, [value]);
 	return (
-		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center justify-between gap-3">
-				<Label htmlFor={id} className="cursor-pointer">
+		<div className="flex min-w-0 flex-col gap-1.5">
+			<div className="flex min-w-0 items-center justify-between gap-3">
+				<Label
+					htmlFor={id}
+					className="min-w-0 flex-1 cursor-pointer break-words"
+				>
 					{label}
 				</Label>
 				<div
@@ -200,17 +185,19 @@ function RangeControl({
 	);
 }
 
+export interface FormCustomizationValue {
+	theme: FormStructure["theme"];
+	layout: FormLayout | undefined;
+	submitButtonText: string | undefined;
+}
+
 interface FormCustomizationProps {
-	structure: FormStructure;
-	activePageId: string;
-	title: string;
-	description?: string;
-	submitButtonText?: string;
-	onUpdate: (
-		theme: FormTheme | undefined,
-		layout: FormLayout | undefined,
-		submitButtonText: string | undefined,
-	) => void;
+	value: FormCustomizationValue;
+	side: "appearance" | "layout";
+	onUpdate: (value: Partial<FormCustomizationValue>) => void;
+	onApply: () => void;
+	onCancel: () => void;
+	onReset: () => void;
 }
 
 function FontControl({
@@ -542,34 +529,14 @@ function LayoutControls({
 	);
 }
 
-export function FormCustomization(props: FormCustomizationProps) {
-	const [open, setOpen] = useState(false);
-	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
-				<Button type="button" variant="outline" size="sm">
-					<PaletteIcon data-icon="inline-start" />
-					Customize
-				</Button>
-			</DialogTrigger>
-			<DialogContent className="flex h-[92dvh] max-w-[calc(100%-1rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-[min(1200px,calc(100%-3rem))]">
-				{open ? (
-					<CustomizationEditor {...props} onClose={() => setOpen(false)} />
-				) : null}
-			</DialogContent>
-		</Dialog>
-	);
-}
-
-function CustomizationEditor({
-	structure,
-	activePageId,
-	title,
-	description,
-	submitButtonText,
+export function FormCustomization({
+	value,
+	side,
 	onUpdate,
-	onClose,
-}: FormCustomizationProps & { onClose: () => void }) {
+	onApply,
+	onCancel,
+	onReset,
+}: FormCustomizationProps) {
 	// Opening Customize must preserve an uncustomized form's current appearance.
 	const [defaultTheme] = useState(() => {
 		const defaultTheme = createFormTheme();
@@ -584,68 +551,23 @@ function CustomizationEditor({
 			defaultTheme,
 		);
 	});
-	const [initialTheme] = useState(() =>
-		structure.theme
-			? structuredClone(normalizeFormTheme(structure.theme))
-			: defaultTheme,
-	);
-	const [draft, setDraft] = useState(() => structuredClone(initialTheme));
-	const [defaultSelected, setDefaultSelected] = useState(false);
-	const usesDefaultTheme =
-		defaultSelected && JSON.stringify(draft) === JSON.stringify(defaultTheme);
-	const themeChanged =
-		JSON.stringify(draft) !== JSON.stringify(initialTheme) ||
-		(Boolean(structure.theme) && usesDefaultTheme);
-	const previewTheme = usesDefaultTheme
-		? undefined
-		: structure.theme || themeChanged
-			? draft
-			: undefined;
-	const [initialLayout] = useState(() => normalizeFormLayout(structure.layout));
-	const [draftLayout, setDraftLayout] = useState(() =>
-		structuredClone(initialLayout),
-	);
-	const layoutChanged =
-		JSON.stringify(draftLayout) !== JSON.stringify(initialLayout);
-	const [draftSubmitButtonText, setDraftSubmitButtonText] = useState(
-		submitButtonText ?? "",
-	);
+	const importActive = useRef(true);
+	useEffect(() => {
+		importActive.current = true;
+		return () => {
+			importActive.current = false;
+		};
+	}, []);
+	const draft = value.theme ? normalizeFormTheme(value.theme) : defaultTheme;
+	const draftLayout = normalizeFormLayout(value.layout);
+	const setDraft = (next: FormTheme | ((current: FormTheme) => FormTheme)) =>
+		onUpdate({ theme: typeof next === "function" ? next(draft) : next });
 	const [showColorCodes, setShowColorCodes] = useState(false);
 	const [advancedSections, setAdvancedSections] = useState<string[]>([]);
-	const [mobileView, setMobileView] = useState("controls");
-	const [customizationTab, setCustomizationTab] = useState("appearance");
-	const previewId = useId();
 	const [css, setCss] = useState("");
 	const [cssError, setCssError] = useState("");
 	const [themeUrl, setThemeUrl] = useState("");
 	const [isImporting, setIsImporting] = useState(false);
-	const [previewPageId, setPreviewPageId] = useState(activePageId);
-	const [previewData, setPreviewData] = useState<Record<string, unknown>>({});
-	const [sampleFields] = useState(() => [
-		createDefaultFieldConfig("text-input"),
-		createDefaultFieldConfig("text-area"),
-		createDefaultFieldConfig("checkbox"),
-	]);
-	const hasFields = structure.pages.some((page) =>
-		page.sections.some((section) => section.fields.length > 0),
-	);
-	const previewPages = hasFields
-		? structure.pages
-		: [
-				{
-					id: "sample",
-					title: "",
-					sections: [
-						{ id: "sample", title: "Your details", fields: sampleFields },
-					],
-				},
-			];
-	const previewPage =
-		previewPages.find((page) => page.id === previewPageId) ?? previewPages[0];
-	const previewPageIndex = Math.max(
-		previewPages.findIndex((page) => page.id === previewPage.id),
-		0,
-	);
 	const updateColor = (token: FormColorToken, value: string) =>
 		setDraft((current) => ({
 			...current,
@@ -682,83 +604,40 @@ function CustomizationEditor({
 			);
 		}
 	};
-	const renderField = (field: FieldConfig) => {
-		const Component = getFieldComponent(field.uniqueIdentifier);
+	if (side === "layout") {
 		return (
-			<Component
-				key={field.id}
-				field={
-					{
-						...field,
-						id: `${previewId}-${field.id}`,
-						disabled:
-							field.disabled || field.uniqueIdentifier === "file-upload",
-					} as never
-				}
-				value={previewData[field.id]}
-				onChange={(value) =>
-					setPreviewData((current) => ({ ...current, [field.id]: value }))
-				}
-			/>
+			<ScrollArea className="min-h-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block">
+				<div className="min-w-0 pb-4 pr-4">
+					<LayoutControls
+						layout={draftLayout}
+						theme={draft}
+						submitButtonText={value.submitButtonText ?? ""}
+						onChange={(layout) => onUpdate({ layout })}
+						onThemeChange={setDraft}
+						onSubmitButtonTextChange={(submitButtonText) =>
+							onUpdate({ submitButtonText })
+						}
+					/>
+				</div>
+			</ScrollArea>
 		);
-	};
+	}
 
 	return (
 		<>
-			<DialogHeader className="shrink-0 border-b px-5 py-4 pr-12">
-				<DialogTitle>Customize your form</DialogTitle>
-				<DialogDescription>
-					Make it yours. Preview every change as you go.
-				</DialogDescription>
-			</DialogHeader>
-			<Tabs
-				value={mobileView}
-				onValueChange={setMobileView}
-				className="shrink-0 border-b px-5 py-2 md:hidden"
-			>
-				<TabsList className="w-full" aria-label="Customization view">
-					<TabsTrigger value="controls">Controls</TabsTrigger>
-					<TabsTrigger value="preview">Preview</TabsTrigger>
-				</TabsList>
-			</Tabs>
-			<div className="grid min-h-0 flex-1 grid-cols-1 overflow-y-auto md:grid-cols-[320px_minmax(0,1fr)] md:overflow-hidden">
-				<div
-					className={cn(
-						"min-h-0 flex-col gap-5 border-b p-5 md:flex md:overflow-y-auto md:border-r md:border-b-0",
-						mobileView === "controls" ? "flex" : "hidden",
-					)}
-				>
-					<Tabs value={customizationTab} onValueChange={setCustomizationTab}>
-						<TabsList className="w-full" aria-label="Customization category">
-							<TabsTrigger value="appearance" className="flex-1">
-								Appearance
-							</TabsTrigger>
-							<TabsTrigger value="layout" className="flex-1">
-								Layout
-							</TabsTrigger>
-						</TabsList>
-					</Tabs>
-					<div
-						className={cn(
-							"flex flex-col gap-2",
-							customizationTab === "appearance" ? "flex" : "hidden",
-						)}
-					>
+			<ScrollArea className="min-h-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block">
+				<div className="flex min-w-0 flex-col gap-5 pb-4 pr-4">
+					<div className="flex flex-col gap-2">
 						<Label htmlFor="form-theme-preset">Form style</Label>
 						<ThemePresetPicker
 							defaultTheme={defaultTheme}
-							isDefault={!structure.theme}
+							isDefault={!value.theme}
 							onSelect={(theme) => {
-								setDefaultSelected(!theme);
-								setDraft(structuredClone(theme ?? defaultTheme));
+								onUpdate({ theme });
 							}}
 						/>
 					</div>
-					<Accordion
-						type="multiple"
-						defaultValue={["basic"]}
-						className={customizationTab === "appearance" ? undefined : "hidden"}
-					>
+					<Accordion type="multiple" defaultValue={["basic"]}>
 						<AccordionItem value="basic">
 							<AccordionTrigger>Make it yours</AccordionTrigger>
 							<AccordionContent>
@@ -776,7 +655,7 @@ function CustomizationEditor({
 											{BASIC_THEME_COLOR_GROUPS.map((group) => (
 												<fieldset
 													key={group.label}
-													className="flex flex-col gap-3"
+													className="flex min-w-0 flex-col gap-3"
 												>
 													<legend className="text-sm font-medium">
 														{group.label}
@@ -784,7 +663,7 @@ function CustomizationEditor({
 													<p className="text-xs text-muted-foreground">
 														{group.description}
 													</p>
-													<div className="grid grid-cols-2 gap-3">
+													<div className="grid min-w-0 grid-cols-2 gap-3">
 														{group.tokens.map((token) => (
 															<ColorControl
 																key={token}
@@ -854,7 +733,7 @@ function CustomizationEditor({
 										<AccordionContent className="flex flex-col gap-5">
 											<p className="text-xs text-muted-foreground">
 												Choose a color swatch to change it. Watch your form
-												update in the preview.
+												update on the canvas.
 											</p>
 											<div className="flex items-center justify-between gap-3">
 												<Label htmlFor="show-color-codes">
@@ -1010,6 +889,7 @@ function CustomizationEditor({
 														return;
 													}
 													const content = await file.text();
+													if (!importActive.current) return;
 													setCss(content);
 													importTheme(content);
 												}}
@@ -1046,6 +926,7 @@ function CustomizationEditor({
 																"Could not load this theme. Check that its tweakcn link is public.",
 															);
 														const content = await response.text();
+														if (!importActive.current) return;
 														setDraft(importFormThemeCss(content, draft));
 														setCss(content);
 														toast.success("Theme imported");
@@ -1074,128 +955,28 @@ function CustomizationEditor({
 							</AccordionContent>
 						</AccordionItem>
 					</Accordion>
-					<div className={customizationTab === "layout" ? undefined : "hidden"}>
-						<LayoutControls
-							layout={draftLayout}
-							theme={draft}
-							submitButtonText={draftSubmitButtonText}
-							onChange={setDraftLayout}
-							onThemeChange={setDraft}
-							onSubmitButtonTextChange={setDraftSubmitButtonText}
-						/>
-					</div>
 				</div>
-				<div
-					className={cn(
-						"min-w-0 flex-col md:flex md:min-h-0",
-						mobileView === "preview" ? "flex" : "hidden",
-					)}
-				>
-					<div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b px-5 py-3">
-						<p className="text-sm font-medium">Live preview</p>
-						{previewPages.length > 1 ? (
-							<Select value={previewPage.id} onValueChange={setPreviewPageId}>
-								<SelectTrigger aria-label="Preview page">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectGroup>
-										{previewPages.map((page, index) => (
-											<SelectItem key={page.id} value={page.id}>
-												{page.title || `Page ${index + 1}`}
-											</SelectItem>
-										))}
-									</SelectGroup>
-								</SelectContent>
-							</Select>
-						) : (
-							<span className="text-xs text-muted-foreground">
-								{hasFields ? "Your form" : "Sample form"}
-							</span>
-						)}
-					</div>
-					<div className="min-h-80 flex-1 overflow-y-auto">
-						<div
-							className="min-h-full"
-							data-testid="customization-preview"
-							data-form-theme={previewTheme ? true : undefined}
-							style={
-								getFormThemeStyle(previewTheme) ?? {
-									backgroundColor: defaultTheme.colors.background,
-								}
-							}
-						>
-							<FormThemeScope theme={previewTheme} alwaysWrap>
-								<RespondentFormContent
-									activePageIndex={previewPageIndex}
-									description={description}
-									fields={renderField}
-									layout={draftLayout}
-									onNextPage={() => {
-										const nextPage = previewPages[previewPageIndex + 1];
-										if (nextPage) setPreviewPageId(nextPage.id);
-									}}
-									onPreviousPage={() => {
-										const previousPage = previewPages[previewPageIndex - 1];
-										if (previousPage) setPreviewPageId(previousPage.id);
-									}}
-									onSubmit={() =>
-										toast.message(
-											"This is a preview. Your answers are not submitted.",
-										)
-									}
-									pages={previewPages}
-									submitButtonText={draftSubmitButtonText || undefined}
-									title={title}
-								/>
-							</FormThemeScope>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t px-5 py-3">
+			</ScrollArea>
+			<div className="flex shrink-0 flex-col gap-2 border-t pt-4 pr-4">
 				<Button
 					type="button"
 					variant="ghost"
 					size="sm"
-					disabled={!structure.theme && !structure.layout && !submitButtonText}
-					onClick={() => {
-						onUpdate(undefined, undefined, undefined);
-						onClose();
-					}}
+					disabled={!value.theme && !value.layout && !value.submitButtonText}
+					onClick={onReset}
 				>
 					<RotateCcwIcon data-icon="inline-start" />
 					Reset to original
 				</Button>
 				<div className="flex items-center gap-2">
-					<DialogClose asChild>
-						<Button type="button" variant="outline" size="sm">
-							Cancel
-						</Button>
-					</DialogClose>
+					<Button type="button" variant="outline" size="sm" onClick={onCancel}>
+						Cancel
+					</Button>
 					<Button
 						type="button"
 						size="sm"
 						disabled={isImporting}
-						onClick={() => {
-							if (
-								!layoutChanged &&
-								!themeChanged &&
-								draftSubmitButtonText === (submitButtonText ?? "")
-							) {
-								onClose();
-								return;
-							}
-							onUpdate(
-								previewTheme,
-								layoutChanged ? draftLayout : structure.layout,
-								draftSubmitButtonText.trim() || undefined,
-							);
-							onClose();
-							toast.success(
-								"Customization applied. Save your form to keep it.",
-							);
-						}}
+						onClick={onApply}
 					>
 						<CheckIcon data-icon="inline-start" />
 						Apply changes

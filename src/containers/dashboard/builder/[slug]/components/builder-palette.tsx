@@ -3,7 +3,7 @@ import { GripVerticalIcon } from "lucide-react";
 import { memo } from "react";
 import { Badge } from "#/components/ui/badge";
 import { Button, buttonVariants } from "#/components/ui/button";
-import { Card, CardContent, CardDescription } from "#/components/ui/card";
+import { CardContent, CardDescription } from "#/components/ui/card";
 import { ScrollArea } from "#/components/ui/scroll-area";
 import { Separator } from "#/components/ui/separator";
 import {
@@ -111,57 +111,55 @@ export function BuilderPalette({
 	onAddSection,
 }: BuilderPaletteProps) {
 	return (
-		<Card className="hidden h-screen w-80 overflow-hidden rounded-none border-0 border-l-2 md:block">
-			<CardContent className="p-4 pt-0">
-				<h2 className="text-2xl font-bold">Available Fields</h2>
-				<CardDescription>
-					Drag to place, or click to add to first section.
-				</CardDescription>
-				<Separator className="my-4" />
-				<ScrollArea className="h-[calc(100vh-8rem)]">
-					<div className="flex flex-row">
-						<div className="grid w-full grid-cols-2 flex-wrap items-start gap-2 gap-y-2 overflow-y-auto md:flex md:flex-col md:flex-nowrap">
-							<p className="col-span-2 mb-1 text-xs font-medium text-muted-foreground md:w-full">
-								Layout
-							</p>
-							<PaletteSectionRow onAdd={onAddSection} />
-							<Separator className="col-span-2 my-2 md:w-full" />
-							<p className="col-span-2 mb-1 text-xs font-medium text-muted-foreground md:w-full">
-								Fields
-							</p>
-							{PALETTE.map((entry) => (
-								<PaletteFieldRow
-									key={entry.id}
-									id={entry.id}
-									fieldType={entry.fieldType}
-									onAdd={onAddField}
-								/>
-							))}
-							<Separator className="col-span-2 my-2 md:w-full" />
-							{COMING_SOON_FIELDS.map((fieldType) => (
-								<Button
-									key={fieldType}
+		<CardContent className="p-4 pt-0">
+			<h2 className="text-2xl font-bold">Available Fields</h2>
+			<CardDescription>
+				Drag to place, or click to add to first section.
+			</CardDescription>
+			<Separator className="my-4" />
+			<ScrollArea className="h-[calc(100vh-8rem)]">
+				<div className="flex flex-row">
+					<div className="grid w-full grid-cols-2 flex-wrap items-start gap-2 gap-y-2 overflow-y-auto md:flex md:flex-col md:flex-nowrap">
+						<p className="col-span-2 mb-1 text-xs font-medium text-muted-foreground md:w-full">
+							Layout
+						</p>
+						<PaletteSectionRow onAdd={onAddSection} />
+						<Separator className="col-span-2 my-2 md:w-full" />
+						<p className="col-span-2 mb-1 text-xs font-medium text-muted-foreground md:w-full">
+							Fields
+						</p>
+						{PALETTE.map((entry) => (
+							<PaletteFieldRow
+								key={entry.id}
+								id={entry.id}
+								fieldType={entry.fieldType}
+								onAdd={onAddField}
+							/>
+						))}
+						<Separator className="col-span-2 my-2 md:w-full" />
+						{COMING_SOON_FIELDS.map((fieldType) => (
+							<Button
+								key={fieldType}
+								variant="outline"
+								className="w-full cursor-not-allowed rounded-lg bg-neutral-900! px-2 opacity-60 md:pl-3"
+								size="sm"
+								disabled
+							>
+								<span className="overflow-hidden truncate text-[0.625rem] md:text-xs">
+									{fieldType}
+								</span>
+								<Badge
 									variant="outline"
-									className="w-full cursor-not-allowed rounded-lg bg-neutral-900! px-2 opacity-60 md:pl-3"
-									size="sm"
-									disabled
+									className="mx-1 rounded-full bg-blue-400 px-1 py-0 text-[9px] font-bold text-black"
 								>
-									<span className="overflow-hidden truncate text-[0.625rem] md:text-xs">
-										{fieldType}
-									</span>
-									<Badge
-										variant="outline"
-										className="mx-1 rounded-full bg-blue-400 px-1 py-0 text-[9px] font-bold text-black"
-									>
-										coming soon
-									</Badge>
-									<GripVerticalIcon className="ml-auto size-4" />
-								</Button>
-							))}
-						</div>
+									coming soon
+								</Badge>
+								<GripVerticalIcon className="ml-auto size-4" />
+							</Button>
+						))}
 					</div>
-				</ScrollArea>
-			</CardContent>
-		</Card>
+				</div>
+			</ScrollArea>
+		</CardContent>
 	);
 }

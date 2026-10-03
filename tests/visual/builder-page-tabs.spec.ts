@@ -44,7 +44,7 @@ test('customization changes only the active tab background and preserves its sha
     (surface) => getComputedStyle(surface).backgroundColor,
   )
   await page.getByRole('button', { name: 'Customize', exact: true }).click()
-  const editor = page.getByRole('dialog', { name: 'Customize your form' })
+  const editor = page.getByTestId('builder-left-sidebar')
   await editor.getByRole('button', { name: 'Advanced customizations', exact: true }).click()
   await editor.getByRole('button', { name: 'Import or export a theme', exact: true }).click()
   await editor.getByRole('textbox', { name: 'Theme code', exact: true }).fill(
