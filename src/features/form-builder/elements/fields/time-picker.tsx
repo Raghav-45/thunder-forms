@@ -102,7 +102,7 @@ const TimePickerComponent = ({
 				{field.label}
 			</Label>
 			{isDuration ? (
-				<div className="grid max-w-sm grid-cols-[1fr_auto_1fr] items-end gap-2">
+				<div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
 					<div className="space-y-1">
 						<Label
 							className="text-xs text-muted-foreground"
@@ -121,6 +121,7 @@ const TimePickerComponent = ({
 							disabled={field.disabled}
 							aria-invalid={Boolean(error)}
 							aria-describedby={error ? `${inputId}-error` : undefined}
+							className={error ? "border-red-500 focus:border-red-500" : ""}
 							onChange={(event) => updateDuration("hours", event.target.value)}
 						/>
 					</div>
@@ -146,6 +147,7 @@ const TimePickerComponent = ({
 							disabled={field.disabled}
 							aria-invalid={Boolean(error)}
 							aria-describedby={error ? `${inputId}-error` : undefined}
+							className={error ? "border-red-500 focus:border-red-500" : ""}
 							onChange={(event) =>
 								updateDuration("minutes", event.target.value)
 							}
@@ -153,7 +155,7 @@ const TimePickerComponent = ({
 					</div>
 				</div>
 			) : (
-				<div className="relative max-w-sm">
+				<div className="relative">
 					<Clock3 className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 					<Input
 						id={inputId}
@@ -163,7 +165,9 @@ const TimePickerComponent = ({
 						disabled={field.disabled}
 						aria-invalid={Boolean(error)}
 						aria-describedby={error ? `${inputId}-error` : undefined}
-						className="pl-9"
+						className={
+							error ? "border-red-500 pl-9 focus:border-red-500" : "pl-9"
+						}
 						onChange={(event) => onChange(event.target.value)}
 					/>
 				</div>
@@ -215,9 +219,9 @@ const TimePickerEditor = ({
 							</AccordionTrigger>
 							<AccordionContent className="flex flex-col gap-y-3">
 								<div className="space-y-2">
-									<Label htmlFor="time-picker-label">Field Label *</Label>
+									<Label htmlFor="field-label">Field Label *</Label>
 									<Input
-										id="time-picker-label"
+										id="field-label"
 										value={config.label}
 										onChange={(event) => update("label", event.target.value)}
 										placeholder="Enter field label"
@@ -225,14 +229,14 @@ const TimePickerEditor = ({
 									/>
 								</div>
 								<div className="space-y-2">
-									<Label htmlFor="time-picker-mode">Collect</Label>
+									<Label htmlFor="mode">Collect</Label>
 									<Select
 										value={config.mode ?? "time"}
 										onValueChange={(value) =>
 											update("mode", value === "duration" ? "duration" : "time")
 										}
 									>
-										<SelectTrigger id="time-picker-mode">
+										<SelectTrigger id="mode" className="w-full">
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
@@ -242,14 +246,14 @@ const TimePickerEditor = ({
 									</Select>
 								</div>
 								<div className="space-y-2">
-									<Label htmlFor="time-picker-step">Minute interval</Label>
+									<Label htmlFor="minute-step">Minute interval</Label>
 									<Select
 										value={String(getMinuteStep(config))}
 										onValueChange={(value) =>
 											update("minuteStep", Number(value))
 										}
 									>
-										<SelectTrigger id="time-picker-step">
+										<SelectTrigger id="minute-step" className="w-full">
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
@@ -266,7 +270,7 @@ const TimePickerEditor = ({
 									defaultOpen={Boolean(config.description)}
 								>
 									<Textarea
-										id="time-picker-description"
+										id="field-description"
 										value={config.description ?? ""}
 										onChange={(event) =>
 											update("description", event.target.value)
@@ -283,17 +287,17 @@ const TimePickerEditor = ({
 							</AccordionTrigger>
 							<AccordionContent className="flex flex-col gap-y-4">
 								<div className="flex items-center justify-between">
-									<Label htmlFor="time-picker-required">Required Field</Label>
+									<Label htmlFor="required-switch">Required Field</Label>
 									<Switch
-										id="time-picker-required"
+										id="required-switch"
 										checked={config.required ?? false}
 										onCheckedChange={(checked) => update("required", checked)}
 									/>
 								</div>
 								<div className="flex items-center justify-between">
-									<Label htmlFor="time-picker-disabled">Disabled</Label>
+									<Label htmlFor="disabled-switch">Disabled</Label>
 									<Switch
-										id="time-picker-disabled"
+										id="disabled-switch"
 										checked={config.disabled ?? false}
 										onCheckedChange={(checked) => update("disabled", checked)}
 									/>

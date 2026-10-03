@@ -117,14 +117,23 @@ must behave as a real form control, not as a decorative mockup.
   real focusable control and an accessible label.
 - When there is an error, connect the control/group to a stable
   `${fieldId}-error` element via `aria-describedby` where supported; render
-  that message with `role="alert"`. Make the control's error state visible,
-  typically with the established red border treatment.
+  that message with `role="alert"`. Make the control's error state visible:
+  `border-red-500 focus:border-red-500` on `Input`-based controls (the
+  text-input pattern), or an equivalent visible treatment when the control
+  has no border to tint (the slider pattern). An `aria-invalid` flag alone
+  is not a visible error state.
 - Render the optional description beneath the control using
   `text-sm text-muted-foreground`, and errors using `text-sm text-red-500`.
   Do not invent a competing information hierarchy.
 - The usual layout is `space-y-2`, a `text-sm font-medium` label, a full-width
   control, then description/error. A different structure is justified only
   when the control needs it (for example, a switch card or a rating group).
+- Keep the respondent control full-width: shadcn `Input` is already `w-full`
+  and picker triggers use `w-full` (the date-picker pattern). Do not add a
+  `max-w-*` cap to the control wrapper — a capped field renders narrower than
+  every sibling in the same form. A narrower control is justified only when
+  the control needs it, and then the reason belongs in the field file next to
+  the class.
 - Keep controls responsive. Do not rely on fixed canvas widths, hover-only
   interactions, or pointer-only drag behaviour.
 
@@ -148,6 +157,8 @@ second form-builder or a place for every imaginable option.
   visible.
 - Put `Required Field` and `Disabled` in Validation Properties as labelled
   `Switch` controls. Put constraints beside their related validation settings.
+- Full-row editor controls span the sheet width: `SelectTrigger` uses
+  `w-full` (the date-picker pattern), never a content-hugging pill.
 - Use a component-local draft (`useState(field)`). Save calls `onUpdate(draft)`
   and closes; Cancel discards the draft and closes. Disable Save when
   `label.trim()` is empty. If the sheet can be dismissed by its overlay or
@@ -158,8 +169,10 @@ second form-builder or a place for every imaginable option.
   the renderer or schema to guess about.
 - Follow the editor DOM-ID convention of the closest shipped field. The
   existing sheet editors use shared IDs such as `field-label`,
-  `required-switch`, and `disabled-switch`; do not introduce a different
-  naming scheme without a demonstrated collision in the mounted UI.
+  `field-placeholder`, `field-description`, `required-switch`, and
+  `disabled-switch`; do not introduce a different naming scheme without a
+  demonstrated collision in the mounted UI. Field-specific settings use plain
+  descriptive IDs (`min-date`, `disable-past`), not a field-prefixed scheme.
 - For editable option lists, preserve stable option values while labels change.
   Use the established dnd-kit shape only when ordering has product meaning:
   a `SortableOptionItem` owns `useSortable`, its handle receives `handleRef`,
@@ -231,6 +244,14 @@ Tests are required for the field's behaviour, not just its existence.
 - For complex interaction (keyboard selection, half-step rating, sortable
   options, uploads), add a focused component or browser test where the schema
   alone cannot prove the user experience. Test disabled and error states.
+- For any new or restyled renderer, compare it against the closest shipped
+  field in builder preview and a public form: control width, label, description,
+  and error treatment must match unless the difference is intentional and
+  documented in the field file. Do the same comparison for the editor sheet:
+  full-row controls such as `SelectTrigger` use `w-full` like the sibling
+  editors, and DOM IDs follow the shared scheme (`field-label`,
+  `required-switch`, `disabled-switch`) with plain descriptive IDs for
+  field-specific settings.
 - Check registry defaults through the existing registry/default tests; every
   registered definition must create a renderable, serializable config.
 - Run targeted tests first, then the repository's applicable lint, type check,
@@ -247,11 +268,11 @@ to one field in that field's implementation and tests. Update the parent guide a
 form-structure document only when their contracts are affected.
 
 Update triggers in this scope: a changed renderer, editor, Sheet/accordion,
-DOM-ID, dnd-kit, or validation convention updates the rule stating it; a new
-integration step (registry, allow-list, AI prompt, importer, upload contract)
-extends the checklist; a moved or renamed test path updates the verification
-section. Replace obsolete conventions in place and re-check the closest shipped
-fields still match what is documented.
+DOM-ID, width, error-treatment, dnd-kit, or validation convention updates the
+rule stating it; a new integration step (registry, allow-list, AI prompt,
+importer, upload contract) extends the checklist; a moved or renamed test path
+updates the verification section. Replace obsolete conventions in place and
+re-check the closest shipped fields still match what is documented.
 
 ## Keep the implementation human-maintainable
 
