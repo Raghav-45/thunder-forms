@@ -2,6 +2,43 @@
 
 Instructions for AI agents working in this codebase.
 
+## Required instruction discovery
+
+This file is the entry point and index for repository instructions. If you find
+a nested `AGENTS.md` first, return here and complete this workflow before editing.
+
+1. Discover all repository guides from the repository root:
+   `rg --files --hidden -g AGENTS.md -g '!node_modules' -g '!.git'`.
+   Do not assume your tool automatically loads nested instruction files.
+2. Read this file and every discovered `AGENTS.md` in full before the first edit.
+   The index below is a navigation aid; discovery also catches newly added guides.
+   Guides already read in full during this session need not be reread unless they
+   change. If output is truncated, read the remaining content.
+3. Apply root rules repository-wide. Apply each nested guide within its directory
+   and descendants; reading another area's guide does not extend its scope.
+   Within a scope, more specific instructions refine parent instructions.
+   Explicit user instructions take precedence over these repository guides.
+4. Before editing, briefly identify the guides that apply to the files you will
+   change and read any applicable repository skills. Repeat discovery when the
+   task expands into another area or instruction files change.
+5. Before finishing, check the diff against the applicable guides and report the
+   verification actually performed. Do not claim compliance or passing checks
+   without checking them.
+
+### Instruction index
+
+- [Root guide](AGENTS.md): repository-wide rules and this discovery workflow.
+- [Containers guide](src/containers/AGENTS.md): page and route-family ownership.
+- [Templates guide](src/containers/dashboard/templates/AGENTS.md): template
+  rendering, configuration, and preview parity; supplements the containers guide.
+- [Form Builder guide](src/features/form-builder/AGENTS.md): shared form-building
+  feature, field registry, and validation architecture.
+- [Field implementation guide](src/features/form-builder/elements/fields/AGENTS.md):
+  field renderers, editors, defaults, and validation; supplements Form Builder.
+
+When adding, moving, or removing an `AGENTS.md`, update this index and the affected
+parent/child links in the same change. Every nested guide must link back here.
+
 ## Guiding principle: KISS
 
 Make the smallest change that achieves the requested goal. Don't add folders, wrapper components, barrels, or abstractions unless they reduce real duplication or clarify ownership. When two approaches both work, pick the boring one over the clever one.

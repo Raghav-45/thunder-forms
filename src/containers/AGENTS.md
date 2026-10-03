@@ -1,7 +1,14 @@
 # Containers
 
-Instructions for AI agents working in `src/containers/`. Read root `AGENTS.md`
-first — this file only covers container-specific ownership and structure.
+Instructions for AI agents working in `src/containers/` and its descendants.
+
+## Instruction navigation
+
+Start with the [root guide and instruction index](../../AGENTS.md#required-instruction-discovery)
+and complete its reading workflow before editing. This guide supplements root rules.
+
+- Parent: [root guide](../../AGENTS.md).
+- Child: [templates guide](dashboard/templates/AGENTS.md), for template-specific rules.
 
 ## Guiding principle: KISS
 

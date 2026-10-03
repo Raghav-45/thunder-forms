@@ -1,5 +1,14 @@
 # Field implementation guide
 
+## Instruction navigation
+
+Start with the [root guide and instruction index](../../../../../AGENTS.md#required-instruction-discovery)
+and complete its reading workflow before editing. This guide applies to
+`src/features/form-builder/elements/fields/` and its descendants, supplementing the
+[Form Builder guide](../../AGENTS.md) and root rules.
+
+## Field ownership
+
 This directory contains the source-of-truth definitions for the form-builder's
 answerable fields. A new field is not complete because it renders in the
 builder: it must have a stable persisted configuration, a respondent-facing
@@ -97,7 +106,7 @@ Do not copy one of these behaviours into a different answer model by habit.
 The renderer is used outside the editor as well as in builder previews. It
 must behave as a real form control, not as a decorative mockup.
 
-- Use the existing shadcn primitives from `@/components/ui`; do not modify a
+- Use the existing shadcn primitives from `#/components/ui`; do not modify a
   primitive to accommodate one field.
 - Use `field-${field.id}` as the base DOM ID. Labels must point at the real
   control, or use a semantic `fieldset` and `legend` for a group of controls.

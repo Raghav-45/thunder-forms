@@ -1,7 +1,14 @@
 # Form Builder
 
-Instructions for AI agents working in `features/form-builder/`. Read root
-`AGENTS.md` first — this file only covers what's specific to this feature.
+Instructions for AI agents working in `src/features/form-builder/` and its descendants.
+
+## Instruction navigation
+
+Start with the [root guide and instruction index](../../../AGENTS.md#required-instruction-discovery)
+and complete its reading workflow before editing. This guide supplements root rules.
+
+- Parent: [root guide](../../../AGENTS.md).
+- Child: [field implementation guide](elements/fields/AGENTS.md), for field-specific rules.
 
 ## Guiding principle: KISS
 
@@ -46,12 +53,12 @@ renderer and editor for the field's actual behavior.
 ```tsx
 'use client'
 
-import { FormFieldDefinition } from '@/features/form-builder/elements/base'
+import { FormFieldDefinition } from '#/features/form-builder/elements/base'
 import type {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
-} from '@/features/form-builder/types'
+} from '#/features/form-builder/types'
 import React from 'react'
 import { z } from 'zod'
 

@@ -1,5 +1,14 @@
 # Templates: renderer and configuration parity
 
+## Instruction navigation
+
+Start with the [root guide and instruction index](../../../../AGENTS.md#required-instruction-discovery)
+and complete its reading workflow before editing. This guide applies to
+`src/containers/dashboard/templates/` and its descendants, supplementing the
+[containers guide](../../AGENTS.md) and root rules.
+
+## Template rules
+
 Preserve the approved visual design, routes, and existing builder behavior.
 
 - Render thumbnail and full-preview questions through the form-builder registry.
