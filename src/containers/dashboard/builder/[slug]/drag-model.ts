@@ -5,8 +5,12 @@ import {
 	type FormPage,
 	type FormSection,
 	type FormStructure,
+	getQuizDefaultPoints,
+	type QuizSettings,
 	sanitizeImportedFields,
 } from "#/features/form-builder/form-structure";
+import type { AvailableFieldsType } from "#/features/form-builder/types";
+import { createDefaultFieldConfig } from "#/features/form-builder/utils/helperFunctions";
 import type { ImportedGoogleFormPage } from "#/features/google-forms-import/types";
 
 export type { FormPage, FormSection, FormStructure };
@@ -35,6 +39,19 @@ const isString = (value: unknown): value is string => typeof value === "string";
 export const createSection = (): FormSection => createFormSection();
 
 export const createPage = (): FormPage => createFormPage();
+
+export function createQuizAwareField(
+	fieldType: AvailableFieldsType,
+	quiz: QuizSettings | undefined,
+): FieldConfig {
+	const field = createDefaultFieldConfig(fieldType);
+	return quiz?.enabled
+		? ({
+				...field,
+				quiz: { points: getQuizDefaultPoints(quiz) },
+			} as FieldConfig)
+		: field;
+}
 
 const hasVisibleText = (value: string | undefined): value is string =>
 	Boolean(value?.trim());

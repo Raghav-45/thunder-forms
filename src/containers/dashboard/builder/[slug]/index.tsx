@@ -1,10 +1,8 @@
 import { KeyboardSensor, PointerSensor } from "@dnd-kit/dom";
-import { move } from "@dnd-kit/helpers";
-import { type DragDropEventHandlers, DragDropProvider } from "@dnd-kit/react";
+import { DragDropProvider } from "@dnd-kit/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import axios from "axios";
-import { Loader2Icon, PaletteIcon, SaveIcon } from "lucide-react";
 import {
 	AnimatePresence,
 	motion,
@@ -17,20 +15,16 @@ import {
 	Suspense,
 	useCallback,
 	useEffect,
-	useLayoutEffect,
 	useRef,
 	useState,
 } from "react";
 import { toast } from "sonner";
-import { Button } from "#/components/ui/button";
 import { Card, CardContent } from "#/components/ui/card";
-import { Input } from "#/components/ui/input";
-import { Label } from "#/components/ui/label";
 import { ScrollArea } from "#/components/ui/scroll-area";
-import { Textarea } from "#/components/ui/textarea";
-import { siteConfig } from "#/config/site";
 import { BuilderCanvas } from "#/containers/dashboard/builder/[slug]/components/builder-canvas";
 import { BuilderDragOverlay } from "#/containers/dashboard/builder/[slug]/components/builder-drag-overlay";
+import { BuilderHeader } from "#/containers/dashboard/builder/[slug]/components/builder-header";
+import { BuilderLeftSidebar } from "#/containers/dashboard/builder/[slug]/components/builder-left-sidebar";
 import { BuilderPalette } from "#/containers/dashboard/builder/[slug]/components/builder-palette";
 import { ChromeTabStrip } from "#/containers/dashboard/builder/[slug]/components/chrome-tab-strip";
 import {
@@ -40,42 +34,28 @@ import {
 import { SaveFormLoginDialog } from "#/containers/dashboard/builder/[slug]/components/save-form-login-dialog";
 import { SectionEditor } from "#/containers/dashboard/builder/[slug]/components/section-editor";
 import {
-	CANVAS_DROP_ID,
 	createImportedGoogleFormStructure,
 	createPage,
-	createSection,
-	type DropTarget,
 	type FormPage,
-	type FormSection,
 	type FormStructure,
 	fieldCount,
-	findField,
 	getPage,
-	ITEM_TYPE,
-	moveExistingField,
-	PALETTE_FIELD_TYPE,
-	PALETTE_SECTION_TYPE,
-	removeField,
-	removePage,
-	removeSection,
-	SECTION_TYPE,
-	stagePaletteField,
-	stagePaletteSection,
 	updateField,
 	updateSection,
 } from "#/containers/dashboard/builder/[slug]/drag-model";
+import { useBuilderDrag } from "#/containers/dashboard/builder/[slug]/hooks/use-builder-drag";
+import {
+	type EditingField,
+	type EditingSection,
+	useStructureActions,
+} from "#/containers/dashboard/builder/[slug]/hooks/use-structure-actions";
 import { getTemplateBySlug } from "#/containers/dashboard/templates/constants";
 import { instantiateTemplate } from "#/containers/dashboard/templates/instantiate-template";
-import { CopyButton } from "#/features/form-builder/components/copy-button";
 import { IMMORTAL_SENTINEL_DATE } from "#/features/form-builder/components/date-picker-with-presets";
 import { useFormThemeFonts } from "#/features/form-builder/components/form-theme-scope";
-import { SettingsDialog } from "#/features/form-builder/components/settings-dialog";
-import GenerateWithAiPrompt from "#/features/form-builder/core/generate-with-ai";
-import ImportGoogleForm from "#/features/form-builder/core/import-google-form";
 import type { FieldConfig } from "#/features/form-builder/elements";
 import {
 	getOrderedFormFields,
-	getQuizDefaultPoints,
 	isFormStructure,
 	type FormStructure as PersistedFormStructure,
 	type QuizSettings,
@@ -85,14 +65,8 @@ import {
 	getFormThemeStyle,
 	normalizeFormTheme,
 } from "#/features/form-builder/theme";
-import type {
-	AvailableFieldsType,
-	QuizQuestionConfig,
-} from "#/features/form-builder/types";
-import {
-	createDefaultFieldConfig,
-	getFieldEditor,
-} from "#/features/form-builder/utils/helperFunctions";
+import type { QuizQuestionConfig } from "#/features/form-builder/types";
+import { getFieldEditor } from "#/features/form-builder/utils/helperFunctions";
 import type { ImportedGoogleFormPage } from "#/features/google-forms-import/types";
 import { GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM } from "#/features/google-sheets/constants";
 import { googleSheetsOAuthResultMessage } from "#/features/google-sheets/oauth-result";
@@ -145,17 +119,6 @@ function FieldEditor({
 	});
 }
 
-interface EditingField {
-	field: FieldConfig;
-	pageId: string;
-	sectionId: string;
-}
-
-interface EditingSection {
-	pageId: string;
-	section: FormSection;
-}
-
 function createInitialState() {
 	const firstPage = createPage();
 
@@ -168,19 +131,6 @@ function createInitialState() {
 // Stable fallback for unreachable empty-pages state (see activePage below).
 // Module scope keeps hook deps stable; never written, only read.
 const EMPTY_PAGE_FALLBACK: FormPage = { id: "", sections: [] };
-
-function createQuizAwareField(
-	fieldType: AvailableFieldsType,
-	quiz: QuizSettings | undefined,
-): FieldConfig {
-	const field = createDefaultFieldConfig(fieldType);
-	return quiz?.enabled
-		? ({
-				...field,
-				quiz: { points: getQuizDefaultPoints(quiz) },
-			} as FieldConfig)
-		: field;
-}
 
 export default function BuilderPage({ slug }: { slug: string }) {
 	return (
@@ -276,23 +226,10 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 	const [isSaveLoginOpen, setIsSaveLoginOpen] = useState(false);
 	const [hasInvalidPersistedStructure, setHasInvalidPersistedStructure] =
 		useState(false);
-	const [paletteFieldPlaceholderId, setPaletteFieldPlaceholderId] = useState<
-		string | null
-	>(null);
-	const [paletteSectionPlaceholderId, setPaletteSectionPlaceholderId] =
-		useState<string | null>(null);
 	const [canvasWidth, setCanvasWidth] = useState<number | null>(null);
-	const [fieldOverlayWidth, setFieldOverlayWidth] = useState<number | null>(
-		null,
-	);
 
 	const canvasRef = useRef<HTMLDivElement | null>(null);
 	const canvasObserverRef = useRef<ResizeObserver | null>(null);
-	const fieldSurfaceRefs = useRef(new Map<string, HTMLDivElement>());
-	const formStructureSnapshot = useRef<FormStructure | null>(null);
-	const paletteFieldClone = useRef<FieldConfig | null>(null);
-	const paletteSectionClone = useRef<FormSection | null>(null);
-	const palettePlacement = useRef(false);
 
 	const isExistingForm = currentFormId !== "new-form";
 	const isNewForm = !isExistingForm;
@@ -406,48 +343,22 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 		canvasObserverRef.current = observer;
 	}, []);
 
-	const registerFieldSurface = useCallback(
-		(sectionId: string, element: HTMLDivElement | null) => {
-			if (element) {
-				fieldSurfaceRefs.current.set(sectionId, element);
-			} else {
-				fieldSurfaceRefs.current.delete(sectionId);
-			}
-		},
-		[],
-	);
-
-	const setFieldOverlayWidthFromSurface = useCallback(
-		(surface: HTMLDivElement | undefined) => {
-			if (!surface) return;
-
-			const width = surface.getBoundingClientRect().width;
-			setFieldOverlayWidth((currentWidth) =>
-				currentWidth !== null && Math.abs(currentWidth - width) < 0.5
-					? currentWidth
-					: width,
-			);
-		},
-		[],
-	);
-
-	const measureFieldSurface = useCallback(
-		(target: DropTarget | null | undefined) => {
-			const targetData = target?.data as { sectionId?: unknown } | undefined;
-			const targetId = String(target?.id ?? "");
-			const sectionId =
-				(typeof targetData?.sectionId === "string"
-					? targetData.sectionId
-					: undefined) ??
-				activePage.sections.find((section) => section.id === targetId)?.id ??
-				findField(activePage, targetId)?.section.id;
-
-			setFieldOverlayWidthFromSurface(
-				sectionId ? fieldSurfaceRefs.current.get(sectionId) : undefined,
-			);
-		},
-		[activePage, setFieldOverlayWidthFromSurface],
-	);
+	const {
+		fieldOverlayWidth,
+		handleDragEnd,
+		handleDragOver,
+		handleDragStart,
+		paletteFieldClone,
+		paletteFieldPlaceholderId,
+		paletteSectionClone,
+		paletteSectionPlaceholderId,
+		registerFieldSurface,
+	} = useBuilderDrag({
+		activePage,
+		formStructure,
+		resolvedActivePageId,
+		setFormStructure,
+	});
 
 	useEffect(() => {
 		// Re-sync after StrictMode's mount → unmount → remount cycle in dev,
@@ -462,16 +373,6 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 			canvasObserverRef.current = null;
 		};
 	}, [registerCanvas]);
-
-	useLayoutEffect(() => {
-		const clone = paletteFieldClone.current;
-		if (!clone) return;
-
-		const location = findField(activePage, clone.id);
-		setFieldOverlayWidthFromSurface(
-			location ? fieldSurfaceRefs.current.get(location.section.id) : undefined,
-		);
-	}, [activePage, setFieldOverlayWidthFromSurface]);
 
 	const form = useQuery({
 		queryKey: ["form", currentFormId],
@@ -550,94 +451,22 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [isNewForm, templateSlug]);
 
-	const addPage = useCallback(() => {
-		const page = createPage();
-		pageTransitionDirection.current = 1;
-		setFormStructure((prev) => ({
-			...prev,
-			pages: [...prev.pages, page],
-		}));
-		setActivePageId(page.id);
-	}, []);
-
-	const removePageById = useCallback(
-		(pageId: string) => {
-			const pageIndex = formStructure.pages.findIndex(
-				(page) => page.id === pageId,
-			);
-			const nextStructure = removePage(formStructure, pageId);
-			if (nextStructure === formStructure) return;
-
-			if (pageId === resolvedActivePageId) {
-				if (pageIndex > 0) {
-					pageTransitionDirection.current = -1;
-				}
-				setActivePageId(nextStructure.pages[Math.max(0, pageIndex - 1)].id);
-			}
-
-			setEditingField((current) =>
-				current?.pageId === pageId ? null : current,
-			);
-			setEditingSection((current) =>
-				current?.pageId === pageId ? null : current,
-			);
-			setFormStructure(nextStructure);
-		},
-		[formStructure, resolvedActivePageId],
-	);
-
-	const addSection = useCallback(() => {
-		const section = createSection();
-		setFormStructure((prev) => ({
-			...prev,
-			pages: prev.pages.map((page) =>
-				page.id === resolvedActivePageId
-					? { ...page, sections: [...page.sections, section] }
-					: page,
-			),
-		}));
-	}, [resolvedActivePageId]);
-
-	const addField = useCallback(
-		(fieldType: AvailableFieldsType) => {
-			setFormStructure((prev) => {
-				const page = getPage(prev, resolvedActivePageId);
-				if (!page) return prev;
-
-				const field = createQuizAwareField(fieldType, prev.quiz);
-				const target: DropTarget = { id: CANVAS_DROP_ID };
-				return stagePaletteField(prev, resolvedActivePageId, field, target)
-					.structure;
-			});
-		},
-		[resolvedActivePageId],
-	);
-
-	const removeFieldById = useCallback(
-		(sectionId: string, fieldId: string) => {
-			setFormStructure((prev) =>
-				removeField(prev, resolvedActivePageId, sectionId, fieldId),
-			);
-			setEditingField((current) =>
-				current?.sectionId === sectionId && current.field.id === fieldId
-					? null
-					: current,
-			);
-		},
-		[resolvedActivePageId],
-	);
-
-	const removeSectionById = useCallback(
-		(sectionId: string) => {
-			setFormStructure((prev) =>
-				removeSection(prev, resolvedActivePageId, sectionId),
-			);
-			setEditingSection((current) =>
-				current?.section.id === sectionId ? null : current,
-			);
-		},
-		[resolvedActivePageId],
-	);
+	const {
+		addField,
+		addPage,
+		addSection,
+		removeFieldById,
+		removePageById,
+		removeSectionById,
+	} = useStructureActions({
+		formStructure,
+		resolvedActivePageId,
+		setActivePageId,
+		setEditingField,
+		setEditingSection,
+		setFormStructure,
+		transitionRef: pageTransitionDirection,
+	});
 
 	const replaceWithImportedPages = useCallback(
 		(
@@ -790,219 +619,6 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 		],
 	);
 
-	const resetPaletteDrag = useCallback(() => {
-		paletteFieldClone.current = null;
-		paletteSectionClone.current = null;
-		palettePlacement.current = false;
-		setPaletteFieldPlaceholderId(null);
-		setPaletteSectionPlaceholderId(null);
-		setFieldOverlayWidth(null);
-	}, []);
-
-	const handleDragStart = useCallback<DragDropEventHandlers["onDragStart"]>(
-		(event) => {
-			const { source } = event.operation;
-			if (!source) return;
-
-			formStructureSnapshot.current = structuredClone(formStructure);
-			palettePlacement.current = false;
-
-			if (source.type === PALETTE_FIELD_TYPE) {
-				const sourceData = source.data as { fieldType?: unknown } | undefined;
-				const fieldType = sourceData?.fieldType;
-				if (typeof fieldType !== "string") return;
-
-				const field = createQuizAwareField(
-					fieldType as AvailableFieldsType,
-					formStructure.quiz,
-				);
-				field.id = `palette_${crypto.randomUUID().slice(0, 8)}`;
-				paletteFieldClone.current = field;
-				setPaletteFieldPlaceholderId(field.id);
-				setFieldOverlayWidth(null);
-				return;
-			}
-
-			if (source.type === PALETTE_SECTION_TYPE) {
-				const section = createSection();
-				paletteSectionClone.current = section;
-				setPaletteSectionPlaceholderId(section.id);
-				return;
-			}
-
-			if (source.type === ITEM_TYPE) {
-				measureFieldSurface(source as unknown as DropTarget);
-			}
-		},
-		[formStructure, measureFieldSurface],
-	);
-
-	const handleDragOver = useCallback<DragDropEventHandlers["onDragOver"]>(
-		(event) => {
-			const { source, target } = event.operation;
-			if (!source) return;
-
-			const targetWithPlacement: DropTarget | null = target
-				? {
-						id: target.id,
-						index: (target as unknown as DropTarget).index,
-						data: target.data,
-						insertAfter:
-							Boolean(target.shape) &&
-							event.operation.position.current.y > target.shape!.center.y,
-					}
-				: null;
-
-			if (source.type === PALETTE_FIELD_TYPE) {
-				event.preventDefault();
-				const field = paletteFieldClone.current;
-				if (!field) return;
-
-				if (!target || !targetWithPlacement) {
-					palettePlacement.current = false;
-					setFormStructure((prev) =>
-						removeField(
-							prev,
-							resolvedActivePageId,
-							findField(getPage(prev, resolvedActivePageId), field.id)?.section
-								.id ?? "",
-							field.id,
-						),
-					);
-					return;
-				}
-
-				measureFieldSurface(targetWithPlacement);
-				// React may defer the state updater until after dragend. Record the
-				// accepted target before scheduling it so a valid palette drop cannot
-				// be mistaken for an outside drop.
-				palettePlacement.current = true;
-				setFormStructure((prev) => {
-					const result = stagePaletteField(
-						prev,
-						resolvedActivePageId,
-						field,
-						targetWithPlacement,
-					);
-					return result.structure;
-				});
-				return;
-			}
-
-			if (source.type === PALETTE_SECTION_TYPE) {
-				event.preventDefault();
-				const section = paletteSectionClone.current;
-				if (!section) return;
-
-				if (!target || !targetWithPlacement) {
-					palettePlacement.current = false;
-					setFormStructure((prev) =>
-						removeSection(prev, resolvedActivePageId, section.id),
-					);
-					return;
-				}
-
-				// See the equivalent palette-field branch: this must be synchronous.
-				palettePlacement.current = true;
-				setFormStructure((prev) => {
-					const result = stagePaletteSection(
-						prev,
-						resolvedActivePageId,
-						section,
-						targetWithPlacement,
-					);
-					return result.structure;
-				});
-				return;
-			}
-
-			if (source.type === SECTION_TYPE && target) {
-				const targetId = String(target.id);
-				setFormStructure((prev) => {
-					const page = getPage(prev, resolvedActivePageId);
-					if (
-						!page ||
-						!page.sections.some((section) => section.id === targetId)
-					) {
-						return prev;
-					}
-
-					const sections = move(page.sections, event);
-					return {
-						...prev,
-						pages: prev.pages.map((candidate) =>
-							candidate.id === resolvedActivePageId
-								? { ...candidate, sections }
-								: candidate,
-						),
-					};
-				});
-				return;
-			}
-
-			if (source.type === ITEM_TYPE && target && targetWithPlacement) {
-				measureFieldSurface(targetWithPlacement);
-				setFormStructure((prev) => {
-					const page = getPage(prev, resolvedActivePageId);
-					const sourceField = findField(page, String(source.id));
-					const targetField = findField(page, String(target.id));
-
-					if (
-						page &&
-						sourceField &&
-						targetField &&
-						sourceField.section.id === targetField.section.id
-					) {
-						const fields = move(sourceField.section.fields, event);
-						return {
-							...prev,
-							pages: prev.pages.map((candidate) =>
-								candidate.id === resolvedActivePageId
-									? {
-											...candidate,
-											sections: candidate.sections.map((section) =>
-												section.id === sourceField.section.id
-													? { ...section, fields }
-													: section,
-											),
-										}
-									: candidate,
-							),
-						};
-					}
-
-					return moveExistingField(
-						prev,
-						resolvedActivePageId,
-						String(source.id),
-						targetWithPlacement,
-					);
-				});
-			}
-		},
-		[measureFieldSurface, resolvedActivePageId],
-	);
-
-	const handleDragEnd = useCallback<DragDropEventHandlers["onDragEnd"]>(
-		(event) => {
-			const sourceType = event.operation.source?.type;
-			const isPaletteSource =
-				sourceType === PALETTE_FIELD_TYPE ||
-				sourceType === PALETTE_SECTION_TYPE;
-			const shouldRestore =
-				event.canceled ||
-				(isPaletteSource ? !palettePlacement.current : !event.operation.target);
-
-			if (shouldRestore && formStructureSnapshot.current) {
-				setFormStructure(formStructureSnapshot.current);
-			}
-
-			formStructureSnapshot.current = null;
-			resetPaletteDrag();
-		},
-		[resetPaletteDrag],
-	);
-
 	return (
 		<DragDropProvider
 			sensors={sensors}
@@ -1011,141 +627,37 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 			onDragEnd={handleDragEnd}
 		>
 			<div className="flex h-screen min-w-0 bg-background text-foreground">
-				<Card
-					data-testid="builder-left-sidebar"
-					className="hidden h-screen w-80 shrink-0 overflow-hidden rounded-none border-0 border-r-2 md:block"
-				>
-					{/* Negated direction so the left sidebar mirrors the right one. */}
-					<AnimatePresence
-						mode="wait"
-						custom={-sidebarDirection}
-						initial={false}
-					>
-						<motion.div
-							key={mode}
-							custom={-sidebarDirection}
-							variants={pageTransitionVariants}
-							initial="initial"
-							animate="animate"
-							exit="exit"
-							transition={pageTransition}
-							className="h-full min-h-0"
-						>
-							{customizationProps ? (
-								<CardContent className="flex h-full min-h-0 flex-col gap-4 pt-4 pr-0 pb-4 pl-4">
-									<h2 className="shrink-0 pr-4 text-2xl font-bold">
-										Appearance
-									</h2>
-									<FormCustomization
-										{...customizationProps}
-										side="appearance"
-									/>
-								</CardContent>
-							) : (
-								<CardContent className="flex h-full flex-col space-y-4 px-4 pt-4 pb-4">
-									<div className="mb-8">
-										<h2 className="text-2xl font-bold">Settings</h2>
-									</div>
-
-									<div className="grid w-full items-center gap-1.5">
-										<Label htmlFor="builder-title">Form title</Label>
-										<Input
-											id="builder-title"
-											placeholder="Enter form name"
-											value={formSettings.title}
-											onChange={(event) =>
-												setFormSettings({
-													...formSettings,
-													title: event.target.value,
-												})
-											}
-											className="bg-neutral-900!"
-										/>
-									</div>
-
-									<div className="grid w-full items-center gap-1.5">
-										<Label htmlFor="builder-description">Description</Label>
-										<Textarea
-											id="builder-description"
-											placeholder="Enter description"
-											value={formSettings.description}
-											onChange={(event) =>
-												setFormSettings({
-													...formSettings,
-													description: event.target.value,
-												})
-											}
-											className="max-h-24 bg-neutral-900!"
-										/>
-									</div>
-
-									<SettingsDialog
-										formId={isExistingForm ? currentFormId : null}
-										formStructure={formStructure}
-										onQuizSettingsChange={updateQuizSettings}
-										onQuizQuestionChange={updateQuizQuestion}
-									/>
-									<div className="flex-grow" />
-									<ImportGoogleForm
-										onImported={replaceWithImportedPages}
-										hasExistingContent={fieldCount(formStructure) > 0}
-									/>
-									<GenerateWithAiPrompt
-										onGeneratedFields={replaceWithImportedFields}
-									/>
-								</CardContent>
-							)}
-						</motion.div>
-					</AnimatePresence>
-				</Card>
+				<BuilderLeftSidebar
+					currentFormId={currentFormId}
+					customizationProps={customizationProps}
+					formStructure={formStructure}
+					isExistingForm={isExistingForm}
+					mode={mode}
+					pageTransition={pageTransition}
+					pageTransitionVariants={pageTransitionVariants}
+					sidebarDirection={sidebarDirection}
+					onQuizSettingsChange={updateQuizSettings}
+					onQuizQuestionChange={updateQuizQuestion}
+					replaceWithImportedFields={replaceWithImportedFields}
+					replaceWithImportedPages={replaceWithImportedPages}
+				/>
 
 				<ScrollArea className="sticky min-w-0 flex-1 overflow-auto bg-card [&_[data-radix-scroll-area-viewport]>div]:w-full [&_[data-radix-scroll-area-viewport]>div]:table-fixed">
-					<div className="flex flex-row justify-between bg-[#111111] px-4 pt-6 md:px-4 md:pt-6">
-						<h1 className="text-3xl font-bold">Builder</h1>
-						<div className="flex gap-2">
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								aria-pressed={mode === "customise"}
-								title={
-									mode === "customise"
-										? "Back to builder"
-										: "Customize your form"
-								}
-								onClick={() => {
-									if (customization) applyCustomization();
-									else openCustomization();
-								}}
-							>
-								<PaletteIcon data-icon="inline-start" />
-								Customize
-							</Button>
-							{isExistingForm ? (
-								<CopyButton
-									className="h-8"
-									value={`${siteConfig.url}/forms/${currentFormId}`}
-								/>
-							) : null}
-							<Button
-								type="button"
-								variant="secondary"
-								className="h-8 cursor-pointer"
-								onClick={() => {
-									if (customization) applyCustomization();
-									void handleSaveForm();
-								}}
-								disabled={isSaving || hasInvalidPersistedStructure}
-							>
-								{isSaving ? (
-									<Loader2Icon className="animate-spin" />
-								) : (
-									<SaveIcon />
-								)}
-								{isSaving ? "Saving..." : "Save"}
-							</Button>
-						</div>
-					</div>
+					<BuilderHeader
+						currentFormId={currentFormId}
+						customizing={Boolean(customization)}
+						isExistingForm={isExistingForm}
+						isSaving={isSaving}
+						saveDisabled={hasInvalidPersistedStructure}
+						onSave={() => {
+							if (customization) applyCustomization();
+							void handleSaveForm();
+						}}
+						onToggleCustomize={() => {
+							if (customization) applyCustomization();
+							else openCustomization();
+						}}
+					/>
 
 					<Card
 						className={cn(
