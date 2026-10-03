@@ -9,7 +9,7 @@ and complete its reading workflow before editing. This guide supplements root ru
 
 - Parent: [root guide](../../../AGENTS.md).
 - Child: [field implementation guide](elements/fields/AGENTS.md), for field-specific rules.
-- Required architecture: [Form Structure v1](FORM_STRUCTURE.md). Read it in full
+- Required architecture: [Form Structure](FORM_STRUCTURE.md). Read it in full
   before changing form data or its producers and consumers.
 
 ## Guiding principle: KISS
@@ -23,8 +23,10 @@ a components subfolder or barrel file the existing structure doesn't need.
 
 - Every field lives entirely in `elements/fields/<field-name>.tsx`: config
   type, renderer, editor, `defaultConfig`, and `getValidationSchema` all in
-  that one file. Don't split a field's validation or defaults into another
-  registry, utility, or folder.
+  that one file. Keep field-specific validation and defaults there. Shared helpers
+  such as
+  `elements/choice-options.ts` and `elements/number-constraints.ts` may serve
+  multiple fields; do not create another registry or dispatcher.
 - Define one local `FIELD_IDENTIFIER` constant in each field file. Use it for
   the config's `uniqueIdentifier` type, the definition's `identifier`, and
   `defaultConfig().uniqueIdentifier`. Do not repeat its raw string literal.
@@ -33,15 +35,17 @@ a components subfolder or barrel file the existing structure doesn't need.
 
 ## Add a field
 
-1. Create `elements/fields/<field-name>.tsx` with `'use client'` when it
-   renders UI or uses client hooks.
+1. Create `elements/fields/<field-name>.tsx` following nearby field modules.
+   Preserve the existing client/server import boundaries; UI hooks alone are not
+   a reason to add a framework directive absent from the current field modules.
 2. Define `const FIELD_IDENTIFIER = 'star-rating-input'`, then define
    a config interface extending `BaseFieldConfig` with
    `uniqueIdentifier: typeof FIELD_IDENTIFIER`.
 3. Extend `FormFieldDefinition<YourConfig>` and implement `identifier` using
    `FIELD_IDENTIFIER`, plus
    renderer, editor, `defaultConfig`, and `getValidationSchema` in that file.
-4. Add one instance to `FIELD_DEFINITIONS` in `elements/index.ts`.
+4. Add one instance to `FIELD_DEFINITIONS` in `elements/index.ts` and its identifier
+   to the server-safe allow-list in `form-structure.ts`.
 5. Before writing from scratch, skim an existing field close to what you're
    building — `text-input.tsx`, `date-picker.tsx`, `checkbox.tsx`, `switch-field.tsx`.
    Match their structure (proper section comments, `AccordionWithSwitch` usage,
@@ -53,16 +57,14 @@ Use this as the file outline. Replace the example names and implement the
 renderer and editor for the field's actual behavior.
 
 ```tsx
-'use client'
-
 import { FormFieldDefinition } from '#/features/form-builder/elements/base'
 import type {
   BaseFieldConfig,
   EditorProps,
   FieldProps,
 } from '#/features/form-builder/types'
-import React from 'react'
-import { z } from 'zod'
+import type React from 'react'
+import { z } from 'zod/v3'
 
 const FIELD_IDENTIFIER = 'example-field'
 
@@ -120,7 +122,7 @@ check — don't merge them or add a third:
 - `formValidation.ts` validates a *submitted value*, looking up the field in
   `FIELD_REGISTRY` and calling its `getValidationSchema`. Preserve its shared
   required-value handling unless the task changes validation behavior. Both
-  public-form validation and `app/api/forms/[id]/submit/route.ts` use this
+  public-form validation and `src/routes/api/forms/$id/submit.ts` use this
   dispatcher — this feature intentionally shares `FIELD_REGISTRY` with that
   API route.
 - `helperFunctions.ts` validates a *field's own config*
@@ -138,7 +140,7 @@ this architecture.
 ## Directory structure
 
 ```text
-features/form-builder/                 # form-building domain feature
+src/features/form-builder/             # form-building domain feature
 ├── components/                         # Form Builder UI shared by feature flows
 ├── constants/
 │   └── index.ts                        # shared Form Builder constants
@@ -162,7 +164,10 @@ features/form-builder/                 # form-building domain feature
 │   │   ├── slider.tsx
 │   │   └── ...more field types can be added here as needed
 │   └── index.ts                        # FIELD_DEFINITIONS and FIELD_REGISTRY
-├── store.ts                            # builder state
+├── form-structure.ts                   # server-safe persisted tree contract
+├── theme.ts                            # theme contract and normalization
+├── server/                             # server-only domain services
+├── store.ts                            # form settings state
 ├── types/
 │   └── index.ts                        # shared config and prop types
 └── utils/                              # registry dispatch and small helpers
@@ -170,8 +175,9 @@ features/form-builder/                 # form-building domain feature
     └── helperFunctions.ts
 ```
 
-`components/` is not exclusively field UI — most of it belongs to the
-settings dialog. Don't put a new field's UI here instead of co-locating it in
+`components/` contains shared settings, respondent rendering, theme scope,
+and other Form Builder UI. Builder-page-only panels belong in its container.
+Do not put a new field's UI here instead of co-locating it in
 the field's own file, and don't assume every file in this folder is reused by
 fields the way `accordion-with-switch.tsx` is.
 
@@ -184,10 +190,19 @@ fields the way `accordion-with-switch.tsx` is.
   or typo — never for aesthetic consistency alone.
 - No format-only churn. Leave unrelated or out-of-scope files untouched.
 
+## Maintaining this guide
+
+Follow [instruction maintenance](../../../AGENTS.md#maintaining-these-instructions).
+When registry integration, shared ownership, or validation dispatch changes,
+update the affected sections and the child field guide. Persisted-data changes
+also require reviewing [FORM_STRUCTURE.md](FORM_STRUCTURE.md). Keep examples
+compatible with `elements/base.ts` and the installed schema import used by fields.
+
 ## Before finishing
 
 - The new/changed field uses `FIELD_IDENTIFIER` for its config, definition,
-  and default config, and is registered in `FIELD_DEFINITIONS`.
+  and default config, and is registered in `FIELD_DEFINITIONS`. New identifiers
+  also appear in the server-safe structural allow-list.
 - Validation logic stays in the field file; no third dispatcher was added.
-- Client/server boundaries (`'use client'`) are preserved.
-- The applicable type check, build, and targeted lint/tests all pass.
+- Client/server import boundaries are preserved, especially server-safe structural validation.
+- Follow the root verification requirements and report actual results.

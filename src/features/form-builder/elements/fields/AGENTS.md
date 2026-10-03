@@ -204,7 +204,7 @@ only when it applies to the new field:
    in `../../form-structure.ts`. This is intentionally separate from the
    client registry: API routes use it without importing client field modules.
    It is not a second palette or renderer registry.
-3. Update `app/api/generatewithai/prompt.ts` only when AI generation can
+3. Update `src/routes/api/generatewithai/-prompt.ts` only when AI generation can
    express the new field faithfully. Include concrete configuration limits;
    never ask AI to invent an unsupported shape.
 4. Update an importer (for example, Google Forms) only when there is a direct,
@@ -222,7 +222,7 @@ become a future migration bug.
 
 Tests are required for the field's behaviour, not just its existence.
 
-- Update `tests/features/form-builder/formValidation.test.ts` with a required
+- Update `src/features/form-builder/formValidation.test.ts` with a required
   valid answer, optional empty answer, valid boundary answer, and invalid
   boundary/value for every new constraint.
 - Update importer tests when the field has an import mapping. Test the source
@@ -237,6 +237,14 @@ Tests are required for the field's behaviour, not just its existence.
   build, and `git diff --check`. Manually verify the field in both builder
   preview and a public form, including keyboard navigation and a failed
   submission.
+
+## Maintaining this guide
+
+Follow [instruction maintenance](../../../../../AGENTS.md#maintaining-these-instructions).
+Update this guide when an authorized feature changes the shared field contract,
+editor conventions, integration steps, or verification paths. Keep details unique
+to one field in that field's implementation and tests. Update the parent guide and
+form-structure document only when their contracts are affected.
 
 ## Keep the implementation human-maintainable
 

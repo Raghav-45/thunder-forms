@@ -80,11 +80,18 @@ empty or ceremonial folders only for consistency with another container.
   re-export shims.
 - No format-only churn. Leave unrelated or out-of-scope files untouched.
 
+## Maintaining this guide
+
+Follow [instruction maintenance](../../AGENTS.md#maintaining-these-instructions).
+Update ownership and route mappings when an authorized feature moves page logic
+or introduces a new route family. Keep route-specific behavior in its owning
+guide and update the root index when adding or moving a guide.
+
 ## Before finishing
 
-- Matching `src/routes/` routes remain thin and URLs are unchanged.
+- Matching `src/routes/` routes remain thin; preserve URLs unless the requested feature changes them.
 - Code lives under its narrowest real owner: page, route family, or shared
   feature.
 - No `lib/` or root `components/` module imports from `containers/`.
 - No dead code or duplicate implementations remain.
-- The applicable type check, build, and targeted lint/tests all pass.
+- Follow the root verification requirements and report actual results.

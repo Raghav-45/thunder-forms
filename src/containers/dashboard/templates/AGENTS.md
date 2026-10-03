@@ -9,7 +9,8 @@ and complete its reading workflow before editing. This guide applies to
 
 ## Template rules
 
-Preserve the approved visual design, routes, and existing builder behavior.
+Preserve the approved visual design, routes, and existing builder behavior
+unless the requested feature explicitly changes them.
 
 - Render thumbnail and full-preview questions through the form-builder registry.
   Do not copy field JSX, build a mock renderer, or override constraints only in a
@@ -38,3 +39,14 @@ Preserve the approved visual design, routes, and existing builder behavior.
 - Add regression tests for renderer lookup, thumbnail selection, copy, configured
   ranges/defaults, validation boundaries, accessible names, and unique IDs. Run
   targeted tests, type check, build, lint, and `git diff --check` before finishing.
+
+## Maintaining this guide
+
+Follow [instruction maintenance](../../../../AGENTS.md#maintaining-these-instructions).
+Verify template-specific defaults against [constants/index.ts](constants/index.ts),
+materialization rules against [instantiate-template.ts](instantiate-template.ts),
+and preview behavior against
+[template-form-preview.tsx](components/template-form-preview.tsx) and its tests.
+When an authorized feature changes a documented template default or preview rule,
+update the affected rule here in the same change. Preserve unrelated defaults and
+existing saved forms; do not treat a new template default as a data migration.

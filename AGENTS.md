@@ -42,7 +42,7 @@ parent/child links in the same change. Every nested guide must link back here.
 
 ### Required architecture document
 
-Read [Form Structure v1](src/features/form-builder/FORM_STRUCTURE.md) alongside
+Read [Form Structure](src/features/form-builder/FORM_STRUCTURE.md) alongside
 these guides. It defines the shared page/section/field contract, ownership,
 validation, ordering, and verification requirements for builders, templates,
 imports, APIs, and public forms. Follow it when changing any producer or consumer
@@ -75,7 +75,7 @@ Make the smallest change that achieves the requested goal. Don't add folders, wr
   `types/`, `hooks/`, and `utils/` when code belongs to those roles. Don't keep related
   code flat merely to avoid a folder, and don't create empty or ceremonial
   folders with no clear owner.
-- Put a shared domain feature used by multiple routes in `features/<feature>/`; keep its UI, state, types, and utilities together.
+- Put genuinely cross-area domain features in `features/<feature>/`; keep their UI, state, types, and utilities together. Code shared only by sibling routes stays in its owning container.
 - `lib/` and root `components/` never import from `containers/` — shared code stays independent of any one route.
 - Keep framework files (`__root.tsx`, route `beforeLoad`, server handlers) in `src/routes/` — they control framework behavior.
 - Keep API handlers in `src/routes/api/` — don't relocate them unless that's explicitly the task.
@@ -130,8 +130,62 @@ src/routes/templates/index.tsx                  → containers/templates/index.t
 - Preserve URLs, client/server boundaries, public interfaces, failure behavior, ordering, comments, TODOs, and NOTE blocks unless the task explicitly asks you to change them.
 - No format-only churn. Leave unrelated or out-of-scope files untouched.
 
+## Maintaining these instructions
+
+Instruction maintenance is part of feature work, not a separate cleanup project.
+After a feature, fix, or refactor, check whether its changes make any applicable
+instruction or architecture document inaccurate. Update affected guidance in the
+same working change; leave accurate guidance untouched. This does not authorize
+committing, pushing, or changing unrelated product behavior.
+
+1. Verify the changed behavior in its implementation, callers, and relevant tests.
+   Check paths, exports, scripts, and configuration directly. Do not document a
+   plan, an assumption, or a passing check that was not actually run as fact.
+2. Distinguish a current-code description from a project rule. A code mismatch
+   does not authorize weakening a rule to fit a bug. Preserve user constraints;
+   change policy only when the user's requested work authorizes that change.
+   Report unresolved conflicts instead of silently choosing a new policy.
+3. Update the narrowest owning guide: repository conventions here, container
+   ownership in the containers guide, and domain rules in the relevant nested
+   guide. Update `FORM_STRUCTURE.md` when persisted shape, validation, ordering,
+   or producer/consumer behavior changes. Link to that contract rather than
+   copying it into another guide.
+4. Replace obsolete statements in place. Update affected examples, navigation
+   links, and verification commands together. Do not append a contradictory
+   correction, duplicate parent rules, or add a new guide for every feature.
+5. Match the existing documentation style: clear English, descriptive Markdown
+   headings, short paragraphs, and direct, actionable bullets. State scope and
+   necessary exceptions explicitly. Use exact project names and source links.
+   Keep code examples consistent with current types, imports, and formatting.
+   Do not copy terse chat style, session history, temporary findings, or speculative
+   future architecture into permanent instructions.
+6. Verify relative links and heading anchors, confirm the root index covers all
+   guides, and run `git diff --check`. Re-read changed guidance alongside its
+   parent and child guides for contradictions. Report which guides changed and
+   what was verified; if no update is needed, say so briefly.
+
+## Verification commands
+
+Use the repository's current scripts and configuration as the source of truth:
+[package.json](package.json), [vite.config.ts](vite.config.ts), and
+[biome.json](biome.json).
+
+- Unit tests live beside source files as `src/**/*.test.ts`.
+  Run `pnpm exec vitest run --project unit <test-paths>` for targeted tests;
+  `pnpm test` runs the full unit suite.
+- Browser tests live in `tests/visual/`; run
+  `pnpm exec playwright test <test-paths>` for affected interactions.
+- Type check: `pnpm exec tsc --noEmit`. Production build: `pnpm build`.
+- Targeted source check: `pnpm exec biome check <changed-source-paths>`.
+  Biome's configured scope excludes some files, including `tests/visual/`;
+  an ignored file is not a successful lint check.
+- For documentation-only edits, verify referenced facts, links, and
+  `git diff --check`; application builds and browser runs are not required unless
+  code or executable configuration also changes. Never report skipped checks as passed.
+
 ## Before finishing
 
-- URLs and routes are unchanged.
+- URLs, routes, and behavior are preserved unless the requested feature explicitly changes them.
 - No dead code or duplicate implementations introduced by this change remain.
-- The applicable type check, build, and targeted lint/tests all pass.
+- Run the applicable checks above and report any failures or checks that could not run.
+- Complete the instruction-maintenance check above; keep affected guides current.
