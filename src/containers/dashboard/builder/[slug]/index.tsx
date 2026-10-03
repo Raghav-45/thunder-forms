@@ -25,12 +25,9 @@ import { BuilderCanvas } from "#/containers/dashboard/builder/[slug]/components/
 import { BuilderDragOverlay } from "#/containers/dashboard/builder/[slug]/components/builder-drag-overlay";
 import { BuilderHeader } from "#/containers/dashboard/builder/[slug]/components/builder-header";
 import { BuilderLeftSidebar } from "#/containers/dashboard/builder/[slug]/components/builder-left-sidebar";
-import { BuilderPalette } from "#/containers/dashboard/builder/[slug]/components/builder-palette";
+import { BuilderRightSidebar } from "#/containers/dashboard/builder/[slug]/components/builder-right-sidebar";
 import { ChromeTabStrip } from "#/containers/dashboard/builder/[slug]/components/chrome-tab-strip";
-import {
-	FormCustomization,
-	type FormCustomizationValue,
-} from "#/containers/dashboard/builder/[slug]/components/form-customization";
+import type { FormCustomizationValue } from "#/containers/dashboard/builder/[slug]/components/form-customization";
 import { SaveFormLoginDialog } from "#/containers/dashboard/builder/[slug]/components/save-form-login-dialog";
 import { SectionEditor } from "#/containers/dashboard/builder/[slug]/components/section-editor";
 import {
@@ -735,39 +732,15 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 					</Card>
 				</ScrollArea>
 
-				<Card
-					data-testid="builder-right-sidebar"
-					className="hidden h-screen w-80 shrink-0 overflow-hidden rounded-none border-0 border-l-2 md:block"
-				>
-					<AnimatePresence
-						mode="wait"
-						custom={sidebarDirection}
-						initial={false}
-					>
-						<motion.div
-							key={mode}
-							custom={sidebarDirection}
-							variants={pageTransitionVariants}
-							initial="initial"
-							animate="animate"
-							exit="exit"
-							transition={pageTransition}
-							className="h-full min-h-0"
-						>
-							{customizationProps ? (
-								<CardContent className="flex h-full min-h-0 flex-col gap-4 pt-4 pr-0 pb-4 pl-4">
-									<h2 className="shrink-0 pr-4 text-2xl font-bold">Layout</h2>
-									<FormCustomization {...customizationProps} side="layout" />
-								</CardContent>
-							) : (
-								<BuilderPalette
-									onAddField={addField}
-									onAddSection={addSection}
-								/>
-							)}
-						</motion.div>
-					</AnimatePresence>
-				</Card>
+				<BuilderRightSidebar
+					customizationProps={customizationProps}
+					mode={mode}
+					pageTransition={pageTransition}
+					pageTransitionVariants={pageTransitionVariants}
+					sidebarDirection={sidebarDirection}
+					onAddField={addField}
+					onAddSection={addSection}
+				/>
 			</div>
 
 			<BuilderDragOverlay
