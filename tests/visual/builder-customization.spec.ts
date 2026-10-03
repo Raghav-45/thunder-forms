@@ -19,6 +19,7 @@ test("Contact Us keeps its current appearance when Customize opens and unchanged
 		return route.fulfill({ json: { ...saved, id: "unchanged-contact", status: "Active" } });
 	});
 	await page.goto("/dashboard/builder/new-form?template=contact-us", { waitUntil: "networkidle" });
+	await expect(page.locator("[data-sonner-toast]")).toHaveCount(0, { timeout: 10_000 });
 	const section = page.locator(".group\\/section").first();
 	await section.evaluate(async (element) => {
 		element.getBoundingClientRect();
@@ -43,24 +44,102 @@ test("Contact Us keeps its current appearance when Customize opens and unchanged
 	const beforeGeometry = await section.evaluate(geometry);
 	await page.mouse.move(0, 0);
 	const beforeScreenshot = await section.screenshot({ animations: "disabled" });
-	await page.getByRole("button", { name: "Customize", exact: true }).click();
 	const editor = page.getByRole("dialog", { name: "Customize your form" });
 	const preview = page.getByTestId("customization-preview");
-	expect(await preview.locator(".group\\/section").first().evaluate(appearance)).toEqual(beforeSection);
-	expect(await preview.locator("input").first().evaluate(appearance)).toEqual(beforeInput);
-	expect(await preview.locator(".group\\/section").first().evaluate(geometry)).toEqual(beforeGeometry);
-	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
-	expect(await section.evaluate(appearance)).toEqual(beforeSection);
-	expect(await section.locator("input").first().evaluate(appearance)).toEqual(beforeInput);
-	await expect(page.locator("[data-form-theme]")).toHaveCount(0);
-	expect(await section.evaluate(geometry)).toEqual(beforeGeometry);
-	await page.mouse.move(0, 0);
-	expect((await section.screenshot({ animations: "disabled" })).equals(beforeScreenshot)).toBe(true);
+	const allStyles = (element: Element) => [element, ...element.querySelectorAll("*")].map((item) =>
+		[null, "::before", "::after"].map((pseudo) => {
+			const style = getComputedStyle(item, pseudo);
+			return Object.fromEntries(Array.from(style).map((property) => [property, style.getPropertyValue(property)]));
+		}),
+	);
+	const beforeStyles = await section.evaluate(allStyles);
+	for (const selectedStyle of [undefined, "Thunder", "Bold Blocks"]) {
+		await page.getByRole("button", { name: "Customize", exact: true }).click();
+		await expect(editor.getByRole("combobox", { name: "Form style" })).toContainText("Thunder");
+		if (selectedStyle) {
+			await editor.getByRole("combobox", { name: "Form style" }).click();
+			await page.getByRole("option", { name: selectedStyle, exact: true }).click();
+			if (selectedStyle !== "Thunder") {
+				await expect(preview).toHaveAttribute("data-form-theme", "true");
+				await editor.getByRole("combobox", { name: "Form style" }).click();
+				await page.getByRole("option", { name: "Thunder", exact: true }).click();
+			}
+		}
+		await expect(preview).not.toHaveAttribute("data-form-theme");
+		expect(await preview.locator(".group\\/section").first().evaluate(appearance)).toEqual(beforeSection);
+		expect(await preview.locator("input").first().evaluate(appearance)).toEqual(beforeInput);
+		expect(await preview.locator(".group\\/section").first().evaluate(geometry)).toEqual(beforeGeometry);
+		await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
+		expect(await section.evaluate(appearance)).toEqual(beforeSection);
+		expect(await section.locator("input").first().evaluate(appearance)).toEqual(beforeInput);
+		await expect(page.locator("[data-form-theme]")).toHaveCount(0);
+		expect(await section.evaluate(geometry)).toEqual(beforeGeometry);
+		await page.mouse.move(0, 0);
+		const afterScreenshot = await section.screenshot({ animations: "disabled" });
+		expect(await section.evaluate(allStyles)).toEqual(beforeStyles);
+		if (!afterScreenshot.equals(beforeScreenshot)) {
+			await test.info().attach("before-default", { body: beforeScreenshot, contentType: "image/png" });
+			await test.info().attach(`after-${selectedStyle ?? "unchanged"}`, { body: afterScreenshot, contentType: "image/png" });
+		}
+		expect(afterScreenshot.equals(beforeScreenshot), `Applying ${selectedStyle ?? "unchanged settings"} must leave every pixel unchanged`).toBe(true);
+	}
 	const saveResponse = page.waitForResponse((response) => response.url().endsWith("/api/forms/new") && response.request().method() === "POST");
 	await page.getByRole("button", { name: "Save", exact: true }).click();
 	await saveResponse;
 	expect(saved.fields).not.toHaveProperty("theme");
 	expect(saved.fields).not.toHaveProperty("layout");
+	expect(saved.submitButtonText).toBe("Send message");
+});
+
+test("Thunder restores default styling while keeping the form's layout and submit text", async ({ page }) => {
+	await mockSession(page);
+	let saved: Record<string, unknown> = {};
+	await page.route("**/api/forms/new", (route) => {
+		saved = { ...route.request().postDataJSON(), id: "default-thunder", status: "Active" };
+		return route.fulfill({ json: saved });
+	});
+	await page.route("**/api/forms/default-thunder/viewForm", (route) => route.fulfill({ json: saved }));
+	await page.goto("/dashboard/builder/new-form?template=contact-us", { waitUntil: "networkidle" });
+	await page.getByRole("button", { name: "Customize", exact: true }).click();
+	const editor = page.getByRole("dialog", { name: "Customize your form" });
+	const preview = page.getByTestId("customization-preview");
+	const originalInput = await preview.locator("input").first().evaluate((element) => {
+		const style = getComputedStyle(element);
+		return { background: style.backgroundColor, radius: style.borderRadius, font: style.fontFamily };
+	});
+	await editor.getByRole("combobox", { name: "Form style" }).click();
+	await page.getByRole("option", { name: "Bold Blocks", exact: true }).click();
+	await editor.getByRole("tab", { name: "Layout", exact: true }).click();
+	await editor.getByRole("combobox", { name: "Heading alignment", exact: true }).click();
+	await page.getByRole("option", { name: "Centered", exact: true }).click();
+	await editor.getByRole("textbox", { name: "Submit button text", exact: true }).fill("Contact our team");
+	await editor.getByRole("combobox", { name: "Button width", exact: true }).click();
+	await page.getByRole("option", { name: "Full width", exact: true }).click();
+	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
+	await expect(page.locator("[data-form-theme]")).toHaveCount(1);
+	await page.getByRole("button", { name: "Customize", exact: true }).click();
+	await editor.getByRole("combobox", { name: "Form style" }).click();
+	await page.getByRole("option", { name: "Thunder", exact: true }).click();
+	await expect(preview).not.toHaveAttribute("data-form-theme");
+	await expect(preview.locator("input").first()).toHaveCSS("background-color", originalInput.background);
+	await expect(preview.locator("input").first()).toHaveCSS("border-radius", originalInput.radius);
+	await expect(preview.locator("input").first()).toHaveCSS("font-family", originalInput.font);
+	await expect(preview.getByRole("heading").first()).toHaveCSS("text-align", "center");
+	await expect(preview.getByRole("button", { name: "Contact our team", exact: true })).toBeVisible();
+	await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
+	await expect(page.locator("[data-form-theme]")).toHaveCount(0);
+	const saveResponse = page.waitForResponse((response) => response.url().endsWith("/api/forms/new") && response.request().method() === "POST");
+	await page.getByRole("button", { name: "Save", exact: true }).click();
+	await saveResponse;
+	expect(saved.fields).not.toHaveProperty("theme");
+	expect(saved.fields).toMatchObject({ layout: { headerAlignment: "center", submitWidth: "full" } });
+	expect(saved.submitButtonText).toBe("Contact our team");
+	await page.goto("/forms/default-thunder", { waitUntil: "networkidle" });
+	await expect(page.locator("[data-form-theme]")).toHaveCount(0);
+	await expect(page.getByRole("textbox", { name: "Full name", exact: false })).toHaveCSS("background-color", originalInput.background);
+	await expect(page.locator("main h1")).toHaveCSS("text-align", "center");
+	const button = page.getByRole("button", { name: "Contact our team", exact: true });
+	await expect.poll(() => button.evaluate((element) => Math.abs(element.getBoundingClientRect().width - element.parentElement!.getBoundingClientRect().width) < 1)).toBe(true);
 });
 
 test("a customized Contact Us form loads its current appearance into Customize without changing the canvas", async ({ page }) => {

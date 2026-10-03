@@ -577,9 +577,7 @@ function CustomizationEditor({
 	onClose,
 }: FormCustomizationProps & { onClose: () => void }) {
 	// Opening Customize must preserve an uncustomized form's current appearance.
-	const [initialTheme] = useState(() => {
-		if (structure.theme)
-			return structuredClone(normalizeFormTheme(structure.theme));
+	const [defaultTheme] = useState(() => {
 		const defaultTheme = createFormTheme();
 		const appStyle = getComputedStyle(document.documentElement);
 		return importFormThemeVariables(
@@ -592,9 +590,23 @@ function CustomizationEditor({
 			defaultTheme,
 		);
 	});
+	const [initialTheme] = useState(() =>
+		structure.theme
+			? structuredClone(normalizeFormTheme(structure.theme))
+			: defaultTheme,
+	);
 	const [draft, setDraft] = useState(() => structuredClone(initialTheme));
-	const themeChanged = JSON.stringify(draft) !== JSON.stringify(initialTheme);
-	const previewTheme = structure.theme || themeChanged ? draft : undefined;
+	const [defaultSelected, setDefaultSelected] = useState(false);
+	const usesDefaultTheme =
+		defaultSelected && JSON.stringify(draft) === JSON.stringify(defaultTheme);
+	const themeChanged =
+		JSON.stringify(draft) !== JSON.stringify(initialTheme) ||
+		(Boolean(structure.theme) && usesDefaultTheme);
+	const previewTheme = usesDefaultTheme
+		? undefined
+		: structure.theme || themeChanged
+			? draft
+			: undefined;
 	const [initialLayout] = useState(() =>
 		normalizeFormLayout(
 			structure.layout ?? {
@@ -752,7 +764,14 @@ function CustomizationEditor({
 						)}
 					>
 						<Label htmlFor="form-theme-preset">Form style</Label>
-						<ThemePresetPicker onSelect={setDraft} />
+						<ThemePresetPicker
+							defaultTheme={defaultTheme}
+							isDefault={!structure.theme}
+							onSelect={(theme) => {
+								setDefaultSelected(!theme);
+								setDraft(structuredClone(theme ?? defaultTheme));
+							}}
+						/>
 					</div>
 					<Accordion
 						type="multiple"

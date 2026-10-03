@@ -26,16 +26,20 @@ import {
 } from "#/features/form-builder/theme";
 
 export function ThemePresetPicker({
+	defaultTheme,
+	isDefault,
 	onSelect,
 }: {
-	onSelect: (theme: FormTheme) => void;
+	defaultTheme: FormTheme;
+	isDefault: boolean;
+	onSelect: (theme: FormTheme | undefined) => void;
 }) {
 	const [open, setOpen] = useState(false);
 	const [selected, setSelected] = useState<{
 		name: string;
 		author?: string;
 		url?: string;
-	}>();
+	}>(() => (isDefault ? { name: "Thunder" } : undefined));
 	return (
 		<div className="flex flex-col gap-2">
 			<Popover open={open} onOpenChange={setOpen}>
@@ -81,7 +85,10 @@ export function ThemePresetPicker({
 							<CommandEmpty>No matching themes.</CommandEmpty>
 							<CommandGroup heading="ThunderForms">
 								{FORM_THEME_PRESETS.map((preset) => {
-									const theme = createFormTheme(preset.id);
+									const theme =
+										preset.id === "thunder"
+											? defaultTheme
+											: createFormTheme(preset.id);
 									return (
 										<CommandItem
 											className="group/preset"
@@ -94,7 +101,7 @@ export function ThemePresetPicker({
 											]}
 											aria-label={preset.label}
 											onSelect={() => {
-												onSelect(theme);
+												onSelect(preset.id === "thunder" ? undefined : theme);
 												setSelected({ name: preset.label });
 												setOpen(false);
 											}}

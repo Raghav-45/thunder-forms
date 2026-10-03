@@ -154,7 +154,7 @@ export const FORM_THEME_PRESETS: readonly FormThemePreset[] = [
 	{
 		id: "thunder",
 		label: "Thunder",
-		description: "Our classic dark style with golden buttons",
+		description: "Default form appearance, no added styling",
 		primary: "#f4ce4c",
 		foreground: "#171717",
 	},
