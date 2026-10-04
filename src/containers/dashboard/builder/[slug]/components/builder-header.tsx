@@ -5,6 +5,7 @@ import {
 	PaletteIcon,
 	SaveIcon,
 } from "lucide-react";
+import { Icons } from "#/components/Icons";
 import { Button } from "#/components/ui/button";
 import { siteConfig } from "#/config/site";
 import { CopyButton } from "#/features/form-builder/components/copy-button";
@@ -42,7 +43,10 @@ export function BuilderHeader({
 					<span className="sr-only sm:hidden">Back to dashboard</span>
 				</Link>
 			</Button>
-			<h1 className="text-sm font-semibold tracking-tight">Form builder</h1>
+			<h1 className="flex items-center gap-2">
+				<Icons.Logo className="!size-5" />
+				<span className="text-base font-semibold">Thunder Forms</span>
+			</h1>
 			<div className="flex shrink-0 items-center justify-self-end gap-1 sm:gap-2">
 				<Button
 					type="button"
