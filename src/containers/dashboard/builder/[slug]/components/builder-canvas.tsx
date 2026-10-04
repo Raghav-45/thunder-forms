@@ -1,6 +1,7 @@
 import { CollisionPriority } from "@dnd-kit/abstract";
 import { useDroppable } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
+import { PlusIcon } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { PropsWithChildren } from "react";
 import { memo, useCallback } from "react";
@@ -152,10 +153,12 @@ const SortableSection = memo(function SortableSection({
 function CanvasDropSurface({
 	children,
 	hasSections,
+	onAddSection,
 	onCanvasRef,
 }: {
 	children: React.ReactNode;
 	hasSections: boolean;
+	onAddSection: () => void;
 	onCanvasRef: (element: HTMLDivElement | null) => void;
 }) {
 	const { isDropTarget, ref } = useDroppable({
@@ -183,11 +186,27 @@ function CanvasDropSurface({
 						isDropTarget && "border-primary bg-primary/10 text-primary",
 					)}
 				>
-					<p>
-						{isDropTarget
-							? "Drop field or section here"
-							: "Drag elements here to build your form or Generate with AI"}
-					</p>
+					{isDropTarget ? (
+						<p>Drop field or section here</p>
+					) : (
+						<div className="flex max-w-md flex-col items-center gap-3 px-6 py-12">
+							<h2 className="text-2xl font-semibold tracking-tight text-foreground">
+								Start building your form
+							</h2>
+							<p className="text-sm">
+								Add a section to organize your questions, or choose a field from
+								the panel on the right.
+							</p>
+							<Button
+								type="button"
+								onClick={onAddSection}
+								className="mt-1 rounded-full"
+							>
+								<PlusIcon data-icon="inline-start" />
+								Add a section
+							</Button>
+						</div>
+					)}
 				</div>
 			)}
 		</div>
@@ -202,6 +221,7 @@ interface BuilderCanvasProps {
 	isCustomizing?: boolean;
 	activePage: FormPage;
 	hasSections: boolean;
+	onAddSection: () => void;
 	onCanvasRef: (element: HTMLDivElement | null) => void;
 	onEditSection: (section: FormPage["sections"][number]) => void;
 	onEditField: (field: FieldConfig, sectionId: string) => void;
@@ -220,6 +240,7 @@ export function BuilderCanvas({
 	isCustomizing = false,
 	activePage,
 	hasSections,
+	onAddSection,
 	onCanvasRef,
 	onEditSection,
 	onEditField,
@@ -301,7 +322,11 @@ export function BuilderCanvas({
 				},
 			};
 	return (
-		<CanvasDropSurface hasSections={hasSections} onCanvasRef={onCanvasRef}>
+		<CanvasDropSurface
+			hasSections={hasSections}
+			onAddSection={onAddSection}
+			onCanvasRef={onCanvasRef}
+		>
 			<div
 				className={cn(
 					"min-h-full font-sans text-card-foreground",

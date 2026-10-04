@@ -35,6 +35,7 @@ interface BuilderCanvasPanelProps {
 	paletteSectionPlaceholderId: string | null;
 	title: string;
 	onAddPage: () => void;
+	onAddSection: () => void;
 	onEditField: (field: FieldConfig, sectionId: string) => void;
 	onEditSection: (section: FormPage["sections"][number]) => void;
 	onFieldSurfaceRef: (id: string, element: HTMLDivElement | null) => void;
@@ -64,6 +65,7 @@ export function BuilderCanvasPanel({
 	paletteSectionPlaceholderId,
 	title,
 	onAddPage,
+	onAddSection,
 	onEditField,
 	onEditSection,
 	onFieldSurfaceRef,
@@ -117,6 +119,7 @@ export function BuilderCanvasPanel({
 							isCustomizing={isCustomizing}
 							activePage={activePage}
 							hasSections={hasCanvasSections}
+							onAddSection={onAddSection}
 							onCanvasRef={onCanvasRef}
 							onEditSection={onEditSection}
 							onEditField={onEditField}

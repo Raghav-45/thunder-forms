@@ -672,6 +672,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 						paletteSectionPlaceholderId={paletteSectionPlaceholderId}
 						title={formSettings.title}
 						onAddPage={addPage}
+						onAddSection={addSection}
 						onEditField={(field, sectionId) =>
 							setEditingField({
 								field,

@@ -30,7 +30,7 @@ test('section removal deletes the section from the canvas', async ({ page }) => 
     .click()
 
   await expect(
-    page.getByText('Drag elements here to build your form or Generate with AI'),
+    page.getByText('Start building your form', { exact: true }),
   ).toBeVisible()
 })
 
