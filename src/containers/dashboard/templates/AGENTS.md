@@ -15,12 +15,18 @@ unless the requested feature explicitly changes them.
 - Render thumbnail and full-preview questions through the form-builder registry.
   Do not copy field JSX, build a mock renderer, or override constraints only in a
   preview. Shared renderer changes must reach templates, builder, and public forms.
-- `instantiateTemplate` is the single materialization path for both previews and
-  builder creation. Supported constraints belong in the template spec. Preserve
-  zero values and registry defaults for settings the template does not override.
+- `instantiateTemplate` is the single materialization path for previews, builder
+  creation, and AI template tools. Supported constraints belong in the template
+  spec. Preserve zero values and registry defaults for settings the template
+  does not override.
   When slider constraints change, clamp and snap the inherited initial value to
   the new range and step. Preserve valid explicit defaults; reject invalid ranges,
   steps, or explicit defaults rather than creating a form that fails validation.
+- AI requests for an unchanged template return the materialized form directly,
+  including sections and submit-button text. Requests that add questions preserve
+  the original configuration and append generated pages containing sections and
+  fields.
+  Do not ask the model to recreate existing template questions or defaults.
 - Customer Feedback uses min 0, max 10, step 1, and initial value 5. Instructions,
   rendered range, builder configuration, and validation must agree. Do not change
   the generic slider defaults or silently migrate previously saved forms.

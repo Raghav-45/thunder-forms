@@ -133,11 +133,32 @@ check — don't merge them or add a third:
   `createDefaultFieldConfig`). This is a different concern from submitted-value
   validation above — keep it there.
 
-`FIELD_REGISTRY` has other consumers too — `core/generateZodSchema.ts` builds
-one combined Zod schema across all fields for the AI-generation path. Don't
-assume there are only two call sites when changing the registry's shape, and
-don't extract a second validator registry unless the task explicitly changes
-this architecture.
+AI generation also uses registry defaults through `createDefaultFieldConfig`.
+Check consumers when changing the registry's shape; do not introduce another
+validator registry.
+
+The unused `core/generateZodSchema.ts` module also reads `FIELD_REGISTRY`.
+
+## AI generation
+
+- `core/generate-with-ai.tsx` sends form requests to
+  `src/routes/api/generatewithai/route.ts`. Defaults must not expand a basic
+  request or override an explicit field count. Offer only supported options.
+- Keep the system prompt and discovery tools compact in
+  `src/routes/api/generatewithai/-prompt.ts`. Fetch field specifications only
+  through the tools requested by the model; do not embed all specs in the system
+  prompt. `scripts/prompt/generator.ts` inspects this source without generating
+  a second runtime prompt.
+- Both providers use `src/routes/api/generatewithai/-generation.ts` for local
+  tool execution, registry defaults, and validation of generated output. Preserve
+  the structural validator's server-safe dependencies. Every generated form must
+  use pages containing sections containing fields; pass only the validated
+  canonical structure through to the builder. Follow
+  [Form Structure](FORM_STRUCTURE.md#ai-generation) for template handoff.
+- `core/generated-form.ts` derives the generated form's metadata validation from
+  `FormValidator` and validates its `fields` with the shared `FormStructure`
+  contract. Model output, provider responses, and builder callbacks use this
+  saved-form envelope. Do not add alternate shapes or compatibility adapters.
 
 ## Directory structure
 
@@ -146,9 +167,10 @@ src/features/form-builder/             # form-building domain feature
 ├── components/                         # shared settings, respondent rendering, theme scope
 ├── constants/
 │   └── index.ts                        # shared Form Builder constants
-├── core/                               # AI generation, import, combined schemas
+├── core/                               # AI generation and import
 │   ├── generate-with-ai.tsx
-│   ├── generateZodSchema.ts
+│   ├── generated-form.ts              # canonical AI form contract and response validation
+│   ├── generateZodSchema.ts             # unused answer-schema generator
 │   └── import-google-form.tsx
 ├── elements/                           # field definition system
 │   ├── base.ts                         # FormFieldDefinition contract

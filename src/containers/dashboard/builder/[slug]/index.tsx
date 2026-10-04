@@ -43,6 +43,7 @@ import { getTemplateBySlug } from "#/containers/dashboard/templates/constants";
 import { instantiateTemplate } from "#/containers/dashboard/templates/instantiate-template";
 import { IMMORTAL_SENTINEL_DATE } from "#/features/form-builder/components/date-picker-with-presets";
 import { useFormThemeFonts } from "#/features/form-builder/components/form-theme-scope";
+import type { GeneratedForm } from "#/features/form-builder/core/generated-form";
 import type { FieldConfig } from "#/features/form-builder/elements";
 import {
 	getOrderedFormFields,
@@ -463,9 +464,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 			description: string,
 			importedPages: ImportedGoogleFormPage[],
 		) => {
-			// AI generation and Google import produce unvalidated payloads. Sanitize
-			// before they enter builder state so unknown types or duplicate ids can
-			// never brick the canvas.
+			// Sanitize imported Google fields before they enter builder state.
 			const structure = createImportedGoogleFormStructure(importedPages);
 			if (fieldCount(structure) === 0) {
 				toast.error("Import produced no usable fields");
@@ -478,11 +477,22 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 		[formSettings, setFormSettings],
 	);
 
-	const replaceWithImportedFields = useCallback(
-		(title: string, description: string, fields: FieldConfig[]) => {
-			replaceWithImportedPages(title, description, [{ fields }]);
+	const replaceWithGeneratedForm = useCallback(
+		({ title, description, fields, submitButtonText }: GeneratedForm) => {
+			if (!isFormStructure(fields) || fieldCount(fields) === 0) {
+				toast.error("Generation produced no valid form structure");
+				return;
+			}
+			setFormStructure((current) => ({ ...fields, theme: current.theme }));
+			setActivePageId(fields.pages[0].id);
+			setFormSettings({
+				...formSettings,
+				title,
+				description: description ?? "",
+				submitButtonText: submitButtonText ?? formSettings.submitButtonText,
+			});
 		},
-		[replaceWithImportedPages],
+		[formSettings, setFormSettings],
 	);
 
 	const updateQuizSettings = useCallback((quiz: QuizSettings | undefined) => {
@@ -628,7 +638,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 					sidebarDirection={sidebarDirection}
 					onQuizSettingsChange={updateQuizSettings}
 					onQuizQuestionChange={updateQuizQuestion}
-					replaceWithImportedFields={replaceWithImportedFields}
+					replaceWithGeneratedForm={replaceWithGeneratedForm}
 					replaceWithImportedPages={replaceWithImportedPages}
 				/>
 

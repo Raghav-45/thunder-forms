@@ -204,6 +204,9 @@ Use the repository's current scripts and configuration as the source of truth:
 - Targeted source check: `pnpm exec biome check <changed-source-paths>`.
   Biome's configured scope excludes some files, including `tests/visual/`;
   an ignored file is not a successful lint check.
+- Inspect AI generation context with `pnpm generate:ai-context`. It prints a
+  developer snapshot of the current system prompt, tool declarations, and local
+  specs; production requests fetch only the specs selected through tools.
 - For documentation-only edits, verify referenced facts, links, and
   `git diff --check`; application builds and browser runs are not required unless
   code or executable configuration also changes. Never report skipped checks as passed.

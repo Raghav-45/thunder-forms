@@ -96,7 +96,8 @@ both the public form and submission API. Do not replace answer validation with
 | [theme.ts](theme.ts) | Theme validation, normalization, CSS tokens, and theme import/export. |
 | [Builder container](../../containers/dashboard/builder/[slug]/index.tsx) | Editable tree, active page, form settings, customization draft, and save orchestration. |
 | [Builder drag model](../../containers/dashboard/builder/[slug]/drag-model.ts) | Page/section/field operations and imported-page assembly; uses the shared structure types. |
-| [Template instantiation](../../containers/dashboard/templates/instantiate-template.ts) | Materializes registry defaults and template overrides into a fresh tree for previews and builder creation. |
+| [Template instantiation](../../containers/dashboard/templates/instantiate-template.ts) | Materializes registry defaults and template overrides into a fresh tree for previews, builder creation, and AI template tools. |
+| [AI generation session](../../routes/api/generatewithai/-generation.ts) | Executes local tools, materializes generated fields, and validates the returned tree for both AI providers. |
 | [Public form container](../../containers/public/forms/[slug]/index.tsx) | Loads and validates the public tree, manages answers, page navigation, and submission. |
 | [RespondentFormContent](components/respondent-form-content.tsx) | Renders the active page, its sections and fields, and navigation/submit controls. |
 
@@ -117,6 +118,51 @@ persisted tree or reorder it to match a display-only view.
 Customization uses a temporary draft. Applying it writes theme/layout into the
 tree and submit text into form settings; canceling discards it. Save includes the
 visible draft. Mode and customization session IDs are UI state, not stored data.
+
+## AI generation
+
+`POST /api/generatewithai` uses the form-save envelope: title, optional nullable
+description, `fields: FormStructure`, and optional nullable `submitButtonText`.
+Provider usage and timing are separate response metadata in `meta`.
+[generated-form.ts](core/generated-form.ts) derives metadata validation from
+`FormValidator` and validates the tree through `isFormStructure`, requiring
+populated pages and sections for AI output. The builder accepts this same object,
+applies submit text when provided, and preserves the current theme.
+
+Every model-generated form returns `fields: { pages: [...] }`, with one or more
+sections per page and one or more fields per section. Flat field arrays,
+root-level `pages`, `structure` aliases, `type` aliases, misplaced child
+collections, and prose-wrapped JSON are rejected. The generation session assigns
+fresh page, section, field, and choice-option IDs, applies registry defaults, and
+validates the canonical tree.
+It does not create missing parents, drop invalid fields, or repair invalid choice
+values. Basic requests produce one page with one section; related questions share
+sections, and requested steps or clear respondent stages use multiple pages.
+
+The system prompt requires concise, question-specific descriptions for newly
+generated fields and helpful placeholders on controls that display them, unless
+the request explicitly omits this copy. Use the form's language and describe the
+expected answer without inventing behavior or promises.
+
+An unchanged template request completes through `get_template` with
+`useAsIs: true`. The server materializes it with `instantiateTemplate` and
+returns it without a model rewrite. To add questions, the model returns a fetched
+`templateSlug` and `fields` containing new complete pages with sections and fields.
+The request-local session preserves original pages, field IDs, order,
+configuration, sections, and submit text, then appends the new pages.
+
+Generated fields receive registry defaults and fresh IDs. Choice values must be
+valid before fresh option IDs are assigned. Generation checks common property
+types, regex syntax, text bounds, supported picker/rating/upload settings, and
+final structural constraints. Inherited slider defaults are clamped and snapped when
+the generated range changes; explicit invalid defaults are rejected. Invalid
+model output returns HTTP 502 and cannot enter builder state. These generation
+checks do not replace the registry's submitted-answer validation.
+
+Both providers bound prompt size, output size, tool rounds, and request duration.
+They propagate cancellation and report accumulated provider token usage in
+`meta.usage`, including all model turns. Select `gemini` (default) or `groq`
+through the server's `AI_PROVIDER` environment variable.
 
 ## API boundaries
 
@@ -147,6 +193,9 @@ Unit tests live beside source files, not in mirrored `tests/features/` folders:
 - [Builder drag tests](../../containers/dashboard/builder/[slug]/drag-model.test.ts)
   and [import tests](../../containers/dashboard/builder/[slug]/imported-google-form-structure.test.ts).
 - API tests sit beside the handlers under `src/routes/api/forms/`.
+- AI generation tests sit beside the providers and shared session under
+  `src/routes/api/generatewithai/`; browser coverage includes
+  `tests/visual/generate-with-ai-dialog.spec.ts`.
 - Browser tests live in [tests/visual](../../../tests/visual/), including builder
   customization, page tabs, section editing, and public-form cache behavior.
 

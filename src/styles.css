@@ -119,6 +119,13 @@
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
   --animate-shine: shine var(--duration) infinite linear;
+  /* Generate With AI dialog tokens (used as animate-ag-* utilities). */
+  --animate-ag-spin: ag-spin 0.7s linear infinite;
+  --animate-ag-rotate: ag-rotate 4s linear infinite;
+  --animate-ag-pulse: ag-pulse 2.8s ease-in-out infinite;
+  --animate-ag-shim: ag-shim 1.4s linear infinite;
+  --animate-ag-shim-fast: ag-shim 0.72s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-ag-ring: ag-ring 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 
   @keyframes shine {
     0% {
@@ -131,6 +138,49 @@
 
     to {
       background-position: 0% 0%;
+    }
+  }
+
+  @keyframes ag-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes ag-rotate {
+    to {
+      --ag-angle: 360deg;
+    }
+  }
+
+  @keyframes ag-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    50% {
+      transform: scale(1.25);
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes ag-shim {
+    to {
+      background-position: -200% 0;
+    }
+  }
+
+  @keyframes ag-ring {
+    from {
+      transform: scale(0.6);
+      opacity: 0.7;
+    }
+
+    to {
+      transform: scale(2);
+      opacity: 0;
     }
   }
 }
@@ -182,4 +232,19 @@
       max-width: 1400px;
     }
   }
+}
+
+/* At-rules with no Tailwind equivalent, for the Generate With AI dialog
+   (Tailwind port): animation keyframes above, typed custom property and
+   Firefox scrollbar hook below. */
+@property --ag-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* Firefox only: no utility exists for scrollbar-width/color. */
+.ag-scrollpane {
+  scrollbar-width: thin;
+  scrollbar-color: #272727 transparent;
 }

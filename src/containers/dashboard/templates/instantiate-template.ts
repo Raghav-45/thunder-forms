@@ -3,6 +3,7 @@ import type { FieldConfig } from "#/features/form-builder/elements";
 import { normalizeChoiceOptions } from "#/features/form-builder/elements/choice-options";
 import type { SliderConfig } from "#/features/form-builder/elements/fields/slider";
 import {
+	clampSliderDefaultValue,
 	isOnStep,
 	isPositiveFiniteNumber,
 } from "#/features/form-builder/elements/number-constraints";
@@ -80,19 +81,12 @@ export function instantiateTemplate(template: FormTemplateSpec): FormStructure {
 								}
 								if (spec.slider.defaultValue === undefined) {
 									// Only adjust inherited defaults; explicit answers must stay intentional.
-									const value = Math.min(
+									slider.defaultValue = clampSliderDefaultValue(
+										slider.defaultValue ?? min,
+										min,
 										max,
-										Math.max(min, slider.defaultValue ?? min),
+										step,
 									);
-									const stepsToMax = (max - min) / step;
-									const lastStep = isOnStep(max, step, min)
-										? Math.round(stepsToMax)
-										: Math.floor(stepsToMax);
-									const valueStep = Math.min(
-										lastStep,
-										Math.round((value - min) / step),
-									);
-									slider.defaultValue = Math.min(max, min + valueStep * step);
 								}
 								const initialValue = slider.defaultValue ?? min;
 								if (

@@ -17,7 +17,6 @@ import {
 import { SettingsDialog } from "#/features/form-builder/components/settings-dialog";
 import GenerateWithAiPrompt from "#/features/form-builder/core/generate-with-ai";
 import ImportGoogleForm from "#/features/form-builder/core/import-google-form";
-import type { FieldConfig } from "#/features/form-builder/elements";
 import type { QuizSettings } from "#/features/form-builder/form-structure";
 import { useFormStore } from "#/features/form-builder/store";
 import type { QuizQuestionConfig } from "#/features/form-builder/types";
@@ -41,11 +40,9 @@ interface BuilderLeftSidebarProps {
 		fieldId: string,
 		quiz: QuizQuestionConfig | undefined,
 	) => void;
-	replaceWithImportedFields: (
-		title: string,
-		description: string,
-		fields: FieldConfig[],
-	) => void;
+	replaceWithGeneratedForm: ComponentProps<
+		typeof GenerateWithAiPrompt
+	>["onGeneratedForm"];
 	replaceWithImportedPages: (
 		title: string,
 		description: string,
@@ -65,7 +62,7 @@ export function BuilderLeftSidebar({
 	sidebarDirection,
 	onQuizSettingsChange,
 	onQuizQuestionChange,
-	replaceWithImportedFields,
+	replaceWithGeneratedForm,
 	replaceWithImportedPages,
 }: BuilderLeftSidebarProps) {
 	const { formSettings, setFormSettings } = useFormStore();
@@ -141,7 +138,7 @@ export function BuilderLeftSidebar({
 								hasExistingContent={fieldCount(formStructure) > 0}
 							/>
 							<GenerateWithAiPrompt
-								onGeneratedFields={replaceWithImportedFields}
+								onGeneratedForm={replaceWithGeneratedForm}
 							/>
 						</CardContent>
 					)}
