@@ -167,6 +167,7 @@ const MultiSelectComponent: React.FC<FieldProps<MultiSelectConfig>> = ({
 									onClick={() => handleRemove(option.value)}
 									disabled={field.disabled}
 									className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
+									aria-label={`Remove ${option.label}`}
 								>
 									<X className="h-3 w-3" />
 								</button>
@@ -294,6 +295,7 @@ const SortableOptionItem = ({
 				ref={handleRef}
 				type="button"
 				className="cursor-grab hover:cursor-grabbing p-1"
+				aria-label={`Reorder ${option.label}`}
 			>
 				<GripVerticalIcon className="h-4 w-4 text-muted-foreground" />
 			</button>
@@ -377,10 +379,26 @@ const MultiSelectEditorComponent: React.FC<
 	};
 
 	const handleInputChange = (key: keyof MultiSelectConfig, value: unknown) => {
-		setConfig((prev) => ({
-			...prev,
-			[key]: value,
-		}));
+		setConfig((prev) => {
+			const next = { ...prev, [key]: value };
+			if (key === "minSelections" && typeof next.minSelections === "number") {
+				next.minSelections = Math.max(0, next.minSelections);
+			}
+			if (key === "maxSelections" && typeof next.maxSelections === "number") {
+				next.maxSelections = Math.max(1, next.maxSelections);
+			}
+
+			if (
+				typeof next.minSelections === "number" &&
+				typeof next.maxSelections === "number" &&
+				next.minSelections > next.maxSelections
+			) {
+				if (key === "minSelections") next.maxSelections = next.minSelections;
+				if (key === "maxSelections") next.minSelections = next.maxSelections;
+			}
+
+			return next;
+		});
 	};
 
 	const handleAddOption = () => {

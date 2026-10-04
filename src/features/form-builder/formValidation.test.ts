@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { FieldConfig } from "#/features/form-builder/elements";
 import type { AvailableFieldsType } from "#/features/form-builder/types";
-import { validateFormFields } from "#/features/form-builder/utils/formValidation";
+import {
+	validateFormField,
+	validateFormFields,
+} from "#/features/form-builder/utils/formValidation";
 
 const field = (
 	id: string,
@@ -59,6 +62,24 @@ describe("validateFormFields with untouched optional fields", () => {
 		expect(
 			validateFormFields(fields, { agree: false, notify: false, level: 0 }),
 		).toEqual({});
+	});
+
+	it("accepts zero for required numeric fields when their range allows it", () => {
+		const fields = [
+			field("amount", "number-input", { min: 0, max: 10 }, true),
+			field("volume", "slider", { min: 0, max: 10, step: 1 }, true),
+		];
+
+		expect(validateFormFields(fields, { amount: 0, volume: 0 })).toEqual({});
+	});
+
+	it("uses an optional schema for an untouched optional file upload", () => {
+		expect(
+			validateFormField(
+				field("portfolio", "file-upload", { maxFiles: 1 }),
+				undefined,
+			),
+		).toBeNull();
 	});
 
 	it("still rejects empty values for required fields", () => {

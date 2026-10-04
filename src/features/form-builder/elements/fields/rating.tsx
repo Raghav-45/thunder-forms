@@ -34,6 +34,7 @@ import type {
 	EditorProps,
 	FieldProps,
 } from "#/features/form-builder/types";
+import { cn } from "#/lib/utils";
 
 const FIELD_IDENTIFIER = "rating";
 
@@ -152,6 +153,7 @@ const RatingComponent = ({
 									<RadioGroupItem
 										id={id}
 										value={String(rating)}
+										aria-invalid={Boolean(error)}
 										className="peer sr-only"
 										onFocus={() => setPreviewValue(rating)}
 										onBlur={() => setPreviewValue(null)}
@@ -159,9 +161,11 @@ const RatingComponent = ({
 									<Label
 										htmlFor={id}
 										onMouseEnter={() => setPreviewValue(rating)}
-										className={`grid size-10 cursor-pointer place-items-center rounded-md text-2xl transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-ring ${
-											isSelected ? "bg-muted" : "hover:bg-muted/60"
-										}`}
+										className={cn(
+											"grid size-10 cursor-pointer place-items-center rounded-md text-2xl transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-ring",
+											isSelected ? "bg-muted" : "hover:bg-muted/60",
+											error && "ring-2 ring-destructive",
+										)}
 									>
 										<span aria-hidden="true">{EMOJI_RATINGS[emojiIndex]}</span>
 										<span className="sr-only">
@@ -193,6 +197,7 @@ const RatingComponent = ({
 													<RadioGroupItem
 														id={id}
 														value={String(rating)}
+														aria-invalid={Boolean(error)}
 														className="peer sr-only"
 														onFocus={() => setPreviewValue(rating)}
 														onBlur={() => setPreviewValue(null)}
@@ -200,13 +205,15 @@ const RatingComponent = ({
 													<Label
 														htmlFor={id}
 														onMouseEnter={() => setPreviewValue(rating)}
-														className={`absolute inset-y-0 z-10 cursor-pointer peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-ring ${
+														className={cn(
+															"absolute inset-y-0 z-10 cursor-pointer peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-ring",
 															isHalf
 																? "left-0 w-1/2"
 																: step === 0.5
 																	? "right-0 w-1/2"
-																	: "inset-x-0"
-														}`}
+																	: "inset-x-0",
+															error && "ring-2 ring-destructive",
+														)}
 													>
 														<span className="sr-only">
 															{formatRating(rating)} out of {maxRating}

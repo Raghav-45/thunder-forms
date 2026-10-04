@@ -53,6 +53,23 @@ function getStep(field: SliderConfig): number {
 	return isPositiveFiniteNumber(field.step) ? field.step : 1;
 }
 
+function normalizeSliderConfig(config: SliderConfig): SliderConfig {
+	const min = Number.isFinite(config.min) ? (config.min as number) : 0;
+	const max = Math.max(
+		min,
+		Number.isFinite(config.max) ? (config.max as number) : 100,
+	);
+	const step = getStep(config);
+	const defaultValue = config.defaultValue ?? min;
+	const clampedValue = Math.min(max, Math.max(min, defaultValue));
+	const snappedValue = Math.min(
+		max,
+		min + Math.round((clampedValue - min) / step) * step,
+	);
+
+	return { ...config, min, max, step, defaultValue: snappedValue };
+}
+
 // ─── Render Component ────────────────────────────────────
 
 const SliderComponent: React.FC<FieldProps<SliderConfig>> = ({
@@ -178,7 +195,7 @@ const SliderEditorComponent: React.FC<
 	};
 
 	const handleInputChange = (key: keyof SliderConfig, value: unknown) => {
-		setConfig((prev) => ({ ...prev, [key]: value }));
+		setConfig((prev) => normalizeSliderConfig({ ...prev, [key]: value }));
 	};
 
 	return (

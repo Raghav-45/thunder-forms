@@ -128,6 +128,97 @@ const isRecord = (value: unknown): value is UnknownRecord =>
 const hasId = (value: unknown): value is string =>
 	typeof value === "string" && value.length > 0;
 
+const isFiniteNumber = (value: unknown): value is number =>
+	typeof value === "number" && Number.isFinite(value);
+
+const hasValidDateRange = (
+	value: UnknownRecord,
+	minKey: "minDate" | "minDateTime",
+	maxKey: "maxDate" | "maxDateTime",
+): boolean => {
+	const min = value[minKey];
+	const max = value[maxKey];
+	if (
+		min !== undefined &&
+		(typeof min !== "string" || Number.isNaN(Date.parse(min)))
+	) {
+		return false;
+	}
+	if (
+		max !== undefined &&
+		(typeof max !== "string" || Number.isNaN(Date.parse(max)))
+	) {
+		return false;
+	}
+	return (
+		min === undefined || max === undefined || Date.parse(min) <= Date.parse(max)
+	);
+};
+
+const isOnStep = (value: number, step: number, base: number): boolean => {
+	const steps = (value - base) / step;
+	return (
+		Math.abs(steps - Math.round(steps)) <=
+		Number.EPSILON * Math.max(1, Math.abs(steps)) * 4
+	);
+};
+
+const hasValidFieldConstraints = (value: UnknownRecord): boolean => {
+	switch (value.uniqueIdentifier) {
+		case "number-input": {
+			const { min, max, step } = value;
+			return (
+				(min === undefined || isFiniteNumber(min)) &&
+				(max === undefined || isFiniteNumber(max)) &&
+				(step === undefined || (isFiniteNumber(step) && step > 0)) &&
+				!(isFiniteNumber(min) && isFiniteNumber(max) && min > max)
+			);
+		}
+		case "slider": {
+			const min = value.min === undefined ? 0 : value.min;
+			const max = value.max === undefined ? 100 : value.max;
+			const step = value.step === undefined ? 1 : value.step;
+			const defaultValue = value.defaultValue;
+			return (
+				isFiniteNumber(min) &&
+				isFiniteNumber(max) &&
+				min <= max &&
+				isFiniteNumber(step) &&
+				step > 0 &&
+				(defaultValue === undefined ||
+					(isFiniteNumber(defaultValue) &&
+						defaultValue >= min &&
+						defaultValue <= max &&
+						isOnStep(defaultValue, step, min)))
+			);
+		}
+		case "multi-select": {
+			const { minSelections, maxSelections } = value;
+			return (
+				(minSelections === undefined ||
+					(isFiniteNumber(minSelections) &&
+						Number.isInteger(minSelections) &&
+						minSelections >= 0)) &&
+				(maxSelections === undefined ||
+					(isFiniteNumber(maxSelections) &&
+						Number.isInteger(maxSelections) &&
+						maxSelections >= 1)) &&
+				!(
+					typeof minSelections === "number" &&
+					typeof maxSelections === "number" &&
+					minSelections > maxSelections
+				)
+			);
+		}
+		case "date-picker":
+			return hasValidDateRange(value, "minDate", "maxDate");
+		case "datetime-picker":
+			return hasValidDateRange(value, "minDateTime", "maxDateTime");
+		default:
+			return true;
+	}
+};
+
 function hasValidQuizQuestion(value: unknown, field: UnknownRecord): boolean {
 	if (value === undefined) return true;
 	if (!isRecord(value)) {
@@ -277,6 +368,7 @@ const isKnownField = (value: unknown): value is FieldConfig => {
 	return (
 		(!CHOICE_FIELD_IDENTIFIERS.has(value.uniqueIdentifier) ||
 			hasValidChoiceOptions(value.options)) &&
+		hasValidFieldConstraints(value) &&
 		hasValidQuizQuestion(value.quiz, value)
 	);
 };

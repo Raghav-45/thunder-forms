@@ -45,34 +45,20 @@ export const validateFormFields = (
 	fields.forEach((field) => {
 		const value = formData[field.id];
 
-		// Required booleans accept both true and false; only a missing value fails.
-		if (field.required) {
-			if (
-				field.uniqueIdentifier === "switch-field" ||
-				field.uniqueIdentifier === "checkbox"
-			) {
-				if (typeof value !== "boolean") {
-					errors[field.id] = `${field.label} is required`;
-					return;
-				}
-			} else if (
-				!value ||
-				value === "" ||
-				(Array.isArray(value) && value.length === 0)
-			) {
-				errors[field.id] = `${field.label} is required`;
-				return;
-			}
-		}
-
-		// Optional fields left untouched submit empty values ('' / [] /
-		// undefined). Field schemas only accept undefined as empty, so skip
-		// field-specific validation for empty optional values.
 		const isEmptyValue =
 			value === undefined ||
 			value === null ||
 			value === "" ||
 			(Array.isArray(value) && value.length === 0);
+
+		if (field.required && isEmptyValue) {
+			errors[field.id] = `${field.label} is required`;
+			return;
+		}
+
+		// Optional fields left untouched submit empty values ('' / [] /
+		// undefined). Field schemas only accept undefined as empty, so skip
+		// field-specific validation for empty optional values.
 		if (!field.required && isEmptyValue) {
 			return;
 		}

@@ -54,6 +54,8 @@ There is no persisted structure version property.
 - Field identifiers in the server-safe `KNOWN_FIELD_IDENTIFIERS` allow-list.
 - Valid choice options for select/radio fields: string labels, nonblank option IDs
   and values, with unique IDs and values within the field.
+- Valid server-safe cross-field constraints: numeric ranges and steps, slider
+  defaults, multi-select selection bounds, and date/date-time ranges.
 - Valid optional layout, theme, quiz settings, and per-field quiz configuration.
 
 This is not exhaustive validation of every field's configuration or submitted

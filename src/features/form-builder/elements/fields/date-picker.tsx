@@ -185,10 +185,18 @@ const DatePickerEditorComponent: React.FC<
 	};
 
 	const handleInputChange = (key: keyof DatePickerConfig, value: unknown) => {
-		setConfig((prev) => ({
-			...prev,
-			[key]: value,
-		}));
+		setConfig((prev) => {
+			const next = { ...prev, [key]: value };
+			const nextMinDate = parseValidDate(next.minDate);
+			const nextMaxDate = parseValidDate(next.maxDate);
+
+			if (nextMinDate && nextMaxDate && nextMinDate > nextMaxDate) {
+				if (key === "minDate") next.maxDate = next.minDate;
+				if (key === "maxDate") next.minDate = next.maxDate;
+			}
+
+			return next;
+		});
 	};
 
 	return (

@@ -158,6 +158,7 @@ const SortableOptionItem = ({
 				ref={handleRef}
 				type="button"
 				className="cursor-grab hover:cursor-grabbing p-1"
+				aria-label={`Reorder ${option.label}`}
 			>
 				<GripVerticalIcon className="h-4 w-4 text-muted-foreground" />
 			</button>

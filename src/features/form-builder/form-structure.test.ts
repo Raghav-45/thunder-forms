@@ -252,6 +252,71 @@ describe("form structure", () => {
 		).toBe(false);
 	});
 
+	it("rejects invalid cross-field constraints before they reach the API", () => {
+		const withField = (field: Record<string, unknown>) => ({
+			pages: [{ id: "page", sections: [{ id: "section", fields: [field] }] }],
+		});
+
+		expect(
+			isFormStructure(
+				withField({
+					id: "slider",
+					label: "Slider",
+					uniqueIdentifier: "slider",
+					min: 10,
+					max: 1,
+					step: 0,
+					defaultValue: 99,
+				}),
+			),
+		).toBe(false);
+		expect(
+			isFormStructure(
+				withField({
+					id: "number",
+					label: "Number",
+					uniqueIdentifier: "number-input",
+					min: 10,
+					max: 1,
+				}),
+			),
+		).toBe(false);
+		expect(
+			isFormStructure(
+				withField({
+					id: "choices",
+					label: "Choices",
+					uniqueIdentifier: "multi-select",
+					options: [{ id: "choice", label: "Choice", value: "choice" }],
+					minSelections: 2,
+					maxSelections: 1,
+				}),
+			),
+		).toBe(false);
+		expect(
+			isFormStructure(
+				withField({
+					id: "date",
+					label: "Date",
+					uniqueIdentifier: "date-picker",
+					minDate: "2030-01-01T00:00:00.000Z",
+					maxDate: "2020-01-01T00:00:00.000Z",
+				}),
+			),
+		).toBe(false);
+		expect(
+			isFormStructure(
+				withField({
+					id: "datetime",
+					label: "Date and time",
+					uniqueIdentifier: "datetime-picker",
+					minDateTime: "2030-01-01T00:00:00.000Z",
+					maxDateTime: "2020-01-01T00:00:00.000Z",
+				}),
+			),
+		).toBe(false);
+	});
+
 	it("accepts valid quiz answer keys and removes them from public form data", () => {
 		const quizStructure = {
 			quiz: { enabled: true },

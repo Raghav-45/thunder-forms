@@ -145,10 +145,23 @@ const NumberInputEditorComponent: React.FC<
 	};
 
 	const handleInputChange = (key: keyof NumberInputConfig, value: unknown) => {
-		setConfig((prev) => ({
-			...prev,
-			[key]: value,
-		}));
+		setConfig((prev) => {
+			const next = { ...prev, [key]: value };
+
+			if (
+				typeof next.min === "number" &&
+				typeof next.max === "number" &&
+				next.min > next.max
+			) {
+				if (key === "min") next.max = next.min;
+				if (key === "max") next.min = next.max;
+			}
+			if (key === "step" && !isPositiveFiniteNumber(next.step)) {
+				next.step = undefined;
+			}
+
+			return next;
+		});
 	};
 
 	return (

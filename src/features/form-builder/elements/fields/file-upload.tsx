@@ -164,6 +164,7 @@ const FileUploadComponent = ({
 				aria-describedby={
 					uploadError || error ? `field-${field.id}-error` : undefined
 				}
+				aria-invalid={Boolean(uploadError || error)}
 				onChange={(event) => {
 					void uploadFiles(Array.from(event.currentTarget.files || []));
 					event.currentTarget.value = "";
@@ -465,6 +466,6 @@ export class FileUploadFieldDefinition extends FormFieldDefinition<FileUploadCon
 		const schema = z.array(receipt).max(maxFiles(field));
 		return field.required
 			? schema.min(1, `${field.label} is required`)
-			: schema;
+			: schema.optional();
 	}
 }

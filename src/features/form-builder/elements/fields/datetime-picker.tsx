@@ -332,7 +332,18 @@ const DateTimePickerEditorComponent: React.FC<
 		key: keyof DateTimePickerConfig,
 		value: unknown,
 	) => {
-		setConfig((prev) => ({ ...prev, [key]: value }));
+		setConfig((prev) => {
+			const next = { ...prev, [key]: value };
+			const minDate = parseValidDate(next.minDateTime);
+			const maxDate = parseValidDate(next.maxDateTime);
+
+			if (minDate && maxDate && minDate > maxDate) {
+				if (key === "minDateTime") next.maxDateTime = next.minDateTime;
+				if (key === "maxDateTime") next.minDateTime = next.maxDateTime;
+			}
+
+			return next;
+		});
 	};
 
 	return (
