@@ -70,7 +70,6 @@ const CUSTOMIZATION_SUBSECTION_TRIGGER_CLASS =
 
 function CustomizationActions({
 	value,
-	side,
 	isPresent,
 	isImporting,
 	onApply,
@@ -78,7 +77,6 @@ function CustomizationActions({
 	onReset,
 }: {
 	value: FormCustomizationValue;
-	side: "appearance" | "layout";
 	isPresent: boolean;
 	isImporting: boolean;
 	onApply: () => void;
@@ -88,26 +86,25 @@ function CustomizationActions({
 	return (
 		<div
 			inert={!isPresent}
-			className="flex shrink-0 flex-col gap-2 border-t pt-4 pr-4"
+			className="flex shrink-0 flex-col gap-2 border-t pt-3 pr-4"
 		>
-			{side === "appearance" ? (
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					disabled={!value.theme && !value.layout && !value.submitButtonText}
-					onClick={onReset}
-				>
-					<RotateCcwIcon data-icon="inline-start" />
-					Reset to original
-				</Button>
-			) : null}
-			<div className="flex items-center gap-2">
+			<Button
+				type="button"
+				variant="ghost"
+				size="sm"
+				className="w-full justify-center"
+				disabled={!value.theme && !value.layout && !value.submitButtonText}
+				onClick={onReset}
+			>
+				<RotateCcwIcon data-icon="inline-start" />
+				Reset to original
+			</Button>
+			<div className="grid grid-cols-2 gap-2">
 				<Button
 					type="button"
 					variant="outline"
 					size="sm"
-					aria-label={side === "layout" ? "Cancel layout changes" : undefined}
+					className="w-full"
 					onClick={onCancel}
 				>
 					Cancel
@@ -115,7 +112,7 @@ function CustomizationActions({
 				<Button
 					type="button"
 					size="sm"
-					aria-label={side === "layout" ? "Apply layout changes" : undefined}
+					className="w-full"
 					disabled={isImporting}
 					onClick={onApply}
 				>
@@ -215,6 +212,11 @@ function RangeControl({
 	step = 1,
 	unit = "",
 	displayValue,
+	inputValue,
+	inputMin,
+	inputMax,
+	inputStep,
+	onInputChange,
 	onChange,
 }: {
 	label: string;
@@ -224,16 +226,49 @@ function RangeControl({
 	step?: number;
 	unit?: string;
 	displayValue?: string;
+	inputValue?: number;
+	inputMin?: number;
+	inputMax?: number;
+	inputStep?: number;
+	onInputChange?: (value: number) => void;
 	onChange: (value: number) => void;
 }) {
 	const id = useId();
+	const editableValue = inputValue ?? value;
 	return (
 		<div className="flex flex-col gap-3">
 			<div className="flex items-center justify-between gap-3">
 				<Label htmlFor={id}>{label}</Label>
-				<span className="text-xs tabular-nums text-muted-foreground">
-					{displayValue ?? `${Number(value.toFixed(3))}${unit}`}
-				</span>
+				<div className="flex items-center gap-1.5">
+					<Input
+						aria-label={`${label} value`}
+						aria-valuetext={displayValue}
+						type="number"
+						value={editableValue}
+						min={inputMin ?? min}
+						max={inputMax ?? max}
+						step={inputStep ?? step}
+						className="h-7 w-20 px-2 text-right text-xs tabular-nums"
+						onChange={(event) => {
+							const next = Number(event.target.value);
+							if (Number.isFinite(next)) {
+								const lower = inputMin ?? min;
+								const upper = inputMax ?? max;
+								(onInputChange ?? onChange)(
+									Math.min(upper, Math.max(lower, next)),
+								);
+							}
+						}}
+					/>
+					{unit ? (
+						<span className="whitespace-nowrap text-xs text-muted-foreground">
+							{unit}
+						</span>
+					) : null}
+					{displayValue === "Square" ? (
+						<span className="text-xs text-muted-foreground">Square</span>
+					) : null}
+				</div>
 			</div>
 			<Slider
 				id={id}
@@ -335,6 +370,9 @@ function LayoutControls({
 		});
 	const spacingValue = (value: number) =>
 		`${Number((theme.spacing * value * 16).toFixed(1))}px`;
+	const spacingPixels = (value: number) =>
+		Number((theme.spacing * value * 16).toFixed(1));
+	const spacingFromPixels = (value: number) => value / (theme.spacing * 16);
 	return (
 		<Accordion
 			type="multiple"
@@ -379,6 +417,13 @@ function LayoutControls({
 						max={16}
 						step={0.25}
 						displayValue={spacingValue(layout.spacing.titleDescriptionGap)}
+						inputValue={spacingPixels(layout.spacing.titleDescriptionGap)}
+						inputMax={spacingPixels(16)}
+						inputStep={0.1}
+						unit="px"
+						onInputChange={(value) =>
+							updateSpacing("titleDescriptionGap", spacingFromPixels(value))
+						}
 						onChange={(value) => updateSpacing("titleDescriptionGap", value)}
 					/>
 					<RangeControl
@@ -388,6 +433,13 @@ function LayoutControls({
 						max={16}
 						step={0.25}
 						displayValue={spacingValue(layout.spacing.titleContentGap)}
+						inputValue={spacingPixels(layout.spacing.titleContentGap)}
+						inputMax={spacingPixels(16)}
+						inputStep={0.1}
+						unit="px"
+						onInputChange={(value) =>
+							updateSpacing("titleContentGap", spacingFromPixels(value))
+						}
 						onChange={(value) => updateSpacing("titleContentGap", value)}
 					/>
 				</AccordionContent>
@@ -482,6 +534,13 @@ function LayoutControls({
 						max={16}
 						step={0.25}
 						displayValue={spacingValue(layout.spacing.fieldGap)}
+						inputValue={spacingPixels(layout.spacing.fieldGap)}
+						inputMax={spacingPixels(16)}
+						inputStep={0.1}
+						unit="px"
+						onInputChange={(value) =>
+							updateSpacing("fieldGap", spacingFromPixels(value))
+						}
 						onChange={(value) => updateSpacing("fieldGap", value)}
 					/>
 					<RangeControl
@@ -491,6 +550,13 @@ function LayoutControls({
 						max={16}
 						step={0.25}
 						displayValue={spacingValue(layout.spacing.sectionTitleGap)}
+						inputValue={spacingPixels(layout.spacing.sectionTitleGap)}
+						inputMax={spacingPixels(16)}
+						inputStep={0.1}
+						unit="px"
+						onInputChange={(value) =>
+							updateSpacing("sectionTitleGap", spacingFromPixels(value))
+						}
 						onChange={(value) => updateSpacing("sectionTitleGap", value)}
 					/>
 					<RangeControl
@@ -500,6 +566,13 @@ function LayoutControls({
 						max={16}
 						step={0.25}
 						displayValue={spacingValue(layout.spacing.sectionGap)}
+						inputValue={spacingPixels(layout.spacing.sectionGap)}
+						inputMax={spacingPixels(16)}
+						inputStep={0.1}
+						unit="px"
+						onInputChange={(value) =>
+							updateSpacing("sectionGap", spacingFromPixels(value))
+						}
 						onChange={(value) => updateSpacing("sectionGap", value)}
 					/>
 					<RangeControl
@@ -512,6 +585,13 @@ function LayoutControls({
 							theme.radius === 0
 								? "Square"
 								: `${Number((theme.radius * 16).toFixed(1))}px`
+						}
+						inputValue={Number((theme.radius * 16).toFixed(1))}
+						inputMax={160}
+						inputStep={0.1}
+						unit="px"
+						onInputChange={(value) =>
+							onThemeChange({ ...theme, radius: value / 16 })
 						}
 						onChange={(radius) => onThemeChange({ ...theme, radius })}
 					/>
@@ -598,6 +678,13 @@ function LayoutControls({
 						max={16}
 						step={0.25}
 						displayValue={spacingValue(layout.spacing.submitGap)}
+						inputValue={spacingPixels(layout.spacing.submitGap)}
+						inputMax={spacingPixels(16)}
+						inputStep={0.1}
+						unit="px"
+						onInputChange={(value) =>
+							updateSpacing("submitGap", spacingFromPixels(value))
+						}
 						onChange={(value) => updateSpacing("submitGap", value)}
 					/>
 				</AccordionContent>
@@ -684,34 +771,23 @@ export function FormCustomization({
 	};
 	if (side === "layout") {
 		return (
-			<>
-				<ScrollArea
-					inert={!isPresent}
-					className="min-h-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block"
-				>
-					<div className="min-w-0 pb-4 pr-4">
-						<LayoutControls
-							layout={draftLayout}
-							theme={draft}
-							submitButtonText={value.submitButtonText ?? ""}
-							onChange={(layout) => onUpdate({ layout })}
-							onThemeChange={setDraft}
-							onSubmitButtonTextChange={(submitButtonText) =>
-								onUpdate({ submitButtonText })
-							}
-						/>
-					</div>
-				</ScrollArea>
-				<CustomizationActions
-					value={value}
-					side={side}
-					isPresent={isPresent}
-					isImporting={isImporting}
-					onApply={onApply}
-					onCancel={onCancel}
-					onReset={onReset}
-				/>
-			</>
+			<ScrollArea
+				inert={!isPresent}
+				className="min-h-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block"
+			>
+				<div className="min-w-0 pb-4 pr-4">
+					<LayoutControls
+						layout={draftLayout}
+						theme={draft}
+						submitButtonText={value.submitButtonText ?? ""}
+						onChange={(layout) => onUpdate({ layout })}
+						onThemeChange={setDraft}
+						onSubmitButtonTextChange={(submitButtonText) =>
+							onUpdate({ submitButtonText })
+						}
+					/>
+				</div>
+			</ScrollArea>
 		);
 	}
 
@@ -805,6 +881,19 @@ export function FormCustomization({
 												max={0.5}
 												step={0.005}
 												displayValue={`${Number((draft.letterSpacing * 100).toFixed(1))}%`}
+												inputValue={Number(
+													(draft.letterSpacing * 100).toFixed(1),
+												)}
+												inputMin={-50}
+												inputMax={50}
+												inputStep={0.5}
+												unit="%"
+												onInputChange={(value) =>
+													setDraft((current) => ({
+														...current,
+														letterSpacing: value / 100,
+													}))
+												}
 												onChange={(letterSpacing) =>
 													setDraft((current) => ({ ...current, letterSpacing }))
 												}
@@ -828,6 +917,14 @@ export function FormCustomization({
 												max={1}
 												step={0.01}
 												displayValue={`${Math.round(draft.shadow.opacity * 100)}%`}
+												inputValue={Math.round(draft.shadow.opacity * 100)}
+												inputMin={0}
+												inputMax={100}
+												inputStep={1}
+												unit="%"
+												onInputChange={(value) =>
+													updateShadow("opacity", value / 100)
+												}
 												onChange={(value) => updateShadow("opacity", value)}
 											/>
 											<RangeControl
@@ -848,6 +945,10 @@ export function FormCustomization({
 								Advanced customizations
 							</AccordionTrigger>
 							<AccordionContent className="pb-6">
+								<p className="mb-4 text-xs text-muted-foreground">
+									For brand-level colors, shadows, and theme files when you need
+									more control.
+								</p>
 								<Accordion
 									type="multiple"
 									value={advancedSections}
@@ -920,7 +1021,7 @@ export function FormCustomization({
 												onChange={(value) => updateShadow("color", value)}
 											/>
 											<RangeControl
-												label="Shadow size adjustment"
+												label="Shadow depth"
 												value={draft.shadow.spread}
 												min={-200}
 												max={200}
@@ -928,7 +1029,7 @@ export function FormCustomization({
 												onChange={(value) => updateShadow("spread", value)}
 											/>
 											<RangeControl
-												label="Shadow horizontal position"
+												label="Shadow left / right"
 												value={draft.shadow.x}
 												min={-200}
 												max={200}
@@ -936,7 +1037,7 @@ export function FormCustomization({
 												onChange={(value) => updateShadow("x", value)}
 											/>
 											<RangeControl
-												label="Shadow vertical position"
+												label="Shadow up / down"
 												value={draft.shadow.y}
 												min={-200}
 												max={200}
@@ -1105,7 +1206,6 @@ export function FormCustomization({
 			</ScrollArea>
 			<CustomizationActions
 				value={value}
-				side={side}
 				isPresent={isPresent}
 				isImporting={isImporting}
 				onApply={onApply}

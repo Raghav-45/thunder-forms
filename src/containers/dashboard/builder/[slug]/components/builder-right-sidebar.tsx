@@ -37,7 +37,7 @@ export function BuilderRightSidebar({
 	return (
 		<Card
 			data-testid="builder-right-sidebar"
-			className="hidden h-screen w-72 shrink-0 overflow-hidden rounded-none border-0 border-l-2 md:block xl:w-80"
+			className="hidden h-screen w-72 pb-0! shrink-0 overflow-hidden rounded-none border-0 border-l-2 md:block xl:w-80"
 		>
 			<AnimatePresence mode="wait" custom={sidebarDirection} initial={false}>
 				<motion.div
