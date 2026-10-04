@@ -1,4 +1,10 @@
-import { Loader2Icon, PaletteIcon, SaveIcon } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import {
+	ArrowLeftIcon,
+	Loader2Icon,
+	PaletteIcon,
+	SaveIcon,
+} from "lucide-react";
 import { Button } from "#/components/ui/button";
 import { siteConfig } from "#/config/site";
 import { CopyButton } from "#/features/form-builder/components/copy-button";
@@ -23,19 +29,33 @@ export function BuilderHeader({
 	onToggleCustomize,
 }: BuilderHeaderProps) {
 	return (
-		<div className="flex shrink-0 flex-row justify-between bg-[#111111] px-4 pt-6 md:px-4 md:pt-6">
-			<h1 className="text-3xl font-bold">Builder</h1>
-			<div className="flex gap-2">
+		<header className="grid min-h-16 shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-white/10 bg-[#111111] px-3 sm:px-4">
+			<Button
+				asChild
+				variant="outline"
+				size="sm"
+				className="justify-self-start border-white/12 bg-transparent text-muted-foreground hover:bg-white/8 hover:text-foreground"
+			>
+				<Link to="/dashboard" title="Back to dashboard">
+					<ArrowLeftIcon />
+					<span className="hidden sm:inline">Back to dashboard</span>
+					<span className="sr-only sm:hidden">Back to dashboard</span>
+				</Link>
+			</Button>
+			<h1 className="text-sm font-semibold tracking-tight">Form builder</h1>
+			<div className="flex shrink-0 items-center justify-self-end gap-1 sm:gap-2">
 				<Button
 					type="button"
 					variant="outline"
 					size="sm"
+					className="bg-transparent hover:bg-white/8"
 					aria-pressed={customizing}
 					title={customizing ? "Back to builder" : "Customize your form"}
 					onClick={onToggleCustomize}
 				>
 					<PaletteIcon data-icon="inline-start" />
-					Customize
+					<span className="hidden sm:inline">Customize</span>
+					<span className="sr-only sm:hidden">Customize your form</span>
 				</Button>
 				{isExistingForm ? (
 					<CopyButton
@@ -54,6 +74,6 @@ export function BuilderHeader({
 					{isSaving ? "Saving..." : "Save"}
 				</Button>
 			</div>
-		</div>
+		</header>
 	);
 }
