@@ -90,17 +90,18 @@ function CustomizationActions({
 			inert={!isPresent}
 			className="flex shrink-0 flex-col gap-2 border-t pt-4 pr-4"
 		>
-			<Button
-				type="button"
-				variant="ghost"
-				size="sm"
-				aria-label={side === "layout" ? "Reset layout changes" : undefined}
-				disabled={!value.theme && !value.layout && !value.submitButtonText}
-				onClick={onReset}
-			>
-				<RotateCcwIcon data-icon="inline-start" />
-				Reset to original
-			</Button>
+			{side === "appearance" ? (
+				<Button
+					type="button"
+					variant="ghost"
+					size="sm"
+					disabled={!value.theme && !value.layout && !value.submitButtonText}
+					onClick={onReset}
+				>
+					<RotateCcwIcon data-icon="inline-start" />
+					Reset to original
+				</Button>
+			) : null}
 			<div className="flex items-center gap-2">
 				<Button
 					type="button"
@@ -167,7 +168,7 @@ function ColorControl({
 					{label}
 				</Label>
 				<div
-					className="relative size-11 shrink-0 overflow-hidden rounded-md border focus-within:ring-2 focus-within:ring-ring"
+					className="relative size-9 shrink-0 overflow-hidden rounded-full border focus-within:ring-2 focus-within:ring-ring"
 					style={{ backgroundColor: value }}
 				>
 					<input
@@ -747,7 +748,7 @@ export function FormCustomization({
 								</p>
 								<Accordion
 									type="multiple"
-									defaultValue={[]}
+									defaultValue={["colors"]}
 									className={CUSTOMIZATION_SUBSECTION_LIST_CLASS}
 								>
 									<AccordionItem

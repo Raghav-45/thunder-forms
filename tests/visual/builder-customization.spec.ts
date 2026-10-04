@@ -739,9 +739,7 @@ for (const viewport of [{ name: "desktop", width: 1440, height: 1000 }, { name: 
 		const editor = page.locator("[data-testid=builder-left-sidebar], [data-testid=builder-right-sidebar]");
 		const basic = editor.getByRole("region", { name: "Make it yours", exact: true });
 		const full = editor.getByRole("region", { name: "Advanced customizations", exact: true });
-		for (const section of ["Colors & surfaces", "Text", "Depth & polish"]) {
-			await basic.getByRole("button", { name: section, exact: true }).click();
-		}
+		await expandCustomizationSections(page, ["Colors & surfaces", "Text", "Depth & polish"]);
 		for (const section of ["Form width & position", "Sections & spacing", "Submit button"]) {
 			await editor.getByRole("button", { name: section, exact: true }).click();
 		}
