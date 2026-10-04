@@ -11,6 +11,15 @@ async function mockSession(page: Page) {
 	} }));
 }
 
+async function expandCustomizationSections(page: Page, sections: string[]) {
+	for (const section of sections) {
+		const trigger = page.getByRole("button", { name: section, exact: true }).first();
+		if ((await trigger.getAttribute("aria-expanded")) === "false") {
+			await trigger.click();
+		}
+	}
+}
+
 test("Contact Us keeps its current appearance when Customize opens and unchanged settings apply", async ({ page }) => {
 	test.setTimeout(45_000);
 	await mockSession(page);
@@ -74,7 +83,7 @@ test("Contact Us keeps its current appearance when Customize opens and unchanged
 		await expect(respondentSection.locator("p").first()).toHaveText("Section 1");
 		await expect(respondentSection).toHaveCSS("padding", "16px");
 		await expect(respondentSection.locator(".group\\/item")).toHaveCount(4);
-		await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
+		await editor.getByRole("button", { name: "Apply changes", exact: true }).first().click();
 		await expect(page.getByText("Customization applied. Save your form to keep it.", { exact: true })).toBeVisible();
 		await expect(page.locator("[data-sonner-toast]")).toHaveCount(0, { timeout: 10_000 });
 		expect(await section.evaluate(appearance)).toEqual(beforeSection);
@@ -121,6 +130,7 @@ test("Thunder restores default styling while keeping the form's layout and submi
 	await page.route("**/api/forms/default-thunder/viewForm", (route) => route.fulfill({ json: saved }));
 	await page.goto("/dashboard/builder/new-form?template=contact-us", { waitUntil: "networkidle" });
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
+	await expandCustomizationSections(page, ["Form width & position", "Sections & spacing", "Submit button"]);
 	const editor = page.locator("[data-testid=builder-left-sidebar], [data-testid=builder-right-sidebar]");
 	const preview = page.getByTestId("builder-canvas");
 	const originalInput = await preview.locator("input").first().evaluate((element) => {
@@ -291,6 +301,7 @@ test("customizations preview live, cancel cleanly, apply and reset", async ({ pa
 	await expect(page.locator("[data-form-theme]")).toHaveCount(0);
 
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
+	await expandCustomizationSections(page, ["Text", "Form width & position", "Sections & spacing", "Submit button"]);
 	await expect(preview).not.toHaveAttribute("data-form-theme");
 	await editor.getByRole("combobox", { name: "Text font", exact: true }).click();
 	await page.getByRole("option", { name: "Georgia", exact: true }).click();
@@ -337,6 +348,7 @@ test("theme persists in the save payload and public form after reload, including
 	await page.getByRole("button", { name: "text-input", exact: true }).click();
 	await page.getByRole("button", { name: "single-select", exact: true }).click();
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
+	await expandCustomizationSections(page, ["Form width & position", "Sections & spacing", "Submit button"]);
 	const editor = page.locator("[data-testid=builder-left-sidebar], [data-testid=builder-right-sidebar]");
 	const preview = page.getByTestId("builder-canvas");
 	await editor.getByRole("combobox", { name: "Heading alignment", exact: true }).click();
@@ -440,6 +452,8 @@ for (const viewport of [
 			const heading = editor.getByRole("region", { name: "Form heading", exact: true });
 			const sections = editor.getByRole("region", { name: "Sections & spacing", exact: true });
 			const submit = editor.getByRole("region", { name: "Submit button", exact: true });
+			await editor.getByRole("button", { name: "Sections & spacing", exact: true }).click();
+			await editor.getByRole("button", { name: "Submit button", exact: true }).click();
 			await expect(heading.getByRole("combobox", { name: "Heading alignment", exact: true })).toBeVisible();
 			await expect(heading.getByRole("slider", { name: "Space between title & description", exact: true })).toBeVisible();
 			await expect(sections.getByRole("combobox", { name: "Space inside sections", exact: true })).toBeVisible();
@@ -452,6 +466,7 @@ for (const viewport of [
 				await page.getByRole("option", { name: "Auto width", exact: true }).click();
 				await editor.getByRole("button", { name: "Cancel", exact: true }).click();
 				await page.getByRole("button", { name: "Customize", exact: true }).click();
+				await editor.getByRole("button", { name: "Submit button", exact: true }).click();
 				await expect(submit.getByRole("textbox", { name: "Submit button text", exact: true })).toHaveValue("");
 				await expect(submit.getByRole("combobox", { name: "Button width", exact: true })).toContainText("Full width on phones");
 			}
@@ -475,11 +490,11 @@ for (const viewport of [
 			await page.setViewportSize({ width: 1440, height: 1000 });
 			await editor.getByRole("button", { name: "Apply changes", exact: true }).click();
 			await page.getByRole("button", { name: "Customize", exact: true }).click();
+			await editor.getByRole("button", { name: "Submit button", exact: true }).click();
 			await expect(submit.getByRole("textbox", { name: "Submit button text", exact: true })).toHaveValue("Send response");
 			await expect(submit.getByRole("combobox", { name: "Button width", exact: true })).toContainText(mode.label);
 			if (mode.value === "full") {
 				await editor.getByRole("button", { name: "Reset to original", exact: true }).click();
-				await page.getByRole("button", { name: "Customize", exact: true }).click();
 				await expect(submit.getByRole("textbox", { name: "Submit button text", exact: true })).toHaveValue("");
 				await expect(submit.getByRole("combobox", { name: "Button width", exact: true })).toContainText("Full width on phones");
 				await submit.getByRole("textbox", { name: "Submit button text", exact: true }).fill("Send response");
@@ -724,6 +739,12 @@ for (const viewport of [{ name: "desktop", width: 1440, height: 1000 }, { name: 
 		const editor = page.locator("[data-testid=builder-left-sidebar], [data-testid=builder-right-sidebar]");
 		const basic = editor.getByRole("region", { name: "Make it yours", exact: true });
 		const full = editor.getByRole("region", { name: "Advanced customizations", exact: true });
+		for (const section of ["Colors & surfaces", "Text", "Depth & polish"]) {
+			await basic.getByRole("button", { name: section, exact: true }).click();
+		}
+		for (const section of ["Form width & position", "Sections & spacing", "Submit button"]) {
+			await editor.getByRole("button", { name: section, exact: true }).click();
+		}
 		const preview = page.getByTestId("builder-canvas");
 		const advanced = editor.getByRole("button", { name: "Advanced customizations", exact: true });
 		await expect(advanced).toHaveAttribute("aria-expanded", "false");
@@ -902,6 +923,7 @@ for (const width of [1024, 1440]) {
 			).toEqual(fieldIds);
 		}
 		await toggle.click();
+		await expandCustomizationSections(page, ["Colors & surfaces", "Submit button"]);
 		await page
 			.getByLabel("Choose button color", { exact: true })
 			.fill("#334455");
@@ -922,6 +944,7 @@ for (const width of [1024, 1440]) {
 			await nodes.evaluate((nodes) => nodes.every((node) => node.isConnected)),
 		).toBe(true);
 		await toggle.click();
+		await expandCustomizationSections(page, ["Colors & surfaces"]);
 		await expect(
 			page.getByLabel("Choose button color", { exact: true }),
 		).toHaveValue("#334455");
@@ -949,6 +972,7 @@ test("Save applies the visible customization before persisting it", async ({
 		waitUntil: "networkidle",
 	});
 	await page.getByRole("button", { name: "Customize", exact: true }).click();
+	await expandCustomizationSections(page, ["Colors & surfaces", "Submit button"]);
 	await page.getByLabel("Choose button color", { exact: true }).fill("#334455");
 	await page
 		.getByRole("textbox", { name: "Submit button text", exact: true })

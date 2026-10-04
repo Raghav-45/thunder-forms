@@ -68,6 +68,64 @@ const CUSTOMIZATION_SUBSECTION_ITEM_CLASS = "border-border/50 pl-4";
 const CUSTOMIZATION_SUBSECTION_TRIGGER_CLASS =
 	"py-3.5 text-sm font-medium text-foreground/80 hover:no-underline [&>svg]:size-3.5 [&>svg]:translate-y-0";
 
+function CustomizationActions({
+	value,
+	side,
+	isPresent,
+	isImporting,
+	onApply,
+	onCancel,
+	onReset,
+}: {
+	value: FormCustomizationValue;
+	side: "appearance" | "layout";
+	isPresent: boolean;
+	isImporting: boolean;
+	onApply: () => void;
+	onCancel: () => void;
+	onReset: () => void;
+}) {
+	return (
+		<div
+			inert={!isPresent}
+			className="flex shrink-0 flex-col gap-2 border-t pt-4 pr-4"
+		>
+			<Button
+				type="button"
+				variant="ghost"
+				size="sm"
+				aria-label={side === "layout" ? "Reset layout changes" : undefined}
+				disabled={!value.theme && !value.layout && !value.submitButtonText}
+				onClick={onReset}
+			>
+				<RotateCcwIcon data-icon="inline-start" />
+				Reset to original
+			</Button>
+			<div className="flex items-center gap-2">
+				<Button
+					type="button"
+					variant="outline"
+					size="sm"
+					aria-label={side === "layout" ? "Cancel layout changes" : undefined}
+					onClick={onCancel}
+				>
+					Cancel
+				</Button>
+				<Button
+					type="button"
+					size="sm"
+					aria-label={side === "layout" ? "Apply layout changes" : undefined}
+					disabled={isImporting}
+					onClick={onApply}
+				>
+					<CheckIcon data-icon="inline-start" />
+					Apply changes
+				</Button>
+			</div>
+		</div>
+	);
+}
+
 function ColorControl({
 	label,
 	value,
@@ -109,7 +167,7 @@ function ColorControl({
 					{label}
 				</Label>
 				<div
-					className="relative size-9 shrink-0 overflow-hidden rounded-md border focus-within:ring-2 focus-within:ring-ring"
+					className="relative size-11 shrink-0 overflow-hidden rounded-md border focus-within:ring-2 focus-within:ring-ring"
 					style={{ backgroundColor: value }}
 				>
 					<input
@@ -279,7 +337,7 @@ function LayoutControls({
 	return (
 		<Accordion
 			type="multiple"
-			defaultValue={["heading", "form", "sections", "submit"]}
+			defaultValue={["heading"]}
 			className={CUSTOMIZATION_SECTION_LIST_CLASS}
 		>
 			<AccordionItem value="heading">
@@ -625,23 +683,34 @@ export function FormCustomization({
 	};
 	if (side === "layout") {
 		return (
-			<ScrollArea
-				inert={!isPresent}
-				className="min-h-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block"
-			>
-				<div className="min-w-0 pb-4 pr-4">
-					<LayoutControls
-						layout={draftLayout}
-						theme={draft}
-						submitButtonText={value.submitButtonText ?? ""}
-						onChange={(layout) => onUpdate({ layout })}
-						onThemeChange={setDraft}
-						onSubmitButtonTextChange={(submitButtonText) =>
-							onUpdate({ submitButtonText })
-						}
-					/>
-				</div>
-			</ScrollArea>
+			<>
+				<ScrollArea
+					inert={!isPresent}
+					className="min-h-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block"
+				>
+					<div className="min-w-0 pb-4 pr-4">
+						<LayoutControls
+							layout={draftLayout}
+							theme={draft}
+							submitButtonText={value.submitButtonText ?? ""}
+							onChange={(layout) => onUpdate({ layout })}
+							onThemeChange={setDraft}
+							onSubmitButtonTextChange={(submitButtonText) =>
+								onUpdate({ submitButtonText })
+							}
+						/>
+					</div>
+				</ScrollArea>
+				<CustomizationActions
+					value={value}
+					side={side}
+					isPresent={isPresent}
+					isImporting={isImporting}
+					onApply={onApply}
+					onCancel={onCancel}
+					onReset={onReset}
+				/>
+			</>
 		);
 	}
 
@@ -678,7 +747,7 @@ export function FormCustomization({
 								</p>
 								<Accordion
 									type="multiple"
-									defaultValue={["colors", "text", "finish"]}
+									defaultValue={[]}
 									className={CUSTOMIZATION_SUBSECTION_LIST_CLASS}
 								>
 									<AccordionItem
@@ -1033,35 +1102,15 @@ export function FormCustomization({
 					</Accordion>
 				</div>
 			</ScrollArea>
-			<div
-				inert={!isPresent}
-				className="flex shrink-0 flex-col gap-2 border-t pt-4 pr-4"
-			>
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					disabled={!value.theme && !value.layout && !value.submitButtonText}
-					onClick={onReset}
-				>
-					<RotateCcwIcon data-icon="inline-start" />
-					Reset to original
-				</Button>
-				<div className="flex items-center gap-2">
-					<Button type="button" variant="outline" size="sm" onClick={onCancel}>
-						Cancel
-					</Button>
-					<Button
-						type="button"
-						size="sm"
-						disabled={isImporting}
-						onClick={onApply}
-					>
-						<CheckIcon data-icon="inline-start" />
-						Apply changes
-					</Button>
-				</div>
-			</div>
+			<CustomizationActions
+				value={value}
+				side={side}
+				isPresent={isPresent}
+				isImporting={isImporting}
+				onApply={onApply}
+				onCancel={onCancel}
+				onReset={onReset}
+			/>
 		</>
 	);
 }

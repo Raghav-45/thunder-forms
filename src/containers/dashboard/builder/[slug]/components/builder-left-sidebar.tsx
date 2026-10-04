@@ -72,7 +72,7 @@ export function BuilderLeftSidebar({
 	return (
 		<Card
 			data-testid="builder-left-sidebar"
-			className="hidden h-screen w-80 shrink-0 overflow-hidden rounded-none border-0 border-r-2 md:block"
+			className="hidden h-screen w-72 shrink-0 overflow-hidden rounded-none border-0 border-r-2 md:block xl:w-80"
 		>
 			{/* Negated direction so the left sidebar mirrors the right one. */}
 			<AnimatePresence mode="wait" custom={-sidebarDirection} initial={false}>

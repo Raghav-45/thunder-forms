@@ -202,13 +202,11 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 				},
 				onCancel: closeCustomization,
 				onReset: () => {
-					setFormStructure((current) => ({
-						...current,
+					setCustomization({
 						theme: undefined,
 						layout: undefined,
-					}));
-					setFormSettings({ ...formSettings, submitButtonText: undefined });
-					closeCustomization();
+						submitButtonText: undefined,
+					});
 				},
 			}
 		: null;
