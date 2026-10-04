@@ -23,7 +23,7 @@ export function BuilderHeader({
 	onToggleCustomize,
 }: BuilderHeaderProps) {
 	return (
-		<div className="flex flex-row justify-between bg-[#111111] px-4 pt-6 md:px-4 md:pt-6">
+		<div className="flex shrink-0 flex-row justify-between bg-[#111111] px-4 pt-6 md:px-4 md:pt-6">
 			<h1 className="text-3xl font-bold">Builder</h1>
 			<div className="flex gap-2">
 				<Button

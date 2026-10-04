@@ -76,7 +76,7 @@ export function BuilderCanvasPanel({
 	return (
 		<Card
 			className={cn(
-				"mb-1 flex h-[calc(100vh-72px)] flex-col gap-0 overflow-hidden rounded-none border-none bg-card text-card-foreground shadow-none !p-0",
+				"mb-0 flex min-h-0 flex-1 flex-col gap-0 overflow-hidden rounded-none border-none bg-card text-card-foreground shadow-none !p-0",
 			)}
 		>
 			<ChromeTabStrip

@@ -632,7 +632,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 					replaceWithImportedPages={replaceWithImportedPages}
 				/>
 
-				<ScrollArea className="sticky min-w-0 flex-1 overflow-auto bg-card [&_[data-radix-scroll-area-viewport]>div]:w-full [&_[data-radix-scroll-area-viewport]>div]:table-fixed">
+				<ScrollArea className="sticky flex min-h-0 min-w-0 flex-1 flex-col overflow-auto bg-card [&_[data-radix-scroll-area-viewport]>div]:!flex [&_[data-radix-scroll-area-viewport]>div]:h-full [&_[data-radix-scroll-area-viewport]>div]:w-full [&_[data-radix-scroll-area-viewport]>div]:min-h-0 [&_[data-radix-scroll-area-viewport]>div]:flex-col">
 					<BuilderHeader
 						currentFormId={currentFormId}
 						customizing={Boolean(customization)}
