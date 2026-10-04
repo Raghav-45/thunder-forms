@@ -60,6 +60,14 @@ import {
 	normalizeFormTheme,
 } from "#/features/form-builder/theme";
 
+const CUSTOMIZATION_SECTION_LIST_CLASS = "border-y border-border/70";
+const CUSTOMIZATION_SECTION_TRIGGER_CLASS =
+	"py-4 text-base font-semibold tracking-[-0.01em] hover:no-underline [&>svg]:size-4 [&>svg]:translate-y-0 [&>svg]:text-foreground/70";
+const CUSTOMIZATION_SUBSECTION_LIST_CLASS = "border-l border-border/50";
+const CUSTOMIZATION_SUBSECTION_ITEM_CLASS = "border-border/50 pl-4";
+const CUSTOMIZATION_SUBSECTION_TRIGGER_CLASS =
+	"py-3.5 text-sm font-medium text-foreground/80 hover:no-underline [&>svg]:size-3.5 [&>svg]:translate-y-0";
+
 function ColorControl({
 	label,
 	value,
@@ -272,10 +280,13 @@ function LayoutControls({
 		<Accordion
 			type="multiple"
 			defaultValue={["heading", "form", "sections", "submit"]}
+			className={CUSTOMIZATION_SECTION_LIST_CLASS}
 		>
 			<AccordionItem value="heading">
-				<AccordionTrigger>Form heading</AccordionTrigger>
-				<AccordionContent className="flex flex-col gap-5">
+				<AccordionTrigger className={CUSTOMIZATION_SECTION_TRIGGER_CLASS}>
+					Form heading
+				</AccordionTrigger>
+				<AccordionContent className="flex flex-col gap-5 pb-6">
 					<p className="text-xs text-muted-foreground">
 						Position the heading and adjust the space around it.
 					</p>
@@ -323,8 +334,10 @@ function LayoutControls({
 				</AccordionContent>
 			</AccordionItem>
 			<AccordionItem value="form">
-				<AccordionTrigger>Form width & position</AccordionTrigger>
-				<AccordionContent className="flex flex-col gap-5">
+				<AccordionTrigger className={CUSTOMIZATION_SECTION_TRIGGER_CLASS}>
+					Form width & position
+				</AccordionTrigger>
+				<AccordionContent className="flex flex-col gap-5 pb-6">
 					<div className="flex flex-col gap-2">
 						<Label htmlFor="form-content-width">Form width</Label>
 						<Select
@@ -375,8 +388,10 @@ function LayoutControls({
 				</AccordionContent>
 			</AccordionItem>
 			<AccordionItem value="sections">
-				<AccordionTrigger>Sections & spacing</AccordionTrigger>
-				<AccordionContent className="flex flex-col gap-5">
+				<AccordionTrigger className={CUSTOMIZATION_SECTION_TRIGGER_CLASS}>
+					Sections & spacing
+				</AccordionTrigger>
+				<AccordionContent className="flex flex-col gap-5 pb-6">
 					<div className="flex flex-col gap-2">
 						<Label htmlFor="form-section-spacing">Space inside sections</Label>
 						<Select
@@ -444,8 +459,10 @@ function LayoutControls({
 				</AccordionContent>
 			</AccordionItem>
 			<AccordionItem value="submit">
-				<AccordionTrigger>Submit button</AccordionTrigger>
-				<AccordionContent className="flex flex-col gap-5">
+				<AccordionTrigger className={CUSTOMIZATION_SECTION_TRIGGER_CLASS}>
+					Submit button
+				</AccordionTrigger>
+				<AccordionContent className="flex flex-col gap-5 pb-6">
 					<div className="flex flex-col gap-2">
 						<Label htmlFor="form-submit-text">Submit button text</Label>
 						<Input
@@ -634,7 +651,7 @@ export function FormCustomization({
 				inert={!isPresent}
 				className="min-h-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block"
 			>
-				<div className="flex min-w-0 flex-col gap-5 pb-4 pr-4">
+				<div className="flex min-w-0 flex-col gap-6 pb-4 pr-4">
 					<div className="flex flex-col gap-2">
 						<Label htmlFor="form-theme-preset">Form style</Label>
 						<ThemePresetPicker
@@ -645,21 +662,35 @@ export function FormCustomization({
 							}}
 						/>
 					</div>
-					<Accordion type="multiple" defaultValue={["basic"]}>
+					<Accordion
+						type="multiple"
+						defaultValue={["basic"]}
+						className={CUSTOMIZATION_SECTION_LIST_CLASS}
+					>
 						<AccordionItem value="basic">
-							<AccordionTrigger>Make it yours</AccordionTrigger>
-							<AccordionContent>
-								<p className="mb-4 text-xs text-muted-foreground">
+							<AccordionTrigger className={CUSTOMIZATION_SECTION_TRIGGER_CLASS}>
+								Make it yours
+							</AccordionTrigger>
+							<AccordionContent className="pb-6">
+								<p className="mb-5 text-xs text-muted-foreground">
 									Start with what people notice first. Every detail is still
 									available in Advanced customizations.
 								</p>
 								<Accordion
 									type="multiple"
 									defaultValue={["colors", "text", "finish"]}
+									className={CUSTOMIZATION_SUBSECTION_LIST_CLASS}
 								>
-									<AccordionItem value="colors">
-										<AccordionTrigger>Colors & surfaces</AccordionTrigger>
-										<AccordionContent className="flex flex-col gap-5">
+									<AccordionItem
+										value="colors"
+										className={CUSTOMIZATION_SUBSECTION_ITEM_CLASS}
+									>
+										<AccordionTrigger
+											className={CUSTOMIZATION_SUBSECTION_TRIGGER_CLASS}
+										>
+											Colors & surfaces
+										</AccordionTrigger>
+										<AccordionContent className="flex flex-col gap-5 pb-5">
 											{BASIC_THEME_COLOR_GROUPS.map((group) => (
 												<fieldset
 													key={group.label}
@@ -686,9 +717,16 @@ export function FormCustomization({
 											))}
 										</AccordionContent>
 									</AccordionItem>
-									<AccordionItem value="text">
-										<AccordionTrigger>Text</AccordionTrigger>
-										<AccordionContent className="flex flex-col gap-5">
+									<AccordionItem
+										value="text"
+										className={CUSTOMIZATION_SUBSECTION_ITEM_CLASS}
+									>
+										<AccordionTrigger
+											className={CUSTOMIZATION_SUBSECTION_TRIGGER_CLASS}
+										>
+											Text
+										</AccordionTrigger>
+										<AccordionContent className="flex flex-col gap-5 pb-5">
 											<FontControl theme={draft} onChange={updateFont} />
 											<RangeControl
 												label="Letter spacing"
@@ -703,9 +741,16 @@ export function FormCustomization({
 											/>
 										</AccordionContent>
 									</AccordionItem>
-									<AccordionItem value="finish">
-										<AccordionTrigger>Depth & polish</AccordionTrigger>
-										<AccordionContent className="flex flex-col gap-5">
+									<AccordionItem
+										value="finish"
+										className={CUSTOMIZATION_SUBSECTION_ITEM_CLASS}
+									>
+										<AccordionTrigger
+											className={CUSTOMIZATION_SUBSECTION_TRIGGER_CLASS}
+										>
+											Depth & polish
+										</AccordionTrigger>
+										<AccordionContent className="flex flex-col gap-5 pb-5">
 											<RangeControl
 												label="Shadow strength"
 												value={draft.shadow.opacity}
@@ -729,16 +774,26 @@ export function FormCustomization({
 							</AccordionContent>
 						</AccordionItem>
 						<AccordionItem value="advanced">
-							<AccordionTrigger>Advanced customizations</AccordionTrigger>
-							<AccordionContent>
+							<AccordionTrigger className={CUSTOMIZATION_SECTION_TRIGGER_CLASS}>
+								Advanced customizations
+							</AccordionTrigger>
+							<AccordionContent className="pb-6">
 								<Accordion
 									type="multiple"
 									value={advancedSections}
 									onValueChange={setAdvancedSections}
+									className={CUSTOMIZATION_SUBSECTION_LIST_CLASS}
 								>
-									<AccordionItem value="colors">
-										<AccordionTrigger>All colors</AccordionTrigger>
-										<AccordionContent className="flex flex-col gap-5">
+									<AccordionItem
+										value="colors"
+										className={CUSTOMIZATION_SUBSECTION_ITEM_CLASS}
+									>
+										<AccordionTrigger
+											className={CUSTOMIZATION_SUBSECTION_TRIGGER_CLASS}
+										>
+											All colors
+										</AccordionTrigger>
+										<AccordionContent className="flex flex-col gap-5 pb-5">
 											<p className="text-xs text-muted-foreground">
 												Choose a color swatch to change it. Watch your form
 												update on the canvas.
@@ -778,9 +833,16 @@ export function FormCustomization({
 											))}
 										</AccordionContent>
 									</AccordionItem>
-									<AccordionItem value="other">
-										<AccordionTrigger>More shadow controls</AccordionTrigger>
-										<AccordionContent className="flex flex-col gap-6">
+									<AccordionItem
+										value="other"
+										className={CUSTOMIZATION_SUBSECTION_ITEM_CLASS}
+									>
+										<AccordionTrigger
+											className={CUSTOMIZATION_SUBSECTION_TRIGGER_CLASS}
+										>
+											More shadow controls
+										</AccordionTrigger>
+										<AccordionContent className="flex flex-col gap-6 pb-5">
 											<ColorControl
 												label="Shadow color"
 												value={draft.shadow.color}
@@ -816,14 +878,19 @@ export function FormCustomization({
 											</p>
 										</AccordionContent>
 									</AccordionItem>
-									<AccordionItem value="import">
-										<AccordionTrigger>
+									<AccordionItem
+										value="import"
+										className={CUSTOMIZATION_SUBSECTION_ITEM_CLASS}
+									>
+										<AccordionTrigger
+											className={CUSTOMIZATION_SUBSECTION_TRIGGER_CLASS}
+										>
 											<span className="flex items-center gap-2">
 												<CodeIcon className="size-4" />
 												Import or export a theme
 											</span>
 										</AccordionTrigger>
-										<AccordionContent className="flex flex-col gap-3">
+										<AccordionContent className="flex flex-col gap-3 pb-5">
 											<Label htmlFor="form-theme-css">Theme code</Label>
 											<Textarea
 												id="form-theme-css"

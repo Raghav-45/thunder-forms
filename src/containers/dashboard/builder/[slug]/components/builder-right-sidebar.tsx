@@ -51,7 +51,7 @@ export function BuilderRightSidebar({
 					className="h-full min-h-0"
 				>
 					{customizationProps ? (
-						<CardContent className="flex h-full min-h-0 flex-col gap-4 pt-4 pr-0 pb-4 pl-4">
+						<CardContent className="flex h-full min-h-0 flex-col gap-4 pt-0 pr-0 pb-4 pl-4">
 							<h2 className="shrink-0 pr-4 text-2xl font-bold">Layout</h2>
 							<FormCustomization {...customizationProps} side="layout" />
 						</CardContent>
