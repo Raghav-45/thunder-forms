@@ -15,8 +15,6 @@ import {
 	useState,
 } from "react";
 import { toast } from "sonner";
-import { Icons } from "#/components/Icons";
-import { Button } from "#/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -25,19 +23,22 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "#/components/ui/dialog";
-import { ShineBorder } from "#/components/ui/shine-border";
 import {
 	countTemplateFields,
 	FORM_TEMPLATES,
 } from "#/containers/dashboard/templates/constants";
+import styles from "#/features/form-builder/core/generate-with-ai.module.css";
 import {
 	type GeneratedForm,
 	GeneratedFormResponseValidator,
 } from "#/features/form-builder/core/generated-form";
 
-// Tailwind port of the Generate With AI dialog. All visuals are Tailwind
-// utilities; animation tokens (--animate-ag-*) live in src/styles.css,
-// @property + Firefox scrollbar hook appended there.
+// Generate With AI dialog: Tailwind utilities throughout, except the dialog
+// entry button, which lives in the co-located generate-with-ai.module.css —
+// its glow ring, star-swap, and particle effects need pseudo-elements and
+// sibling selectors with no Tailwind equivalent. Animation tokens
+// (--animate-ag-*), @property hooks, and the Firefox scrollbar rule live in
+// src/styles.css.
 
 interface GenerateWithAiPromptProps {
 	onGeneratedForm: (form: GeneratedForm) => void;
@@ -438,16 +439,58 @@ const GenerateWithAiPrompt: FC<GenerateWithAiPromptProps> = ({
 				}
 			}}
 		>
-			<DialogTrigger asChild>
-				<Button className="relative w-full cursor-pointer" variant="secondary">
-					<ShineBorder
-						shineColor={["#A07CFE", "#FE8FB5", "#FFBE7B"]}
-						className="rounded-md"
-					/>
-					<Icons.Sparkles className="size-4 fill-white" />
-					Generate with AI
-				</Button>
-			</DialogTrigger>
+			<span className={styles.wrap}>
+				<DialogTrigger asChild>
+					<button type="button" className={styles.btn}>
+						<svg
+							className={`${styles.st} ${styles.a}`}
+							viewBox="0 0 24 24"
+							aria-hidden="true"
+						>
+							<use href="#gs-star" />
+						</svg>
+						<svg
+							className={`${styles.st} ${styles.b}`}
+							viewBox="0 0 24 24"
+							aria-hidden="true"
+						>
+							<use href="#gs-star" />
+						</svg>
+						<svg
+							className={`${styles.st} ${styles.c}`}
+							viewBox="0 0 24 24"
+							aria-hidden="true"
+						>
+							<use href="#gs-star" />
+						</svg>
+						<span className={styles.label}>Generate with AI</span>
+					</button>
+				</DialogTrigger>
+				<i className={styles.p} aria-hidden="true" />
+				<i className={styles.p} aria-hidden="true" />
+				<i className={styles.p} aria-hidden="true" />
+				<i className={styles.p} aria-hidden="true" />
+				<i className={styles.p} aria-hidden="true" />
+				<i className={styles.p} aria-hidden="true" />
+				<i className={styles.p} aria-hidden="true" />
+				<i className={styles.p} aria-hidden="true" />
+				<span className={`${styles.tw} ${styles.tw1}`} aria-hidden="true" />
+				<span className={`${styles.tw} ${styles.tw2}`} aria-hidden="true" />
+				<span className={`${styles.tw} ${styles.tw3}`} aria-hidden="true" />
+				<svg
+					width="0"
+					height="0"
+					style={{ position: "absolute" }}
+					aria-hidden="true"
+				>
+					<defs>
+						<path
+							id="gs-star"
+							d="M12 0C12.7 6.6 17.4 11.3 24 12 17.4 12.7 12.7 17.4 12 24 11.3 17.4 6.6 12.7 0 12 6.6 11.3 11.3 6.6 12 0Z"
+						/>
+					</defs>
+				</svg>
+			</span>
 			{/* Centered on open, then top-pinned (see effect above): the prompt
 			    bar and tabs never move, the dialog only grows/shrinks downward. */}
 			<DialogContent

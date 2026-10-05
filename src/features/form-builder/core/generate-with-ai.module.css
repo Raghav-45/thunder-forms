@@ -1,0 +1,429 @@
+/* Generate Site trigger button (the Generate With AI dialog entry): plain-CSS
+   port of the supplied button demo, co-located with its component. Class names
+   are module-scoped; keyframes and the typed custom property keep unique gs-
+   names because those are global. Geometry borrows the demo's language but is
+   retuned for the builder sidebar: the button is a fixed 36px tall to match
+   the Import trigger (shadcn h-9), while inner measurements use
+   container-query units so stars, type, and effects stay proportional to the
+   sidebar grid instead of fixed pixels (hairline accents stay px to remain
+   crisp). The demo's page chrome (fixed sky/dust backdrop, body background
+   shift, hint copy) is intentionally not ported: it would repaint the whole
+   app on hover. Hover and focus-visible share one treatment so keyboard users
+   get the same affordance. */
+@property --gs-ang {
+	syntax: "<angle>";
+	inherits: false;
+	initial-value: 0deg;
+}
+
+/* wrapper lifts on hover; glow + conic ring sit behind the button */
+.wrap {
+	--gs-btn: #1d1d1d;
+	--gs-txt: #5c5c5c;
+	--gs-star: #555;
+	--gs-p1: #5b4ae6;
+	--gs-p2: #a78bfa;
+	--gs-ring: rgba(91, 74, 230, 0.35);
+	position: relative;
+	display: block;
+	width: 100%;
+	isolation: isolate;
+	container-type: inline-size;
+	transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.wrap:has(.btn:hover),
+.wrap:has(.btn:focus-visible) {
+	transform: translateY(-3px) scale(1.025);
+}
+.wrap:has(.btn:active) {
+	transform: translateY(0) scale(0.985);
+}
+.wrap::before {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 92%;
+	height: 100%;
+	border-radius: 999px;
+	background: #713cff;
+	z-index: 0;
+	filter: blur(10cqw);
+	opacity: 0;
+	transform: translate(-50%, -50%) scale(0.75);
+	transition: 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+	pointer-events: none;
+}
+.wrap::after {
+	content: "";
+	position: absolute;
+	inset: -1cqw;
+	border-radius: 999px;
+	z-index: 0;
+	opacity: 0;
+	filter: blur(2.33cqw);
+	transition: opacity 0.35s;
+	pointer-events: none;
+	background: conic-gradient(
+		from var(--gs-ang),
+		transparent 0deg,
+		rgba(187, 155, 255, 0.95) 70deg,
+		transparent 145deg,
+		transparent 250deg,
+		rgba(130, 83, 255, 0.8) 315deg,
+		transparent 360deg
+	);
+	animation: gs-ang 4s linear infinite;
+}
+.wrap:has(.btn:hover)::before,
+.wrap:has(.btn:focus-visible)::before {
+	opacity: 0.5;
+	transform: translate(-50%, -50%) scale(1.05);
+}
+.wrap:has(.btn:hover)::after,
+.wrap:has(.btn:focus-visible)::after {
+	opacity: 1;
+}
+@keyframes gs-ang {
+	to {
+		--gs-ang: 360deg;
+	}
+}
+
+.btn {
+	position: relative;
+	z-index: 1;
+	width: 100%;
+	height: 36px;
+	border: 0;
+	border-radius: 999px;
+	padding: 0;
+	cursor: pointer;
+	overflow: hidden;
+	outline: none;
+	background: var(--gs-btn);
+	color: var(--gs-txt);
+	font:
+		600 5.5cqw / 1 Poppins,
+		Inter,
+		system-ui,
+		sans-serif;
+	box-shadow:
+		0 0 0 0 transparent,
+		0 2cqw 6cqw rgba(0, 0, 0, 0.5),
+		inset 0 1px 0 rgba(255, 255, 255, 0.04);
+	transition:
+		background 0.5s,
+		color 0.5s,
+		box-shadow 0.5s,
+		filter 0.5s;
+}
+.btn::before {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 0;
+	width: 36%;
+	height: 2px;
+	transform: translateX(-50%);
+	border-radius: 2px;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		rgba(255, 255, 255, 0.85),
+		transparent
+	);
+	opacity: 0;
+	transition: opacity 0.5s;
+}
+.btn::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	opacity: 0;
+	transition: opacity 0.5s;
+	pointer-events: none;
+	background: radial-gradient(
+		ellipse 55% 55% at 50% 118%,
+		var(--gs-p2),
+		transparent 70%
+	);
+}
+.btn:hover,
+.btn:focus-visible {
+	background: var(--gs-p1);
+	color: #fff;
+	filter: saturate(1.12);
+	box-shadow:
+		0 0 0 2cqw var(--gs-ring),
+		inset 0 0 0 1px rgba(186, 160, 255, 0.5),
+		0 0 12cqw rgba(120, 90, 230, 0.35);
+}
+.btn:hover::before,
+.btn:hover::after,
+.btn:focus-visible::before,
+.btn:focus-visible::after {
+	opacity: 1;
+}
+.label {
+	position: absolute;
+	left: 19cqw;
+	top: 50%;
+	transform: translateY(-50%);
+	white-space: nowrap;
+}
+
+/* stars: one shape, positions swap on hover */
+.st {
+	position: absolute;
+	transform: translate(-50%, -50%);
+	fill: var(--gs-star);
+	transition:
+		left 0.55s cubic-bezier(0.3, 1.4, 0.5, 1),
+		top 0.55s cubic-bezier(0.3, 1.4, 0.5, 1),
+		width 0.55s,
+		height 0.55s,
+		fill 0.5s,
+		transform 0.55s;
+}
+.a {
+	left: 11.5cqw;
+	top: 50%;
+	width: 4cqw;
+	height: 4cqw;
+}
+.b {
+	left: 8cqw;
+	top: 63%;
+	width: 2.6cqw;
+	height: 2.6cqw;
+}
+.c {
+	left: 7.5cqw;
+	top: 37%;
+	width: 1.6cqw;
+	height: 1.6cqw;
+}
+.btn:hover .a,
+.btn:focus-visible .a {
+	left: 8cqw;
+	top: 63%;
+	width: 3cqw;
+	height: 3cqw;
+	fill: #fff;
+	transform: translate(-50%, -50%) rotate(90deg);
+}
+.btn:hover .b,
+.btn:focus-visible .b {
+	left: 12cqw;
+	top: 50%;
+	width: 2.4cqw;
+	height: 2.4cqw;
+	fill: rgba(255, 255, 255, 0.3);
+	animation: gs-star-tw 1.4s ease-in-out 0.5s infinite;
+}
+.btn:hover .c,
+.btn:focus-visible .c {
+	left: 8cqw;
+	top: 38%;
+	width: 1.6cqw;
+	height: 1.6cqw;
+	fill: rgba(255, 255, 255, 0.3);
+	animation: gs-star-tw 1.4s ease-in-out 0.9s infinite;
+}
+@keyframes gs-star-tw {
+	50% {
+		opacity: 0.35;
+	}
+}
+
+/* floating sparkle particles (outside the clipped button) */
+.p {
+	position: absolute;
+	z-index: 2;
+	pointer-events: none;
+	opacity: 0;
+	background: #fff;
+	clip-path: polygon(
+		50% 0,
+		62% 38%,
+		100% 50%,
+		62% 62%,
+		50% 100%,
+		38% 62%,
+		0 50%,
+		38% 38%
+	);
+}
+.btn:hover ~ .p,
+.btn:focus-visible ~ .p {
+	animation: gs-rise 1.8s ease-out infinite;
+}
+.p:nth-of-type(1) {
+	left: 12%;
+	top: 6%;
+	width: 3.33cqw;
+	height: 3.33cqw;
+	--gs-x: -4.67cqw;
+	--gs-y: -15.33cqw;
+	animation-delay: 0s;
+}
+.p:nth-of-type(2) {
+	left: 34%;
+	top: -4%;
+	width: 2.33cqw;
+	height: 2.33cqw;
+	--gs-x: 2.67cqw;
+	--gs-y: -17.33cqw;
+	animation-delay: 0.3s;
+	background: #c4b5fd;
+}
+.p:nth-of-type(3) {
+	left: 58%;
+	top: 2%;
+	width: 4cqw;
+	height: 4cqw;
+	--gs-x: -2cqw;
+	--gs-y: -19.33cqw;
+	animation-delay: 0.7s;
+}
+.p:nth-of-type(4) {
+	left: 82%;
+	top: 8%;
+	width: 3cqw;
+	height: 3cqw;
+	--gs-x: 5.33cqw;
+	--gs-y: -14.67cqw;
+	animation-delay: 1s;
+	background: #c4b5fd;
+}
+.p:nth-of-type(5) {
+	left: 94%;
+	top: 62%;
+	width: 2.67cqw;
+	height: 2.67cqw;
+	--gs-x: 8.67cqw;
+	--gs-y: -8cqw;
+	animation-delay: 0.5s;
+}
+.p:nth-of-type(6) {
+	left: 3%;
+	top: 70%;
+	width: 2.67cqw;
+	height: 2.67cqw;
+	--gs-x: -8.67cqw;
+	--gs-y: -6.67cqw;
+	animation-delay: 1.2s;
+	background: #c4b5fd;
+}
+.p:nth-of-type(7) {
+	left: 46%;
+	top: 92%;
+	width: 3cqw;
+	height: 3cqw;
+	--gs-x: 1.33cqw;
+	--gs-y: 13.33cqw;
+	animation-delay: 0.9s;
+}
+.p:nth-of-type(8) {
+	left: 70%;
+	top: 90%;
+	width: 2cqw;
+	height: 2cqw;
+	--gs-x: 4.67cqw;
+	--gs-y: 12cqw;
+	animation-delay: 1.5s;
+	background: #c4b5fd;
+}
+@keyframes gs-rise {
+	0% {
+		opacity: 0;
+		transform: translate(0, 0) scale(0.3) rotate(0);
+	}
+	20% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+		transform: translate(var(--gs-x), var(--gs-y)) scale(1.3) rotate(140deg);
+	}
+}
+
+/* one-shot glowing twinkles */
+.tw {
+	position: absolute;
+	z-index: 2;
+	border-radius: 50%;
+	background: #fff;
+	opacity: 0;
+	pointer-events: none;
+	box-shadow: 0 0 2.67cqw 0.67cqw rgba(190, 160, 255, 0.9);
+}
+.tw1 {
+	left: 14%;
+	top: -6%;
+	width: 1.33cqw;
+	height: 1.33cqw;
+}
+.tw2 {
+	left: 84%;
+	top: 104%;
+	width: 1cqw;
+	height: 1cqw;
+}
+.tw3 {
+	left: 76%;
+	top: -10%;
+	width: 0.67cqw;
+	height: 0.67cqw;
+}
+.btn:hover ~ .tw1 {
+	animation: gs-pop 0.7s 0.02s both;
+}
+.btn:hover ~ .tw2 {
+	animation: gs-pop 0.8s 0.14s both;
+}
+.btn:hover ~ .tw3 {
+	animation: gs-pop 0.65s 0.24s both;
+}
+@keyframes gs-pop {
+	0% {
+		opacity: 0;
+		transform: scale(0.2) translateY(1.67cqw);
+	}
+	45% {
+		opacity: 1;
+		transform: scale(1.5) translateY(-1.33cqw);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(0.7) translateY(-4.33cqw);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.wrap,
+	.wrap::before,
+	.wrap::after,
+	.btn,
+	.btn::before,
+	.btn::after,
+	.st,
+	.p,
+	.tw {
+		transition: none;
+	}
+	.wrap::after,
+	.btn:hover ~ .p,
+	.btn:focus-visible ~ .p,
+	.btn:hover .b,
+	.btn:focus-visible .b,
+	.btn:hover .c,
+	.btn:focus-visible .c,
+	.btn:hover ~ .tw1,
+	.btn:hover ~ .tw2,
+	.btn:hover ~ .tw3 {
+		animation: none;
+	}
+}
