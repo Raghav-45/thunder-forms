@@ -812,6 +812,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 				fieldOverlayWidth={fieldOverlayWidth}
 				paletteFieldRef={paletteFieldClone}
 				paletteSectionRef={paletteSectionClone}
+				theme={canvasTheme}
 			/>
 
 			{editingField ? (

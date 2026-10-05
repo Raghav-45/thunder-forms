@@ -219,7 +219,14 @@ export function BuilderCanvasPanel({
 								return (
 									<div
 										inert
-										style={width ? { width } : undefined}
+										// Same portal escape as the field overlay: re-apply
+										// the live canvas theme so the floating clone
+										// matches the customized canvas.
+										data-form-theme={canvasTheme ? true : undefined}
+										style={{
+											...getFormThemeStyle(canvasTheme),
+											...(width ? { width } : undefined),
+										}}
 										className="pointer-events-none cursor-grabbing shadow-2xl"
 									>
 										{/*
