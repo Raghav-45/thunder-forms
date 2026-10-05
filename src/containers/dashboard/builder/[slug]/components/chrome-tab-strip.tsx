@@ -1,4 +1,4 @@
-import { GlobeIcon, PlusIcon, XIcon } from "lucide-react";
+import { CircleCheckIcon, GlobeIcon, PlusIcon, XIcon } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { type CSSProperties, useEffect, useRef } from "react";
 import { cn } from "#/lib/utils";
@@ -12,9 +12,11 @@ interface ChromeTabStripProps {
 	pages: ChromeTabStripPage[];
 	activePageId: string;
 	activeTabBackground?: string;
+	successActive?: boolean;
 	onSelectPage: (pageId: string) => void;
 	onRemovePage: (pageId: string) => void;
 	onAddPage: () => void;
+	onSelectSuccess: () => void;
 	canRemovePage: boolean;
 }
 
@@ -23,9 +25,11 @@ export function ChromeTabStrip({
 	pages,
 	activePageId,
 	activeTabBackground,
+	successActive = false,
 	onSelectPage,
 	onRemovePage,
 	onAddPage,
+	onSelectSuccess,
 	canRemovePage,
 }: ChromeTabStripProps) {
 	const shouldReduceMotion = useReducedMotion();
@@ -56,7 +60,9 @@ export function ChromeTabStrip({
 			className="relative flex h-[52px] min-w-0 max-w-full items-end gap-0.5 overflow-x-auto bg-[#111111] px-4 pt-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
 		>
 			{pages.map((page, index) => {
-				const isActive = page.id === activePageId;
+				// The success view borrows the active surface, so only one
+				// tab owns the shared layout indicator at a time.
+				const isActive = page.id === activePageId && !successActive;
 				const pageTitle = page.title || `Page ${index + 1}`;
 
 				return (
@@ -127,6 +133,56 @@ export function ChromeTabStrip({
 					</div>
 				);
 			})}
+			<div
+				data-success-tab={successActive ? "" : undefined}
+				className={cn(
+					"group/tab relative flex h-9 min-w-[180px] max-w-[220px] flex-none cursor-default items-center gap-2 rounded-t-[14px] px-3 text-[13px] transition-colors duration-200",
+					successActive ? "z-10 text-card-foreground" : "text-muted-foreground",
+				)}
+			>
+				{successActive ? (
+					<motion.div
+						aria-hidden="true"
+						data-active-page-tab-surface
+						layoutId="builder-active-page-tab"
+						className="absolute inset-0 z-0 rounded-t-[14px] bg-[var(--active-page-tab-background)] shadow-[0_-1px_4px_rgba(0,0,0,0.22)] before:absolute before:bottom-0 before:-left-3 before:size-3 before:bg-[radial-gradient(circle_at_top_left,transparent_12px,var(--active-page-tab-background)_12px)] after:absolute after:bottom-0 after:-right-3 after:size-3 after:bg-[radial-gradient(circle_at_top_right,transparent_12px,var(--active-page-tab-background)_12px)]"
+						style={
+							{
+								"--active-page-tab-background":
+									activeTabBackground ?? "var(--card)",
+							} as CSSProperties
+						}
+						transition={
+							shouldReduceMotion
+								? { duration: 0 }
+								: { type: "spring", stiffness: 400, damping: 30 }
+						}
+					/>
+				) : (
+					<div
+						aria-hidden="true"
+						className="pointer-events-none absolute inset-x-1.5 inset-y-1.5 z-0 rounded-lg transition-colors group-hover/tab:bg-muted"
+					/>
+				)}
+				<CircleCheckIcon
+					className={cn(
+						"pointer-events-none relative z-10 size-4 shrink-0 transition-colors",
+						successActive
+							? "text-card-foreground"
+							: "text-muted-foreground group-hover/tab:text-foreground",
+					)}
+				/>
+				<span className="pointer-events-none relative z-10 flex-1 truncate font-medium tracking-wide">
+					Success page
+				</span>
+				<button
+					type="button"
+					aria-label="Success page"
+					aria-current={successActive ? "page" : undefined}
+					onClick={onSelectSuccess}
+					className="absolute inset-0 z-[1] rounded-t-[14px] focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:outline-[#8ab4f8]"
+				/>
+			</div>
 			<button
 				type="button"
 				data-add-page

@@ -3,7 +3,7 @@ import axios from "axios";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { FormClosedDialog } from "#/containers/public/forms/components/form-closed-dialog";
-import { FormSubmittedPage } from "#/containers/public/forms/components/form-submitted-page";
+import { FormSubmittedPage } from "#/features/form-builder/components/form-submitted-page";
 import { FormThemeScope } from "#/features/form-builder/components/form-theme-scope";
 import { RespondentFormContent } from "#/features/form-builder/components/respondent-form-content";
 import type { FieldConfig } from "#/features/form-builder/elements";
@@ -23,6 +23,12 @@ import {
 import { validateFormFields } from "#/features/form-builder/utils/formValidation";
 import { getFieldComponent } from "#/features/form-builder/utils/helperFunctions";
 import type { QuizResult } from "#/features/form-builder/utils/quiz";
+import {
+	normalizeSuccessBlockOrder,
+	normalizeSuccessExtraButtons,
+	type SuccessBlockId,
+	type SuccessExtraButton,
+} from "#/lib/validators/form";
 
 interface FormPageProps {
 	slug: string;
@@ -35,6 +41,14 @@ interface PublicFormSettings {
 	maxSubmissions?: number;
 	redirectUrl?: string;
 	submitButtonText?: string;
+	submitAnotherResponseText?: string;
+	returnToHomepageText?: string;
+	showSubmitAnotherResponse?: boolean;
+	showReturnToHomepage?: boolean;
+	successExtraButtons?: SuccessExtraButton[];
+	successTitle?: string;
+	successMessage?: string;
+	successBlockOrder?: SuccessBlockId[];
 }
 
 export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
@@ -223,6 +237,18 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 				maxSubmissions: form.data.maxSubmissions,
 				redirectUrl: form.data.redirectUrl,
 				submitButtonText: form.data.submitButtonText,
+				submitAnotherResponseText: form.data.submitAnotherResponseText,
+				returnToHomepageText: form.data.returnToHomepageText,
+				showSubmitAnotherResponse: form.data.showSubmitAnotherResponse,
+				showReturnToHomepage: form.data.showReturnToHomepage,
+				successExtraButtons: normalizeSuccessExtraButtons(
+					form.data.successExtraButtons,
+				),
+				successTitle: form.data.successTitle,
+				successMessage: form.data.successMessage,
+				successBlockOrder: normalizeSuccessBlockOrder(
+					form.data.successBlockOrder,
+				),
 			});
 			if (!isFormStructure(form.data.fields)) {
 				toast.error("Form is unavailable");
@@ -307,6 +333,14 @@ export default function PublicFormPage({ slug: currentFormId }: FormPageProps) {
 					quizPendingReview={quizPendingReview}
 					quizResult={quizResult}
 					formPath={`/forms/${currentFormId}`}
+					titleText={formSettings.successTitle}
+					messageText={formSettings.successMessage}
+					blockOrder={formSettings.successBlockOrder}
+					submitAnotherResponseText={formSettings.submitAnotherResponseText}
+					returnToHomepageText={formSettings.returnToHomepageText}
+					showSubmitAnotherResponse={formSettings.showSubmitAnotherResponse}
+					showReturnToHomepage={formSettings.showReturnToHomepage}
+					extraButtons={formSettings.successExtraButtons}
 				/>
 			</FormThemeScope>
 		);

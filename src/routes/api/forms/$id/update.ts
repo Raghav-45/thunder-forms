@@ -10,7 +10,7 @@ import {
 import { updateManagedSheetHeaders } from "#/features/google-sheets/server/sheets";
 import {
 	GoogleSheetsIntegrationStatus,
-	type Prisma,
+	Prisma,
 } from "#/generated/prisma/client";
 import { getSessionUserId } from "#/lib/server/session";
 import { FormValidator } from "#/lib/validators/form";
@@ -50,6 +50,18 @@ export const Route = createFileRoute("/api/forms/$id/update")({
 					const formData = {
 						...payload,
 						fields: payload.fields as unknown as Prisma.InputJsonValue,
+						successExtraButtons:
+							payload.successExtraButtons === null
+								? Prisma.DbNull
+								: (payload.successExtraButtons as unknown as
+										| Prisma.InputJsonValue
+										| undefined),
+						successBlockOrder:
+							payload.successBlockOrder === null
+								? Prisma.DbNull
+								: (payload.successBlockOrder as unknown as
+										| Prisma.InputJsonValue
+										| undefined),
 					};
 					const integration = existingForm.googleSheetsIntegration;
 					const nextHeaders =

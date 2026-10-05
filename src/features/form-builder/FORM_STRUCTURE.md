@@ -37,8 +37,11 @@ interface FormSection {
 its persisted `id` and `uniqueIdentifier`; do not rename identifiers or regenerate
 IDs during ordinary edits. Submitted answers are keyed by field ID.
 
-Form-level title, description, expiry, submission limit, redirect URL, and
-`submitButtonText` are separate form properties, not members of this tree. See
+Form-level title, description, expiry, submission limit, redirect URL,
+`submitButtonText`, and success-page settings (`submitAnotherResponseText`,
+`returnToHomepageText`, `showSubmitAnotherResponse`, `showReturnToHomepage`,
+`successExtraButtons`, `successTitle`, `successMessage`, `successBlockOrder`)
+are separate form properties, not members of this tree. See
 [FormValidator](../../lib/validators/form.ts) for the create/update payload.
 There is no persisted structure version property.
 

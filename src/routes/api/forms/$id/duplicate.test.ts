@@ -57,6 +57,16 @@ const existingForm = (overrides: Record<string, unknown> = {}) => ({
 	expiresAt: null,
 	redirectUrl: null,
 	submitButtonText: "Send",
+	submitAnotherResponseText: "Respond again",
+	returnToHomepageText: "Back home",
+	showSubmitAnotherResponse: false,
+	showReturnToHomepage: true,
+	successExtraButtons: [
+		{ id: "extra_1", label: "Help center", url: "https://example.com/help" },
+	],
+	successTitle: "Request received",
+	successMessage: "We will reply soon.",
+	successBlockOrder: ["buttons", "title", "message"],
 	...overrides,
 });
 
@@ -139,6 +149,20 @@ describe("POST /api/forms/[id]/duplicate", () => {
 				title: "Contact form (Copy)",
 				fields,
 				maxSubmissions: 10,
+				submitAnotherResponseText: "Respond again",
+				returnToHomepageText: "Back home",
+				showSubmitAnotherResponse: false,
+				showReturnToHomepage: true,
+				successExtraButtons: [
+					{
+						id: "extra_1",
+						label: "Help center",
+						url: "https://example.com/help",
+					},
+				],
+				successTitle: "Request received",
+				successMessage: "We will reply soon.",
+				successBlockOrder: ["buttons", "title", "message"],
 			}),
 		});
 	});

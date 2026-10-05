@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { prisma } from "#/db";
 import { isFormStructure } from "#/features/form-builder/form-structure";
-import type { Prisma } from "#/generated/prisma/client";
+import { Prisma } from "#/generated/prisma/client";
 import { getSessionUserId } from "#/lib/server/session";
 
 export const Route = createFileRoute("/api/forms/$id/duplicate")({
@@ -45,6 +45,20 @@ export const Route = createFileRoute("/api/forms/$id/duplicate")({
 							expiresAt: existingForm.expiresAt,
 							redirectUrl: existingForm.redirectUrl,
 							submitButtonText: existingForm.submitButtonText,
+							submitAnotherResponseText: existingForm.submitAnotherResponseText,
+							returnToHomepageText: existingForm.returnToHomepageText,
+							showSubmitAnotherResponse: existingForm.showSubmitAnotherResponse,
+							showReturnToHomepage: existingForm.showReturnToHomepage,
+							successExtraButtons:
+								existingForm.successExtraButtons == null
+									? Prisma.DbNull
+									: (existingForm.successExtraButtons as unknown as Prisma.InputJsonValue),
+							successTitle: existingForm.successTitle,
+							successMessage: existingForm.successMessage,
+							successBlockOrder:
+								existingForm.successBlockOrder == null
+									? Prisma.DbNull
+									: (existingForm.successBlockOrder as unknown as Prisma.InputJsonValue),
 						},
 					});
 

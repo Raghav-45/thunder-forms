@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod/v3";
 import { prisma } from "#/db";
 import { isFormStructure } from "#/features/form-builder/form-structure";
-import type { Prisma } from "#/generated/prisma/client";
+import { Prisma } from "#/generated/prisma/client";
 import { getSessionUserId } from "#/lib/server/session";
 import { FormValidator } from "#/lib/validators/form";
 
@@ -28,6 +28,18 @@ export const Route = createFileRoute("/api/forms/new")({
 						data: {
 							...payload,
 							fields: payload.fields as unknown as Prisma.InputJsonValue,
+							successExtraButtons:
+								payload.successExtraButtons === null
+									? Prisma.DbNull
+									: (payload.successExtraButtons as unknown as
+											| Prisma.InputJsonValue
+											| undefined),
+							successBlockOrder:
+								payload.successBlockOrder === null
+									? Prisma.DbNull
+									: (payload.successBlockOrder as unknown as
+											| Prisma.InputJsonValue
+											| undefined),
 							userId,
 						},
 					});

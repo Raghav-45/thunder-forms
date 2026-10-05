@@ -15,7 +15,10 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { ScrollArea } from "#/components/ui/scroll-area";
-import { BuilderCanvasPanel } from "#/containers/dashboard/builder/[slug]/components/builder-canvas-panel";
+import {
+	BuilderCanvasPanel,
+	type BuilderCanvasView,
+} from "#/containers/dashboard/builder/[slug]/components/builder-canvas-panel";
 import { BuilderDragOverlay } from "#/containers/dashboard/builder/[slug]/components/builder-drag-overlay";
 import { BuilderHeader } from "#/containers/dashboard/builder/[slug]/components/builder-header";
 import { BuilderLeftSidebar } from "#/containers/dashboard/builder/[slug]/components/builder-left-sidebar";
@@ -23,6 +26,10 @@ import { BuilderRightSidebar } from "#/containers/dashboard/builder/[slug]/compo
 import type { FormCustomizationValue } from "#/containers/dashboard/builder/[slug]/components/form-customization";
 import { SaveFormLoginDialog } from "#/containers/dashboard/builder/[slug]/components/save-form-login-dialog";
 import { SectionEditor } from "#/containers/dashboard/builder/[slug]/components/section-editor";
+import {
+	SuccessBlockEditor,
+	type SuccessPageSettings,
+} from "#/containers/dashboard/builder/[slug]/components/success-page-blocks";
 import {
 	createImportedGoogleFormStructure,
 	createPage,
@@ -59,7 +66,12 @@ import type { ImportedGoogleFormPage } from "#/features/google-forms-import/type
 import { GOOGLE_SHEETS_OAUTH_RESULT_QUERY_PARAM } from "#/features/google-sheets/constants";
 import { googleSheetsOAuthResultMessage } from "#/features/google-sheets/oauth-result";
 import { authClient } from "#/lib/auth-client";
-import type { CreateFormPayload } from "#/lib/validators/form";
+import {
+	type CreateFormPayload,
+	normalizeSuccessBlockOrder,
+	normalizeSuccessExtraButtons,
+	type SuccessBlockId,
+} from "#/lib/validators/form";
 
 const sensors = [
 	PointerSensor.configure({
@@ -168,11 +180,28 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 			? customization.submitButtonText
 			: formSettings.submitButtonText
 		)?.trim() || undefined;
+	// Success content edits apply directly like the form title, while theme
+	// and layout stay in the customization draft until applied.
+	const successSettings: SuccessPageSettings = {
+		redirectUrl: formSettings.redirectUrl?.trim() || undefined,
+		title: formSettings.successTitle ?? "",
+		message: formSettings.successMessage ?? "",
+		blockOrder: normalizeSuccessBlockOrder(formSettings.successBlockOrder),
+		submitAnotherResponseText: formSettings.submitAnotherResponseText ?? "",
+		returnToHomepageText: formSettings.returnToHomepageText ?? "",
+		showSubmitAnotherResponse: formSettings.showSubmitAnotherResponse ?? true,
+		showReturnToHomepage: formSettings.showReturnToHomepage ?? true,
+		extraButtons: formSettings.successExtraButtons ?? [],
+	};
+	const [canvasView, setCanvasView] = useState<BuilderCanvasView>("form");
+	const [editingSuccessBlock, setEditingSuccessBlock] =
+		useState<SuccessBlockId | null>(null);
 	useFormThemeFonts(canvasTheme);
 
 	const pageTransitionDirection = useRef(0);
 	const closeCustomization = () => {
 		pageTransitionDirection.current = -1;
+		setCanvasView("form");
 		setCustomization(null);
 	};
 	const applyCustomization = () => {
@@ -311,6 +340,26 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 		formSettings.submitButtonText,
 	]);
 
+	const moveSuccessBlock = useCallback(
+		(block: SuccessBlockId, direction: -1 | 1) => {
+			const order = normalizeSuccessBlockOrder(formSettings.successBlockOrder);
+			const index = order.indexOf(block);
+			const next = index + direction;
+			if (index === -1 || next < 0 || next >= order.length) return;
+			const updated = [...order];
+			[updated[index], updated[next]] = [updated[next], updated[index]];
+			setFormSettings({ ...formSettings, successBlockOrder: updated });
+		},
+		[formSettings, setFormSettings],
+	);
+
+	const reorderSuccessBlocks = useCallback(
+		(blockOrder: SuccessBlockId[]) => {
+			setFormSettings({ ...formSettings, successBlockOrder: blockOrder });
+		},
+		[formSettings, setFormSettings],
+	);
+
 	const registerCanvas = useCallback((element: HTMLDivElement | null) => {
 		if (!element) {
 			// A null detach can come from an exiting (superseded) canvas that
@@ -405,6 +454,18 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 			maxSubmissions: form.data.maxSubmissions,
 			redirectUrl: form.data.redirectUrl,
 			submitButtonText: form.data.submitButtonText,
+			submitAnotherResponseText: form.data.submitAnotherResponseText,
+			returnToHomepageText: form.data.returnToHomepageText,
+			showSubmitAnotherResponse: form.data.showSubmitAnotherResponse,
+			showReturnToHomepage: form.data.showReturnToHomepage,
+			successExtraButtons: normalizeSuccessExtraButtons(
+				form.data.successExtraButtons,
+			),
+			successTitle: form.data.successTitle,
+			successMessage: form.data.successMessage,
+			successBlockOrder: normalizeSuccessBlockOrder(
+				form.data.successBlockOrder,
+			),
 		});
 		setFormStructure({
 			...(form.data.fields as PersistedFormStructure),
@@ -549,6 +610,11 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 
 			setIsSaving(true);
 			try {
+				// Fully blank extra rows are abandoned drafts, not buttons.
+				// Partially filled rows stay for the validator to reject loudly.
+				const extraButtonsToSave = (
+					formSettings.successExtraButtons ?? []
+				).filter((button) => button.label.trim() || button.url.trim());
 				const payload: CreateFormPayload = {
 					title: formSettings.title,
 					description: formSettings.description?.trim() || null,
@@ -565,6 +631,17 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 					expiresAt: formSettings.expiresAt,
 					redirectUrl: formSettings.redirectUrl?.trim() || null,
 					submitButtonText: canvasSubmitButtonText?.trim() || null,
+					submitAnotherResponseText:
+						formSettings.submitAnotherResponseText?.trim() || null,
+					returnToHomepageText:
+						formSettings.returnToHomepageText?.trim() || null,
+					showSubmitAnotherResponse: formSettings.showSubmitAnotherResponse,
+					showReturnToHomepage: formSettings.showReturnToHomepage,
+					successExtraButtons:
+						extraButtonsToSave.length > 0 ? extraButtonsToSave : null,
+					successTitle: formSettings.successTitle?.trim() || null,
+					successMessage: formSettings.successMessage?.trim() || null,
+					successBlockOrder: formSettings.successBlockOrder ?? null,
 				};
 				if (isNewForm) {
 					const { data } = await axios.post("/api/forms/new", payload);
@@ -670,6 +747,8 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 						canvasLayout={canvasLayout}
 						canvasSubmitButtonText={canvasSubmitButtonText}
 						canvasTheme={canvasTheme}
+						canvasView={canvasView}
+						successSettings={successSettings}
 						canRemovePage={formStructure.pages.length > 1}
 						description={formSettings.description}
 						hasCanvasSections={hasCanvasSections}
@@ -681,8 +760,12 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 						paletteFieldPlaceholderId={paletteFieldPlaceholderId}
 						paletteSectionPlaceholderId={paletteSectionPlaceholderId}
 						title={formSettings.title}
-						onAddPage={addPage}
+						onAddPage={() => {
+							setCanvasView("form");
+							addPage();
+						}}
 						onAddSection={addSection}
+						onCanvasViewChange={setCanvasView}
 						onEditField={(field, sectionId) =>
 							setEditingField({
 								field,
@@ -696,12 +779,18 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 								section,
 							})
 						}
+						onEditSuccessBlock={setEditingSuccessBlock}
+						onMoveSuccessBlock={moveSuccessBlock}
+						onReorderSuccessBlocks={reorderSuccessBlocks}
 						onFieldSurfaceRef={registerFieldSurface}
 						onCanvasRef={registerCanvas}
 						onRemoveField={removeFieldById}
 						onRemovePage={removePageById}
 						onRemoveSection={removeSectionById}
-						onSelectPage={selectPage}
+						onSelectPage={(pageId) => {
+							setCanvasView("form");
+							selectPage(pageId);
+						}}
 					/>
 				</ScrollArea>
 
@@ -767,6 +856,35 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 						setEditingSection(null);
 					}}
 					onClose={() => setEditingSection(null)}
+				/>
+			) : null}
+
+			{editingSuccessBlock ? (
+				<SuccessBlockEditor
+					block={editingSuccessBlock}
+					settings={successSettings}
+					onUpdate={(update) => {
+						const next = { ...formSettings };
+						if (update.title !== undefined)
+							next.successTitle = update.title || undefined;
+						if (update.message !== undefined)
+							next.successMessage = update.message || undefined;
+						if (update.submitAnotherResponseText !== undefined)
+							next.submitAnotherResponseText =
+								update.submitAnotherResponseText.trim() || undefined;
+						if (update.returnToHomepageText !== undefined)
+							next.returnToHomepageText =
+								update.returnToHomepageText.trim() || undefined;
+						if (update.showSubmitAnotherResponse !== undefined)
+							next.showSubmitAnotherResponse = update.showSubmitAnotherResponse;
+						if (update.showReturnToHomepage !== undefined)
+							next.showReturnToHomepage = update.showReturnToHomepage;
+						if (update.extraButtons !== undefined)
+							next.successExtraButtons = update.extraButtons;
+						setFormSettings(next);
+						setEditingSuccessBlock(null);
+					}}
+					onClose={() => setEditingSuccessBlock(null)}
 				/>
 			) : null}
 		</DragDropProvider>

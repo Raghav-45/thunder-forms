@@ -118,6 +118,14 @@ model forms {
   maxSubmissions   Int?
   redirectUrl      String?
   submitButtonText String?
+  submitAnotherResponseText String?
+  returnToHomepageText      String?
+  showSubmitAnotherResponse Boolean @default(true)
+  showReturnToHomepage      Boolean @default(true)
+  successExtraButtons       Json?
+  successTitle      String?
+  successMessage    String?
+  successBlockOrder Json?
   userId           String
 
   user                      user                         @relation(fields: [userId], references: [id], onDelete: Cascade)
