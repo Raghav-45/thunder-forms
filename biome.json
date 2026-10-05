@@ -287,16 +287,6 @@
 			}
 		},
 		{
-			"includes": ["src/features/form-builder/core/generateZodSchema.ts"],
-			"linter": {
-				"rules": {
-					"suspicious": {
-						"noExplicitAny": "off"
-					}
-				}
-			}
-		},
-		{
 			"includes": [
 				"src/features/form-builder/elements/fields/date-picker.tsx",
 				"src/features/form-builder/elements/fields/datetime-picker.tsx",

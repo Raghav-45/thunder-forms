@@ -137,8 +137,6 @@ AI generation also uses registry defaults through `createDefaultFieldConfig`.
 Check consumers when changing the registry's shape; do not introduce another
 validator registry.
 
-The unused `core/generateZodSchema.ts` module also reads `FIELD_REGISTRY`.
-
 ## AI generation
 
 - `core/generate-with-ai.tsx` sends form requests to
@@ -170,7 +168,6 @@ src/features/form-builder/             # form-building domain feature
 ├── core/                               # AI generation and import
 │   ├── generate-with-ai.tsx
 │   ├── generated-form.ts              # canonical AI form contract and response validation
-│   ├── generateZodSchema.ts             # unused answer-schema generator
 │   └── import-google-form.tsx
 ├── elements/                           # field definition system
 │   ├── base.ts                         # FormFieldDefinition contract
