@@ -8,7 +8,7 @@ import {
 } from "@react-three/fiber";
 import { EffectComposer, wrapEffect } from "@react-three/postprocessing";
 import { Effect } from "postprocessing";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
 const waveVertexShader = `
@@ -171,7 +171,9 @@ const RetroEffect = forwardRef<
 	{ colorNum: number; pixelSize: number }
 >((props, ref) => {
 	const { colorNum, pixelSize } = props;
-	const WrappedRetroEffect = wrapEffect(RetroEffectImpl);
+	// Memoize the wrapped component: creating it per render would unmount and
+	// remount the postprocessing pass on every parent re-render.
+	const WrappedRetroEffect = useMemo(() => wrapEffect(RetroEffectImpl), []);
 	return (
 		<WrappedRetroEffect ref={ref} colorNum={colorNum} pixelSize={pixelSize} />
 	);
@@ -234,29 +236,42 @@ function DitheredWaves({
 		mouseRadius: new THREE.Uniform(mouseRadius),
 	});
 
+	// Resolve the uniforms three.js actually uploads. Since @react-three/fiber
+	// v9, the `uniforms` prop on <shaderMaterial> is copied into the material's
+	// own uniforms object instead of assigned by reference, so mutating the
+	// seed object alone never reaches the GPU. Write through the live material
+	// (falling back to the seed before the material exists).
+	const getLiveUniforms = useCallback((): WaveUniforms => {
+		const material = mesh.current?.material as THREE.ShaderMaterial | undefined;
+		return (
+			(material?.uniforms as WaveUniforms | undefined) ??
+			waveUniformsRef.current
+		);
+	}, []);
+
 	useEffect(() => {
 		const dpr = gl.getPixelRatio();
 		const newWidth = Math.floor(size.width * dpr);
 		const newHeight = Math.floor(size.height * dpr);
-		const currentRes = waveUniformsRef.current.resolution.value;
+		const currentRes = getLiveUniforms().resolution.value;
 		if (currentRes.x !== newWidth || currentRes.y !== newHeight) {
 			currentRes.set(newWidth, newHeight);
 		}
-	}, [size, gl]);
+	}, [size, gl, getLiveUniforms]);
 
 	useFrame(({ clock }) => {
+		const uniforms = getLiveUniforms();
 		if (!disableAnimation) {
-			waveUniformsRef.current.time.value = clock.getElapsedTime();
+			uniforms.time.value = clock.getElapsedTime();
 		}
-		waveUniformsRef.current.waveSpeed.value = waveSpeed;
-		waveUniformsRef.current.waveFrequency.value = waveFrequency;
-		waveUniformsRef.current.waveAmplitude.value = waveAmplitude;
-		waveUniformsRef.current.waveColor.value.set(...waveColor);
-		waveUniformsRef.current.enableMouseInteraction.value =
-			enableMouseInteraction ? 1 : 0;
-		waveUniformsRef.current.mouseRadius.value = mouseRadius;
+		uniforms.waveSpeed.value = waveSpeed;
+		uniforms.waveFrequency.value = waveFrequency;
+		uniforms.waveAmplitude.value = waveAmplitude;
+		uniforms.waveColor.value.set(...waveColor);
+		uniforms.enableMouseInteraction.value = enableMouseInteraction ? 1 : 0;
+		uniforms.mouseRadius.value = mouseRadius;
 		if (enableMouseInteraction) {
-			waveUniformsRef.current.mousePos.value.set(mousePos.x, mousePos.y);
+			uniforms.mousePos.value.set(mousePos.x, mousePos.y);
 		}
 	});
 
