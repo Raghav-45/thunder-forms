@@ -479,34 +479,6 @@ export const FORM_THEME_PRESETS: readonly FormThemePreset[] = [
 		primary: "#fafafa",
 		foreground: "#171717",
 	},
-	{
-		id: "ocean",
-		label: "Ocean",
-		description: "Classic dark surfaces with blue buttons",
-		primary: "#60a5fa",
-		foreground: "#171717",
-	},
-	{
-		id: "rose",
-		label: "Rose",
-		description: "Classic dark surfaces with rose buttons",
-		primary: "#fb7185",
-		foreground: "#171717",
-	},
-	{
-		id: "forest",
-		label: "Forest",
-		description: "Classic dark surfaces with green buttons",
-		primary: "#4ade80",
-		foreground: "#171717",
-	},
-	{
-		id: "violet",
-		label: "Violet",
-		description: "Classic dark surfaces with violet buttons",
-		primary: "#a78bfa",
-		foreground: "#171717",
-	},
 ];
 
 export function createFormTheme(presetId = "thunder"): FormTheme {

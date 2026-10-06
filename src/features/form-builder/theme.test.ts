@@ -20,7 +20,7 @@ describe("form themes", () => {
 	it("keeps existing forms valid and preserves themes through public serialization", () => {
 		const structure = { pages: [{ id: "page", sections: [] }] };
 		expect(isFormStructure(structure)).toBe(true);
-		const themed = { ...structure, theme: createFormTheme("ocean") };
+		const themed = { ...structure, theme: createFormTheme("neutral") };
 		expect(isFormStructure(JSON.parse(JSON.stringify(themed)))).toBe(true);
 		expect(stripQuizAnswerKeys(themed).theme).toEqual(themed.theme);
 		expect(isFormStructure({ ...structure, theme: { colors: {} } })).toBe(
@@ -129,7 +129,7 @@ describe("form themes", () => {
 	});
 
 	it("exports one palette and applies it with typography and shadows", () => {
-		const theme = createFormTheme("forest");
+		const theme = createFormTheme("sunset");
 		theme.fontFamily = "georgia";
 		theme.shadow.opacity = 0.4;
 		const css = exportFormThemeCss(theme);

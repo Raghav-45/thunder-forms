@@ -292,11 +292,11 @@ test("customizations preview live, cancel cleanly, apply and reset", async ({ pa
 	const preview = page.getByTestId("builder-canvas");
 	await expect(preview.getByText("Your Name", { exact: true })).toBeVisible();
 	await editor.getByRole("combobox", { name: "Form style" }).click();
-	await page.getByRole("option", { name: "Ocean", exact: true }).click();
+	await page.getByRole("option", { name: "Neutral", exact: true }).click();
 	await expect(editor.getByRole("tab", { name: "Light", exact: true })).toHaveCount(0);
 	await expect(editor.getByRole("tab", { name: "Dark", exact: true })).toHaveCount(0);
 	await expect(preview).toHaveAttribute("data-form-theme", "true");
-	await expect(preview.getByRole("button", { name: "Submit", exact: true })).toHaveCSS("background-color", "rgb(96, 165, 250)");
+	await expect(preview.getByRole("button", { name: "Submit", exact: true })).toHaveCSS("background-color", "rgb(250, 250, 250)");
 	await editor.getByRole("button", { name: "Cancel", exact: true }).click();
 	await expect(page.locator("[data-form-theme]")).toHaveCount(0);
 
@@ -374,7 +374,7 @@ test("theme persists in the save payload and public form after reload, including
 	await page.getByRole("option", { name: "Right aligned", exact: true }).click();
 	await expect(preview.getByRole("heading").first()).toHaveCSS("text-align", "center");
 	await editor.getByRole("combobox", { name: "Form style" }).click();
-	await page.getByRole("option", { name: "Ocean", exact: true }).click();
+	await page.getByRole("option", { name: "Neutral", exact: true }).click();
 	await editor.getByRole("button", { name: "Advanced customizations", exact: true }).click();
 	await editor.getByText("Import or export a theme", { exact: true }).click();
 	await editor.getByRole("textbox", { name: "Theme code", exact: true }).fill(":root { --popover: #ffeedd; --popover-foreground: #112233; } .dark { --primary: #334455; }");
