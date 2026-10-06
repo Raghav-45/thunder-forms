@@ -245,6 +245,6 @@
 
 /* Firefox only: no utility exists for scrollbar-width/color. */
 .ag-scrollpane {
-  scrollbar-width: thin;
-  scrollbar-color: #272727 transparent;
+	scrollbar-width: thin;
+	scrollbar-color: var(--border) transparent;
 }
