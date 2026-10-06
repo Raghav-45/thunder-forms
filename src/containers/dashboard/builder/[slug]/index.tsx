@@ -73,6 +73,11 @@ import {
 	type SuccessBlockId,
 } from "#/lib/validators/form";
 
+// Matches the Sheet close animation (`data-[state=closed]:duration-300` in
+// components/ui/sheet.tsx). The field editor stays mounted for this long after
+// closing so Radix can play the exit animation before React unmounts it.
+const FIELD_EDITOR_CLOSE_ANIMATION_MS = 300;
+
 const sensors = [
 	PointerSensor.configure({
 		activatorElements(source) {
@@ -95,12 +100,14 @@ function FieldEditor({
 	field,
 	onUpdate,
 	onClose,
+	isOpen,
 	formId,
 	isPersisted,
 }: {
 	field: FieldConfig;
 	onUpdate: (field: FieldConfig) => void;
 	onClose: () => void;
+	isOpen: boolean;
 	formId?: string;
 	isPersisted?: boolean;
 }) {
@@ -112,7 +119,7 @@ function FieldEditor({
 		field,
 		onUpdate,
 		onClose,
-		isOpen: true,
+		isOpen,
 		formId,
 		isPersisted,
 	});
@@ -160,6 +167,41 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 	const [currentFormId, setCurrentFormId] = useState(paramFormId);
 	const [activePageId, setActivePageId] = useState(initialState.activePageId);
 	const [editingField, setEditingField] = useState<EditingField | null>(null);
+	// Controls the editor Sheet's `open` prop separately from `editingField` so
+	// the close animation can play: closing flips this to false first and only
+	// unmounts (clears `editingField`) after the animation finishes.
+	const [isFieldEditorOpen, setIsFieldEditorOpen] = useState(false);
+	const fieldEditorCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(
+		null,
+	);
+
+	const openFieldEditor = useCallback((editing: EditingField) => {
+		if (fieldEditorCloseTimer.current !== null) {
+			clearTimeout(fieldEditorCloseTimer.current);
+			fieldEditorCloseTimer.current = null;
+		}
+		setEditingField(editing);
+		setIsFieldEditorOpen(true);
+	}, []);
+
+	const closeFieldEditor = useCallback(() => {
+		setIsFieldEditorOpen(false);
+		if (fieldEditorCloseTimer.current !== null) {
+			clearTimeout(fieldEditorCloseTimer.current);
+		}
+		fieldEditorCloseTimer.current = setTimeout(() => {
+			setEditingField(null);
+			fieldEditorCloseTimer.current = null;
+		}, FIELD_EDITOR_CLOSE_ANIMATION_MS);
+	}, []);
+
+	useEffect(() => {
+		return () => {
+			if (fieldEditorCloseTimer.current !== null) {
+				clearTimeout(fieldEditorCloseTimer.current);
+			}
+		};
+	}, []);
 	const [editingSection, setEditingSection] = useState<EditingSection | null>(
 		null,
 	);
@@ -767,7 +809,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 						onAddSection={addSection}
 						onCanvasViewChange={setCanvasView}
 						onEditField={(field, sectionId) =>
-							setEditingField({
+							openFieldEditor({
 								field,
 								pageId: resolvedActivePageId,
 								sectionId,
@@ -817,7 +859,11 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 
 			{editingField ? (
 				<FieldEditor
+					// Remount per field so the editor draft (`useState(field)`) never
+					// shows a previous field's values when switching fields.
+					key={editingField.field.id}
 					field={editingField.field}
+					isOpen={isFieldEditorOpen}
 					onUpdate={(field) => {
 						setFormStructure((prev) =>
 							updateField(
@@ -827,9 +873,9 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 								field,
 							),
 						);
-						setEditingField(null);
+						closeFieldEditor();
 					}}
-					onClose={() => setEditingField(null)}
+					onClose={closeFieldEditor}
 					formId={isExistingForm ? currentFormId : undefined}
 					isPersisted={Boolean(
 						form.data &&
