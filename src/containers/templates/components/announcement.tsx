@@ -18,7 +18,7 @@ export const Announcement: FC<AnnouncementProps> = ({
 	return (
 		<a
 			href={href ?? "/templates"}
-			className="group inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium"
+			className="group inline-flex w-fit max-w-full items-center rounded-full bg-muted px-3 py-1 text-sm font-medium"
 		>
 			{!withoutIcon && (
 				<>

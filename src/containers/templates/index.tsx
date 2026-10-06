@@ -1,143 +1,55 @@
-// import { TrendingUpIcon } from 'lucide-react'
-
+import { Link } from "@tanstack/react-router";
+import { PlusIcon } from "lucide-react";
 import { Icons } from "#/components/Icons";
+import { buttonVariants } from "#/components/ui/button";
 import { Announcement } from "#/containers/templates/components/announcement";
-
-// const baseUrl =
-//   process.env.NODE_ENV === 'development'
-//     ? 'http://localhost:3000'
-//     : siteConfig.url
-
-// async function getTemplates() {
-//   try {
-//     const response = await fetch(`${baseUrl}/api/forms/templates`, {
-//       method: 'GET',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       cache: 'no-store', // for dynamic data
-//     })
-
-//     if (!response.ok) {
-//       throw new Error('Failed to fetch templates')
-//     }
-
-//     return response.json()
-//   } catch (error) {
-//     console.error('Error fetching templates:', error)
-//     return []
-//   }
-// }
+import { PublicTemplateGallery } from "#/containers/templates/components/public-template-gallery";
+import { cn } from "#/lib/utils";
 
 export default function TemplatesPage() {
-	// const templates: TemplateType[] = await getTemplates()
 	return (
-		<section className="py-32">
-			<div className="container">
-				<div className="mb-14">
+		<section className="py-24 md:py-32">
+			<div className="container flex flex-col gap-12 md:gap-16">
+				<div className="flex max-w-2xl flex-col gap-4">
 					<Announcement
 						text="✨ New Feedback Template"
-						href="#template-1"
+						href="#template-customer-feedback"
 						withoutIcon
 					/>
 
-					<h1 className="flex mb-3 mt-1 font-anton text-balance text-3xl leading-tight font-normal tracking-tight md:text-4xl">
-						Choose a Template <Icons.Logo className="h-auto w-10 mx-3" />
+					<h1 className="mt-1 flex items-center font-anton text-4xl leading-tight font-normal tracking-tight text-balance md:text-5xl">
+						Choose a template
+						<Icons.Logo className="mx-3 h-auto w-10" aria-hidden="true" />
 					</h1>
 					<p className="text-lg text-muted-foreground">
-						Select a template and start creating your form instantly.
+						Start with the right questions. Preview a template with live fields,
+						then open it in the builder and make it yours.
 					</p>
 				</div>
-				<div className="w-full">
-					<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-						{/* {templates.map((template) => (
-              <TemplateDialog key={template.id} template={template} />
-            ))} */}
+				<PublicTemplateGallery />
+				<div className="flex flex-col items-start justify-between gap-4 rounded-xl border bg-muted/40 p-6 sm:flex-row sm:items-center md:p-8">
+					<div className="flex max-w-xl flex-col gap-1">
+						<h2 className="text-lg font-semibold tracking-tight">
+							Can’t find the right shape?
+						</h2>
+						<p className="text-sm leading-6 text-muted-foreground">
+							Start from a blank form and add only the questions you need.
+						</p>
 					</div>
+					<Link
+						to="/dashboard/builder/$slug"
+						params={{ slug: "new-form" }}
+						search={{}}
+						className={cn(
+							buttonVariants({ variant: "outline", size: "lg" }),
+							"h-11",
+						)}
+					>
+						<PlusIcon data-icon="inline-start" />
+						Start from scratch
+					</Link>
 				</div>
 			</div>
 		</section>
 	);
 }
-
-// interface TemplateDialogProps {
-//   template: TemplateType
-// }
-
-// const TemplateDialog: FC<TemplateDialogProps> = ({ template }) => {
-//   return (
-//     <Dialog>
-//       <DialogTrigger asChild>
-//         <div
-//           id={template.id}
-//           className="flex flex-col text-clip rounded-xl border border-border transition-all overflow-hidden cursor-pointer"
-//         >
-//           <div className="relative">
-//             <Image
-//               src={template.thumbnailUrl}
-//               alt={template.title}
-//               className="aspect-video size-full object-cover object-center"
-//               height={90}
-//               width={160}
-//             />
-//             <div className="absolute top-0 right-0 px-2 py-1 z-100 flex justify-between text-xs">
-//               {/* {template.isNew && (
-//                 <Badge
-//                   variant={'destructive'}
-//                   className="text-white rounded-full bg-red-500 hover:bg-red-500/70"
-//                 >
-//                   <TrendingUpIcon className="size-4 mr-1" /> New
-//                 </Badge>
-//               )} */}
-//             </div>
-//           </div>
-//           <div className="px-3 py-8 md:px-8 md:py-8 lg:px-6 lg:py-4">
-//             <h3 className="mb-2 text-lg font-semibold md:mb-3 md:text-xl lg:mb-4">
-//               {template.title}
-//             </h3>
-//             <p className="mb-4 text-muted-foreground">{template.description}</p>
-//           </div>
-//         </div>
-//       </DialogTrigger>
-//       <DialogContent className="sm:max-w-[900px] p-0 overflow-hidden">
-//         <div className="flex h-[500px]">
-//           <div className="w-1/2 relative">
-//             <Image
-//               src={template.thumbnailUrl || '/placeholder.svg'}
-//               alt={template.title}
-//               className="w-full h-full"
-//               layout="fill"
-//               objectFit="cover"
-//             />
-//             {/* <iframe
-//               src="http://localhost:3000/forms/cm66uzewn000jybb8ln3094lf"
-//               className="absolute w-full h-full -top-10"
-//               frameBorder="0"
-//               scrolling="no"
-//             /> */}
-//             <div className="absolute pointer-events-none -right-0.5 w-full h-[1000px] bg-gradient-to-r from-transparent via-background/30 to-background" />
-//           </div>
-//           <div className="w-1/2 p-6 pl-2 flex flex-col">
-//             <h2 className="text-2xl font-bold mb-4">{template.title}</h2>
-//             <p className="text-muted-foreground mb-6">{template.description}</p>
-//             <div className="flex gap-2 mb-6 flex-wrap">
-//               <Badge variant="secondary">#{template.createdBy}</Badge>
-//               <Badge variant="secondary">#{template.slug}</Badge>
-//               <Badge variant="secondary">#Template</Badge>
-//             </div>
-//             <div className="mt-auto">
-//               <Link
-//                 to="/dashboard/builder/$slug"
-//                 params={{ slug: "new-form" }}
-//                 search={{ template: template.slug }}
-//                 className={cn(buttonVariants(), 'w-full')}
-//               >
-//                 Continue with this template
-//               </Link>
-//             </div>
-//           </div>
-//         </div>
-//       </DialogContent>
-//     </Dialog>
-//   )
-// }
