@@ -12,10 +12,12 @@ import {
 	SECTION_TYPE,
 } from "#/containers/dashboard/builder/[slug]/drag-model";
 import type { FieldConfig } from "#/features/form-builder/elements";
-import type {
-	FormPage,
-	FormSection,
-	FormStructure,
+import {
+	type FormLayout,
+	type FormPage,
+	type FormSection,
+	type FormStructure,
+	normalizeFormLayout,
 } from "#/features/form-builder/form-structure";
 import { getFormThemeStyle } from "#/features/form-builder/theme";
 
@@ -23,6 +25,7 @@ interface BuilderDragOverlayProps {
 	activePage: FormPage;
 	canvasWidth: number | null;
 	fieldOverlayWidth: number | null;
+	layout: FormLayout | undefined;
 	paletteFieldRef: RefObject<FieldConfig | null>;
 	paletteSectionRef: RefObject<FormSection | null>;
 	theme: FormStructure["theme"];
@@ -37,10 +40,15 @@ export function BuilderDragOverlay({
 	activePage,
 	canvasWidth,
 	fieldOverlayWidth,
+	layout,
 	paletteFieldRef,
 	paletteSectionRef,
 	theme,
 }: BuilderDragOverlayProps) {
+	// Mirror the canvas (`BuilderCanvas` passes `layout` through only when
+	// set): normalize only when a layout exists, otherwise keep the same
+	// card fallbacks the canvas section uses.
+	const normalizedLayout = layout ? normalizeFormLayout(layout) : undefined;
 	function getOverlayContent(source: OverlaySource | null) {
 		if (!source) return null;
 
@@ -60,6 +68,11 @@ export function BuilderDragOverlay({
 					isEmpty={section.fields.length === 0}
 					state="floating"
 					floatingWidth={canvasWidth}
+					layout={normalizedLayout}
+					// The canvas keeps its edit/remove buttons in the layout
+					// (opacity-0 until hover); reserve the same space here so
+					// the clone keeps the source's height.
+					reserveActions
 				>
 					{section.fields.map((field) => (
 						<ItemCard key={field.id} field={field} />
@@ -103,6 +116,7 @@ export function BuilderDragOverlay({
 					isEmpty
 					state="floating"
 					floatingWidth={canvasWidth}
+					layout={normalizedLayout}
 				/>
 			);
 		}

@@ -852,6 +852,7 @@ function BuilderContent({ paramFormId }: { paramFormId: string }) {
 				activePage={activePage}
 				canvasWidth={canvasWidth}
 				fieldOverlayWidth={fieldOverlayWidth}
+				layout={canvasLayout}
 				paletteFieldRef={paletteFieldClone}
 				paletteSectionRef={paletteSectionClone}
 				theme={canvasTheme}
