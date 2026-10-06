@@ -219,8 +219,7 @@ export function SortableSuccessBlock({
 }
 
 function ButtonRow({
-	legend,
-	label,
+	title,
 	inputId,
 	placeholder,
 	helperText,
@@ -231,8 +230,7 @@ function ButtonRow({
 	removeLabel,
 	onRemove,
 }: {
-	legend: string;
-	label: string;
+	title: string;
 	inputId: string;
 	placeholder: string;
 	helperText: string;
@@ -246,11 +244,9 @@ function ButtonRow({
 	const trimmedUrl = url?.trim() ?? "";
 	const invalidUrl = trimmedUrl.length > 0 && !isValidButtonUrl(trimmedUrl);
 	return (
-		<fieldset className="flex flex-col gap-2 rounded-lg border border-border/70 p-3">
-			<legend className="px-1 text-xs font-medium text-muted-foreground">
-				{legend}
-			</legend>
-			<div className="flex items-center justify-end gap-3">
+		<div className="flex flex-col gap-2 rounded-lg border border-border/70 p-3">
+			<div className="flex items-center justify-between gap-3">
+				<h4 className="text-sm font-medium">{title}</h4>
 				<Button
 					type="button"
 					variant="ghost"
@@ -262,7 +258,6 @@ function ButtonRow({
 					Remove
 				</Button>
 			</div>
-			<Label htmlFor={inputId}>{label}</Label>
 			<Input
 				id={inputId}
 				placeholder={placeholder}
@@ -297,7 +292,7 @@ function ButtonRow({
 					) : null}
 				</>
 			) : null}
-		</fieldset>
+		</div>
 	);
 }
 
@@ -323,7 +318,7 @@ function SuccessButtonList({
 		<div className="flex flex-col gap-3">
 			{buttons.showSubmitAnotherResponse ? (
 				<ButtonRow
-					legend="Submit-again button"
+					title="Submit-again button"
 					label="Submit-again button text"
 					inputId="form-success-again-text"
 					placeholder="Submit Another Response"
@@ -340,7 +335,7 @@ function SuccessButtonList({
 			) : null}
 			{buttons.showReturnToHomepage ? (
 				<ButtonRow
-					legend="Homepage button"
+					title="Homepage button"
 					label="Homepage button text"
 					inputId="form-success-home-text"
 					placeholder="Return to Homepage"
@@ -356,7 +351,7 @@ function SuccessButtonList({
 			{buttons.extraButtons.map((button) => (
 				<ButtonRow
 					key={button.id}
-					legend="Link button"
+					title="Link button"
 					label="Button text"
 					inputId={`extra-button-label-${button.id}`}
 					placeholder="Help center"
